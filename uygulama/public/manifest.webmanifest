@@ -1,7 +1,7 @@
 {
-  "name": "Zihin Turu — Sayı Turu",
+  "name": "Zihin Turu",
   "short_name": "Zihin Turu",
-  "description": "Türkçe zihin oyunu. Her gün herkese aynı bulmaca. Üyeliksiz, reklamsız.",
+  "description": "Türkçe zihin oyunu — Sayı Turu. Her gün herkese aynı bulmaca. Üyeliksiz, reklamsız.",
   "lang": "tr",
   "dir": "ltr",
   "start_url": "/",

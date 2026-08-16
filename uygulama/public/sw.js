@@ -12,12 +12,13 @@
     her şey çevrimdışı erişilebilir olur.
 */
 
-const SURUM = 'zt-v1';
+const SURUM = 'zt-v2';
 const KABUK = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/logo.svg',
+  '/favicon-32.png',
   '/ikon/ikon-192.png',
   '/ikon/ikon-512.png',
   '/ikon/ikon-maskable-512.png',

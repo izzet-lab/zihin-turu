@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, type SayiVeri } from '@zihinturu/oyun-sayi';
-import { kartMetni, kartDataUrl, type Kayit } from '../kart';
+import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 
@@ -13,10 +13,32 @@ interface Props {
   seri: number;
   tarih: string;
   sonuc: OyunSonuc;
-  onYeniden: () => void;
+  /** Bu turla birlikte açılan seviyenin etiketi, açılan yoksa null. */
+  yeniAcilanSeviyeEtiket: string | null;
+  /** Günün Turu birincil düğmesi: kurulum ekranına (ana sayfaya) döner. */
+  onAnaSayfa: () => void;
+  /** Günün Turu ikincil bağlantısı: aynı seviyede hemen Antrenman'a geçer. */
+  onAntrenmandaOyna: () => void;
+  /** Antrenman birincil düğmesi: aynı ayarlarla (seviye/süre/büyük sayı) yeni tur. */
+  onYeniTur: () => void;
+  /** Antrenman ikincil düğmesi: kurulum ekranına döner, ayarlar değiştirilebilir. */
+  onAyarlar: () => void;
 }
 
-export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc, onYeniden }: Props) {
+export default function Sonuc({
+  tur,
+  seviyeEtiket,
+  mod,
+  sure,
+  seri,
+  tarih,
+  sonuc,
+  yeniAcilanSeviyeEtiket,
+  onAnaSayfa,
+  onAntrenmandaOyna,
+  onYeniTur,
+  onAyarlar,
+}: Props) {
   const veri = tur.veri as SayiVeri;
   const tam = sonuc.fark === 0;
 
@@ -32,6 +54,7 @@ export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc
     gunluk: mod === 'gunun',
     tarih,
     seri,
+    jokerler: sonuc.jokerler,
   };
 
   const metin = useMemo(() => kartMetni(kayit), [kayit]);
@@ -51,6 +74,16 @@ export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-md">
+        {/* Yeni seviye açıldı */}
+        {yeniAcilanSeviyeEtiket && (
+          <div
+            data-alan="yeni-seviye"
+            className="mb-5 rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 py-3 text-center text-sm font-bold text-cyan-200"
+          >
+            🎉 {yeniAcilanSeviyeEtiket} açıldı!
+          </div>
+        )}
+
         {/* Puan / durum */}
         <div className="text-center">
           <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
@@ -68,6 +101,11 @@ export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc
             </span>{' '}
             puan
           </div>
+          {sonuc.jokerler.length > 0 && (
+            <div className="mt-1 text-xs text-amber-300" data-alan="kullanilan-jokerler">
+              Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
+            </div>
+          )}
         </div>
 
         {/* Çözümün tahtaya el yazısıyla yazılması */}
@@ -129,13 +167,41 @@ export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc
           </div>
         )}
 
-        <button
-          data-alan="yeniden"
-          onClick={onYeniden}
-          className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
-        >
-          {mod === 'gunun' ? 'Ana sayfaya dön' : 'Yeni tur'}
-        </button>
+        {mod === 'gunun' ? (
+          <>
+            <button
+              data-alan="yeniden"
+              onClick={onAnaSayfa}
+              className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
+            >
+              Ana sayfaya dön
+            </button>
+            <button
+              data-alan="antrenmanda-oyna"
+              onClick={onAntrenmandaOyna}
+              className="mt-3 min-h-[44px] w-full text-sm font-bold text-cyan-300 hover:underline"
+            >
+              Antrenmanda oyna
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              data-alan="yeni-tur"
+              onClick={onYeniTur}
+              className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
+            >
+              Yeni tur
+            </button>
+            <button
+              data-alan="ayarlar"
+              onClick={onAyarlar}
+              className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-400 hover:text-slate-200"
+            >
+              Ayarlar
+            </button>
+          </>
+        )}
       </div>
     </main>
   );

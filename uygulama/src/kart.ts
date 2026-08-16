@@ -6,11 +6,22 @@
  * henüz oynamamış olabilir; ona cevabı vermiş oluruz.
  *
  * Bu yüzden kart yalnızca şunları gösterir: hedef sayı (bulmacanın
- * SORUSU, cevabı değil), isabet durumu, süre, puan, seri ve tarih.
- * Adım zinciri buraya hiç gelmez.
+ * SORUSU, cevabı değil), isabet durumu, süre, puan, seri, tarih ve
+ * (varsa) kullanılan joker TÜRLERİ. Joker etiketleri ("Bir adım aç")
+ * bir hile değil kullanılan yardımın adıdır — çözümün kendisi
+ * (adımlar, işlem işaretleri, ara sonuçlar) buraya hiç gelmez.
  */
 
+import type { JokerTip } from '@zihinturu/oyun-sayi';
+
 export const BOYUT = 1080;
+
+/** Joker etiketleri — yalnızca hangi yardımın kullanıldığını söyler. */
+export const JOKER_ETIKETLERI: Record<JokerTip, string> = {
+  adim: 'Bir adım aç',
+  tas: 'Taş göster',
+  sure: 'Süre ekle',
+};
 
 export interface Kayit {
   seviyeEtiket: string;
@@ -21,11 +32,17 @@ export interface Kayit {
   gunluk: boolean;
   tarih: string; // YYYY-MM-DD
   seri: number;
+  jokerler?: JokerTip[];
 }
 
 function tarihGoster(iso: string): string {
   const [y, a, g] = iso.split('-');
   return `${g}.${a}.${y}`;
+}
+
+function jokerOzeti(jokerler: JokerTip[] | undefined): string | null {
+  if (!jokerler || jokerler.length === 0) return null;
+  return jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ');
 }
 
 /** Paylaşılabilir düz metin. Adım/işlem/ara sonuç içermez. */
@@ -38,6 +55,8 @@ export function kartMetni(k: Kayit): string {
   const sureMetni = k.sure > 0 ? `${k.sure} sn · ` : '';
   satir.push(`⏱ ${sureMetni}${k.puan} puan`);
   if (k.gunluk && k.seri > 1) satir.push(`🔥 ${k.seri} günlük seri`);
+  const joker = jokerOzeti(k.jokerler);
+  if (joker) satir.push(`Joker: ${joker}`);
   satir.push('Herkes bugün aynı turu oynuyor.');
   return satir.join('\n');
 }
@@ -126,6 +145,14 @@ export function kartCiz(c: Ctx, k: Kayit): void {
     c.font = '800 56px system-ui, sans-serif';
     c.fillText(kt.alt, x + 28, kutuY + 118);
   });
+
+  // Joker özeti (varsa) — yalnızca isim, çözüm içeriği yok.
+  const joker = jokerOzeti(k.jokerler);
+  if (joker) {
+    c.fillStyle = '#F59E0B';
+    c.font = '600 28px system-ui, sans-serif';
+    c.fillText(`Joker: ${joker}`, 130, 955);
+  }
 
   // Alt bilgi
   c.fillStyle = '#475569';

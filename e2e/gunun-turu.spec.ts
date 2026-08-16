@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { zinciriBulVeOyna } from './oyun-yardimcilari';
 
 /*
   Faz 2 kabul testi — gerçek tarayıcıda, uçtan uca:
@@ -9,77 +10,40 @@ import { test, expect, type Page } from '@playwright/test';
      bulunmadığını doğrula (çözüm sızmamalı — CLAUDE.md 6)
   5) sayfayı yenile, günlük turun kilitli olduğunu doğrula
 
-  Test paketleri içe aktarmaz; rafı ekrandan okuyup bağımsız bir
-  çözücüyle hedefe ulaşan bir zincir bulur ve onu gerçekten arayüzde
-  tıklayarak oynar. "Tam isabet" böylece gerçekten arayüz üzerinden
-  elde edilir, testte simüle edilmez.
+  Çözüm bağımsız bir çözücüyle bulunur ve arayüzde gerçekten tıklanarak
+  oynanır (bkz. oyun-yardimcilari.ts) — "tam isabet" testte simüle
+  edilmez, gerçekten elde edilir.
 */
 
-type Islem = '+' | '−' | '×' | '÷';
-interface Adim {
-  a: number;
-  b: number;
-  islem: Islem;
-  sonuc: number;
+/**
+ * Bu senaryo "deneyimli" bir oyuncuyu test eder (seviye seçimi kilitli
+ * değil). İlk-kez-oynayan kısıtlaması ayrı bir testte (ilk-kez.spec.ts)
+ * kontrol ediliyor. localStorage'a önceden geçmiş yazarak deneyimli
+ * duruma geçiyoruz — depo.ts'in "hiç oynamamışsa yalnızca Isınma açık"
+ * kuralını devre dışı bırakan gerçek koşulu taklit ediyor.
+ *
+ * `addInitScript` sayfa/bağlam boyunca kalıcıdır ve HER navigasyonda
+ * yeniden çalışır — bu yüzden yalnızca anahtar hiç yoksa yazar. Aksi
+ * hâlde "sayfayı yenile" adımında oynanmış ilerleme, ikinci kez
+ * çalışan bu betik tarafından sıfırlanmış hâliyle ezilir.
+ */
+async function tohumla(page: Page) {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem('zihinturu.v2')) return; // gerçek ilerleme varsa dokunma
+    window.localStorage.setItem(
+      'zihinturu.v2',
+      JSON.stringify({
+        surum: 2,
+        seri: { son: null, gun: 0, enUzun: 0 },
+        tam: 0,
+        gunluk: {},
+        acikSeviyeler: ['cocuk', 'kolay', 'normal', 'zor', 'usta'],
+      }),
+    );
+  });
 }
 
-function uygula(a: number, b: number, op: Islem): number | null {
-  if (op === '+') return a + b;
-  if (op === '×') return a * b;
-  if (op === '−') return a - b > 0 ? a - b : null;
-  return b > 0 && a % b === 0 ? a / b : null;
-}
-
-/** Basit geriye arama: hedefe TAM ulaşan bir adım zinciri bulur. */
-function coz(sayilar: number[], hedef: number): Adim[] | null {
-  let cevap: Adim[] | null = null;
-  const t0 = Date.now();
-  interface D {
-    d: number;
-    yol: Adim[];
-  }
-  function ara(liste: D[]): boolean {
-    for (const it of liste) {
-      if (it.d === hedef) {
-        cevap = it.yol;
-        return true;
-      }
-    }
-    if (liste.length < 2 || Date.now() - t0 > 4000) return false;
-    for (let i = 0; i < liste.length; i++) {
-      for (let j = i + 1; j < liste.length; j++) {
-        const a = liste[i]!;
-        const b = liste[j]!;
-        const kalan = liste.filter((_, k) => k !== i && k !== j);
-        const ust = a.d >= b.d ? a : b;
-        const alt = a.d >= b.d ? b : a;
-        for (const op of ['+', '−', '×', '÷'] as Islem[]) {
-          const s = uygula(ust.d, alt.d, op);
-          if (s === null) continue;
-          const dugum: D = { d: s, yol: ust.yol.concat(alt.yol, [{ a: ust.d, b: alt.d, islem: op, sonuc: s }]) };
-          if (ara(kalan.concat([dugum]))) return true;
-        }
-      }
-    }
-    return false;
-  }
-  ara(sayilar.map((s) => ({ d: s, yol: [] })));
-  return cevap;
-}
-
-async function tikTas(page: Page, deger: number, kacinPressed = false) {
-  const hepsi = page.locator(`[data-alan="raf"] [data-tas="${deger}"]`);
-  const n = await hepsi.count();
-  for (let i = 0; i < n; i++) {
-    const el = hepsi.nth(i);
-    if (kacinPressed && (await el.getAttribute('aria-pressed')) === 'true') continue;
-    await el.click();
-    return;
-  }
-  await hepsi.first().click();
-}
-
-async function gununTurunuBasla(page: Page) {
+async function kurulumuAc(page: Page) {
   await page.goto('/');
   // İlk açılışta tanıtım kendiliğinden çıkar; kapat ve devam et.
   const yardim = page.locator('[data-alan="yardim-anladim"]');
@@ -90,28 +54,14 @@ async function gununTurunuBasla(page: Page) {
 }
 
 test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız, yenileyince kilit', async ({ page }) => {
-  await gununTurunuBasla(page);
+  await tohumla(page);
+  await kurulumuAc(page);
 
   await expect(page.locator('[data-alan="basla"]')).toBeVisible();
   await page.locator('[data-alan="basla"]').click();
 
-  // --- Oyun ekranı: rafı oku, bağımsız çözücüyle bir zincir bul ---
-  const hedef = Number(await page.locator('[data-alan="hedef"]').textContent());
-  expect(hedef).toBeGreaterThan(0);
-
-  const degerler = await page
-    .locator('[data-alan="raf"] [data-tas]')
-    .evaluateAll((els) => els.map((e) => Number(e.getAttribute('data-tas'))));
-
-  const zincir = coz(degerler, hedef);
-  expect(zincir, 'çözücü hedefe ulaşan bir zincir bulmalı').not.toBeNull();
-
-  // --- Zinciri arayüzden GERÇEKTEN oyna (tıklayarak) ---
-  for (const ad of zincir!) {
-    await tikTas(page, ad.a);
-    await page.locator(`[data-alan="islemler"] [data-islem="${ad.islem}"]`).click();
-    await tikTas(page, ad.b, true);
-  }
+  // --- Oyun ekranı: rafı oku, çözümü arayüzden gerçekten oyna ---
+  const { hedef, zincir } = await zinciriBulVeOyna(page);
 
   // --- 1) Sonuç ekranı açıldı mı? ---
   const hukum = page.locator('[data-alan="hukum"]');
@@ -134,7 +84,7 @@ test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız
   expect(metin).not.toContain('=');
   expect(metin).not.toMatch(/[×÷−]/);
   // Ara sonuçlar (hedef DIŞINDAKİ adım sonuçları) metinde geçmemeli.
-  const araSonuclar = zincir!.map((a) => a.sonuc).filter((s) => s !== hedef);
+  const araSonuclar = zincir.map((a) => a.sonuc).filter((s) => s !== hedef);
   for (const s of araSonuclar) {
     // Kısa/yaygın sayılar (ör. tek haneli) yanlış pozitif verebileceği için
     // yalnızca üç haneli ve üstü, hedeften farklı ara sonuçları denetliyoruz.
@@ -151,7 +101,7 @@ test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız
   expect(boyut).toEqual({ w: 1080, h: 1080, png: true });
 
   // --- 4) Sayfayı yenile → günlük kilit dursun ---
-  await gununTurunuBasla(page);
+  await kurulumuAc(page);
   await expect(page.locator('[data-alan="kilit"]')).toBeVisible();
   await expect(page.locator('[data-alan="kilit"]')).toContainText('tamamlandı');
   await expect(page.locator('[data-alan="basla"]')).toHaveCount(0);

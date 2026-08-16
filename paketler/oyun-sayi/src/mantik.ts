@@ -74,7 +74,7 @@ export const BUYUK: readonly number[] = [25, 50, 75, 100];
 const ISLEMLER: readonly Islem[] = ['+', '−', '×', '÷'];
 
 export const SEVIYELER: Record<string, SeviyeConfig> = {
-  cocuk: { etiket: 'Basit', hane: 2, tas: 4, alt: 10, ust: 99, tolerans: [2, 4], buyukVar: false, ileri: false },
+  cocuk: { etiket: 'Isınma', hane: 2, tas: 4, alt: 10, ust: 99, tolerans: [2, 4], buyukVar: false, ileri: false },
   kolay: { etiket: 'Kolay', hane: 3, tas: 5, alt: 100, ust: 499, tolerans: [3, 8], buyukVar: false, ileri: false },
   normal: { etiket: 'Normal', hane: 3, tas: 6, alt: 101, ust: 999, tolerans: [5, 10], buyukVar: true, ileri: false },
   zor: { etiket: 'Zor', hane: 4, tas: 6, alt: 1000, ust: 9999, tolerans: [15, 50], buyukVar: true, ileri: true },
@@ -304,6 +304,25 @@ export function puanlaHesap(
 }
 
 /* ------------------------------------------------------------------ */
+/* Antrenman risk çarpanı                                              */
+/* Oyuncu kısa süre seçerse daha çok puan kazanır — riski göze aldığı  */
+/* için. Yalnızca Antrenman'da geçerlidir: Günün Turu'nda süre seviyeye*/
+/* sabittir, yoksa puanlar kıyaslanamaz olur ve lig bozulur.           */
+/* ------------------------------------------------------------------ */
+
+export const ANTRENMAN_SURE_CARPANI: Record<number, number> = {
+  90: 1,
+  60: 1.5,
+  30: 2.5,
+  15: 4,
+};
+
+/** Verilen süre için risk çarpanı. Listede yoksa (süresiz dahil) 1. */
+export function antrenmanCarpani(sure: number): number {
+  return ANTRENMAN_SURE_CARPANI[sure] ?? 1;
+}
+
+/* ------------------------------------------------------------------ */
 /* Joker                                                               */
 /* Kelime oyununda joker "harf açar". Sayıda karşılığı çözümün bir     */
 /* adımını açmaktır — cevabı vermez, yolu daraltır.                    */
@@ -317,24 +336,49 @@ export type JokerSonuc =
   | { tip: 'sure'; ekSaniye: number }
   | null;
 
-export function jokerVer(uretim: Uretim, tip: JokerTip, kullanilanAdim = 0): JokerSonuc {
+/** Her joker türünün puan maliyeti. */
+export const JOKER_MALIYET: Record<JokerTip, number> = {
+  adim: 3,
+  tas: 2,
+  sure: 2,
+};
+
+/** Tur başına toplam joker hakkı (tür fark etmeksizin). */
+export const JOKER_HAK_SAYISI = 3;
+
+export function jokerVer(
+  uretim: Uretim,
+  tip: JokerTip,
+  secenek?: { kullanilanAdim?: number; disHaricTutulan?: number[] },
+): JokerSonuc {
   if (tip === 'adim') {
-    const i = kullanilanAdim;
+    const i = secenek?.kullanilanAdim ?? 0;
     const ad = uretim.cozum.adimlar[i];
     return ad ? { tip, metin: bicimle(ad), indeks: i } : null;
   }
   if (tip === 'tas') {
-    // çözümde geçen bir taşı işaretle
+    // Çözümde geçen, henüz gösterilmemiş bir taşı işaretle.
     const kullanilan = new Set<number>();
     uretim.cozum.adimlar.forEach((a) => {
       kullanilan.add(a.a);
       kullanilan.add(a.b);
     });
-    const aday = uretim.sayilar.filter((s) => kullanilan.has(s));
-    return { tip, tas: aday[0] ?? uretim.sayilar[0]! };
+    const haric = new Set(secenek?.disHaricTutulan ?? []);
+    const aday = uretim.sayilar.filter((s) => kullanilan.has(s) && !haric.has(s));
+    if (aday.length === 0) return null; // gösterilecek yeni taş kalmadı
+    return { tip, tas: aday[0]! };
   }
   if (tip === 'sure') return { tip, ekSaniye: 15 };
   return null;
+}
+
+/**
+ * Kullanılan jokerlerin toplam maliyetini temel puandan düşer.
+ * Puan hiçbir zaman 0'ın altına düşmez.
+ */
+export function jokerliPuan(temelToplam: number, kullanilanJokerler: readonly JokerTip[]): number {
+  const maliyet = kullanilanJokerler.reduce((t, j) => t + JOKER_MALIYET[j], 0);
+  return Math.max(0, temelToplam - maliyet);
 }
 
 /** Bir adımı okunur metne çevirir: "6 × 7 = 42". */

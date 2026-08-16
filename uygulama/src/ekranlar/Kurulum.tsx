@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react';
 import type { Seviye } from '@zihinturu/cekirdek';
-import { bugun, gunlukKilitli, serit, oku, kaliciMi } from '../depo';
+import { antrenmanCarpani } from '@zihinturu/oyun-sayi';
+import {
+  bugun,
+  gunlukKilitli,
+  serit,
+  oku,
+  kaliciMi,
+  acikSeviyeler as depoAcikSeviyeler,
+  sonAntrenmanAyariOku,
+} from '../depo';
 
 export type Mod = 'antrenman' | 'gunun';
 
@@ -18,22 +27,42 @@ interface Props {
   onYardim: () => void;
 }
 
-const SURE_SECENEK = [45, 60, 90, 0]; // 0 = süresiz (yalnızca Antrenman)
+// Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
+const SURE_SECENEK = [90, 60, 30, 15];
 
 export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
   const [mod, setMod] = useState<Mod>('gunun');
-  const [seviye, setSeviye] = useState<string>('normal');
-  const [sure, setSure] = useState<number>(90);
-  const [buyukAdet, setBuyukAdet] = useState<number>(2);
+
+  const il = oku();
+  const acik = depoAcikSeviyeler(il);
+  const ilkKezMi = acik.length <= 1;
+
+  // Antrenman ayarları hatırlanır: uygulama kapatılıp açılsa bile son
+  // kullanılan seviye/süre/büyük sayı varsayılan gelir. Kayıtlı seviye
+  // artık kilitliyse (olağan değil ama olabilir) göz ardı edilir.
+  const kayitliAyar = sonAntrenmanAyariOku();
+  const kayitliGecerliMi = !!kayitliAyar && acik.includes(kayitliAyar.seviye);
+
+  // Varsayılan seçim: kayıtlı ayar varsa o, yoksa deneyimli oyuncu için
+  // "normal" (açıksa), yeni oyuncu için tek açık seviye olan Isınma.
+  const [seviye, setSeviye] = useState<string>(() =>
+    kayitliGecerliMi ? kayitliAyar!.seviye : acik.includes('normal') ? 'normal' : acik[acik.length - 1]!,
+  );
+  const [sure, setSure] = useState<number>(() => (kayitliGecerliMi ? kayitliAyar!.sure : 90));
+  const [buyukAdet, setBuyukAdet] = useState<number>(() => (kayitliGecerliMi ? kayitliAyar!.buyukAdet : 2));
 
   const secili = seviyeler.find((s) => s.anahtar === seviye) ?? seviyeler[0]!;
   const gun = bugun();
 
-  // Günün Turu için kilit, seri ve 28 günlük şerit
-  const il = oku();
-  const kilitli = mod === 'gunun' && gunlukKilitli(seviye, gun, il);
-  const seritler = useMemo(() => serit(seviye, gun, 28, il), [seviye, gun, il]);
+  // Günün Turu için kilit, seri ve 28 günlük şerit — artık genel (seviyeden bağımsız).
+  const kilitli = mod === 'gunun' && gunlukKilitli(gun, il);
+  const seritler = useMemo(() => serit(gun, 28, il), [gun, il]);
   const seri = il.seri.gun;
+
+  function seviyeSec(anahtar: string) {
+    if (!acik.includes(anahtar)) return; // kilitli seviye seçilemez
+    setSeviye(anahtar);
+  }
 
   function basla() {
     if (kilitli) return;
@@ -92,47 +121,84 @@ export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
 
         {/* Seviye seçimi */}
         <div className="mt-6">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</div>
-          <div className="flex flex-wrap gap-2" data-alan="seviyeler">
-            {seviyeler.map((s) => (
-              <button
-                key={s.anahtar}
-                data-seviye={s.anahtar}
-                onClick={() => setSeviye(s.anahtar)}
-                aria-pressed={seviye === s.anahtar}
-                className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm transition ${
-                  seviye === s.anahtar
-                    ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                    : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
-                }`}
-              >
-                <span className="font-bold">{s.etiket}</span>
-                <span className="ml-1.5 text-[11px] text-slate-500">{s.altEtiket}</span>
-              </button>
-            ))}
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</span>
+            {ilkKezMi && <span className="text-[11px] text-cyan-300">Isınma ile başlıyorsun</span>}
           </div>
+          <div className="flex flex-wrap gap-2" data-alan="seviyeler">
+            {seviyeler.map((s) => {
+              const kilitliMi = !acik.includes(s.anahtar);
+              return (
+                <button
+                  key={s.anahtar}
+                  data-seviye={s.anahtar}
+                  data-kilitli={kilitliMi ? 'true' : undefined}
+                  onClick={() => seviyeSec(s.anahtar)}
+                  disabled={kilitliMi}
+                  aria-pressed={seviye === s.anahtar}
+                  aria-disabled={kilitliMi}
+                  className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm transition ${
+                    kilitliMi
+                      ? 'cursor-not-allowed border-slate-800 bg-slate-900/20 text-slate-600'
+                      : seviye === s.anahtar
+                        ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
+                        : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <span className="font-bold">
+                    {kilitliMi && '🔒 '}
+                    {s.etiket}
+                  </span>
+                  <span className="ml-1.5 text-[11px] text-slate-500">{s.altEtiket}</span>
+                </button>
+              );
+            })}
+          </div>
+          {ilkKezMi && (
+            <p className="mt-2 text-[11px] text-slate-500">
+              Isınma'da tam isabet yaptığında bir sonraki seviye açılır.
+            </p>
+          )}
         </div>
 
         {/* Antrenman ayarları */}
         {mod === 'antrenman' && (
           <div className="mt-6 space-y-5" data-alan="antrenman-ayar">
             <div>
-              <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Süre</div>
+              <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+                Süre <span className="normal-case text-slate-600">— kısa süre daha çok puan getirir</span>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {SURE_SECENEK.map((s) => (
                   <button
                     key={s}
+                    data-sure={s}
                     onClick={() => setSure(s)}
                     aria-pressed={sure === s}
-                    className={`min-h-[44px] rounded-lg border px-4 text-sm transition ${
+                    className={`min-h-[44px] rounded-lg border px-3 text-sm transition ${
                       sure === s
                         ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
                         : 'border-slate-800 bg-slate-900/40 text-slate-300'
                     }`}
                   >
-                    {s === 0 ? 'Süresiz' : `${s} sn`}
+                    <span className="font-bold">{s} sn</span>
+                    <span className="ml-1.5 text-[11px] text-slate-500">×{antrenmanCarpani(s)}</span>
                   </button>
                 ))}
+                {secili.antrenmanSuresiz && (
+                  <button
+                    data-sure={0}
+                    onClick={() => setSure(0)}
+                    aria-pressed={sure === 0}
+                    className={`min-h-[44px] rounded-lg border px-4 text-sm transition ${
+                      sure === 0
+                        ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
+                        : 'border-slate-800 bg-slate-900/40 text-slate-300'
+                    }`}
+                  >
+                    Süresiz
+                  </button>
+                )}
               </div>
             </div>
 
@@ -162,7 +228,7 @@ export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
           </div>
         )}
 
-        {/* Günün Turu paneli: seri + şerit */}
+        {/* Günün Turu paneli: seri + şerit (genel, tüm seviyeleri kapsar) */}
         {mod === 'gunun' && (
           <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4" data-alan="seri">
             <div className="flex items-center justify-between">
@@ -198,7 +264,7 @@ export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
               data-alan="kilit"
               className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-4 text-center text-sm text-slate-400"
             >
-              Bugünün turu bu seviyede <span className="font-bold text-slate-200">tamamlandı</span>. Yarın yeni tur.
+              Bugünün turu <span className="font-bold text-slate-200">tamamlandı</span>. Yarın yeni tur.
             </div>
           ) : (
             <button

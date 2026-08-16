@@ -95,3 +95,30 @@ describe('paylaşım kartı — görsel (sızıntı denetimi)', () => {
     expect(sizan).toEqual([]);
   });
 });
+
+describe('paylaşım kartı — joker kullanıldığında hâlâ sızıntısız', () => {
+  const jokerliKayit: Kayit = { ...tamKayit, jokerler: ['adim', 'sure'] };
+
+  it('metinde joker adı geçer ama işlem/ara sonuç geçmez', () => {
+    const m = kartMetni(jokerliKayit);
+    expect(m).toMatch(/Bir adım aç/);
+    expect(m).toMatch(/Süre ekle/);
+    expect(m).not.toMatch(/[×÷−=]/);
+  });
+
+  it('görselde joker adı geçer ama çözüm sızmaz', () => {
+    const { c, yazilar } = sahteBaglam();
+    kartCiz(c as unknown as CanvasRenderingContext2D, jokerliKayit);
+    const hepsi = yazilar.join(' | ');
+    expect(hepsi).toMatch(/Bir adım aç/);
+    expect(hepsi).not.toContain('=');
+    expect(hepsi).not.toMatch(/[×÷−]/);
+
+    const mesru = new Set([veri.hedef, jokerliKayit.puan, jokerliKayit.sure, jokerliKayit.seri]);
+    const araSonuclar = uretim.cozum.adimlar
+      .map((a) => a.sonuc)
+      .filter((s) => s !== veri.hedef && !mesru.has(s));
+    const sizan = araSonuclar.filter((s) => yazilar.includes(String(s)));
+    expect(sizan).toEqual([]);
+  });
+});

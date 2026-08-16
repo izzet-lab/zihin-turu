@@ -8,7 +8,12 @@ import {
   puanlaHesap,
   cozZinciri,
   jokerVer,
+  jokerliPuan,
+  JOKER_MALIYET,
+  antrenmanCarpani,
+  sonrakiSeviyeAnahtari,
   SEVIYE_ANAHTARLARI,
+  SEVIYE_LISTESI,
   botUret,
   botPlani,
   type Adim,
@@ -142,9 +147,96 @@ describe('çözüm ve joker', () => {
 
   it('joker bir çözüm adımını açar', () => {
     const u = uretimYap('normal', 999);
-    const j = jokerVer(u, 'adim', 0);
+    const j = jokerVer(u, 'adim', { kullanilanAdim: 0 });
     expect(j).not.toBeNull();
     expect(j && j.tip).toBe('adim');
+  });
+
+  it('adım joker metni sonraki adımı okunur biçimde verir', () => {
+    const u = uretimYap('normal', 999);
+    const j = jokerVer(u, 'adim', { kullanilanAdim: 0 });
+    expect(j && j.tip === 'adim' && j.metin).toContain('=');
+  });
+
+  it('taş joker çözümde geçen, dışarıda tutulmayan bir taşı verir', () => {
+    const u = uretimYap('normal', 999);
+    const kullanilan = new Set<number>();
+    u.cozum.adimlar.forEach((a) => {
+      kullanilan.add(a.a);
+      kullanilan.add(a.b);
+    });
+    const j1 = jokerVer(u, 'tas');
+    expect(j1).not.toBeNull();
+    expect(j1 && j1.tip === 'tas' && kullanilan.has(j1.tas)).toBe(true);
+    if (j1 && j1.tip === 'tas') {
+      const j2 = jokerVer(u, 'tas', { disHaricTutulan: [j1.tas] });
+      // İkinci çağrı, ilkinden farklı bir taş vermeli (varsa) ya da null.
+      if (j2) expect(j2.tip === 'tas' && j2.tas).not.toBe(j1.tas);
+    }
+  });
+
+  it('süre joker 15 saniye ekler', () => {
+    const u = uretimYap('normal', 999);
+    const j = jokerVer(u, 'sure');
+    expect(j).toEqual({ tip: 'sure', ekSaniye: 15 });
+  });
+});
+
+describe('joker maliyeti ve nihai puan', () => {
+  it('her joker türünün bir maliyeti var', () => {
+    expect(JOKER_MALIYET.adim).toBe(3);
+    expect(JOKER_MALIYET.tas).toBe(2);
+    expect(JOKER_MALIYET.sure).toBe(2);
+  });
+
+  it('joker maliyeti temel puandan düşülür', () => {
+    expect(jokerliPuan(10, ['adim'])).toBe(7);
+    expect(jokerliPuan(10, ['adim', 'tas'])).toBe(5);
+  });
+
+  it('puan hiçbir zaman 0ın altına düşmez', () => {
+    expect(jokerliPuan(2, ['adim', 'tas', 'sure'])).toBe(0);
+    expect(jokerliPuan(0, ['adim'])).toBe(0);
+  });
+
+  it('joker kullanılmazsa puan değişmez', () => {
+    expect(jokerliPuan(10, [])).toBe(10);
+  });
+});
+
+describe('antrenman risk çarpanı', () => {
+  it('kısa süre daha yüksek çarpan getirir', () => {
+    expect(antrenmanCarpani(90)).toBe(1);
+    expect(antrenmanCarpani(60)).toBe(1.5);
+    expect(antrenmanCarpani(30)).toBe(2.5);
+    expect(antrenmanCarpani(15)).toBe(4);
+  });
+
+  it('tanımsız/süresiz süre için çarpan 1', () => {
+    expect(antrenmanCarpani(0)).toBe(1);
+    expect(antrenmanCarpani(45)).toBe(1);
+  });
+});
+
+describe('seviye ilerlemesi', () => {
+  it('Isınma seviyesinin adı doğru', () => {
+    const isinma = SEVIYE_LISTESI.find((s) => s.anahtar === 'cocuk');
+    expect(isinma?.etiket).toBe('Isınma');
+  });
+
+  it('sıradaki seviye kolaydan zora ilerler', () => {
+    expect(sonrakiSeviyeAnahtari('cocuk')).toBe('kolay');
+    expect(sonrakiSeviyeAnahtari('kolay')).toBe('normal');
+    expect(sonrakiSeviyeAnahtari('normal')).toBe('zor');
+    expect(sonrakiSeviyeAnahtari('zor')).toBe('usta');
+  });
+
+  it('son seviyeden sonrası yok', () => {
+    expect(sonrakiSeviyeAnahtari('usta')).toBeNull();
+  });
+
+  it('bilinmeyen seviye için null döner', () => {
+    expect(sonrakiSeviyeAnahtari('yok')).toBeNull();
   });
 });
 

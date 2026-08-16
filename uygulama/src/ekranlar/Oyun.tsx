@@ -1,19 +1,33 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
-import { puanlaHesap, type Islem, type SayiVeri } from '@zihinturu/oyun-sayi';
+import {
+  puanlaHesap,
+  jokerVer,
+  jokerliPuan,
+  uretimYap,
+  antrenmanCarpani,
+  JOKER_HAK_SAYISI,
+  JOKER_MALIYET,
+  type Islem,
+  type SayiVeri,
+  type JokerTip,
+} from '@zihinturu/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
+import type { Mod } from './Kurulum';
 
 export interface OyunSonuc {
   fark: number;
   puan: number;
   kalan: number;
   ulasilan: number | null;
+  jokerler: JokerTip[];
 }
 
 interface Props {
   tur: Tur;
   seviye: string;
   sure: number; // 0 = süresiz
+  mod: Mod;
   onBitti: (s: OyunSonuc) => void;
   onYardim: () => void;
 }
@@ -25,17 +39,55 @@ const ISLEMLER: { op: Islem; ad: string }[] = [
   { op: '÷', ad: 'böl' },
 ];
 
-export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
+const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
+  { tip: 'adim', ad: 'Bir adım aç', simge: '💡' },
+  { tip: 'tas', ad: 'Taş göster', simge: '📍' },
+  { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
+];
+
+export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Props) {
   const veri = tur.veri as SayiVeri;
   const hedef = veri.hedef;
 
+  // Çözüm yalnızca joker göstermek için burada, deterministik olarak
+  // yeniden üretiliyor (tohumdan) — istemciye ayrıca "gönderilmiyor",
+  // zaten istemcinin kendisinde hesaplanıyor. Joker, kuralı gereği
+  // bilerek çözümün bir kısmını açar (bkz. oyun-sayi joker belgesi).
+  const uretim = useMemo(() => uretimYap(tur.seviye, tur.tohum), [tur]);
+
   const [durum, gonder] = useReducer(ilerle, veri.sayilar, baslat);
   const [kalan, setKalan] = useState<number>(sure);
+  const [toplamSure, setToplamSure] = useState<number>(sure); // joker ile uzayabilir
   const bittiRef = useRef(false);
+
+  // --- Joker durumu ---
+  const [jokerHakki, setJokerHakki] = useState<number>(JOKER_HAK_SAYISI);
+  const [kullanilanJokerler, setKullanilanJokerler] = useState<JokerTip[]>([]);
+  const [acikAdimlar, setAcikAdimlar] = useState<string[]>([]);
+  const [isaretliTaslar, setIsaretliTaslar] = useState<number[]>([]);
 
   const yakinTas = enYakinTas(durum, hedef);
   const yakinFark = enYakinFark(durum, hedef);
   const tamIsabet = yakinFark === 0;
+
+  function jokerKullan(tip: JokerTip) {
+    if (jokerHakki <= 0 || bittiRef.current) return;
+    if (tip === 'adim') {
+      const sonuc = jokerVer(uretim, 'adim', { kullanilanAdim: acikAdimlar.length });
+      if (!sonuc || sonuc.tip !== 'adim') return; // çözüm tükendi
+      setAcikAdimlar((a) => [...a, sonuc.metin]);
+    } else if (tip === 'tas') {
+      const sonuc = jokerVer(uretim, 'tas', { disHaricTutulan: isaretliTaslar });
+      if (!sonuc || sonuc.tip !== 'tas') return; // gösterilecek yeni taş kalmadı
+      setIsaretliTaslar((t) => [...t, sonuc.tas]);
+    } else if (tip === 'sure') {
+      if (sure <= 0) return; // süresiz modda anlamsız
+      setKalan((k) => k + 15);
+      setToplamSure((t) => t + 15);
+    }
+    setJokerHakki((h) => h - 1);
+    setKullanilanJokerler((j) => [...j, tip]);
+  }
 
   // Bitiş: en yakın taşın zinciri cevaptır; puanı oyun-sayi hesaplar.
   function bitir() {
@@ -44,8 +96,12 @@ export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
     const t: Tas = enYakinTas(durum, hedef);
     const fark = Math.abs(t.deger - hedef);
     // Tek kişilikte "ilk bulan" primi yok (rakip yok).
-    const puan = puanlaHesap(seviye, fark, kalan, sure, false);
-    onBitti({ fark, puan: puan.toplam, kalan, ulasilan: t.deger });
+    const temel = puanlaHesap(seviye, fark, kalan, toplamSure, false);
+    // Antrenman'da risk çarpanı seçilen SÜREYE göre uygulanır (joker ile
+    // uzatılmış süreye göre değil — oyuncu riski baştan üstlendi).
+    const carpanli = mod === 'antrenman' ? Math.round(temel.toplam * antrenmanCarpani(sure)) : temel.toplam;
+    const nihai = jokerliPuan(carpanli, kullanilanJokerler);
+    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler });
   }
 
   // Süre sayacı (yalnızca süreli modda)
@@ -84,7 +140,7 @@ export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
     return () => clearTimeout(z);
   }, [durum.hata]);
 
-  const sureYuzde = sure > 0 ? Math.max(0, (kalan / sure) * 100) : 100;
+  const sureYuzde = toplamSure > 0 ? Math.max(0, (kalan / toplamSure) * 100) : 100;
 
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-6">
@@ -132,8 +188,8 @@ export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
             data-alan="sure-cubuk"
           />
         </div>
-        <div className="mt-1 text-right text-[11px] text-slate-500">
-          {sure > 0 ? `${kalan} sn` : 'süresiz'}
+        <div className="mt-1 text-right text-[11px] text-slate-500" data-alan="sure-kalan" data-toplam-sure={toplamSure}>
+          {toplamSure > 0 ? `${kalan} sn` : 'süresiz'}
         </div>
 
         {/* Taş rafı */}
@@ -141,18 +197,22 @@ export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
           {durum.taslar.map((t) => {
             const secili = durum.secimA === t.id;
             const uretilmis = t.yol.length > 0;
+            const isaretli = !uretilmis && isaretliTaslar.includes(t.deger);
             return (
               <button
                 key={t.id}
                 data-tas={t.deger}
+                data-isaretli={isaretli ? 'true' : undefined}
                 onClick={() => gonder({ t: 'tas', id: t.id })}
                 aria-pressed={secili}
                 className={`min-h-[64px] rounded-xl border text-2xl font-black transition active:scale-95 ${
                   secili
                     ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
-                    : uretilmis
-                      ? 'border-cyan-300/25 bg-slate-800/70 text-cyan-100'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-100'
+                    : isaretli
+                      ? 'border-amber-400/60 bg-amber-400/10 text-amber-200 ring-2 ring-amber-400/50'
+                      : uretilmis
+                        ? 'border-cyan-300/25 bg-slate-800/70 text-cyan-100'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-100'
                 }`}
               >
                 {t.deger}
@@ -183,6 +243,44 @@ export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
         {/* Hata */}
         <div className="mt-2 h-5 text-center text-xs text-amber-400" role="status" data-alan="hata">
           {durum.hata ?? ''}
+        </div>
+
+        {/* Joker */}
+        <div className="mt-1 rounded-xl border border-slate-800 bg-slate-900/30 p-3" data-alan="jokerler">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Joker</span>
+            <span className="text-xs text-slate-400" data-alan="joker-hak">
+              {jokerHakki} hak kaldı
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {JOKER_META.map((j) => {
+              const devreDisi =
+                jokerHakki <= 0 ||
+                (j.tip === 'sure' && sure <= 0) ||
+                (j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length);
+              return (
+                <button
+                  key={j.tip}
+                  data-joker={j.tip}
+                  onClick={() => jokerKullan(j.tip)}
+                  disabled={devreDisi}
+                  className="min-h-[52px] rounded-lg border border-slate-700 bg-slate-900/60 px-1 text-[11px] font-bold text-slate-200 transition active:scale-95 disabled:opacity-30"
+                >
+                  <div className="text-base leading-none">{j.simge}</div>
+                  <div className="mt-1 leading-tight">{j.ad}</div>
+                  <div className="text-slate-500">−{JOKER_MALIYET[j.tip]} puan</div>
+                </button>
+              );
+            })}
+          </div>
+          {acikAdimlar.length > 0 && (
+            <ul className="mt-2 space-y-1 text-sm text-amber-200" data-alan="joker-ipucu">
+              {acikAdimlar.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* İşlem geçmişi */}

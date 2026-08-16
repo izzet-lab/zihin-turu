@@ -37,6 +37,11 @@ export {
   dogrulaZinciri,
   puanlaHesap,
   jokerVer,
+  jokerliPuan,
+  JOKER_MALIYET,
+  JOKER_HAK_SAYISI,
+  antrenmanCarpani,
+  ANTRENMAN_SURE_CARPANI,
   bicimle,
 } from './mantik';
 
@@ -48,7 +53,7 @@ export {
  * oyun kuralını etkilemez.)
  */
 export const SEVIYE_LISTESI: readonly Seviye[] = [
-  { anahtar: 'cocuk', etiket: 'Basit', altEtiket: '2 hane', sure: 60, antrenmanSuresiz: true },
+  { anahtar: 'cocuk', etiket: 'Isınma', altEtiket: '2 hane', sure: 60, antrenmanSuresiz: true },
   { anahtar: 'kolay', etiket: 'Kolay', altEtiket: '3 hane', sure: 90, antrenmanSuresiz: false },
   { anahtar: 'normal', etiket: 'Normal', altEtiket: '3 hane', sure: 45, antrenmanSuresiz: false },
   { anahtar: 'zor', etiket: 'Zor', altEtiket: '4 hane', sure: 90, antrenmanSuresiz: false },
@@ -88,8 +93,19 @@ export function gununTuru(seviye: string, gun?: string): Tur {
   return sayiTuru.turUret(seviye, gunlukTohum('sayi', seviye, gun));
 }
 
-/** Bilinen seviye anahtarları. */
+/** Bilinen seviye anahtarları, kolaydan zora sıralı. */
 export const SEVIYE_ANAHTARLARI = Object.keys(SEVIYELER);
+
+/**
+ * Bir seviyeden sonraki seviyenin anahtarı. Son seviyedeyse veya
+ * anahtar bilinmiyorsa null döner. İlk kez oynayan öğrencinin
+ * ilerleme kilidi bunu kullanır.
+ */
+export function sonrakiSeviyeAnahtari(seviye: string): string | null {
+  const i = SEVIYE_ANAHTARLARI.indexOf(seviye);
+  if (i < 0 || i >= SEVIYE_ANAHTARLARI.length - 1) return null;
+  return SEVIYE_ANAHTARLARI[i + 1]!;
+}
 
 // Bot (sunucu tarafı): rakip yoksa maçı kuran eklenti.
 export { botUret, botPlani, PROFILLER } from './bot';

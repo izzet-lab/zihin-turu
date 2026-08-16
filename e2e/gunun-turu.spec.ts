@@ -77,6 +77,9 @@ async function tikTas(page: Page, deger: number, kacinPressed = false) {
 
 async function gununTurunuBasla(page: Page) {
   await page.goto('/');
+  // İlk açılışta tanıtım kendiliğinden çıkar; kapat ve devam et.
+  const yardim = page.locator('[data-alan="yardim-anladim"]');
+  if (await yardim.isVisible().catch(() => false)) await yardim.click();
   // Varsayılan mod Günün Turu; yine de açıkça seç.
   await page.locator('[data-mod="gunun"]').click();
   await page.locator('[data-seviye="normal"]').click();

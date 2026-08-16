@@ -15,11 +15,12 @@ export interface BaslaAyar {
 interface Props {
   seviyeler: readonly Seviye[];
   onBasla: (a: BaslaAyar) => void;
+  onYardim: () => void;
 }
 
 const SURE_SECENEK = [45, 60, 90, 0]; // 0 = süresiz (yalnızca Antrenman)
 
-export default function Kurulum({ seviyeler, onBasla }: Props) {
+export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
   const [mod, setMod] = useState<Mod>('gunun');
   const [seviye, setSeviye] = useState<string>('normal');
   const [sure, setSure] = useState<number>(90);
@@ -47,10 +48,18 @@ export default function Kurulum({ seviyeler, onBasla }: Props) {
       <div className="mx-auto w-full max-w-md">
         <header className="flex items-center gap-3">
           <img src="/logo.svg" alt="" className="h-9 w-9" />
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
             <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
           </div>
+          <button
+            onClick={onYardim}
+            data-alan="yardim-ac"
+            aria-label="Nasıl oynanır"
+            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg font-black text-cyan-200"
+          >
+            ?
+          </button>
         </header>
 
         {/* Mod seçimi */}

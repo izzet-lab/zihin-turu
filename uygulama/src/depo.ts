@@ -36,29 +36,37 @@ const ANAHTAR = 'zihinturu.v1';
 const BOS: Ilerleme = { surum: 1, seri: { son: null, gun: 0, enUzun: 0 }, tam: 0, gunluk: {} };
 
 /** localStorage yoksa bunu kullanırız; oyun yine çalışır. */
-let bellek: string | null = null;
+const bellekHaritasi = new Map<string, string>();
 let bellegeDustu = false;
 
-function depoOku(): string | null {
-  if (bellegeDustu) return bellek;
+function genelOku(anahtar: string): string | null {
+  if (bellegeDustu) return bellekHaritasi.get(anahtar) ?? null;
   try {
-    return window.localStorage.getItem(ANAHTAR);
+    return window.localStorage.getItem(anahtar);
   } catch {
     bellegeDustu = true;
-    return bellek;
+    return bellekHaritasi.get(anahtar) ?? null;
   }
 }
 
-function depoYaz(deger: string): void {
+function genelYaz(anahtar: string, deger: string): void {
   if (!bellegeDustu) {
     try {
-      window.localStorage.setItem(ANAHTAR, deger);
+      window.localStorage.setItem(anahtar, deger);
       return;
     } catch {
       bellegeDustu = true;
     }
   }
-  bellek = deger;
+  bellekHaritasi.set(anahtar, deger);
+}
+
+function depoOku(): string | null {
+  return genelOku(ANAHTAR);
+}
+
+function depoYaz(deger: string): void {
+  genelYaz(ANAHTAR, deger);
 }
 
 /** İlerlemenin belleğe mi düştüğü (uyarı göstermek için). */
@@ -158,6 +166,20 @@ export function serit(
     cikti.push({ tarih: g, durum });
   }
   return cikti;
+}
+
+/* --- Yardım / ilk tanıtım --- */
+
+const YARDIM_ANAHTAR = 'zihinturu.yardim.v1';
+
+/** İlk tanıtım daha önce görüldü mü? */
+export function yardimGoruldu(): boolean {
+  return genelOku(YARDIM_ANAHTAR) === '1';
+}
+
+/** İlk tanıtımı görüldü olarak işaretle (bir daha kendiliğinden açılmaz). */
+export function yardimGorulduIsaretle(): void {
+  genelYaz(YARDIM_ANAHTAR, '1');
 }
 
 /** Bugünün tarihi (YYYY-MM-DD), yerel saat. */

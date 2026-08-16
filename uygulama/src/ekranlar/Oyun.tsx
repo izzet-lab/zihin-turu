@@ -15,6 +15,7 @@ interface Props {
   seviye: string;
   sure: number; // 0 = süresiz
   onBitti: (s: OyunSonuc) => void;
+  onYardim: () => void;
 }
 
 const ISLEMLER: { op: Islem; ad: string }[] = [
@@ -24,7 +25,7 @@ const ISLEMLER: { op: Islem; ad: string }[] = [
   { op: '÷', ad: 'böl' },
 ];
 
-export default function Oyun({ tur, seviye, sure, onBitti }: Props) {
+export default function Oyun({ tur, seviye, sure, onBitti, onYardim }: Props) {
   const veri = tur.veri as SayiVeri;
   const hedef = veri.hedef;
 
@@ -88,8 +89,19 @@ export default function Oyun({ tur, seviye, sure, onBitti }: Props) {
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-6">
       <div className="mx-auto flex w-full max-w-md flex-col">
+        <div className="flex justify-end">
+          <button
+            onClick={onYardim}
+            data-alan="yardim-ac"
+            aria-label="Nasıl oynanır"
+            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg font-black text-cyan-200"
+          >
+            ?
+          </button>
+        </div>
+
         {/* Hedef + en yakın */}
-        <div className="flex items-end justify-between">
+        <div className="mt-1 flex items-end justify-between">
           <div>
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Hedef</div>
             <div className="text-5xl font-black leading-none text-white" data-alan="hedef">

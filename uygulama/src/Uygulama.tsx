@@ -4,7 +4,8 @@ import { sayiTuru, gununTuru, uretimYap } from '@zihinturu/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';
-import { bugun, gunlukKaydet, oku } from './depo';
+import Yardim from './ekranlar/Yardim';
+import { bugun, gunlukKaydet, oku, yardimGoruldu, yardimGorulduIsaretle } from './depo';
 
 type Ekran = 'kurulum' | 'oyun' | 'sonuc';
 
@@ -38,6 +39,13 @@ export default function Uygulama() {
   const [oturum, setOturum] = useState<Oturum | null>(null);
   const [sonSonuc, setSonSonuc] = useState<OyunSonuc | null>(null);
   const [seri, setSeri] = useState<number>(oku().seri.gun);
+  // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
+  const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
+
+  function yardimKapat() {
+    setYardimAcik(false);
+    yardimGorulduIsaretle();
+  }
 
   function basla(ayar: BaslaAyar) {
     const gun = bugun();
@@ -61,12 +69,13 @@ export default function Uygulama() {
     setEkran('kurulum');
   }
 
+  let ekranBileseni;
   if (ekran === 'oyun' && oturum) {
-    return <Oyun tur={oturum.tur} seviye={oturum.seviye} sure={oturum.sure} onBitti={bitti} />;
-  }
-
-  if (ekran === 'sonuc' && oturum && sonSonuc) {
-    return (
+    ekranBileseni = (
+      <Oyun tur={oturum.tur} seviye={oturum.seviye} sure={oturum.sure} onBitti={bitti} onYardim={() => setYardimAcik(true)} />
+    );
+  } else if (ekran === 'sonuc' && oturum && sonSonuc) {
+    ekranBileseni = (
       <Sonuc
         tur={oturum.tur}
         seviyeEtiket={oturum.seviyeEtiket}
@@ -78,7 +87,14 @@ export default function Uygulama() {
         onYeniden={yeniden}
       />
     );
+  } else {
+    ekranBileseni = <Kurulum seviyeler={sayiTuru.seviyeler} onBasla={basla} onYardim={() => setYardimAcik(true)} />;
   }
 
-  return <Kurulum seviyeler={sayiTuru.seviyeler} onBasla={basla} />;
+  return (
+    <>
+      {ekranBileseni}
+      <Yardim acik={yardimAcik} kapat={yardimKapat} />
+    </>
+  );
 }

@@ -112,7 +112,7 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   if (k.gunluk && k.seri > 1) kutular.push({ ust: 'SERİ', alt: `${k.seri} gün` });
 
   const kutuG = 250;
-  const kutuY = 820;
+  const kutuY = 770;
   kutular.forEach((kt, i) => {
     const x = 130 + i * (kutuG + 24);
     c.strokeStyle = '#1E293B';
@@ -130,7 +130,7 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   // Alt bilgi
   c.fillStyle = '#475569';
   c.font = '500 30px system-ui, sans-serif';
-  c.fillText('Herkes bugün aynı turu oynuyor.', 130, M - 120);
+  c.fillText('Herkes bugün aynı turu oynuyor.', 130, M - 95);
 }
 
 /** Tarayıcıda gerçek bir 1080x1080 PNG üretir. */

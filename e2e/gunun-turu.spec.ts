@@ -1,14 +1,18 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /*
-  Faz 2 kabul testi (senaryonun tamamı):
-  1) Günün Turu'nu oyna, tam isabet yap
-  2) paylaşım kartı üretilsin (metin + görsel), çözüm SIZMASIN
-  3) sayfayı yenile, günlük kilit dursun
+  Faz 2 kabul testi — gerçek tarayıcıda, uçtan uca:
+  1) Günün Turu'nu aç, çözümü ARAYÜZDEN oynayarak tam isabet yap
+  2) sonuç ekranının açıldığını doğrula
+  3) paylaşım kartının üretildiğini (metin + görsel) doğrula
+  4) kart metninde "=" işareti, işlem işaretleri (× ÷ −) ve ARA SONUÇLAR
+     bulunmadığını doğrula (çözüm sızmamalı — CLAUDE.md 6)
+  5) sayfayı yenile, günlük turun kilitli olduğunu doğrula
 
   Test paketleri içe aktarmaz; rafı ekrandan okuyup bağımsız bir
-  çözücüyle hedefe ulaşan bir zincir bulur ve onu arayüzde oynar.
-  Böylece "tam isabet" gerçekten arayüz üzerinden elde edilir.
+  çözücüyle hedefe ulaşan bir zincir bulur ve onu gerçekten arayüzde
+  tıklayarak oynar. "Tam isabet" böylece gerçekten arayüz üzerinden
+  elde edilir, testte simüle edilmez.
 */
 
 type Islem = '+' | '−' | '×' | '÷';
@@ -85,13 +89,13 @@ async function gununTurunuBasla(page: Page) {
   await page.locator('[data-seviye="normal"]').click();
 }
 
-test('günün turu: tam isabet, paylaşım kartı, yenileyince kilit', async ({ page }) => {
+test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız, yenileyince kilit', async ({ page }) => {
   await gununTurunuBasla(page);
 
   await expect(page.locator('[data-alan="basla"]')).toBeVisible();
   await page.locator('[data-alan="basla"]').click();
 
-  // Oyun ekranı
+  // --- Oyun ekranı: rafı oku, bağımsız çözücüyle bir zincir bul ---
   const hedef = Number(await page.locator('[data-alan="hedef"]').textContent());
   expect(hedef).toBeGreaterThan(0);
 
@@ -102,33 +106,51 @@ test('günün turu: tam isabet, paylaşım kartı, yenileyince kilit', async ({ 
   const zincir = coz(degerler, hedef);
   expect(zincir, 'çözücü hedefe ulaşan bir zincir bulmalı').not.toBeNull();
 
+  // --- Zinciri arayüzden GERÇEKTEN oyna (tıklayarak) ---
   for (const ad of zincir!) {
     await tikTas(page, ad.a);
     await page.locator(`[data-alan="islemler"] [data-islem="${ad.islem}"]`).click();
     await tikTas(page, ad.b, true);
   }
 
-  // Sonuç ekranı — tam isabet
-  await expect(page.locator('[data-alan="hukum"]')).toContainText('Tam isabet', { timeout: 10_000 });
+  // --- 1) Sonuç ekranı açıldı mı? ---
+  const hukum = page.locator('[data-alan="hukum"]');
+  await expect(hukum).toBeVisible({ timeout: 10_000 });
+  await expect(hukum).toContainText('Tam isabet');
+  // Sonuç ekranına özgü başka bir öğe de görünür olmalı (gerçekten o ekrandayız).
+  await expect(page.locator('[data-alan="tahta"]')).toBeVisible();
+  await expect(page.locator('[data-alan="puan"]')).toBeVisible();
 
-  // Paylaşım kartı: metin + görsel
+  // --- 2) Paylaşım kartı üretildi mi? (metin + görsel) ---
   const payMetin = page.locator('[data-alan="pay-metin"]');
   await expect(payMetin).toBeVisible();
   await expect(payMetin).toContainText(String(hedef));
-  await expect(page.locator('[data-alan="pay-gorsel"]')).toBeVisible();
+  const payGorsel = page.locator('[data-alan="pay-gorsel"]');
+  await expect(payGorsel).toBeVisible();
 
-  // Çözüm sızıntısı olmamalı: metinde işlem işareti / "=" yok
+  // --- 3) Kart metninde çözüm SIZMIYOR ---
   const metin = (await payMetin.textContent()) ?? '';
-  expect(metin).not.toMatch(/[×÷−=]/);
+  // "=" işareti ve işlem işaretleri (× ÷ −) hiç geçmemeli.
+  expect(metin).not.toContain('=');
+  expect(metin).not.toMatch(/[×÷−]/);
+  // Ara sonuçlar (hedef DIŞINDAKİ adım sonuçları) metinde geçmemeli.
+  const araSonuclar = zincir!.map((a) => a.sonuc).filter((s) => s !== hedef);
+  for (const s of araSonuclar) {
+    // Kısa/yaygın sayılar (ör. tek haneli) yanlış pozitif verebileceği için
+    // yalnızca üç haneli ve üstü, hedeften farklı ara sonuçları denetliyoruz.
+    if (String(s).length >= 3) {
+      expect(metin, `ara sonuç ${s} kartta görünmemeli`).not.toContain(String(s));
+    }
+  }
 
   // Görsel gerçekten 1080 kare bir PNG mi?
-  const boyut = await page.locator('[data-alan="pay-gorsel"]').evaluate((img) => {
+  const boyut = await payGorsel.evaluate((img) => {
     const i = img as HTMLImageElement;
     return { w: i.naturalWidth, h: i.naturalHeight, png: i.src.startsWith('data:image/png') };
   });
   expect(boyut).toEqual({ w: 1080, h: 1080, png: true });
 
-  // Yenile → günlük kilit dursun
+  // --- 4) Sayfayı yenile → günlük kilit dursun ---
   await gununTurunuBasla(page);
   await expect(page.locator('[data-alan="kilit"]')).toBeVisible();
   await expect(page.locator('[data-alan="kilit"]')).toContainText('tamamlandı');

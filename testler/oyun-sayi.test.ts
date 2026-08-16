@@ -11,6 +11,8 @@ import {
   jokerliPuan,
   JOKER_MALIYET,
   antrenmanCarpani,
+  seviyeCarpani,
+  antrenmanToplamCarpani,
   sonrakiSeviyeAnahtari,
   SEVIYE_ANAHTARLARI,
   SEVIYE_LISTESI,
@@ -215,6 +217,38 @@ describe('antrenman risk çarpanı', () => {
   it('tanımsız/süresiz süre için çarpan 1', () => {
     expect(antrenmanCarpani(0)).toBe(1);
     expect(antrenmanCarpani(45)).toBe(1);
+  });
+});
+
+describe('antrenman seviye çarpanı', () => {
+  it('zor seviye daha yüksek çarpan getirir', () => {
+    expect(seviyeCarpani('cocuk')).toBe(0.5);
+    expect(seviyeCarpani('kolay')).toBe(0.8);
+    expect(seviyeCarpani('normal')).toBe(1);
+    expect(seviyeCarpani('zor')).toBe(1.5);
+    expect(seviyeCarpani('usta')).toBe(2);
+  });
+
+  it('bilinmeyen seviye için çarpan 1', () => {
+    expect(seviyeCarpani('yok')).toBe(1);
+  });
+});
+
+describe('antrenman toplam çarpanı — süre × seviye', () => {
+  it('Usta + 15sn = ×8 (örnekteki gibi)', () => {
+    expect(antrenmanToplamCarpani('usta', 15)).toBe(8);
+  });
+
+  it('Normal + 90sn = ×1 (çarpansız temel durum)', () => {
+    expect(antrenmanToplamCarpani('normal', 90)).toBe(1);
+  });
+
+  it('Isınma + 90sn = ×0.5 (en düşük risk, en düşük çarpan)', () => {
+    expect(antrenmanToplamCarpani('cocuk', 90)).toBe(0.5);
+  });
+
+  it('Zor + 30sn = ×3.75', () => {
+    expect(antrenmanToplamCarpani('zor', 30)).toBe(3.75);
   });
 });
 

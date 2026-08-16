@@ -5,7 +5,7 @@ import {
   jokerVer,
   jokerliPuan,
   uretimYap,
-  antrenmanCarpani,
+  antrenmanToplamCarpani,
   JOKER_HAK_SAYISI,
   JOKER_MALIYET,
   type Islem,
@@ -21,6 +21,8 @@ export interface OyunSonuc {
   kalan: number;
   ulasilan: number | null;
   jokerler: JokerTip[];
+  /** Antrenman'da uygulanan toplam çarpan (süre × seviye); Günün Turu'nda null. */
+  carpan: number | null;
 }
 
 interface Props {
@@ -97,11 +99,14 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
     const fark = Math.abs(t.deger - hedef);
     // Tek kişilikte "ilk bulan" primi yok (rakip yok).
     const temel = puanlaHesap(seviye, fark, kalan, toplamSure, false);
-    // Antrenman'da risk çarpanı seçilen SÜREYE göre uygulanır (joker ile
-    // uzatılmış süreye göre değil — oyuncu riski baştan üstlendi).
-    const carpanli = mod === 'antrenman' ? Math.round(temel.toplam * antrenmanCarpani(sure)) : temel.toplam;
+    // Antrenman'da risk çarpanı (süre × seviye) seçilen SÜREYE göre
+    // uygulanır (joker ile uzatılmış süreye göre değil — oyuncu riski
+    // baştan üstlendi). Günün Turu'nda çarpan yok — puanlar kıyaslanabilir
+    // kalmalı.
+    const carpan = mod === 'antrenman' ? antrenmanToplamCarpani(seviye, sure) : null;
+    const carpanli = carpan != null ? Math.round(temel.toplam * carpan) : temel.toplam;
     const nihai = jokerliPuan(carpanli, kullanilanJokerler);
-    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler });
+    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler, carpan });
   }
 
   // Süre sayacı (yalnızca süreli modda)

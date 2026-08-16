@@ -38,7 +38,8 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   const yardim = page.locator('[data-alan="yardim-anladim"]');
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
 
-  // Antrenman'ı Zor seviyede, 30 sn (×2.5 riskli) ile başlat.
+  // Antrenman'ı Zor seviyede, 30 sn ile başlat. Toplam çarpan: seviye
+  // (zor ×1.5) × süre (30sn ×2.5) = ×3.75.
   await page.locator('[data-mod="antrenman"]').click();
   await page.locator('[data-seviye="zor"]').click();
   await page.locator('[data-sure="30"]').click();
@@ -48,6 +49,11 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   await zinciriBulVeOyna(page);
 
   await expect(page.locator('[data-alan="hukum"]')).toBeVisible({ timeout: 10_000 });
+
+  // Toplam çarpan (seviye × süre) sonuç ekranında görünür.
+  const carpanEtiket = page.locator('[data-alan="carpan-etiket"]');
+  await expect(carpanEtiket).toBeVisible();
+  await expect(carpanEtiket).toContainText('×3.75');
 
   // --- 1) "Yeni tur" — kurulum ekranı görünmeden doğrudan oyun ekranına döner ---
   await page.locator('[data-alan="yeni-tur"]').click();

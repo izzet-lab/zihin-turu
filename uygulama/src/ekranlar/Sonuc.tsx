@@ -5,6 +5,11 @@ import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 
+/** Çarpanı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
+function carpanGoster(c: number): string {
+  return String(Number(c.toFixed(2)));
+}
+
 interface Props {
   tur: Tur;
   seviyeEtiket: string;
@@ -101,6 +106,11 @@ export default function Sonuc({
             </span>{' '}
             puan
           </div>
+          {mod === 'antrenman' && sonuc.carpan != null && (
+            <div className="mt-1 text-xs text-slate-500" data-alan="carpan-etiket">
+              {seviyeEtiket} · {sure > 0 ? `${sure}sn` : 'süresiz'} · ×{carpanGoster(sonuc.carpan)}
+            </div>
+          )}
           {sonuc.jokerler.length > 0 && (
             <div className="mt-1 text-xs text-amber-300" data-alan="kullanilan-jokerler">
               Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
@@ -198,7 +208,7 @@ export default function Sonuc({
               onClick={onAyarlar}
               className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-400 hover:text-slate-200"
             >
-              Ayarlar
+              Seviye değiştir
             </button>
           </>
         )}

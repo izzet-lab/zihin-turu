@@ -322,6 +322,29 @@ export function antrenmanCarpani(sure: number): number {
   return ANTRENMAN_SURE_CARPANI[sure] ?? 1;
 }
 
+/**
+ * Seviye çarpanı: zor seviye daha çok puan getirir. Süre çarpanıyla
+ * aynı gerekçeye dayanır — Antrenman'da yalnızca bunu göze alanlar
+ * kazanır; Günün Turu'nda uygulanmaz.
+ */
+export const ANTRENMAN_SEVIYE_CARPANI: Record<string, number> = {
+  cocuk: 0.5,
+  kolay: 0.8,
+  normal: 1,
+  zor: 1.5,
+  usta: 2,
+};
+
+/** Verilen seviye için çarpan. Bilinmeyen seviye için 1. */
+export function seviyeCarpani(seviye: string): number {
+  return ANTRENMAN_SEVIYE_CARPANI[seviye] ?? 1;
+}
+
+/** Antrenman'da uygulanan toplam çarpan: süre çarpanı × seviye çarpanı. */
+export function antrenmanToplamCarpani(seviye: string, sure: number): number {
+  return antrenmanCarpani(sure) * seviyeCarpani(seviye);
+}
+
 /* ------------------------------------------------------------------ */
 /* Joker                                                               */
 /* Kelime oyununda joker "harf açar". Sayıda karşılığı çözümün bir     */

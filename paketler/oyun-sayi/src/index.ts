@@ -42,6 +42,9 @@ export {
   JOKER_HAK_SAYISI,
   antrenmanCarpani,
   ANTRENMAN_SURE_CARPANI,
+  seviyeCarpani,
+  ANTRENMAN_SEVIYE_CARPANI,
+  antrenmanToplamCarpani,
   bicimle,
 } from './mantik';
 

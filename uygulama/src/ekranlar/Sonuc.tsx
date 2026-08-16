@@ -134,7 +134,7 @@ export default function Sonuc({ tur, seviyeEtiket, mod, sure, seri, tarih, sonuc
           onClick={onYeniden}
           className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
         >
-          {mod === 'gunun' ? 'Kurulum ekranına dön' : 'Yeni tur'}
+          {mod === 'gunun' ? 'Ana sayfaya dön' : 'Yeni tur'}
         </button>
       </div>
     </main>

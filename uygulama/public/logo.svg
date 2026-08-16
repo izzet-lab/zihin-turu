@@ -1,0 +1,25 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zihin Turu">
+  <!--
+    Logo fikri: iki taş birleşip üçüncüyü oluşturuyor — oyunun
+    mekaniğinin kendisi. Aynı şekil düello ağacının da ilk adımı,
+    bu yüzden platform markası olarak da çalışıyor.
+    Yarışmanın bevel'lı stüdyo taşlarını bilerek çağrıştırmıyor.
+  -->
+  <defs>
+    <linearGradient id="zt-ust" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7CEDFB"/>
+      <stop offset="1" stop-color="#38B8D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- üstteki iki taş -->
+  <rect x="6"  y="7" width="20" height="20" rx="6" fill="url(#zt-ust)"/>
+  <rect x="38" y="7" width="20" height="20" rx="6" fill="url(#zt-ust)" opacity=".55"/>
+
+  <!-- birleşme kolları -->
+  <path d="M16 29v5a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-5"
+        fill="none" stroke="#38B8D4" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- alttaki sonuç taşı -->
+  <rect x="18" y="40" width="28" height="18" rx="6" fill="#7CEDFB"/>
+</svg>

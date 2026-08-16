@@ -1,0 +1,57 @@
+/* ---------- Faz 1 eklentileri: mod seçimi, seri, paylaşım ---------- */
+
+.modlar{display:flex;gap:7px;margin-bottom:14px}
+.mod{
+  flex:1;border:1px solid #2C5866;background:transparent;color:var(--txt);
+  border-radius:10px;padding:11px 6px;font:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:.14s;line-height:1.25;
+}
+.mod small{display:block;font-size:10px;font-weight:400;opacity:.6;margin-top:2px;letter-spacing:.06em}
+.mod:hover{border-color:var(--bezel)}
+.mod[aria-pressed="true"]{background:var(--digit);color:#062028;border-color:var(--digit)}
+.mod:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+.seri{
+  display:flex;gap:14px;justify-content:center;margin:0 0 14px;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-dim);font-weight:700;
+}
+.seri b{display:block;font-family:'Fredoka';font-size:19px;letter-spacing:0;color:var(--digit);margin-top:2px}
+.seri span{text-align:center}
+
+.gunluk-rozet{
+  display:inline-block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--amber);border:1px solid rgba(240,179,60,.4);border-radius:99px;
+  padding:3px 10px;font-weight:700;margin-bottom:10px;
+}
+
+.pay{
+  margin-top:14px;background:#081820;border:1px solid #1D3D49;border-radius:12px;padding:14px;
+}
+.pay-metin{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;line-height:1.65;
+  white-space:pre-wrap;color:var(--txt);margin:0 0 12px;
+}
+.pay-not{font-size:11px;color:var(--txt-dim);margin:10px 0 0;text-align:center}
+
+.kilit{
+  text-align:center;padding:22px 14px;border:1px dashed #2C5866;border-radius:12px;
+  margin-top:14px;color:var(--txt-dim);font-size:13px;line-height:1.6;
+}
+.kilit b{color:var(--txt);display:block;font-size:15px;margin-bottom:6px}
+
+.gecmis-cizgi{display:flex;gap:4px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.gecmis-nokta{
+  width:11px;height:11px;border-radius:3px;background:#12303B;
+  border:1px solid #1D3D49;
+}
+.gecmis-nokta.tam{background:var(--ok);border-color:var(--ok)}
+.gecmis-nokta.yakin{background:var(--amber);border-color:var(--amber)}
+.gecmis-nokta.uzak{background:var(--bad);border-color:var(--bad)}
+
+.pay-gorsel{
+  width:100%;border-radius:12px;display:block;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+.pay-ipucu{
+  font-size:11px;color:var(--txt-dim);text-align:center;margin:10px 0 0;line-height:1.5;
+}

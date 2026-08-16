@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Tarayıcı arası tutarlılık için birkaç temel kural. */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+:focus-visible { outline: 3px solid #7CEDFB; outline-offset: 2px; }

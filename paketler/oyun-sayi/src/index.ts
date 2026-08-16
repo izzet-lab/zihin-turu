@@ -48,7 +48,7 @@ export {
  * oyun kuralını etkilemez.)
  */
 export const SEVIYE_LISTESI: readonly Seviye[] = [
-  { anahtar: 'cocuk', etiket: 'Çocuk', altEtiket: '2 hane', sure: 60, antrenmanSuresiz: true },
+  { anahtar: 'cocuk', etiket: 'Basit', altEtiket: '2 hane', sure: 60, antrenmanSuresiz: true },
   { anahtar: 'kolay', etiket: 'Kolay', altEtiket: '3 hane', sure: 90, antrenmanSuresiz: false },
   { anahtar: 'normal', etiket: 'Normal', altEtiket: '3 hane', sure: 45, antrenmanSuresiz: false },
   { anahtar: 'zor', etiket: 'Zor', altEtiket: '4 hane', sure: 90, antrenmanSuresiz: false },

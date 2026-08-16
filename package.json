@@ -10,9 +10,11 @@
     "onizle": "npm run preview --workspace=uygulama",
     "test": "vitest run",
     "test:izle": "vitest",
-    "tip": "tsc --noEmit -p tsconfig.json"
+    "tip": "tsc --noEmit -p tsconfig.json",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gelistir",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "gelistir"],
+      "port": 5173
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Cloudflare Pages başlık kuralları.
+# Hash'li varlıklar (/assets/*) uzun süre önbelleklenir; ama servis
+# çalışanı ve index güncel kalmalı, yoksa kullanıcı eski sürümde takılır.
+
+/sw.js
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache

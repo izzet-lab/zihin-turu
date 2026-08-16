@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@zihinturu/cekirdek': resolve(__dirname, '../paketler/cekirdek/src/index.ts'),
+      '@zihinturu/oyun-sayi': resolve(__dirname, '../paketler/oyun-sayi/src/index.ts'),
     },
   },
   build: { outDir: 'dist', sourcemap: false },

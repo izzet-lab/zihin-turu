@@ -4,3 +4,21 @@
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 :focus-visible { outline: 3px solid #7CEDFB; outline-offset: 2px; }
+
+/* Sonuç ekranında çözümün "el yazısıyla" tahtaya yazılması. Yazı tipi
+   yoksa okunur bir imzaya düşer; abartısız, oyunun sakin diline uygun. */
+.elyazisi {
+  font-family: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive;
+  letter-spacing: 0.02em;
+}
+.tahta-satir {
+  opacity: 0;
+  animation: satir-gir 420ms ease-out forwards;
+}
+@keyframes satir-gir {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tahta-satir { animation: none; opacity: 1; }
+}

@@ -98,8 +98,8 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
         <header className="relative flex items-center gap-3">
           <img src="/logo.svg" alt="" className="h-9 w-9" />
           <div className="flex-1">
-            <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
-            <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
+            <h1 className="text-2xl font-black leading-none text-white">Zihin Turu</h1>
+            <p className="text-xs text-slate-500">Sayı Turu — rakamlar, dört işlem, bir hedef.</p>
           </div>
 
           {/* Hamburger menü: sıralamalar, ses, yardım, kimlik tek yerde toplanır */}

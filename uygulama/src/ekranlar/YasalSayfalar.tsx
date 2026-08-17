@@ -189,7 +189,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
   );
 }
 
-export function KullanımKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
+export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
   return (
     <SayfaSablonu
       baslik="Kullanım Koşulları"

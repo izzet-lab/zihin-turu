@@ -94,7 +94,7 @@ export async function gunlukLig(
   if (error || !data) return { satirlar: [] };
 
   // Supabase join tipi [{ en_iyi_puan, oyuncu: {kullanici_adi} }]
-  const liste = data as { en_iyi_puan: number; oyuncu: { kullanici_adi: string } | null }[];
+  const liste = data as unknown as { en_iyi_puan: number; oyuncu: { kullanici_adi: string } | null }[];
   const satirlar: LigSatiri[] = liste.map((r, i) => ({
     sira: i + 1,
     kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
@@ -150,7 +150,7 @@ export async function donemLig(
 
   if (error || !data) return { satirlar: [] };
 
-  const liste = data as { toplam_puan: number; gun_sayisi: number; oyuncu: { kullanici_adi: string } | null }[];
+  const liste = data as unknown as { toplam_puan: number; gun_sayisi: number; oyuncu: { kullanici_adi: string } | null }[];
   const satirlar: LigSatiri[] = liste.map((r, i) => ({
     sira: i + 1,
     kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',

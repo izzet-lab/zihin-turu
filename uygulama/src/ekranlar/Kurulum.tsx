@@ -109,16 +109,24 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
             📊
           </a>
 
-          {/* Kimlik butonu: giriş yapılmamışsa "Giriş", yapılmışsa kısa ad + çıkış */}
+          {/* Kimlik: giriş yapılmamışsa "Giriş" butonu, yapılmışsa username + "Çıkış" */}
           {kullanici ? (
-            <button
-              onClick={onCikisYap}
-              data-alan="cikis"
-              title={`${kullanici.ad} — çıkış yap`}
-              className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-slate-400 hover:text-slate-200"
-            >
-              {kullanici.ad.slice(0, 10)}
-            </button>
+            <>
+              <span
+                data-alan="username"
+                className="truncate px-2 text-xs font-bold text-slate-400 max-w-[80px]"
+                title={kullanici.ad}
+              >
+                {kullanici.ad}
+              </span>
+              <button
+                onClick={onCikisYap}
+                data-alan="cikis"
+                className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-slate-400 hover:text-red-400 transition"
+              >
+                Çık
+              </button>
+            </>
           ) : (
             <button
               onClick={onGirisAc}

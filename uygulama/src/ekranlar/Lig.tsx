@@ -32,7 +32,6 @@ export default function Lig({ oyuncuId }: Props) {
   const [kendi, setKendi] = useState<KendiDurumu | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
 
-  const seviyeSec = seviyeler.find((s) => s.anahtar === seviye) || seviyeler[0]!;
   const kalanSn = useMemo(() => donemKalanSn(sekme), [sekme]);
   const kalanMetin = kalanSureMetin(kalanSn);
 

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, gununTuru, uretimYap, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';
 import Yardim from './ekranlar/Yardim';
+import { sesKilidiKur } from './ses';
 import {
   bugun,
   gunlukKaydet,
@@ -69,6 +70,11 @@ export default function Uygulama() {
   const [kurulumMod, setKurulumMod] = useState<Mod>('gunun');
   // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
   const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
+
+  // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
+  useEffect(() => {
+    sesKilidiKur();
+  }, []);
 
   function yardimKapat() {
     setYardimAcik(false);

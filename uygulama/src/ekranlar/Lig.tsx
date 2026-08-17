@@ -67,6 +67,9 @@ export default function Lig({ oyuncuId }: Props) {
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
         <header className="mb-8">
+          <a href="/" className="mb-3 inline-block text-sm text-slate-500 hover:text-slate-300">
+            ← Ana sayfa
+          </a>
           <h1 className="text-2xl font-black text-white mb-1">Sıralamalar</h1>
           <p className="text-xs text-slate-500">
             {sekme === 'gunluk' && 'Bugünkü en iyi puanlar'}

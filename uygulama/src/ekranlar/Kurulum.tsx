@@ -45,6 +45,7 @@ const SURE_SECENEK = [90, 60, 30, 15];
 export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, kullanici, onGirisAc, onCikisYap }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi);
+  const [menuAcik, setMenuAcik] = useState(false);
 
   function sesDegistir() {
     const yeni = !sesAcik;
@@ -94,65 +95,94 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-md">
-        <header className="flex items-center gap-3">
+        <header className="relative flex items-center gap-3">
           <img src="/logo.svg" alt="" className="h-9 w-9" />
           <div className="flex-1">
             <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
             <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
           </div>
-          {/* Sıralamalar */}
-          <a
-            href="/lig"
-            data-alan="lig-ac"
-            className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 flex items-center text-xs font-bold text-cyan-300 hover:text-cyan-200"
-          >
-            📊
-          </a>
 
-          {/* Kimlik: giriş yapılmamışsa "Giriş" butonu, yapılmışsa username + "Çıkış" */}
-          {kullanici ? (
-            <>
-              <span
-                data-alan="username"
-                className="truncate px-2 text-xs font-bold text-slate-400 max-w-[80px]"
-                title={kullanici.ad}
-              >
-                {kullanici.ad}
-              </span>
-              <button
-                onClick={onCikisYap}
-                data-alan="cikis"
-                className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-slate-400 hover:text-red-400 transition"
-              >
-                Çık
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={onGirisAc}
-              data-alan="giris-ac"
-              className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-cyan-300 hover:text-cyan-200"
-            >
-              Giriş
-            </button>
-          )}
+          {/* Hamburger menü: sıralamalar, ses, yardım, kimlik tek yerde toplanır */}
           <button
-            onClick={sesDegistir}
-            data-alan="ses-ac-kapa"
-            aria-pressed={sesAcik}
-            aria-label={sesAcik ? 'Sesi kapat' : 'Sesi aç'}
+            onClick={() => setMenuAcik((a) => !a)}
+            data-alan="menu-ac"
+            aria-label="Menü"
+            aria-expanded={menuAcik}
             className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg text-cyan-200"
           >
-            {sesAcik ? '🔊' : '🔇'}
+            ☰
           </button>
-          <button
-            onClick={onYardim}
-            data-alan="yardim-ac"
-            aria-label="Nasıl oynanır"
-            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg font-black text-cyan-200"
-          >
-            ?
-          </button>
+
+          {menuAcik && (
+            <>
+              {/* Menü dışına tıklanınca kapat */}
+              <div className="fixed inset-0 z-10" onClick={() => setMenuAcik(false)} />
+              <div
+                data-alan="menu"
+                className="absolute right-0 top-12 z-20 w-56 rounded-xl border border-slate-800 bg-[#0F1424] p-2 shadow-xl"
+              >
+                {/* Kimlik satırı */}
+                {kullanici ? (
+                  <div className="mb-1 flex items-center justify-between rounded-lg px-3 py-2">
+                    <span data-alan="username" className="truncate text-sm font-bold text-slate-300" title={kullanici.ad}>
+                      {kullanici.ad}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setMenuAcik(false);
+                        onCikisYap?.();
+                      }}
+                      data-alan="cikis"
+                      className="text-xs font-bold text-slate-500 hover:text-red-400"
+                    >
+                      Çık
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMenuAcik(false);
+                      onGirisAc?.();
+                    }}
+                    data-alan="giris-ac"
+                    className="mb-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
+                  >
+                    Giriş yap
+                  </button>
+                )}
+
+                <div className="my-1 h-px bg-slate-800" />
+
+                <a
+                  href="/lig"
+                  data-alan="lig-ac"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+                >
+                  📊 Sıralamalar
+                </a>
+                <button
+                  onClick={() => {
+                    sesDegistir();
+                  }}
+                  data-alan="ses-ac-kapa"
+                  aria-pressed={sesAcik}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+                >
+                  {sesAcik ? '🔊 Ses açık' : '🔇 Ses kapalı'}
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuAcik(false);
+                    onYardim();
+                  }}
+                  data-alan="yardim-ac"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+                >
+                  ❓ Nasıl oynanır
+                </button>
+              </div>
+            </>
+          )}
         </header>
 
         {/* Mod seçimi */}

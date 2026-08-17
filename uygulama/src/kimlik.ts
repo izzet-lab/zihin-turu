@@ -197,6 +197,67 @@ export async function hesapSil(): Promise<{ basarili: boolean; hata?: string }> 
   }
 }
 
+/**
+ * Bugün Günün Turu zaten sunucuya gönderilmiş mi?
+ * Giriş yapmış kullanıcıların kilidi sunucudan okunur.
+ * Misafirler için localStorage kilidi kullanılmaya devam eder (depo.ts).
+ */
+export async function gunlukOynandiMiSunucu(tarih: string): Promise<boolean> {
+  const { data: oturum } = await supabase.auth.getSession();
+  if (!oturum.session) return false;
+
+  const { count } = await supabase
+    .from('tur_sonuc')
+    .select('*', { count: 'exact', head: true })
+    .eq('oyuncu_id', oturum.session.user.id)
+    .eq('oyun', 'sayi')
+    .eq('mod', 'gunun')
+    .eq('tarih', tarih);
+
+  return (count ?? 0) > 0;
+}
+
+/** Oyuncunun XP ve seri bilgilerini veritabanından okur. */
+export interface OyuncuIlerleme {
+  xp: number;
+  seriGun: number;
+  seriSon: string | null;
+}
+
+export async function ilerlemeOku(oyuncuId: string): Promise<OyuncuIlerleme> {
+  const { data } = await supabase
+    .from('oyuncu')
+    .select('xp, seri_gun, seri_son')
+    .eq('id', oyuncuId)
+    .single();
+  if (!data) return { xp: 0, seriGun: 0, seriSon: null };
+  return { xp: data.xp ?? 0, seriGun: data.seri_gun ?? 0, seriSon: data.seri_son };
+}
+
+/** XP seviye eşikleri ve unvanları. */
+export const XP_SEVIYELER = [
+  { seviye: 1, xp: 0, unvan: 'Çaylak' },
+  { seviye: 2, xp: 500, unvan: 'Hesapçı' },
+  { seviye: 3, xp: 2000, unvan: 'Zihin İşçisi' },
+  { seviye: 4, xp: 5000, unvan: 'Rakam Ustası' },
+  { seviye: 5, xp: 12000, unvan: 'Zihin Turu Ustası' },
+] as const;
+
+/** Verilen XP miktarı için seviye ve unvan hesaplar. */
+export function xpSeviyeHesapla(xp: number): { seviye: number; unvan: string; sonrakiXp: number | null; ilerlemeYuzdesi: number } {
+  let mevcut: { seviye: number; xp: number; unvan: string } = XP_SEVIYELER[0];
+  for (const s of XP_SEVIYELER) {
+    if (xp >= s.xp) mevcut = s;
+    else break;
+  }
+  const sonrakiIdx = XP_SEVIYELER.findIndex(s => s.seviye === mevcut.seviye) + 1;
+  const sonraki = sonrakiIdx < XP_SEVIYELER.length ? XP_SEVIYELER[sonrakiIdx]! : null;
+  const ilerleme = sonraki
+    ? Math.min(100, Math.round(((xp - mevcut.xp) / (sonraki.xp - mevcut.xp)) * 100))
+    : 100;
+  return { seviye: mevcut.seviye, unvan: mevcut.unvan, sonrakiXp: sonraki?.xp ?? null, ilerlemeYuzdesi: ilerleme };
+}
+
 // ---------------------------------------------------------------------------
 // Küfür listesi — açık Türkçe hakaret ve küfürler.
 // Tam liste değil; moderasyon sonraki aşamada. Kaba tarama.

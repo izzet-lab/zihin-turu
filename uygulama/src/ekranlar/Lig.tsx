@@ -1,6 +1,6 @@
 /**
- * Lig.tsx — Günlük, haftalık, aylık sıralamalar
- * Sekmeler: Günlük / Hafta / Ay
+ * Lig.tsx — Günlük, haftalık, aylık sıralamalar + Antrenman
+ * Sekmeler: Günlük / Hafta / Ay / Antrenman
  * Seviye seçici: Isınma, Kolay, Normal, Zor, Usta
  * İlk 100 + kendi sıra hep görünür
  */
@@ -14,12 +14,13 @@ import {
   kalanSureMetin,
   gunlukLig,
   donemLig,
+  antrenmanLig,
   type LigSatiri,
   type KendiDurumu,
 } from '../lig-sorgu';
 import { bugun } from '../depo';
 
-type Sekme = 'gunluk' | 'haftalik' | 'aylik';
+type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'antrenman';
 
 interface Props {
   oyuncuId?: string; // null = misafir; kendi sırası gösterilmez
@@ -32,7 +33,7 @@ export default function Lig({ oyuncuId }: Props) {
   const [kendi, setKendi] = useState<KendiDurumu | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
 
-  const kalanSn = useMemo(() => donemKalanSn(sekme), [sekme]);
+  const kalanSn = useMemo(() => donemKalanSn(sekme === 'antrenman' ? 'haftalik' : sekme), [sekme]);
   const kalanMetin = kalanSureMetin(kalanSn);
 
   async function sorguYap() {
@@ -44,11 +45,11 @@ export default function Lig({ oyuncuId }: Props) {
       if (sekme === 'gunluk') {
         result = await gunlukLig('sayi', seviye, tarih, oyuncuId);
       } else if (sekme === 'haftalik') {
-        const anahtar = haftalikAnahtar();
-        result = await donemLig('hafta', anahtar, 'sayi', seviye, oyuncuId);
+        result = await donemLig('hafta', haftalikAnahtar(), 'sayi', seviye, oyuncuId);
+      } else if (sekme === 'aylik') {
+        result = await donemLig('ay', aylikAnahtar(), 'sayi', seviye, oyuncuId);
       } else {
-        const anahtar = aylikAnahtar();
-        result = await donemLig('ay', anahtar, 'sayi', seviye, oyuncuId);
+        result = await antrenmanLig(haftalikAnahtar(), 'sayi', seviye, oyuncuId);
       }
 
       setSatirlar(result.satirlar);
@@ -67,31 +68,33 @@ export default function Lig({ oyuncuId }: Props) {
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
         <header className="mb-8">
-          <a href="/" className="mb-3 inline-block text-sm text-slate-500 hover:text-slate-300">
-            ← Ana sayfa
+          <a href="/" className="mb-3 inline-flex items-center text-sm text-slate-500 hover:text-slate-300" aria-label="Ana sayfa">
+            ←
           </a>
           <h1 className="text-2xl font-black text-white mb-1">Sıralamalar</h1>
           <p className="text-xs text-slate-500">
             {sekme === 'gunluk' && 'Bugünkü en iyi puanlar'}
             {sekme === 'haftalik' && 'Bu haftanın puanları'}
             {sekme === 'aylik' && 'Bu ayın puanları'}
+            {sekme === 'antrenman' && 'Çalışkanlık tablosu. Beceri sıralaması için Günün Turu\'na bakın.'}
           </p>
         </header>
 
-        {/* Sekme seçimi */}
-        <div className="mb-6 grid grid-cols-3 gap-2" role="tablist" aria-label="Dönem">
+        {/* Sekme seçimi — 4 sekme */}
+        <div className="mb-6 grid grid-cols-4 gap-2" role="tablist" aria-label="Dönem">
           {(
             [
               { k: 'gunluk', ad: 'Günlük' },
               { k: 'haftalik', ad: 'Haftalık' },
               { k: 'aylik', ad: 'Aylık' },
+              { k: 'antrenman', ad: 'Antrenman' },
             ] as const
           ).map((s) => (
             <button
               key={s.k}
               onClick={() => setSekme(s.k)}
               aria-pressed={sekme === s.k}
-              className={`min-h-[48px] rounded-lg border px-3 py-2 text-sm font-bold transition ${
+              className={`min-h-[48px] rounded-lg border px-2 py-2 text-sm font-bold transition ${
                 sekme === s.k
                   ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
                   : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
@@ -128,6 +131,7 @@ export default function Lig({ oyuncuId }: Props) {
           {sekme === 'gunluk' && `Sıralama saat başında güncellenir`}
           {sekme === 'haftalik' && `Hafta pazartesi başlar — ${kalanMetin} kaldı`}
           {sekme === 'aylik' && `Ay sonuna — ${kalanMetin} kaldı`}
+          {sekme === 'antrenman' && `Haftalık sıfırlanır — ${kalanMetin} kaldı`}
         </div>
 
         {/* Yükleniyor */}
@@ -152,14 +156,16 @@ export default function Lig({ oyuncuId }: Props) {
                 <div className="flex-1">
                   <div className="font-bold text-slate-200">{s.kullaniciAdi}</div>
                   {s.gunSayisi !== undefined && (
-                    <div className="text-xs text-slate-500">{s.gunSayisi} gün oynadı</div>
+                    <div className="text-xs text-slate-500">
+                      {sekme === 'antrenman' ? `${s.gunSayisi} tur` : `${s.gunSayisi} gün oynadı`}
+                    </div>
                   )}
                 </div>
                 <div className="text-right font-bold text-cyan-300">{s.puan}</div>
               </div>
             ))}
 
-            {/* Kendi sırası (misafir değilse ve ilk 100 içinde değilse) */}
+            {/* Kendi sırası */}
             {oyuncuId && kendi && kendi.sira > satirlar.length && (
               <>
                 <div className="text-center text-xs text-slate-600 py-2">⋮</div>
@@ -196,4 +202,4 @@ export default function Lig({ oyuncuId }: Props) {
 }
 
 // Seviye listesi (Kurulum.tsx ile eşleşmelidir)
-const seviyeler = sayiTuru.seviyeler.slice(0, 5); // Ilk 5 seviye (Isınma–Usta)
+const seviyeler = sayiTuru.seviyeler.slice(0, 5);

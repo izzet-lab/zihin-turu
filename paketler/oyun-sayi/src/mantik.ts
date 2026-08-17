@@ -278,6 +278,14 @@ export function dogrulaZinciri(sayilar: number[], adimlar: Adim[], hedef: number
 }
 
 /* ------------------------------------------------------------------ */
+/* Günün Turu puan çarpanı                                             */
+/* 0-15 aralığı küçük hissettiriyor; ×10 ile tam isabet 150 oluyor.    */
+/* Yalnızca Günün Turu'na uygulanır — antrenman puanları ayrı kalsın.  */
+/* ------------------------------------------------------------------ */
+
+export const GUNUN_TURU_CARPANI = 10;
+
+/* ------------------------------------------------------------------ */
 /* Puanlama                                                            */
 /* 10/7/5 tablosu + hız primi. Hız primi yalnızca tam isabette verilir:*/
 /* yaklaşık cevabı hızlı vermek ödüllendirilmez.                       */

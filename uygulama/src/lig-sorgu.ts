@@ -189,6 +189,64 @@ export async function donemLig(
 }
 
 // ---------------------------------------------------------------------------
+// Antrenman haftalık lig
+// ---------------------------------------------------------------------------
+
+/** Antrenman haftalık sıralaması — "Çalışkanlık tablosu". */
+export async function antrenmanLig(
+  hafta: string,
+  oyun: string,
+  seviye: string,
+  oyuncuId?: string,
+): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
+  const { data, error } = await supabase
+    .from('lig_antrenman_hafta')
+    .select('toplam_puan, tur_sayisi, oyuncu:oyuncu_id(kullanici_adi)')
+    .eq('hafta_anahtar', hafta)
+    .eq('oyun', oyun)
+    .eq('seviye', seviye)
+    .order('toplam_puan', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return { satirlar: [] };
+
+  const liste = data as unknown as { toplam_puan: number; tur_sayisi: number; oyuncu: { kullanici_adi: string } | null }[];
+  const satirlar: LigSatiri[] = liste.map((r, i) => ({
+    sira: i + 1,
+    kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
+    puan: r.toplam_puan,
+    gunSayisi: r.tur_sayisi,
+    benimMi: false,
+  }));
+
+  let kendi: KendiDurumu | undefined;
+  if (oyuncuId) {
+    const { data: kData } = await supabase
+      .from('lig_antrenman_hafta')
+      .select('toplam_puan')
+      .eq('hafta_anahtar', hafta)
+      .eq('oyun', oyun)
+      .eq('seviye', seviye)
+      .eq('oyuncu_id', oyuncuId)
+      .maybeSingle();
+
+    if (kData) {
+      const { count } = await supabase
+        .from('lig_antrenman_hafta')
+        .select('*', { count: 'exact', head: true })
+        .eq('hafta_anahtar', hafta)
+        .eq('oyun', oyun)
+        .eq('seviye', seviye)
+        .gt('toplam_puan', kData.toplam_puan);
+
+      kendi = { sira: (count ?? 0) + 1, puan: kData.toplam_puan };
+    }
+  }
+
+  return { satirlar, kendi };
+}
+
+// ---------------------------------------------------------------------------
 // Oyuncu profil sorguları
 // ---------------------------------------------------------------------------
 

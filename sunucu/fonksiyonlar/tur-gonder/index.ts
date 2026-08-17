@@ -35,6 +35,7 @@ import {
   puanlaHesap,
   jokerliPuan,
   antrenmanToplamCarpani,
+  GUNUN_TURU_CARPANI,
   SEVIYE_LISTESI,
   type JokerTip,
   type Adim,
@@ -122,9 +123,13 @@ Deno.serve(async (req: Request) => {
 
     const temel = puanlaHesap(seviye, dogr.uzaklik, kalan_sn, sure_sn, false);
 
-    // Antrenman: risk çarpanı uygulanır. Günün Turu: çarpan yok.
-    const carpanli =
-      mod === 'antrenman' ? Math.round(temel.toplam * antrenmanToplamCarpani(seviye, sure_sn)) : temel.toplam;
+    // Antrenman: risk çarpanı (süre × seviye). Günün Turu: ×10 (küçük sayılar büyütülür).
+    let carpanli: number;
+    if (mod === 'antrenman') {
+      carpanli = Math.round(temel.toplam * antrenmanToplamCarpani(seviye, sure_sn));
+    } else {
+      carpanli = temel.toplam * GUNUN_TURU_CARPANI;
+    }
 
     const nihai = jokerliPuan(carpanli, Array.isArray(jokerler) ? jokerler : []);
 

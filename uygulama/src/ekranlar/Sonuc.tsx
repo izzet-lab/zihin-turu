@@ -255,6 +255,24 @@ export default function Sonuc({
           </div>
         )}
 
+        {/* Misafir: "Bu turu lige işlemek için giriş yap" */}
+        {mod === 'gunun' && !girisYapildiMi && (
+          <div className="mt-6 rounded-xl border border-cyan-300/20 bg-cyan-300/5 px-4 py-3 text-center">
+            <p className="text-sm text-cyan-200/80">
+              Bu turu lige işlemek için giriş yap
+            </p>
+            <button
+              onClick={onGirisAc}
+              className="mt-2 min-h-[44px] rounded-lg bg-cyan-300 px-6 text-sm font-black text-slate-900 hover:bg-cyan-200"
+            >
+              Giriş yap →
+            </button>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Hız puanı sıfırlanır, temel puan korunur.
+            </p>
+          </div>
+        )}
+
         {mod === 'gunun' ? (
           <>
             <button

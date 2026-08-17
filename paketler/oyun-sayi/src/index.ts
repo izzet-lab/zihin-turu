@@ -46,6 +46,7 @@ export {
   seviyeCarpani,
   ANTRENMAN_SEVIYE_CARPANI,
   antrenmanToplamCarpani,
+  GUNUN_TURU_CARPANI,
   bicimle,
 } from './mantik.ts';
 

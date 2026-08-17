@@ -7,6 +7,7 @@ import {
   uretimYap,
   kullanilmayanTasIndeksleri,
   antrenmanToplamCarpani,
+  GUNUN_TURU_CARPANI,
   JOKER_HAK_SAYISI,
   JOKER_MALIYET,
   type Islem,
@@ -123,8 +124,8 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     // uygulanır (joker ile uzatılmış süreye göre değil — oyuncu riski
     // baştan üstlendi). Günün Turu'nda çarpan yok — puanlar kıyaslanabilir
     // kalmalı.
-    const carpan = mod === 'antrenman' ? antrenmanToplamCarpani(seviye, sure) : null;
-    const carpanli = carpan != null ? Math.round(temel.toplam * carpan) : temel.toplam;
+    const carpan = mod === 'antrenman' ? antrenmanToplamCarpani(seviye, sure) : GUNUN_TURU_CARPANI;
+    const carpanli = mod === 'antrenman' ? Math.round(temel.toplam * carpan) : temel.toplam * carpan;
     const nihai = jokerliPuan(carpanli, kullanilanJokerler);
     onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler, carpan, adimlar: t.yol });
   }

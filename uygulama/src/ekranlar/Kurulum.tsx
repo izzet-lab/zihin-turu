@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Seviye } from '@zihinturu/cekirdek';
 import { antrenmanCarpani } from '@zihinturu/oyun-sayi';
+import { gunlukOynandiMiSunucu, ilerlemeOku, xpSeviyeHesapla, type OyuncuIlerleme } from '../kimlik';
+import { oyuncuSayilariOku } from '../oyuncu-sayisi';
 import {
   bugun,
   gunlukKilitli,
@@ -32,7 +34,7 @@ interface Props {
    * Günün Turu ile açılır — bilinçli varsayılan. */
   baslangicMod?: Mod;
   /** Giriş yapmış kullanıcı; null ise misafir. */
-  kullanici?: { ad: string } | null;
+  kullanici?: { ad: string; id?: string } | null;
   /** Giriş ekranını açar. */
   onGirisAc?: () => void;
   /** Çıkış yapar. */
@@ -57,6 +59,28 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
   const acik = depoAcikSeviyeler(il);
   const ilkKezMi = acik.length <= 1;
 
+  // Sunucu taraflı kilit: giriş yapmış kullanıcının Günün Turu'nu
+  // oynayıp oynamadığı sunucudan okunur (localStorage güvenilir değil).
+  const [sunucuKilitli, setSunucuKilitli] = useState<boolean | null>(null);
+  const [ilerleme, setIlerleme] = useState<OyuncuIlerleme | null>(null);
+
+  useEffect(() => {
+    if (kullanici?.id) {
+      gunlukOynandiMiSunucu(bugun()).then(setSunucuKilitli);
+      ilerlemeOku(kullanici.id).then(setIlerleme);
+    } else {
+      setSunucuKilitli(null);
+      setIlerleme(null);
+    }
+  }, [kullanici?.id]);
+
+  // Oyuncu sayıları (eşiğin altındayken null gelir)
+  const [oyuncuSayilari, setOyuncuSayilari] = useState<{ bugunOynayanlar: number | null; bugunTamIsabet: number | null } | null>(null);
+
+  useEffect(() => {
+    oyuncuSayilariOku(bugun()).then(setOyuncuSayilari);
+  }, []);
+
   // Antrenman ayarları hatırlanır: uygulama kapatılıp açılsa bile son
   // kullanılan seviye/süre/büyük sayı varsayılan gelir. Kayıtlı seviye
   // artık kilitliyse (olağan değil ama olabilir) göz ardı edilir.
@@ -74,8 +98,12 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
   const secili = seviyeler.find((s) => s.anahtar === seviye) ?? seviyeler[0]!;
   const gun = bugun();
 
-  // Günün Turu için kilit, seri ve 28 günlük şerit — artık genel (seviyeden bağımsız).
-  const kilitli = mod === 'gunun' && gunlukKilitli(gun, il);
+  // Günün Turu kilidi: giriş yapmış kullanıcıda sunucudan, misafirde localStorage'dan.
+  const kilitli = mod === 'gunun' && (
+    kullanici?.id
+      ? sunucuKilitli === true  // sunucu cevabı gelene kadar kilitli değil
+      : gunlukKilitli(gun, il)
+  );
   const seritler = useMemo(() => serit(gun, 28, il), [gun, il]);
   const seri = il.seri.gun;
 
@@ -348,6 +376,70 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
                 />
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Gerçek oyuncu sayıları — eşik üstündeyse gösterilir */}
+        {mod === 'gunun' && oyuncuSayilari && (oyuncuSayilari.bugunOynayanlar || oyuncuSayilari.bugunTamIsabet) && (
+          <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs text-slate-500">
+            {oyuncuSayilari.bugunOynayanlar && (
+              <span>Bugün {oyuncuSayilari.bugunOynayanlar} kişi oynadı</span>
+            )}
+            {oyuncuSayilari.bugunTamIsabet && (
+              <span>🎯 {oyuncuSayilari.bugunTamIsabet} kişi tam bildi</span>
+            )}
+          </div>
+        )}
+
+        {/* XP seviyesi — giriş yapmış kullanıcılar için */}
+        {kullanici?.id && ilerleme && (
+          <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4" data-alan="xp">
+            {(() => {
+              const sv = xpSeviyeHesapla(ilerleme.xp);
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-300">
+                      Lv.{sv.seviye} {sv.unvan}
+                    </span>
+                    <span className="text-xs text-slate-500">{ilerleme.xp} XP</span>
+                  </div>
+                  {sv.sonrakiXp && (
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-cyan-300 transition-all"
+                        style={{ width: `${sv.ilerlemeYuzdesi}%` }}
+                      />
+                    </div>
+                  )}
+                  {sv.sonrakiXp && (
+                    <div className="mt-1 text-[11px] text-slate-600">
+                      Sonraki seviye: {sv.sonrakiXp} XP
+                    </div>
+                  )}
+                  {ilerleme.seriGun > 0 && (
+                    <div className="mt-2 text-xs text-slate-400">
+                      🔥 {ilerleme.seriGun} gün seri
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Misafir uyarısı — Günün Turu'nda giriş yapmamış kullanıcıya */}
+        {mod === 'gunun' && !kullanici && !kilitli && (
+          <div className="mt-6 rounded-xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-center">
+            <p className="text-xs text-amber-200/80">
+              Giriş yaparsan bugünkü turun lige işler.
+            </p>
+            <button
+              onClick={() => onGirisAc?.()}
+              className="mt-1 text-xs font-bold text-cyan-300 hover:underline"
+            >
+              Giriş yap →
+            </button>
           </div>
         )}
 

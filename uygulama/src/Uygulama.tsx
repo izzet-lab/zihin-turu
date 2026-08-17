@@ -82,6 +82,12 @@ export default function Uygulama() {
   // Giriş ekranı, tur bitince veya "üye ol" notuna tıklanınca açılır.
   // Açılmadan önceki ekrana dönmek için önceki ekran saklanır.
   const [girisOncesiEkran, setGirisOncesiEkran] = useState<Ekran>('kurulum');
+  // Misafirken oynanan Günün Turu'nun verisi — giriş yapılınca sunucuya gönderilir.
+  const [/* bekleyenTur */, setBekleyenTur] = useState<{
+    oyun: string; mod: string; seviye: string; tarih: string;
+    tohum: number; adimlar: { a: number; b: number; islem: string; sonuc: number }[];
+    sure_sn: number; jokerler: string[];
+  } | null>(null);
 
   // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
   useEffect(() => {
@@ -104,13 +110,19 @@ export default function Uygulama() {
         profilOku(u.id).then((p) => {
           setProfil(p);
           if (!p) {
-            // İlk kez giriş — oyuncu satırı yok, kullanıcı adı seç.
             setEkran('kullanici-adi');
           } else {
-            // Zaten kayıtlı — önceki ekrana dön.
             setEkran((mevcut) =>
               mevcut === 'giris' ? girisOncesiEkran : mevcut,
             );
+            // Bekleyen misafir turu varsa gönder (hız primi sıfır)
+            setBekleyenTur((bt) => {
+              if (bt) {
+                turGonder({ ...bt, kalan_sn: 0 })
+                  .catch((e) => console.warn('[Uygulama] bekleyen tur başarısız:', e));
+              }
+              return null;
+            });
           }
         });
       } else {
@@ -177,9 +189,22 @@ export default function Uygulama() {
           kalan_sn: s.kalan,
           jokerler: s.jokerler,
         }).catch((e) => console.warn('[Uygulama] turGonder başarısız:', e));
+      } else {
+        // Misafir: turu sakla, giriş yaparsa gönderilebilsin.
+        // Hız primi sıfırlanır (kalan_sn: 0) çünkü süre doğrulanamaz.
+        setBekleyenTur({
+          oyun: oturum.tur.oyun,
+          mod: oturum.mod,
+          seviye: oturum.seviye,
+          tarih: oturum.gun,
+          tohum: oturum.tur.tohum,
+          adimlar: s.adimlar,
+          sure_sn: oturum.sure,
+          jokerler: s.jokerler,
+        });
       }
     } else {
-      // Antrenman: istemci taraflı oturum sayacı (lig işlemiyor)
+      // Antrenman: istemci taraflı oturum sayacı + sunucuya gönder (XP ve antrenman ligi)
       const taban =
         oturumPuanDurumu && oturumPuanDurumu.seviye === oturum.seviye
           ? oturumPuanDurumu
@@ -189,6 +214,22 @@ export default function Uygulama() {
         toplamPuan: taban.toplamPuan + s.puan,
         turSayisi: taban.turSayisi + 1,
       });
+
+      // Giriş yapılmışsa antrenman turunu da sunucuya gönder (XP + antrenman ligi)
+      if (kullanici) {
+        turGonder({
+          oyun: oturum.tur.oyun,
+          mod: oturum.mod,
+          seviye: oturum.seviye,
+          tarih: oturum.gun,
+          tohum: oturum.tur.tohum,
+          adimlar: s.adimlar,
+          sure_sn: oturum.sure,
+          kalan_sn: s.kalan,
+          jokerler: s.jokerler,
+          buyuk_adet: oturum.buyukAdet,
+        }).catch((e) => console.warn('[Uygulama] antrenman turGonder başarısız:', e));
+      }
     }
 
     // İlk kez oynayan öğrenci: tam isabet yaparsa bir üst seviye açılır.
@@ -323,7 +364,7 @@ export default function Uygulama() {
         onBasla={basla}
         onYardim={() => setYardimAcik(true)}
         baslangicMod={kurulumMod}
-        kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu' } : null}
+        kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu', id: kullanici.id } : null}
         onGirisAc={girisAc}
         onCikisYap={async () => {
           await supabase.auth.signOut();

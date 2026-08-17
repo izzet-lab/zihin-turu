@@ -26,6 +26,13 @@ export interface OyunSonuc {
   jokerler: JokerTip[];
   /** Antrenman'da uygulanan toplam çarpan (süre × seviye); Günün Turu'nda null. */
   carpan: number | null;
+  /**
+   * Oyuncunun yaptığı adım zinciri — sunucuya doğrulama için gönderilir.
+   * Sunucu bu zinciri tohumdan yeniden üreteceği tura karşı doğrular ve
+   * puanı kendisi hesaplar. İstemcinin bildirdiği `puan` yalnızca anlık
+   * gösterim içindir.
+   */
+  adimlar: { a: number; b: number; islem: string; sonuc: number }[];
 }
 
 interface Props {
@@ -119,7 +126,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     const carpan = mod === 'antrenman' ? antrenmanToplamCarpani(seviye, sure) : null;
     const carpanli = carpan != null ? Math.round(temel.toplam * carpan) : temel.toplam;
     const nihai = jokerliPuan(carpanli, kullanilanJokerler);
-    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler, carpan });
+    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler, carpan, adimlar: t.yol });
   }
 
   // Süre sayacı (yalnızca süreli modda)

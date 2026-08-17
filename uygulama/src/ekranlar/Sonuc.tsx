@@ -57,6 +57,8 @@ interface Props {
   oturumPuanSonrasi: { toplamPuan: number; turSayisi: number } | null;
   /** Bu turla birlikte açılan seviyenin etiketi, açılan yoksa null. */
   yeniAcilanSeviyeEtiket: string | null;
+  /** Kullanıcı giriş yapmış mı? Üyelik notunun içeriğini belirler. */
+  girisYapildiMi: boolean;
   /** Günün Turu birincil düğmesi: kurulum ekranına (ana sayfaya) döner. */
   onAnaSayfa: () => void;
   /** Günün Turu ikincil bağlantısı: aynı seviyede hemen Antrenman'a geçer. */
@@ -65,6 +67,8 @@ interface Props {
   onYeniTur: () => void;
   /** Antrenman ikincil düğmesi: kurulum ekranına döner, ayarlar değiştirilebilir. */
   onAyarlar: () => void;
+  /** Üyelik notuna tıklanınca giriş ekranı açılır. */
+  onGirisAc: () => void;
 }
 
 export default function Sonuc({
@@ -77,10 +81,12 @@ export default function Sonuc({
   sonuc,
   oturumPuanSonrasi,
   yeniAcilanSeviyeEtiket,
+  girisYapildiMi,
   onAnaSayfa,
   onAntrenmandaOyna,
   onYeniTur,
   onAyarlar,
+  onGirisAc,
 }: Props) {
   const veri = tur.veri as SayiVeri;
   const tam = sonuc.fark === 0;
@@ -180,10 +186,14 @@ export default function Sonuc({
             </div>
           </div>
         )}
-        {mod === 'antrenman' && oturumPuanSonrasi && (
-          <p className="mt-2 text-center text-[11px] text-slate-600" data-alan="uyelik-notu">
-            Üye olursan oturum puanların kalıcı olur ve lige işler.
-          </p>
+        {mod === 'antrenman' && oturumPuanSonrasi && !girisYapildiMi && (
+          <button
+            onClick={onGirisAc}
+            className="mt-2 w-full text-center text-[11px] text-slate-600 hover:text-cyan-400 transition-colors"
+            data-alan="uyelik-notu"
+          >
+            Üye olursan puanların kalıcı olur ve lige işler →
+          </button>
         )}
 
         {/* Çözümün tahtaya el yazısıyla yazılması */}

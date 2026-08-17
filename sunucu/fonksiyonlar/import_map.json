@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@zihinturu/cekirdek": "../../paketler/cekirdek/src/index.ts",
+    "@zihinturu/oyun-sayi": "../../paketler/oyun-sayi/src/index.ts"
+  }
+}

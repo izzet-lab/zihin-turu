@@ -8,6 +8,7 @@
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
+    "types": ["vite/client"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",

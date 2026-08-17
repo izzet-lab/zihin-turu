@@ -31,12 +31,18 @@ interface Props {
    * modu Günün Turu'na sıçratmamak için kullanılır. Belirtilmezse
    * Günün Turu ile açılır — bilinçli varsayılan. */
   baslangicMod?: Mod;
+  /** Giriş yapmış kullanıcı; null ise misafir. */
+  kullanici?: { ad: string } | null;
+  /** Giriş ekranını açar. */
+  onGirisAc?: () => void;
+  /** Çıkış yapar. */
+  onCikisYap?: () => void;
 }
 
 // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
 const SURE_SECENEK = [90, 60, 30, 15];
 
-export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod }: Props) {
+export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, kullanici, onGirisAc, onCikisYap }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi);
 
@@ -94,6 +100,25 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod }: 
             <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
             <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
           </div>
+          {/* Kimlik butonu: giriş yapılmamışsa "Giriş", yapılmışsa kısa ad + çıkış */}
+          {kullanici ? (
+            <button
+              onClick={onCikisYap}
+              data-alan="cikis"
+              title={`${kullanici.ad} — çıkış yap`}
+              className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-slate-400 hover:text-slate-200"
+            >
+              {kullanici.ad.slice(0, 10)}
+            </button>
+          ) : (
+            <button
+              onClick={onGirisAc}
+              data-alan="giris-ac"
+              className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 text-xs font-bold text-cyan-300 hover:text-cyan-200"
+            >
+              Giriş
+            </button>
+          )}
           <button
             onClick={sesDegistir}
             data-alan="ses-ac-kapa"

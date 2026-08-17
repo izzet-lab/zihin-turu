@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, gununTuru, uretimYap, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';
 import Yardim from './ekranlar/Yardim';
+import Giris from './ekranlar/Giris';
+import KullaniciAdi from './ekranlar/KullaniciAdi';
 import { sesKilidiKur } from './ses';
+import { supabase } from './supabase';
+import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import {
   bugun,
   gunlukKaydet,
@@ -18,7 +23,7 @@ import {
   sonAntrenmanAyariYaz,
 } from './depo';
 
-type Ekran = 'kurulum' | 'oyun' | 'sonuc';
+type Ekran = 'kurulum' | 'oyun' | 'sonuc' | 'giris' | 'kullanici-adi';
 
 interface Oturum {
   mod: Mod;
@@ -71,14 +76,64 @@ export default function Uygulama() {
   // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
   const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
 
+  // --- Kimlik durumu ---
+  const [kullanici, setKullanici] = useState<User | null>(null);
+  const [profil, setProfil] = useState<OyuncuProfil | null>(null);
+  // Giriş ekranı, tur bitince veya "üye ol" notuna tıklanınca açılır.
+  // Açılmadan önceki ekrana dönmek için önceki ekran saklanır.
+  const [girisOncesiEkran, setGirisOncesiEkran] = useState<Ekran>('kurulum');
+
   // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
   useEffect(() => {
     sesKilidiKur();
   }, []);
 
+  // Auth durumunu dinle — ilk yüklemede ve değişikliklerinde.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const u = data.session?.user ?? null;
+      setKullanici(u);
+      if (u) profilOku(u.id).then(setProfil);
+    });
+
+    const { data: dinleyici } = supabase.auth.onAuthStateChange((_event, oturum) => {
+      const u = oturum?.user ?? null;
+      setKullanici(u);
+
+      if (u) {
+        profilOku(u.id).then((p) => {
+          setProfil(p);
+          if (!p) {
+            // İlk kez giriş — oyuncu satırı yok, kullanıcı adı seç.
+            setEkran('kullanici-adi');
+          } else {
+            // Zaten kayıtlı — önceki ekrana dön.
+            setEkran((mevcut) =>
+              mevcut === 'giris' ? girisOncesiEkran : mevcut,
+            );
+          }
+        });
+      } else {
+        setProfil(null);
+      }
+    });
+
+    return () => dinleyici.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function yardimKapat() {
     setYardimAcik(false);
     yardimGorulduIsaretle();
+  }
+
+  function girisAc() {
+    setGirisOncesiEkran(ekran as Ekran);
+    setEkran('giris');
+  }
+
+  function girisAtla() {
+    setEkran(girisOncesiEkran);
   }
 
   function basla(ayar: BaslaAyar) {
@@ -102,13 +157,29 @@ export default function Uygulama() {
     setEkran('oyun');
   }
 
-  function bitti(s: OyunSonuc) {
+  async function bitti(s: OyunSonuc) {
     if (!oturum) return;
 
     if (oturum.mod === 'gunun') {
       const il = gunlukKaydet(oturum.gun, oturum.seviye, { fark: s.fark, puan: s.puan });
       setSeri(il.seri.gun);
+
+      // Giriş yapıldıysa sunucuya gönder (sunucu doğrular, kaydeder)
+      if (kullanici) {
+        turGonder({
+          oyun: oturum.tur.oyun,
+          mod: oturum.mod,
+          seviye: oturum.seviye,
+          tarih: oturum.gun,
+          tohum: oturum.tur.tohum,
+          adimlar: s.adimlar,
+          sure_sn: oturum.sure,
+          kalan_sn: s.kalan,
+          jokerler: s.jokerler,
+        }).catch((e) => console.warn('[Uygulama] turGonder başarısız:', e));
+      }
     } else {
+      // Antrenman: istemci taraflı oturum sayacı (lig işlemiyor)
       const taban =
         oturumPuanDurumu && oturumPuanDurumu.seviye === oturum.seviye
           ? oturumPuanDurumu
@@ -190,7 +261,20 @@ export default function Uygulama() {
   }
 
   let ekranBileseni;
-  if (ekran === 'oyun' && oturum) {
+
+  if (ekran === 'giris') {
+    ekranBileseni = <Giris onAtla={girisAtla} />;
+  } else if (ekran === 'kullanici-adi' && kullanici) {
+    ekranBileseni = (
+      <KullaniciAdi
+        oyuncuId={kullanici.id}
+        onTamamlandi={() => {
+          profilOku(kullanici.id).then(setProfil);
+          setEkran(girisOncesiEkran === 'giris' ? 'kurulum' : girisOncesiEkran);
+        }}
+      />
+    );
+  } else if (ekran === 'oyun' && oturum) {
     ekranBileseni = (
       <Oyun
         tur={oturum.tur}
@@ -224,10 +308,12 @@ export default function Uygulama() {
         yeniAcilanSeviyeEtiket={
           yeniAcilanSeviye ? sayiTuru.seviyeler.find((sv) => sv.anahtar === yeniAcilanSeviye)?.etiket ?? null : null
         }
+        girisYapildiMi={!!kullanici}
         onAnaSayfa={anaSayfaya}
         onAntrenmandaOyna={antrenmandaOyna}
         onYeniTur={yeniTur}
         onAyarlar={ayarlaraDon}
+        onGirisAc={girisAc}
       />
     );
   } else {
@@ -237,6 +323,13 @@ export default function Uygulama() {
         onBasla={basla}
         onYardim={() => setYardimAcik(true)}
         baslangicMod={kurulumMod}
+        kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu' } : null}
+        onGirisAc={girisAc}
+        onCikisYap={async () => {
+          await supabase.auth.signOut();
+          setKullanici(null);
+          setProfil(null);
+        }}
       />
     );
   }

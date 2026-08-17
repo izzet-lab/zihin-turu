@@ -53,6 +53,8 @@ interface Props {
   seri: number;
   tarih: string;
   sonuc: OyunSonuc;
+  /** Antrenman oturumu toplamı — bu tur dahil. Yalnızca Antrenman'da dolu gelir. */
+  oturumPuanSonrasi: { toplamPuan: number; turSayisi: number } | null;
   /** Bu turla birlikte açılan seviyenin etiketi, açılan yoksa null. */
   yeniAcilanSeviyeEtiket: string | null;
   /** Günün Turu birincil düğmesi: kurulum ekranına (ana sayfaya) döner. */
@@ -73,6 +75,7 @@ export default function Sonuc({
   seri,
   tarih,
   sonuc,
+  oturumPuanSonrasi,
   yeniAcilanSeviyeEtiket,
   onAnaSayfa,
   onAntrenmandaOyna,
@@ -144,6 +147,12 @@ export default function Sonuc({
           {mod === 'antrenman' && sonuc.carpan != null && (
             <div className="mt-1 text-xs text-slate-500" data-alan="carpan-etiket">
               {seviyeEtiket} · {sure > 0 ? `${sure}sn` : 'süresiz'} · ×{carpanGoster(sonuc.carpan)}
+            </div>
+          )}
+          {mod === 'antrenman' && oturumPuanSonrasi && (
+            <div className="mt-1 text-xs text-slate-400" data-alan="oturum-ozet">
+              Bu tur: {sonuc.puan} puan → Oturum toplamı:{' '}
+              <span className="font-bold text-slate-200">{oturumPuanSonrasi.toplamPuan} puan</span>
             </div>
           )}
           {sonuc.jokerler.length > 0 && (

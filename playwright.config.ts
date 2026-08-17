@@ -11,6 +11,12 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 40_000,
   fullyParallel: false,
+  // Testler kendi içinde bağımsız bir çözücü çalıştırıyor (CPU ağır).
+  // Paralel worker'lar aynı anda birden fazla çözücüyü koşturunca
+  // makinede kaynak yarışı oluşup 40 sn'lik test zaman aşımına takılıyordu
+  // (fonksiyonel bir hata değildi — testler tek tek her zaman geçiyordu).
+  // Küçük bir paket için ardışık koşum daha güvenilir.
+  workers: 1,
   reporter: [['list']],
   use: {
     baseURL: 'http://localhost:4173',

@@ -9,6 +9,8 @@ import {
   kaliciMi,
   acikSeviyeler as depoAcikSeviyeler,
   sonAntrenmanAyariOku,
+  sesAcikMi,
+  sesTercihiYaz,
 } from '../depo';
 
 export type Mod = 'antrenman' | 'gunun';
@@ -25,13 +27,24 @@ interface Props {
   seviyeler: readonly Seviye[];
   onBasla: (a: BaslaAyar) => void;
   onYardim: () => void;
+  /** Hangi modla açılacağı. "Seviye değiştir" Antrenman'dan geldiğinde
+   * modu Günün Turu'na sıçratmamak için kullanılır. Belirtilmezse
+   * Günün Turu ile açılır — bilinçli varsayılan. */
+  baslangicMod?: Mod;
 }
 
 // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
 const SURE_SECENEK = [90, 60, 30, 15];
 
-export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
-  const [mod, setMod] = useState<Mod>('gunun');
+export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod }: Props) {
+  const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
+  const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi);
+
+  function sesDegistir() {
+    const yeni = !sesAcik;
+    setSesAcik(yeni);
+    sesTercihiYaz(yeni);
+  }
 
   const il = oku();
   const acik = depoAcikSeviyeler(il);
@@ -81,6 +94,15 @@ export default function Kurulum({ seviyeler, onBasla, onYardim }: Props) {
             <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
             <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
           </div>
+          <button
+            onClick={sesDegistir}
+            data-alan="ses-ac-kapa"
+            aria-pressed={sesAcik}
+            aria-label={sesAcik ? 'Sesi kapat' : 'Sesi aç'}
+            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg text-cyan-200"
+          >
+            {sesAcik ? '🔊' : '🔇'}
+          </button>
           <button
             onClick={onYardim}
             data-alan="yardim-ac"

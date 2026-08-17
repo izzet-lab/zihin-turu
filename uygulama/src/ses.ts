@@ -7,6 +7,8 @@
  * için (autoplay kısıtı), bağlam ilk çalma anında kurulur.
  */
 
+import { sesAcikMi } from './depo';
+
 let baglam: AudioContext | null = null;
 
 function baglamAl(): AudioContext | null {
@@ -19,6 +21,7 @@ function baglamAl(): AudioContext | null {
 }
 
 function ton(frekans: number, sure: number, gecikme = 0, hacim = 0.09, dalga: OscillatorType = 'sine'): void {
+  if (!sesAcikMi()) return;
   const b = baglamAl();
   if (!b) return;
   const simdi = b.currentTime + gecikme;

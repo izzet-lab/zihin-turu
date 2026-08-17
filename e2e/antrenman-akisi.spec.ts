@@ -55,6 +55,15 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   await expect(carpanEtiket).toBeVisible();
   await expect(carpanEtiket).toContainText('×3.75');
 
+  // Oturum puanı: ilk turda "Bu tur: N puan → Oturum toplamı: N puan" (eşit,
+  // henüz tek tur oynandı).
+  const oturumOzet1 = page.locator('[data-alan="oturum-ozet"]');
+  await expect(oturumOzet1).toBeVisible();
+  const ozet1Metin = (await oturumOzet1.textContent()) ?? '';
+  const buTur1 = Number(ozet1Metin.match(/Bu tur:\s*(\d+)/)?.[1]);
+  const toplam1 = Number(ozet1Metin.match(/Oturum toplamı:\s*(\d+)/)?.[1]);
+  expect(buTur1).toBe(toplam1);
+
   // --- 1) "Yeni tur" — kurulum ekranı görünmeden doğrudan oyun ekranına döner ---
   await page.locator('[data-alan="yeni-tur"]').click();
   await expect(page.locator('[data-alan="hedef"]')).toBeVisible();
@@ -65,17 +74,29 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   // başlamalı (joker eklemeden önceki taban değer).
   await expect(page.locator('[data-alan="sure-kalan"]')).toHaveAttribute('data-toplam-sure', '30');
 
+  // Oyun ekranının üstünde önceki turun oturum toplamı ve "2. tur" görünür.
+  const gostergeMetin = (await page.locator('[data-alan="oturum-gostergesi"]').textContent()) ?? '';
+  expect(gostergeMetin).toContain('2. tur');
+  expect(Number(gostergeMetin.match(/(\d+)\s*puan/)?.[1])).toBe(toplam1);
+
   // Bu turu da bitir.
   await zinciriBulVeOyna(page);
   await expect(page.locator('[data-alan="hukum"]')).toBeVisible({ timeout: 10_000 });
 
-  // --- 2) "Ayarlar" — kurulum ekranına döner, seçimler korunur ---
-  // Kurulum her zaman "Günün Turu" sekmesiyle açılır (bilinçli varsayılan);
-  // Antrenman ayarlarını görmek için o sekmeye geçmek gerekir.
+  // İkinci turdan sonra oturum toplamı birikmeli (iki turun toplamı).
+  const ozet2Metin = (await page.locator('[data-alan="oturum-ozet"]').textContent()) ?? '';
+  const buTur2 = Number(ozet2Metin.match(/Bu tur:\s*(\d+)/)?.[1]);
+  const toplam2 = Number(ozet2Metin.match(/Oturum toplamı:\s*(\d+)/)?.[1]);
+  expect(toplam2).toBe(toplam1 + buTur2);
+
+  // --- 2) "Seviye değiştir" — kurulum ekranına döner, MOD SIÇRAMAZ ---
+  // Antrenman'dan gelindiği için Kurulum Antrenman sekmesiyle açılmalı
+  // (Günün Turu'na sıçrarsa bu bir regresyon olur).
   await page.locator('[data-alan="ayarlar"]').click();
+  const antrenmanSekmesi = page.locator('[data-mod="antrenman"]');
+  await expect(antrenmanSekmesi).toHaveAttribute('aria-pressed', 'true');
   const zorCip = page.locator('[data-seviye="zor"]');
   await expect(zorCip).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-mod="antrenman"]').click();
   const sure30 = page.locator('[data-sure="30"]');
   await expect(sure30).toHaveAttribute('aria-pressed', 'true');
 
@@ -87,4 +108,13 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
 
   await expect(page.locator('[data-seviye="zor"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-sure="30"]')).toHaveAttribute('aria-pressed', 'true');
+
+  // --- 4) Seviye değişince oturum puanı sıfırlanır ---
+  await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="basla"]').click();
+  await expect(page.locator('[data-alan="hedef"]')).toBeVisible();
+  // Yeni seviyede henüz hiç tur bitmedi; oturum göstergesi "1. tur" olmalı.
+  const gostergeMetin2 = (await page.locator('[data-alan="oturum-gostergesi"]').textContent()) ?? '';
+  expect(gostergeMetin2).toContain('1. tur');
+  expect(gostergeMetin2).toMatch(/0\s*puan/);
 });

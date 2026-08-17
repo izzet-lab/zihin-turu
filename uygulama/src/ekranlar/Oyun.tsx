@@ -33,6 +33,8 @@ interface Props {
   seviye: string;
   sure: number; // 0 = süresiz
   mod: Mod;
+  /** Antrenman oturumu puan/tur göstergesi — yalnızca Antrenman'da dolu gelir. */
+  oturumPuan: { toplamPuan: number; turSayisi: number } | null;
   onBitti: (s: OyunSonuc) => void;
   onYardim: () => void;
 }
@@ -50,7 +52,7 @@ const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
   { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
 ];
 
-export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Props) {
+export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYardim }: Props) {
   const veri = tur.veri as SayiVeri;
   const hedef = veri.hedef;
 
@@ -174,7 +176,15 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-6">
       {konfetiGoster && <Konfeti />}
       <div className="mx-auto flex w-full max-w-md flex-col">
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          {mod === 'antrenman' && oturumPuan ? (
+            <div className="text-xs font-bold text-slate-500" data-alan="oturum-gostergesi">
+              Oturum: <span className="text-slate-300">{oturumPuan.toplamPuan} puan</span> ·{' '}
+              {oturumPuan.turSayisi + 1}. tur
+            </div>
+          ) : (
+            <span />
+          )}
           <button
             onClick={onYardim}
             data-alan="yardim-ac"

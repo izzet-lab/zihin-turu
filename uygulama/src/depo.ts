@@ -301,6 +301,20 @@ export function yardimGorulduIsaretle(): void {
   genelYaz(YARDIM_ANAHTAR, '1');
 }
 
+/* --- Ses tercihi --- */
+
+const SES_ANAHTAR = 'zihinturu.ses.v1';
+
+/** Ses efektleri açık mı? Kayıt yoksa varsayılan açıktır. */
+export function sesAcikMi(): boolean {
+  return genelOku(SES_ANAHTAR) !== '0';
+}
+
+/** Ses tercihini kaydeder; sonraki açılışta da geçerli olur. */
+export function sesTercihiYaz(acik: boolean): void {
+  genelYaz(SES_ANAHTAR, acik ? '1' : '0');
+}
+
 /** Bugünün tarihi (YYYY-MM-DD), yerel saat. */
 export function bugun(): string {
   const d = new Date();

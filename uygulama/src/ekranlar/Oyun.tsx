@@ -14,7 +14,7 @@ import {
   type JokerTip,
 } from '@zihinturu/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
-import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker } from '../ses';
+import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
 import Konfeti from '../bilesenler/Konfeti';
 import type { Mod } from './Kurulum';
 
@@ -142,6 +142,14 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     if (sure > 0 && kalan === 0) bitir();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kalan, sure]);
+
+  // Geri sayımın son 5 saniyesinde hafif bir tik; son saniyede daha
+  // belirgin. Tam isabet olduysa ya da tur bittiyse çalınmaz.
+  useEffect(() => {
+    if (sure <= 0 || tamIsabet || bittiRef.current) return;
+    if (kalan > 0 && kalan <= 5) sesGeriSayim(kalan === 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kalan]);
 
   // Tam isabet olunca kısa bir gecikmeyle tur kapanır; ses ve konfeti
   // yalnızca bir kez, isabet anında tetiklenir.

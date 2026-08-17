@@ -113,3 +113,14 @@ export function sesTamIsabet(): void {
 export function sesJoker(): void {
   ton(300, 0.12, 0, 0.14, 'triangle');
 }
+
+/**
+ * Geri sayımın son saniyeleri — hafif bir tik. Son saniyede (0'a
+ * inerken) biraz daha belirgin, tiz bir uyarı çalınır. Baskı değil,
+ * yalnızca "süre bitiyor" bilgisi; bu yüzden yalnızca son birkaç
+ * saniyede duyulur, sürekli değil.
+ */
+export function sesGeriSayim(sonSaniye = false): void {
+  if (sonSaniye) ton(880, 0.16, 0, 0.2, 'sine');
+  else ton(660, 0.06, 0, 0.11, 'triangle');
+}

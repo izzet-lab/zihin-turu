@@ -22,3 +22,20 @@ body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 @media (prefers-reduced-motion: reduce) {
   .tahta-satir { animation: none; opacity: 1; }
 }
+
+/* Tam isabet konfetisi — hafif düşen şeritler, kütüphanesiz. */
+.konfeti-parca {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation-name: konfeti-dus;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes konfeti-dus {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .konfeti-parca { animation: none; opacity: 0; }
+}

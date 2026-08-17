@@ -351,23 +351,62 @@ export function antrenmanToplamCarpani(seviye: string, sure: number): number {
 /* adımını açmaktır — cevabı vermez, yolu daraltır.                    */
 /* ------------------------------------------------------------------ */
 
-export type JokerTip = 'adim' | 'tas' | 'sure';
+export type JokerTip = 'adim' | 'yanlis' | 'sure';
 
 export type JokerSonuc =
   | { tip: 'adim'; metin: string; indeks: number }
-  | { tip: 'tas'; tas: number }
+  | { tip: 'yanlis'; indeks: number; tas: number }
   | { tip: 'sure'; ekSaniye: number }
   | null;
 
 /** Her joker türünün puan maliyeti. */
 export const JOKER_MALIYET: Record<JokerTip, number> = {
   adim: 3,
-  tas: 2,
+  yanlis: 2,
   sure: 2,
 };
 
 /** Tur başına toplam joker hakkı (tür fark etmeksizin). */
 export const JOKER_HAK_SAYISI = 3;
+
+/**
+ * Çözümün hiçbir adımında kullanılmayan orijinal taşların indeksleri
+ * (`uretim.sayilar` içindeki konum — aynı zamanda raftaki taşın
+ * kimliğidir, bkz. `motor.ts` `baslat()`). Aynı değerden birden fazla
+ * taş varsa (ör. iki adet 5) yalnızca gerçekten harcanmayan kopya
+ * döner; öbürü çözümde kullanılıyorsa listeye girmez.
+ *
+ * "İleri üretim" kullanan seviyelerde (Zor, Usta) zincir tüm taşları
+ * tek sonuca kadar birleştirdiği için bu liste normalde BOŞTUR —
+ * "Yanlışı sil" jokerinin bu seviyelerde devre dışı kalmasının sebebi
+ * budur.
+ */
+export function kullanilmayanTasIndeksleri(uretim: Uretim): number[] {
+  const havuz = uretim.sayilar.map((deger, indeks) => ({ deger, indeks, kullanildi: false }));
+  const uret: number[] = []; // ara sonuçlar
+
+  function tuket(deger: number): boolean {
+    const h = havuz.find((x) => !x.kullanildi && x.deger === deger);
+    if (h) {
+      h.kullanildi = true;
+      return true;
+    }
+    const i = uret.indexOf(deger);
+    if (i >= 0) {
+      uret.splice(i, 1);
+      return true;
+    }
+    return false;
+  }
+
+  for (const ad of uretim.cozum.adimlar) {
+    tuket(ad.a);
+    tuket(ad.b);
+    uret.push(ad.sonuc);
+  }
+
+  return havuz.filter((h) => !h.kullanildi).map((h) => h.indeks);
+}
 
 export function jokerVer(
   uretim: Uretim,
@@ -379,17 +418,13 @@ export function jokerVer(
     const ad = uretim.cozum.adimlar[i];
     return ad ? { tip, metin: bicimle(ad), indeks: i } : null;
   }
-  if (tip === 'tas') {
-    // Çözümde geçen, henüz gösterilmemiş bir taşı işaretle.
-    const kullanilan = new Set<number>();
-    uretim.cozum.adimlar.forEach((a) => {
-      kullanilan.add(a.a);
-      kullanilan.add(a.b);
-    });
+  if (tip === 'yanlis') {
+    // Çözümde hiç kullanılmayan bir taşı bul — bu taşı silmek cevabı
+    // vermez, yalnızca yolu daraltır (yanlış bir dalı eler).
     const haric = new Set(secenek?.disHaricTutulan ?? []);
-    const aday = uretim.sayilar.filter((s) => kullanilan.has(s) && !haric.has(s));
-    if (aday.length === 0) return null; // gösterilecek yeni taş kalmadı
-    return { tip, tas: aday[0]! };
+    const aday = kullanilmayanTasIndeksleri(uretim).find((i) => !haric.has(i));
+    if (aday === undefined) return null; // çözümde tüm taşlar kullanılıyor
+    return { tip, indeks: aday, tas: uretim.sayilar[aday]! };
   }
   if (tip === 'sure') return { tip, ekSaniye: 15 };
   return null;

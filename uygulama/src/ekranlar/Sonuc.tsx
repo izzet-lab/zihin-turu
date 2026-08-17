@@ -10,6 +10,41 @@ function carpanGoster(c: number): string {
   return String(Number(c.toFixed(2)));
 }
 
+/**
+ * Tam isabet olmayan turlarda gösterilen kısa, çaba odaklı bir söz.
+ * Baskı, kaygı veya başarısızlık dili yok — yalnızca devam etmeye
+ * teşvik eder. Aynı turda hep aynı söz çıkmasın diye hedef+fark
+ * bilgisinden deterministik bir indeks türetilir (her turda farklı
+ * ama tur tekrar açıldığında sabit kalır).
+ */
+const MOTIVASYON_SOZLERI = [
+  'Fena değildi. Bir dahaki turda bu farkı kapatabilirsin.',
+  'Her tur bir öncekinden biraz daha fazlasını öğretir.',
+  'Yaklaştın. Zincirin bir adımı farklı işleseydi olurdu.',
+  'Bugün bu kadarı yeterli. Yarın tekrar denenebilir.',
+  'Taşları farklı sırayla denemek genelde işe yarar.',
+  'Bu bir kayıp değil, bir deneme. Sayı zaten kaydedildi.',
+  'Zincirin başlangıcı iyiydi, devamı biraz zorlamış olabilir.',
+  'Küçük farklar da ilerlemedir.',
+  'Bazı turlar zor çıkar. Bu, formunla ilgili bir şey söylemez.',
+  'Bir sonraki turda aynı hedefi başka bir yoldan bulabilirsin.',
+  'Denemek, beklemekten her zaman daha değerli.',
+  'Bugünkü tur bitti; istersen hemen bir yenisi başlayabilir.',
+  'Fark küçüldükçe zincir kurmak kolaylaşıyor, alışkanlık meselesi.',
+  'Bazı hedefler ilk denemede açılmaz, bu normal.',
+  'Elindeki taşlarla iyi bir kombinasyon kurmuşsun, hedef biraz uzak kalmış.',
+  'İstersen bir joker ile bir dahaki turu biraz kolaylaştırabilirsin.',
+  'Süre bazen dar geliyor, acele etmeden de denenebilir.',
+  'Bu turdan sonra elin ısınmış olur.',
+  'Sayılarla kurduğun her zincir bir sonrakine zemin hazırlıyor.',
+  'Devam etmek, mükemmel bitirmekten daha önemli.',
+];
+
+function motivasyonSecimi(hedef: number, fark: number): string {
+  const indeks = (hedef * 7 + fark * 13) % MOTIVASYON_SOZLERI.length;
+  return MOTIVASYON_SOZLERI[indeks]!;
+}
+
 interface Props {
   tur: Tur;
   seviyeEtiket: string;
@@ -114,6 +149,11 @@ export default function Sonuc({
           {sonuc.jokerler.length > 0 && (
             <div className="mt-1 text-xs text-amber-300" data-alan="kullanilan-jokerler">
               Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
+            </div>
+          )}
+          {!tam && (
+            <div className="mt-3 text-sm text-slate-400" data-alan="motivasyon">
+              {motivasyonSecimi(veri.hedef, sonuc.fark)}
             </div>
           )}
         </div>

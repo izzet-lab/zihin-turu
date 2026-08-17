@@ -5,6 +5,7 @@ import {
   jokerVer,
   jokerliPuan,
   uretimYap,
+  kullanilmayanTasIndeksleri,
   antrenmanToplamCarpani,
   JOKER_HAK_SAYISI,
   JOKER_MALIYET,
@@ -13,6 +14,8 @@ import {
   type JokerTip,
 } from '@zihinturu/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
+import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker } from '../ses';
+import Konfeti from '../bilesenler/Konfeti';
 import type { Mod } from './Kurulum';
 
 export interface OyunSonuc {
@@ -43,7 +46,7 @@ const ISLEMLER: { op: Islem; ad: string }[] = [
 
 const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
   { tip: 'adim', ad: 'Bir adım aç', simge: '💡' },
-  { tip: 'tas', ad: 'Taş göster', simge: '📍' },
+  { tip: 'yanlis', ad: 'Yanlışı sil', simge: '🧹' },
   { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
 ];
 
@@ -66,11 +69,18 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
   const [jokerHakki, setJokerHakki] = useState<number>(JOKER_HAK_SAYISI);
   const [kullanilanJokerler, setKullanilanJokerler] = useState<JokerTip[]>([]);
   const [acikAdimlar, setAcikAdimlar] = useState<string[]>([]);
-  const [isaretliTaslar, setIsaretliTaslar] = useState<number[]>([]);
 
   const yakinTas = enYakinTas(durum, hedef);
   const yakinFark = enYakinFark(durum, hedef);
   const tamIsabet = yakinFark === 0;
+
+  function tasTikla(id: number) {
+    // Bir taş birleşimin ikinci ayağı olduğunda burada değil,
+    // gecmis uzunluğu değiştiğinde ses çalınır (aşağıdaki efekt).
+    // Yalnızca seçim/seçim kaldırma anında kısa bir tık duyulur.
+    if (durum.secimA === null || durum.islem === null) sesTasSec();
+    gonder({ t: 'tas', id });
+  }
 
   function jokerKullan(tip: JokerTip) {
     if (jokerHakki <= 0 || bittiRef.current) return;
@@ -78,15 +88,16 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
       const sonuc = jokerVer(uretim, 'adim', { kullanilanAdim: acikAdimlar.length });
       if (!sonuc || sonuc.tip !== 'adim') return; // çözüm tükendi
       setAcikAdimlar((a) => [...a, sonuc.metin]);
-    } else if (tip === 'tas') {
-      const sonuc = jokerVer(uretim, 'tas', { disHaricTutulan: isaretliTaslar });
-      if (!sonuc || sonuc.tip !== 'tas') return; // gösterilecek yeni taş kalmadı
-      setIsaretliTaslar((t) => [...t, sonuc.tas]);
+    } else if (tip === 'yanlis') {
+      const sonuc = jokerVer(uretim, 'yanlis', { disHaricTutulan: durum.silinenler });
+      if (!sonuc || sonuc.tip !== 'yanlis') return; // silinecek yanlış taş kalmadı
+      gonder({ t: 'tasSil', id: sonuc.indeks });
     } else if (tip === 'sure') {
       if (sure <= 0) return; // süresiz modda anlamsız
       setKalan((k) => k + 15);
       setToplamSure((t) => t + 15);
     }
+    sesJoker();
     setJokerHakki((h) => h - 1);
     setKullanilanJokerler((j) => [...j, tip]);
   }
@@ -130,9 +141,13 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kalan, sure]);
 
-  // Tam isabet olunca kısa bir gecikmeyle tur kapanır
+  // Tam isabet olunca kısa bir gecikmeyle tur kapanır; ses ve konfeti
+  // yalnızca bir kez, isabet anında tetiklenir.
+  const [konfetiGoster, setKonfetiGoster] = useState(false);
   useEffect(() => {
     if (!tamIsabet) return;
+    sesTamIsabet();
+    setKonfetiGoster(true);
     const z = setTimeout(() => bitir(), 650);
     return () => clearTimeout(z);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,14 +156,23 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
   // Hata mesajı kendiliğinden söner
   useEffect(() => {
     if (!durum.hata) return;
+    sesHata();
     const z = setTimeout(() => gonder({ t: 'hataTemizle' }), 1400);
     return () => clearTimeout(z);
   }, [durum.hata]);
+
+  // Başarılı bir birleştirme olduğunda (geçmiş uzadığında) kısa bir ton.
+  const oncekiGecmisUzunluk = useRef(0);
+  useEffect(() => {
+    if (durum.gecmis.length > oncekiGecmisUzunluk.current) sesBirlestir();
+    oncekiGecmisUzunluk.current = durum.gecmis.length;
+  }, [durum.gecmis.length]);
 
   const sureYuzde = toplamSure > 0 ? Math.max(0, (kalan / toplamSure) * 100) : 100;
 
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-6">
+      {konfetiGoster && <Konfeti />}
       <div className="mx-auto flex w-full max-w-md flex-col">
         <div className="flex justify-end">
           <button
@@ -202,22 +226,18 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
           {durum.taslar.map((t) => {
             const secili = durum.secimA === t.id;
             const uretilmis = t.yol.length > 0;
-            const isaretli = !uretilmis && isaretliTaslar.includes(t.deger);
             return (
               <button
                 key={t.id}
                 data-tas={t.deger}
-                data-isaretli={isaretli ? 'true' : undefined}
-                onClick={() => gonder({ t: 'tas', id: t.id })}
+                onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
                 className={`min-h-[64px] rounded-xl border text-2xl font-black transition active:scale-95 ${
                   secili
                     ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
-                    : isaretli
-                      ? 'border-amber-400/60 bg-amber-400/10 text-amber-200 ring-2 ring-amber-400/50'
-                      : uretilmis
-                        ? 'border-cyan-300/25 bg-slate-800/70 text-cyan-100'
-                        : 'border-slate-700 bg-slate-800/50 text-slate-100'
+                    : uretilmis
+                      ? 'border-cyan-300/25 bg-slate-800/70 text-cyan-100'
+                      : 'border-slate-700 bg-slate-800/50 text-slate-100'
                 }`}
               >
                 {t.deger}
@@ -263,7 +283,9 @@ export default function Oyun({ tur, seviye, sure, mod, onBitti, onYardim }: Prop
               const devreDisi =
                 jokerHakki <= 0 ||
                 (j.tip === 'sure' && sure <= 0) ||
-                (j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length);
+                (j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length) ||
+                (j.tip === 'yanlis' &&
+                  kullanilmayanTasIndeksleri(uretim).every((i) => durum.silinenler.includes(i)));
               return (
                 <button
                   key={j.tip}

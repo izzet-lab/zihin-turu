@@ -30,6 +30,12 @@ export interface OyunDurum {
   yigin: Hamle[];
   hata: string | null;
   sonrakiId: number;
+  /**
+   * "Yanlışı sil" jokeriyle kaldırılan orijinal taşların id'leri.
+   * Sıfırlamada da silinmiş kalırlar — joker hakkı harcandı, geri
+   * gelmeleri jokerin bedelini anlamsız kılardı.
+   */
+  silinenler: number[];
 }
 
 export type Eylem =
@@ -37,18 +43,23 @@ export type Eylem =
   | { t: 'islem'; op: Islem }
   | { t: 'geriAl' }
   | { t: 'sifirla' }
+  | { t: 'tasSil'; id: number }
   | { t: 'hataTemizle' };
 
-export function baslat(sayilar: number[]): OyunDurum {
+export function baslat(sayilar: number[], silinenler: number[] = []): OyunDurum {
+  const silinenKume = new Set(silinenler);
   return {
     kaynak: sayilar.slice(),
-    taslar: sayilar.map((deger, i) => ({ id: i, deger, yol: [] })),
+    taslar: sayilar
+      .map((deger, i) => ({ id: i, deger, yol: [] as Adim[] }))
+      .filter((t) => !silinenKume.has(t.id)),
     secimA: null,
     islem: null,
     gecmis: [],
     yigin: [],
     hata: null,
     sonrakiId: sayilar.length,
+    silinenler: silinenler.slice(),
   };
 }
 
@@ -108,7 +119,19 @@ export function ilerle(d: OyunDurum, e: Eylem): OyunDurum {
       };
     }
     case 'sifirla':
-      return baslat(d.kaynak);
+      return baslat(d.kaynak, d.silinenler);
+    case 'tasSil': {
+      const t = tasBul(d, e.id);
+      if (!t) return d;
+      return {
+        ...d,
+        taslar: d.taslar.filter((x) => x.id !== e.id),
+        silinenler: d.silinenler.concat([e.id]),
+        secimA: d.secimA === e.id ? null : d.secimA,
+        islem: d.secimA === e.id ? null : d.islem,
+        hata: null,
+      };
+    }
     case 'hataTemizle':
       return { ...d, hata: null };
     default:

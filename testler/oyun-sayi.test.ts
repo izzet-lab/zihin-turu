@@ -9,6 +9,7 @@ import {
   cozZinciri,
   jokerVer,
   jokerliPuan,
+  kullanilmayanTasIndeksleri,
   JOKER_MALIYET,
   antrenmanCarpani,
   seviyeCarpani,
@@ -160,21 +161,30 @@ describe('çözüm ve joker', () => {
     expect(j && j.tip === 'adim' && j.metin).toContain('=');
   });
 
-  it('taş joker çözümde geçen, dışarıda tutulmayan bir taşı verir', () => {
-    const u = uretimYap('normal', 999);
-    const kullanilan = new Set<number>();
-    u.cozum.adimlar.forEach((a) => {
-      kullanilan.add(a.a);
-      kullanilan.add(a.b);
-    });
-    const j1 = jokerVer(u, 'tas');
-    expect(j1).not.toBeNull();
-    expect(j1 && j1.tip === 'tas' && kullanilan.has(j1.tas)).toBe(true);
-    if (j1 && j1.tip === 'tas') {
-      const j2 = jokerVer(u, 'tas', { disHaricTutulan: [j1.tas] });
-      // İkinci çağrı, ilkinden farklı bir taş vermeli (varsa) ya da null.
-      if (j2) expect(j2.tip === 'tas' && j2.tas).not.toBe(j1.tas);
+  it('yanlış joker çözümde hiç kullanılmayan bir taşı verir', () => {
+    // Kolay seviyede (geri izleme çözücü) bazı tohumlarda kullanılmayan
+    // taş kalır; böyle bir tohum arıyoruz (deterministik üretim).
+    let u = uretimYap('kolay', 999);
+    let bosIndeksler = kullanilmayanTasIndeksleri(u);
+    for (let tohum = 0; bosIndeksler.length === 0 && tohum < 200; tohum++) {
+      u = uretimYap('kolay', tohum);
+      bosIndeksler = kullanilmayanTasIndeksleri(u);
     }
+    expect(bosIndeksler.length).toBeGreaterThan(0);
+    const j1 = jokerVer(u, 'yanlis');
+    expect(j1).not.toBeNull();
+    expect(j1 && j1.tip === 'yanlis' && bosIndeksler.includes(j1.indeks)).toBe(true);
+    if (j1 && j1.tip === 'yanlis') {
+      const j2 = jokerVer(u, 'yanlis', { disHaricTutulan: [j1.indeks] });
+      // İkinci çağrı, ilkinden farklı bir indeks vermeli (varsa) ya da null.
+      if (j2) expect(j2.tip === 'yanlis' && j2.indeks).not.toBe(j1.indeks);
+    }
+  });
+
+  it('ileri üretimli seviyelerde (zor/usta) tüm taşlar kullanılır, yanlış joker boş döner', () => {
+    const u = uretimYap('zor', 999);
+    expect(kullanilmayanTasIndeksleri(u)).toEqual([]);
+    expect(jokerVer(u, 'yanlis')).toBeNull();
   });
 
   it('süre joker 15 saniye ekler', () => {
@@ -187,17 +197,17 @@ describe('çözüm ve joker', () => {
 describe('joker maliyeti ve nihai puan', () => {
   it('her joker türünün bir maliyeti var', () => {
     expect(JOKER_MALIYET.adim).toBe(3);
-    expect(JOKER_MALIYET.tas).toBe(2);
+    expect(JOKER_MALIYET.yanlis).toBe(2);
     expect(JOKER_MALIYET.sure).toBe(2);
   });
 
   it('joker maliyeti temel puandan düşülür', () => {
     expect(jokerliPuan(10, ['adim'])).toBe(7);
-    expect(jokerliPuan(10, ['adim', 'tas'])).toBe(5);
+    expect(jokerliPuan(10, ['adim', 'yanlis'])).toBe(5);
   });
 
   it('puan hiçbir zaman 0ın altına düşmez', () => {
-    expect(jokerliPuan(2, ['adim', 'tas', 'sure'])).toBe(0);
+    expect(jokerliPuan(2, ['adim', 'yanlis', 'sure'])).toBe(0);
     expect(jokerliPuan(0, ['adim'])).toBe(0);
   });
 

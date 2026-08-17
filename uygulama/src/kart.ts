@@ -19,7 +19,7 @@ export const BOYUT = 1080;
 /** Joker etiketleri — yalnızca hangi yardımın kullanıldığını söyler. */
 export const JOKER_ETIKETLERI: Record<JokerTip, string> = {
   adim: 'Bir adım aç',
-  tas: 'Taş göster',
+  yanlis: 'Yanlışı sil',
   sure: 'Süre ekle',
 };
 

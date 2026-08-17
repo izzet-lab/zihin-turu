@@ -10,7 +10,7 @@
  */
 
 import type { Tur } from '@zihinturu/cekirdek';
-import { cozZinciri, type Adim, type SayiVeri } from './mantik';
+import { cozZinciri, type Adim, type SayiVeri } from './mantik.ts';
 
 export type ProfilAd = 'acemi' | 'orta' | 'usta';
 

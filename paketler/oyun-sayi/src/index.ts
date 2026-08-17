@@ -16,7 +16,7 @@ import {
   bicimle,
   type Adim,
   type SayiVeri,
-} from './mantik';
+} from './mantik.ts';
 
 export type {
   Adim,
@@ -26,7 +26,7 @@ export type {
   Uretim,
   JokerTip,
   JokerSonuc,
-} from './mantik';
+} from './mantik.ts';
 export {
   SEVIYELER,
   KUCUK,
@@ -47,7 +47,7 @@ export {
   ANTRENMAN_SEVIYE_CARPANI,
   antrenmanToplamCarpani,
   bicimle,
-} from './mantik';
+} from './mantik.ts';
 
 /**
  * Seviye üst verisi. Çekirdekteki `Seviye` "süre 0 yasak" der; tohum
@@ -112,7 +112,7 @@ export function sonrakiSeviyeAnahtari(seviye: string): string | null {
 }
 
 // Bot (sunucu tarafı): rakip yoksa maçı kuran eklenti.
-export { botUret, botPlani, PROFILLER } from './bot';
-export type { Bot, BotPlani, ProfilAd } from './bot';
+export { botUret, botPlani, PROFILLER } from './bot.ts';
+export type { Bot, BotPlani, ProfilAd } from './bot.ts';
 
 export default sayiTuru;

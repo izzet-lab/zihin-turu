@@ -11,6 +11,7 @@ coverage/
 # Supabase gizli değişkenler asla repoya girmez
 supabase/.env
 .supabase/
+supabase/.temp/
 
 # Playwright
 test-results/

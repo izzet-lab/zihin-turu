@@ -159,6 +159,44 @@ export async function turGonder(params: {
   }
 }
 
+/**
+ * Hesabı kalıcı olarak siler — KVKK "Silinme Hakkı".
+ * Edge Function hesap-sil çağrılır; cascade sayesinde
+ * oyuncu + tur_sonuc + lig tablolar hepsi silinir.
+ */
+export async function hesapSil(): Promise<{ basarili: boolean; hata?: string }> {
+  const { data: oturum } = await supabase.auth.getSession();
+  if (!oturum.session) return { basarili: false, hata: 'Giriş yapılmış değilsiniz.' };
+
+  const jwt = oturum.session.access_token;
+  const url = import.meta.env.VITE_SUPABASE_URL as string;
+  if (!url || url === 'https://placeholder.supabase.co') {
+    return { basarili: false, hata: 'Supabase yapılandırması yok.' };
+  }
+
+  try {
+    const yanit = await fetch(`${url}/functions/v1/hesap-sil`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+    });
+
+    if (!yanit.ok) {
+      const hata = await yanit.json().catch(() => ({})) as { hata?: string };
+      return { basarili: false, hata: hata?.hata ?? 'Silme başarısız oldu.' };
+    }
+
+    // Hesap silindi; oturumu kapat
+    await supabase.auth.signOut();
+    return { basarili: true };
+  } catch (e) {
+    console.error('[hesapSil] Hata:', e);
+    return { basarili: false, hata: 'Ağ bağlantısı hatası.' };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Küfür listesi — açık Türkçe hakaret ve küfürler.
 // Tam liste değil; moderasyon sonraki aşamada. Kaba tarama.

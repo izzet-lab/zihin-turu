@@ -290,6 +290,21 @@ export default function Sonuc({
             </button>
           </>
         )}
+
+        {/* Yasal metinler footer */}
+        <footer className="mt-12 pt-8 border-t border-slate-800">
+          <div className="text-center space-y-2">
+            <div className="text-xs text-slate-600 space-x-3">
+              <a href="/yasal/kvkk" className="hover:text-cyan-300">KVKK</a>
+              <span>•</span>
+              <a href="/yasal/gizlilik" className="hover:text-cyan-300">Gizlilik</a>
+              <span>•</span>
+              <a href="/yasal/cerez" className="hover:text-cyan-300">Çerez</a>
+              <span>•</span>
+              <a href="/yasal/kullanim-kosullari" className="hover:text-cyan-300">Koşullar</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </main>
   );

@@ -100,6 +100,15 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
             <h1 className="text-2xl font-black leading-none text-white">Sayı Turu</h1>
             <p className="text-xs text-slate-500">Rakamlar, dört işlem, bir hedef.</p>
           </div>
+          {/* Sıralamalar */}
+          <a
+            href="/lig"
+            data-alan="lig-ac"
+            className="min-h-[44px] rounded-full border border-slate-700 bg-slate-900/60 px-3 flex items-center text-xs font-bold text-cyan-300 hover:text-cyan-200"
+          >
+            📊
+          </a>
+
           {/* Kimlik butonu: giriş yapılmamışsa "Giriş", yapılmışsa kısa ad + çıkış */}
           {kullanici ? (
             <button
@@ -329,6 +338,26 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
             Not: Bu tarayıcıda ilerleme kaydedilemiyor; sonuçların bu oturumla sınırlı kalabilir.
           </p>
         )}
+
+        {/* Yasal metinler footer */}
+        <footer className="mt-12 pt-8 border-t border-slate-800">
+          <div className="text-center space-y-2">
+            <div className="text-xs text-slate-600 space-x-3">
+              <a href="/yasal/kvkk" className="hover:text-cyan-300">KVKK</a>
+              <span>•</span>
+              <a href="/yasal/gizlilik" className="hover:text-cyan-300">Gizlilik</a>
+              <span>•</span>
+              <a href="/yasal/cerez" className="hover:text-cyan-300">Çerez</a>
+              <span>•</span>
+              <a href="/yasal/kullanim-kosullari" className="hover:text-cyan-300">Koşullar</a>
+            </div>
+            {kullanici && (
+              <div className="text-xs text-slate-700 pt-2">
+                <a href="/yasal/hesap-sil" className="hover:text-red-400">Hesabı sil</a>
+              </div>
+            )}
+          </div>
+        </footer>
       </div>
     </main>
   );

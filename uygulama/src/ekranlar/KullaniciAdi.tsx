@@ -104,6 +104,12 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
           Seriderin, tam isabet sayın ve oyun geçmişin hesabına aktarılır.
           Lig puanların bugünden itibaren birikmeye başlar.
         </div>
+
+        {/* Profil linki */}
+        <p className="mt-6 text-center text-xs text-slate-600">
+          Seçtiğin adla profil sayfan açılacak:{' '}
+          <span className="text-cyan-300">zihin-turu.pages.dev/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
+        </p>
       </div>
     </main>
   );

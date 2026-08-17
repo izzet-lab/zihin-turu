@@ -149,12 +149,6 @@ export default function Sonuc({
               {seviyeEtiket} · {sure > 0 ? `${sure}sn` : 'süresiz'} · ×{carpanGoster(sonuc.carpan)}
             </div>
           )}
-          {mod === 'antrenman' && oturumPuanSonrasi && (
-            <div className="mt-1 text-xs text-slate-400" data-alan="oturum-ozet">
-              Bu tur: {sonuc.puan} puan → Oturum toplamı:{' '}
-              <span className="font-bold text-slate-200">{oturumPuanSonrasi.toplamPuan} puan</span>
-            </div>
-          )}
           {sonuc.jokerler.length > 0 && (
             <div className="mt-1 text-xs text-amber-300" data-alan="kullanilan-jokerler">
               Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
@@ -166,6 +160,31 @@ export default function Sonuc({
             </div>
           )}
         </div>
+
+        {/* Oturum toplamı — Antrenman'ın "bir tane daha" motivasyon kartı.
+            Sönük bir yan bilgi olarak kalmasın diye görsel olarak vurgulu:
+            büyük, kalın sayı; hafif cyan çerçeve/dolgu. */}
+        {mod === 'antrenman' && oturumPuanSonrasi && (
+          <div
+            data-alan="oturum-ozet"
+            className="mt-5 rounded-2xl border border-cyan-300/40 bg-cyan-300/10 px-5 py-4 text-center"
+          >
+            <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-200/80">
+              Oturum toplamı:
+            </div>
+            <div className="mt-1 text-4xl font-black tabular-nums text-cyan-100">
+              {oturumPuanSonrasi.toplamPuan} <span className="text-lg font-bold text-cyan-200/70">puan</span>
+            </div>
+            <div className="mt-2 text-xs text-cyan-200/70">
+              {oturumPuanSonrasi.turSayisi}. tur · Bu tur: {sonuc.puan} puan
+            </div>
+          </div>
+        )}
+        {mod === 'antrenman' && oturumPuanSonrasi && (
+          <p className="mt-2 text-center text-[11px] text-slate-600" data-alan="uyelik-notu">
+            Üye olursan oturum puanların kalıcı olur ve lige işler.
+          </p>
+        )}
 
         {/* Çözümün tahtaya el yazısıyla yazılması */}
         <div className="mt-7">

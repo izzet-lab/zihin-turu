@@ -9,6 +9,7 @@ import {
   seviyeAc,
   eskiGunlukDonustur,
   hicOynamamisMi,
+  eskiSeviyeleriEsle,
   type Ilerleme,
 } from '../uygulama/src/depo';
 
@@ -40,15 +41,15 @@ describe('günlük kilit — genel, seviyeden bağımsız', () => {
   });
 
   it('bir seviyede oynanınca gün tamamen kilitlenir', () => {
-    gunlukKaydet('2026-08-16', 'kolay', { fark: 0, puan: 10 });
+    gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
     expect(gunlukKilitli('2026-08-16')).toBe(true);
   });
 
   it('aynı gün ikinci kayıt hiçbir şeyi değiştirmez (idempotent)', () => {
-    const il1 = gunlukKaydet('2026-08-16', 'kolay', { fark: 0, puan: 10 });
+    const il1 = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
     const il2 = gunlukKaydet('2026-08-16', 'normal', { fark: 5, puan: 3 });
     expect(il2.tam).toBe(il1.tam);
-    expect(il2.gunluk['2026-08-16']!.seviye).toBe('kolay'); // ilk kayıt korunur
+    expect(il2.gunluk['2026-08-16']!.seviye).toBe('normal'); // ilk kayıt korunur
   });
 
   it('tam isabet sayacı günde yalnızca bir kez artar', () => {
@@ -93,18 +94,18 @@ describe('seviye kilidi', () => {
   it('ilk durumda yalnızca Isınma (cocuk) açık', () => {
     expect(acikSeviyeler()).toEqual(['cocuk']);
     expect(seviyeAcikMi('cocuk')).toBe(true);
-    expect(seviyeAcikMi('kolay')).toBe(false);
+    expect(seviyeAcikMi('normal')).toBe(false);
   });
 
   it('seviyeAc bir sonraki seviyeyi açar', () => {
-    const il = seviyeAc('kolay');
-    expect(il.acikSeviyeler).toEqual(['cocuk', 'kolay']);
+    const il = seviyeAc('normal');
+    expect(il.acikSeviyeler).toEqual(['cocuk', 'normal']);
   });
 
   it('zaten açık bir seviye tekrar eklenmez', () => {
-    seviyeAc('kolay');
-    const il = seviyeAc('kolay');
-    expect(il.acikSeviyeler).toEqual(['cocuk', 'kolay']);
+    seviyeAc('normal');
+    const il = seviyeAc('normal');
+    expect(il.acikSeviyeler).toEqual(['cocuk', 'normal']);
   });
 });
 
@@ -137,5 +138,25 @@ describe('hiçOynamamisMi', () => {
       false,
     );
     expect(hicOynamamisMi({ seri: { son: '2026-08-16', gun: 1, enUzun: 1 } })).toBe(false);
+  });
+});
+
+describe('kolay -> normal seviye göçü', () => {
+  it('kolay açmış oyuncu normal ile devam eder', () => {
+    expect(eskiSeviyeleriEsle(['cocuk', 'kolay'])).toEqual(['cocuk', 'normal']);
+  });
+
+  it('hem kolay hem normal açıksa tekrar oluşmaz', () => {
+    expect(eskiSeviyeleriEsle(['cocuk', 'kolay', 'normal'])).toEqual(['cocuk', 'normal']);
+  });
+
+  it('artık var olmayan anahtarlar atılır', () => {
+    expect(eskiSeviyeleriEsle(['cocuk', 'uydurma'])).toEqual(['cocuk']);
+  });
+
+  it('güncel liste olduğu gibi kalır', () => {
+    expect(eskiSeviyeleriEsle(['cocuk', 'normal', 'zor', 'usta'])).toEqual([
+      'cocuk', 'normal', 'zor', 'usta',
+    ]);
   });
 });

@@ -17,6 +17,7 @@ import {
   sonrakiSeviyeAnahtari,
   SEVIYE_ANAHTARLARI,
   SEVIYE_LISTESI,
+  SEVIYELER,
   botUret,
   botPlani,
   type Adim,
@@ -55,7 +56,7 @@ describe('tohum ve tur üretimi', () => {
   });
 });
 
-describe('beş seviyede 200 tur tam çözümlü', () => {
+describe('her seviyede 200 tur tam çözümlü', () => {
   // Faz 1'in ana kabul testi: her seviyede 200 tur üretilip hepsinin
   // tam çözümü olduğu doğrulanır.
   for (const seviye of SEVIYE_ANAHTARLARI) {
@@ -162,12 +163,12 @@ describe('çözüm ve joker', () => {
   });
 
   it('yanlış joker çözümde hiç kullanılmayan bir taşı verir', () => {
-    // Kolay seviyede (geri izleme çözücü) bazı tohumlarda kullanılmayan
+    // Normal seviyede (geri izleme çözücü) bazı tohumlarda kullanılmayan
     // taş kalır; böyle bir tohum arıyoruz (deterministik üretim).
-    let u = uretimYap('kolay', 999);
+    let u = uretimYap('normal', 999);
     let bosIndeksler = kullanilmayanTasIndeksleri(u);
     for (let tohum = 0; bosIndeksler.length === 0 && tohum < 200; tohum++) {
-      u = uretimYap('kolay', tohum);
+      u = uretimYap('normal', tohum);
       bosIndeksler = kullanilmayanTasIndeksleri(u);
     }
     expect(bosIndeksler.length).toBeGreaterThan(0);
@@ -233,7 +234,6 @@ describe('antrenman risk çarpanı', () => {
 describe('antrenman seviye çarpanı', () => {
   it('zor seviye daha yüksek çarpan getirir', () => {
     expect(seviyeCarpani('cocuk')).toBe(0.5);
-    expect(seviyeCarpani('kolay')).toBe(0.8);
     expect(seviyeCarpani('normal')).toBe(1);
     expect(seviyeCarpani('zor')).toBe(1.5);
     expect(seviyeCarpani('usta')).toBe(2);
@@ -269,8 +269,7 @@ describe('seviye ilerlemesi', () => {
   });
 
   it('sıradaki seviye kolaydan zora ilerler', () => {
-    expect(sonrakiSeviyeAnahtari('cocuk')).toBe('kolay');
-    expect(sonrakiSeviyeAnahtari('kolay')).toBe('normal');
+    expect(sonrakiSeviyeAnahtari('cocuk')).toBe('normal');
     expect(sonrakiSeviyeAnahtari('normal')).toBe('zor');
     expect(sonrakiSeviyeAnahtari('zor')).toBe('usta');
   });
@@ -305,4 +304,49 @@ describe('çözücü doğrudan', () => {
     expect(c.fark).toBe(0);
     expect(c.deger).toBe(24);
   });
+});
+
+/* ------------------------------------------------------------------ */
+/* Seviye birleştirmesi sonrası denge ve çözülebilirlik                */
+/* ------------------------------------------------------------------ */
+
+describe('seviye yapılandırması', () => {
+  it('dört seviye vardır ve kolay kaldırılmıştır', () => {
+    expect(SEVIYE_ANAHTARLARI).toEqual(['cocuk', 'normal', 'zor', 'usta']);
+    expect(SEVIYE_ANAHTARLARI).not.toContain('kolay');
+  });
+
+  it('seviye hedef aralıkları örtüşmez ve artan sırada gider', () => {
+    // Bir seviyenin alt sınırı, bir öncekinin üst sınırından büyük olmalı;
+    // aksi halde "zor" turda "normal"den kolay bir hedef çıkabilirdi.
+    const sirali = SEVIYE_ANAHTARLARI.map((a) => SEVIYELER[a]!);
+    for (let i = 1; i < sirali.length; i++) {
+      expect(sirali[i]!.alt).toBeGreaterThan(sirali[i - 1]!.ust);
+    }
+  });
+
+  it('taş sayısı seviye yükseldikçe azalmaz', () => {
+    const sirali = SEVIYE_ANAHTARLARI.map((a) => SEVIYELER[a]!);
+    for (let i = 1; i < sirali.length; i++) {
+      expect(sirali[i]!.tas).toBeGreaterThanOrEqual(sirali[i - 1]!.tas);
+    }
+  });
+});
+
+describe('her seviyede 100 tur çözülebilir', () => {
+  for (const anahtar of ['cocuk', 'normal', 'zor', 'usta']) {
+    it(`${anahtar}: 100 turun hepsi tam çözüme sahip`, () => {
+      const S = SEVIYELER[anahtar]!;
+      for (let tohum = 1; tohum <= 100; tohum++) {
+        const u = uretimYap(anahtar, tohum);
+        // Üretici, tam çözüm bulamadığı turu döndürmemeli.
+        expect(u.cozum.fark).toBe(0);
+        // Hedef, seviyenin ilan ettiği aralıkta olmalı.
+        expect(u.hedef).toBeGreaterThanOrEqual(S.alt);
+        expect(u.hedef).toBeLessThanOrEqual(S.ust);
+        // Taş sayısı seviye ayarıyla uyuşmalı.
+        expect(u.sayilar.length).toBe(S.tas);
+      }
+    }, 60_000);
+  }
 });

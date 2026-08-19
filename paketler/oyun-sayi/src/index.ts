@@ -59,10 +59,9 @@ export {
  */
 export const SEVIYE_LISTESI: readonly Seviye[] = [
   { anahtar: 'cocuk', etiket: 'Isınma', altEtiket: '2 hane · 4 taş', sure: 60, antrenmanSuresiz: true },
-  { anahtar: 'kolay', etiket: 'Kolay', altEtiket: '3 hane · 5 taş', sure: 90, antrenmanSuresiz: false },
-  { anahtar: 'normal', etiket: 'Normal', altEtiket: '3 hane · 6 taş', sure: 45, antrenmanSuresiz: false },
-  { anahtar: 'zor', etiket: 'Zor', altEtiket: '4 hane · 6 taş', sure: 90, antrenmanSuresiz: false },
-  { anahtar: 'usta', etiket: 'Usta', altEtiket: '5 hane · 7 taş', sure: 120, antrenmanSuresiz: true },
+  { anahtar: 'normal', etiket: 'Normal', altEtiket: '3 hane · 5 taş', sure: 60, antrenmanSuresiz: false },
+  { anahtar: 'zor', etiket: 'Zor', altEtiket: '4 hane · 6 taş', sure: 75, antrenmanSuresiz: false },
+  { anahtar: 'usta', etiket: 'Usta', altEtiket: '5 hane · 7 taş', sure: 90, antrenmanSuresiz: true },
 ];
 
 export const sayiTuru: TurSaglayici = {

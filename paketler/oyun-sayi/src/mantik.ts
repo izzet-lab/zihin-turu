@@ -73,10 +73,21 @@ export const BUYUK: readonly number[] = [25, 50, 75, 100];
 
 const ISLEMLER: readonly Islem[] = ['+', '−', '×', '÷'];
 
+/**
+ * Seviyeler. Sıra önemlidir: SEVIYE_ANAHTARLARI bu nesnenin anahtar
+ * sırasından türer ve seviye açma zinciri (sonrakiSeviyeAnahtari) buna
+ * dayanır.
+ *
+ * Hane aralıkları kasıtlı olarak örtüşmez — her seviyenin hedefi bir
+ * öncekinin üst sınırının üstünde başlar. Örtüşme olsaydı "zor" turda
+ * "normal"den kolay bir hedef çıkabilirdi.
+ *
+ * Not: 'kolay' seviyesi 'normal' ile birleştirildi (bkz. CHANGELOG).
+ * Yeni 'normal' 5 taşla 3 haneli hedefleri kapsar.
+ */
 export const SEVIYELER: Record<string, SeviyeConfig> = {
   cocuk: { etiket: 'Isınma', hane: 2, tas: 4, alt: 10, ust: 99, tolerans: [2, 4], buyukVar: false, ileri: false },
-  kolay: { etiket: 'Kolay', hane: 3, tas: 5, alt: 100, ust: 499, tolerans: [3, 8], buyukVar: false, ileri: false },
-  normal: { etiket: 'Normal', hane: 3, tas: 6, alt: 101, ust: 999, tolerans: [5, 10], buyukVar: true, ileri: false },
+  normal: { etiket: 'Normal', hane: 3, tas: 5, alt: 100, ust: 999, tolerans: [4, 10], buyukVar: true, ileri: false },
   zor: { etiket: 'Zor', hane: 4, tas: 6, alt: 1000, ust: 9999, tolerans: [15, 50], buyukVar: true, ileri: true },
   usta: { etiket: 'Usta', hane: 5, tas: 7, alt: 10000, ust: 99999, tolerans: [100, 500], buyukVar: true, ileri: true },
 };
@@ -337,7 +348,6 @@ export function antrenmanCarpani(sure: number): number {
  */
 export const ANTRENMAN_SEVIYE_CARPANI: Record<string, number> = {
   cocuk: 0.5,
-  kolay: 0.8,
   normal: 1,
   zor: 1.5,
   usta: 2,

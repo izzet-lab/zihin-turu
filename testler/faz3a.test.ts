@@ -76,8 +76,8 @@ describe('Geçerli zincir', () => {
   });
 
   it('boş zincir: hiç adım yok → puan 0', () => {
-    const sonuc = sunucuDogrulaVePuanla('kolay', 99, [], 90, 60, []);
-    const uretimSonuc = uretimYap('kolay', 99);
+    const sonuc = sunucuDogrulaVePuanla('normal', 99, [], 90, 60, []);
+    const uretimSonuc = uretimYap('normal', 99);
     expect(sonuc.gecerli).toBe(true);
     // Hiç işlem yapılmadı; hedefe uzaklık = hedefin kendisi (başlangıç taşları değil)
     expect(sonuc.uzaklik).toBe(uretimSonuc.hedef);
@@ -92,13 +92,13 @@ describe('Geçerli zincir', () => {
 
 describe('Sahte puan gönderimi reddedilir', () => {
   it('yanlış sonuç bildiren adım reddedilir', () => {
-    const uretim = uretimYap('kolay', 7);
+    const uretim = uretimYap('normal', 7);
     const gercek = uretim.cozum.adimlar;
     if (!gercek.length) return; // sıfır adımlı tur — testin dışında
 
     // İlk adımın sonucunu yanlış bildir
     const sahte: Adim[] = [{ ...gercek[0]!, sonuc: gercek[0]!.sonuc + 1 }];
-    const sonuc = sunucuDogrulaVePuanla('kolay', 7, sahte, 90, 50, []);
+    const sonuc = sunucuDogrulaVePuanla('normal', 7, sahte, 90, 50, []);
     expect(sonuc.gecerli).toBe(false);
     expect(sonuc.hata).toContain('Bildirilen sonuç yanlış');
   });
@@ -111,22 +111,22 @@ describe('Sahte puan gönderimi reddedilir', () => {
   });
 
   it('geçersiz işlem (negatif sonuç) reddedilir', () => {
-    const uretim = uretimYap('kolay', 5);
+    const uretim = uretimYap('normal', 5);
     const sayilar = uretim.sayilar;
     // Küçük − büyük = negatif → kural dışı
     const kucuk = Math.min(...sayilar);
     const buyuk = Math.max(...sayilar.filter((x) => x !== kucuk));
     const sahte: Adim[] = [{ a: kucuk, b: buyuk, islem: '−', sonuc: kucuk - buyuk }];
-    const sonuc = sunucuDogrulaVePuanla('kolay', 5, sahte, 90, 60, []);
+    const sonuc = sunucuDogrulaVePuanla('normal', 5, sahte, 90, 60, []);
     expect(sonuc.gecerli).toBe(false);
   });
 
   it('aynı taşı iki kez kullanan zincir reddedilir', () => {
-    const uretim = uretimYap('kolay', 55);
+    const uretim = uretimYap('normal', 55);
     const ilk = uretim.sayilar[0]!;
     // Aynı sayıyı hem a hem b olarak kullan — havuzda bir tane var
     const sahte: Adim[] = [{ a: ilk, b: ilk, islem: '+', sonuc: ilk * 2 }];
-    const sonuc = sunucuDogrulaVePuanla('kolay', 55, sahte, 90, 60, []);
+    const sonuc = sunucuDogrulaVePuanla('normal', 55, sahte, 90, 60, []);
     // İki adet aynı değer yoksa (olsa da iki kez tüketme reddedilir)
     const ciftVar = uretim.sayilar.filter((x) => x === ilk).length >= 2;
     if (!ciftVar) {
@@ -157,8 +157,8 @@ describe('Günün Turu tohum kontrolü', () => {
   });
 
   it('farklı seviyeler farklı tohumlar üretir', () => {
-    const t1 = gunlukTohum('sayi', 'kolay', '2026-08-17');
-    const t2 = gunlukTohum('sayi', 'normal', '2026-08-17');
+    const t1 = gunlukTohum('sayi', 'normal', '2026-08-17');
+    const t2 = gunlukTohum('sayi', 'zor', '2026-08-17');
     expect(t1).not.toBe(t2);
   });
 });

@@ -145,7 +145,9 @@ export function oku(): Ilerleme {
         gunluk: v.gunluk ?? {},
         // Alan yoksa (v2'den önceki bir ara kayıt) var olan geçmişe
         // bakarak karar ver: geçmişi olan biri "yeni oyuncu" sayılmaz.
-        acikSeviyeler: v.acikSeviyeler ?? (hicOynamamisMi(v) ? ['cocuk'] : [...SEVIYE_ANAHTARLARI]),
+        acikSeviyeler: eskiSeviyeleriEsle(
+          v.acikSeviyeler ?? (hicOynamamisMi(v) ? ['cocuk'] : [...SEVIYE_ANAHTARLARI]),
+        ),
       };
     } catch {
       return BOS();
@@ -158,6 +160,18 @@ export function oku(): Ilerleme {
     return goc;
   }
   return BOS();
+}
+
+/**
+ * "kolay" seviyesi "normal" ile birleştirildi. Daha önce Kolay'ı açmış
+ * bir oyuncu, artık var olmayan bir anahtara sahip olurdu ve Normal'i
+ * yeniden açmak zorunda kalırdı. Bu eşleme onun ilerlemesini korur:
+ * kolay açıksa normal de açık sayılır, ölü anahtar atılır.
+ */
+export function eskiSeviyeleriEsle(acik: readonly string[]): string[] {
+  const yeni = acik.map((s) => (s === 'kolay' ? 'normal' : s));
+  // Yalnızca hâlâ var olan seviyeleri tut, tekrarları ayıkla.
+  return [...new Set(yeni)].filter((s) => SEVIYE_ANAHTARLARI.includes(s));
 }
 
 export function hicOynamamisMi(v: Partial<Ilerleme>): boolean {

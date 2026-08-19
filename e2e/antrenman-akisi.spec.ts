@@ -25,7 +25,7 @@ async function deneyimliTohumla(page: import('@playwright/test').Page) {
         seri: { son: null, gun: 0, enUzun: 0 },
         tam: 0,
         gunluk: {},
-        acikSeviyeler: ['cocuk', 'kolay', 'normal', 'zor', 'usta'],
+        acikSeviyeler: ['cocuk', 'normal', 'zor', 'usta'],
       }),
     );
   });

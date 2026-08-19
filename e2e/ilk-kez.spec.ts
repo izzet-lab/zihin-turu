@@ -27,7 +27,7 @@ test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Kolay açıl
   await expect(isinmaCip).toBeEnabled();
   await expect(isinmaCip).toHaveAttribute('aria-pressed', 'true');
 
-  const kolayCip = page.locator('[data-seviye="kolay"]');
+  const kolayCip = page.locator('[data-seviye="normal"]');
   await expect(kolayCip).toBeDisabled();
   await expect(kolayCip).toHaveAttribute('data-kilitli', 'true');
   const ustaCip = page.locator('[data-seviye="usta"]');
@@ -53,7 +53,7 @@ test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Kolay açıl
   // eder); Kurulum'a dönmek için ikincil "Ayarlar" düğmesi kullanılır.
   await page.locator('[data-alan="ayarlar"]').click();
 
-  const kolayCip2 = page.locator('[data-seviye="kolay"]');
+  const kolayCip2 = page.locator('[data-seviye="normal"]');
   await expect(kolayCip2).toBeEnabled();
   await expect(kolayCip2).not.toHaveAttribute('data-kilitli', 'true');
   await kolayCip2.click();

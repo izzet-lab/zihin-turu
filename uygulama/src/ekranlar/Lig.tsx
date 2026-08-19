@@ -202,4 +202,5 @@ export default function Lig({ oyuncuId }: Props) {
 }
 
 // Seviye listesi (Kurulum.tsx ile eşleşmelidir)
-const seviyeler = sayiTuru.seviyeler.slice(0, 5);
+// Tüm seviyeler; liste tek kaynaktan (SEVIYE_LISTESI) gelir.
+const seviyeler = sayiTuru.seviyeler;

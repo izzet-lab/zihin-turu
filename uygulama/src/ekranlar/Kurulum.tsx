@@ -232,7 +232,9 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
               </div>
             </div>
 
-            {secili.anahtar !== 'cocuk' && secili.anahtar !== 'kolay' && (
+            {/* Büyük sayı yalnızca buyukVar=true seviyelerde seçilir;
+                şu an bunun dışında kalan tek seviye Isınma. */}
+            {secili.anahtar !== 'cocuk' && (
               <div>
                 <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
                   Büyük sayı (25/50/75/100)

@@ -117,8 +117,11 @@ Bir faz bitmeden sonrakine geçme.
 > içinde yaz. Sonra `tohum-kod/` klasöründeki JavaScript sayı oyunu
 > mantığını TypeScript'e çevirip `paketler/oyun-sayi` içine bu
 > arayüzü uygulayacak şekilde taşı. Mevcut testleri de taşı ve
-> çalıştır. Beş seviyede 200'er tur üretip hepsinin tam çözümlü
+> çalıştır. Her seviyede 200'er tur üretip hepsinin tam çözümlü
 > olduğunu doğrulayan testi koru.
+>
+> *(Not: Faz 1'de beş seviye vardı. 19 Ağustos 2026'da Kolay ve Normal
+> birleştirildi; artık dört seviye var — bkz. `CHANGELOG.md`.)*
 
 ### Faz 2 — Tek kişilik yayın ⭐
 

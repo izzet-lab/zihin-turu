@@ -2,7 +2,7 @@
 
 Türkçe zihin oyunu platformu. İki oyun, tek altyapı:
 
-- **Sayı Turu** — 6 rakam, dört işlem, bir hedef
+- **Sayı Turu** — rakamlar, dört işlem, bir hedef
 - **Kelime Turu** — 8 harf, en uzun kelime *(Faz 6)*
 
 Tek başına, karşılıklı düello ya da arenada. Her gün herkese aynı
@@ -17,6 +17,19 @@ npm test            # testler
 npm run insa        # üretim derlemesi
 npm run tip         # tip denetimi
 ```
+
+## Seviyeler
+
+| Seviye | Hane | Taş | Hedef aralığı | Süre |
+|---|---|---|---|---|
+| Isınma | 2 | 4 | 10–99 | 60 sn |
+| Normal | 3 | 5 | 100–999 | 60 sn |
+| Zor | 4 | 6 | 1.000–9.999 | 75 sn |
+| Usta | 5 | 7 | 10.000–99.999 | 90 sn |
+
+Seviye tanımları tek yerde durur: `paketler/oyun-sayi/src/mantik.ts`
+içindeki `SEVIYELER`. Etiket ve süreler `src/index.ts` içindeki
+`SEVIYE_LISTESI`'nden gelir. Değişiklik geçmişi için `CHANGELOG.md`.
 
 ## Yapı
 

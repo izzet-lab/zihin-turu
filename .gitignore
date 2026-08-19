@@ -16,3 +16,14 @@ supabase/.temp/
 # Playwright
 test-results/
 playwright-report/
+
+# Capacitor / Android — derleme çıktıları
+uygulama/android/.gradle/
+uygulama/android/build/
+uygulama/android/app/build/
+uygulama/android/local.properties
+uygulama/android/app/src/main/assets/public/
+uygulama/android/.idea/
+uygulama/android/capacitor-cordova-android-plugins/
+*.keystore
+*.jks

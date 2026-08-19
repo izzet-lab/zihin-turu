@@ -8,7 +8,9 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { girisDonusAdresi } from '../platform';
 
 interface Props {
   /** Kullanıcı "Şimdi değil" seçtiğinde çağrılır. */
@@ -39,7 +41,8 @@ export default function Giris({ onAtla }: Props) {
         email: temiz,
         options: {
           // E-postadaki bağlantı kullanıcıyı uygulamaya geri götürür.
-          emailRedirectTo: window.location.origin,
+          // Android'de özel şema (com.zihinturu.app://giris) kullanılır.
+          emailRedirectTo: girisDonusAdresi(),
         },
       });
       if (error) {
@@ -60,7 +63,7 @@ export default function Giris({ onAtla }: Props) {
     setHata(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: girisDonusAdresi() },
     });
     if (error) setHata('Google girişi başlatılamadı.');
   }
@@ -169,9 +172,9 @@ export default function Giris({ onAtla }: Props) {
             className="mt-0.5 accent-cyan-400"
           />
           <span className="text-xs text-slate-400 leading-relaxed">
-            <a href="/yasal/kvkk" target="_blank" rel="noopener" className="text-cyan-400 underline">KVKK Aydınlatma Metni</a>'ni
+            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ni
             okudum ve{' '}
-            <a href="/yasal/kullanim-kosullari" target="_blank" rel="noopener" className="text-cyan-400 underline">Kullanım Koşulları</a>'nı
+            <Link to="/yasal/kullanim-kosullari" className="text-cyan-400 underline">Kullanım Koşulları</Link>'nı
             kabul ediyorum.
           </span>
         </label>

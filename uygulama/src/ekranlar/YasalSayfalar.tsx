@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { hesapSil } from '../kimlik';
 import SayfaSablonu from './SayfaSablonu';
 
@@ -165,7 +166,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>1. Toplanan Veriler</h2>
           <p>
-            Ayrıntılı liste için <a href="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</a>'ne
+            Ayrıntılı liste için <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ne
             bakınız. Özetle: e-posta, kullanıcı adı, oyun sonuçları ve teknik
             bağlantı bilgileri (IP, user-agent).
           </p>

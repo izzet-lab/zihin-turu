@@ -9,21 +9,29 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import { profilOku, type OyuncuProfil } from '../kimlik';
 import { sesAcikMi, sesTercihiYaz } from '../depo';
 
-/** Ana sayfadayken event, başka rotadayken URL parametresiyle iletişim. */
-function anaSayfayaIstek(istek: 'yardim' | 'giris') {
-  if (window.location.pathname === '/') {
-    window.dispatchEvent(new CustomEvent('zt-menu-istek', { detail: istek }));
-  } else {
-    window.location.href = `/?${istek}=1`;
-  }
-}
-
 export default function Menu() {
+  const gecis = useNavigate();
+
+  /** Ana sayfadayken event, başka rotadayken yönlendirip parametre bırak. */
+  function anaSayfayaIstek(istek: 'yardim' | 'giris') {
+    if (window.location.pathname === '/') {
+      window.dispatchEvent(new CustomEvent('zt-menu-istek', { detail: istek }));
+    } else {
+      gecis(`/?${istek}=1`);
+      // Uygulama bileşeni parametreyi mount'ta okuyor; olay da gönderelim
+      // ki zaten mount edilmişse anında tepki versin.
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('zt-menu-istek', { detail: istek }));
+      }, 0);
+    }
+  }
+
   const [menuAcik, setMenuAcik] = useState(false);
   const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi());
   const [kullanici, setKullanici] = useState<User | null>(null);
@@ -57,6 +65,12 @@ export default function Menu() {
     return () => window.removeEventListener('keydown', kapat);
   }, [menuAcik]);
 
+  /** Menüyü kapatıp rotayı değiştirir (tam sayfa yüklemesi yapmaz). */
+  function git(yol: string) {
+    setMenuAcik(false);
+    gecis(yol);
+  }
+
   function sesDegistir() {
     const yeni = !sesAcik;
     setSesAcik(yeni);
@@ -66,7 +80,7 @@ export default function Menu() {
   async function cikisYap() {
     setMenuAcik(false);
     await supabase.auth.signOut();
-    window.location.href = '/';
+    gecis('/');
   }
 
   return (
@@ -118,29 +132,29 @@ export default function Menu() {
 
             <div className="my-1 h-px bg-slate-800" />
 
-            <a
-              href="/"
+            <button
+              onClick={() => git('/')}
               data-alan="ana-sayfa"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
             >
               🏠 Ana sayfa
-            </a>
+            </button>
 
-            <a
-              href="/lig"
+            <button
+              onClick={() => git('/lig')}
               data-alan="lig-ac"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
             >
               📊 Sıralamalar
-            </a>
+            </button>
 
             {kullanici && profil && (
-              <a
-                href={`/o/${profil.kullaniciAdi}`}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              <button
+                onClick={() => git(`/o/${profil.kullaniciAdi}`)}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
               >
                 👤 Profil
-              </a>
+              </button>
             )}
 
             <button
@@ -165,21 +179,21 @@ export default function Menu() {
 
             {/* Yasal bağlantılar */}
             <div className="my-1 h-px bg-slate-800" />
-            <a
-              href="/yasal/kvkk"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-500 hover:bg-slate-800/60 hover:text-slate-300"
+            <button
+              onClick={() => git('/yasal/kvkk')}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-slate-500 hover:bg-slate-800/60 hover:text-slate-300"
             >
               📄 Yasal bilgiler
-            </a>
+            </button>
 
             {kullanici && (
-              <a
-                href="/yasal/hesap-sil"
+              <button
+                onClick={() => git('/yasal/hesap-sil')}
                 data-alan="hesap-sil"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-red-400/70 hover:bg-slate-800/60 hover:text-red-400"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-red-400/70 hover:bg-slate-800/60 hover:text-red-400"
               >
                 🗑️ Hesabımı sil
-              </a>
+              </button>
             )}
           </div>
         </>

@@ -44,7 +44,7 @@ interface Props {
   /** Antrenman oturumu puan/tur göstergesi — yalnızca Antrenman'da dolu gelir. */
   oturumPuan: { toplamPuan: number; turSayisi: number } | null;
   onBitti: (s: OyunSonuc) => void;
-  onYardim: () => void;
+  onYardim?: () => void;
 }
 
 const ISLEMLER: { op: Islem; ad: string }[] = [
@@ -201,14 +201,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           ) : (
             <span />
           )}
-          <button
-            onClick={onYardim}
-            data-alan="yardim-ac"
-            aria-label="Nasıl oynanır"
-            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg font-black text-cyan-200"
-          >
-            ?
-          </button>
+          <span className="min-h-[44px] min-w-[44px]" />
         </div>
 
         {/* Hedef + en yakın */}
@@ -221,15 +214,24 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           </div>
           <div className="text-right">
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">En yakın</div>
-            <div
-              data-alan="en-yakin"
-              className={`text-3xl font-black leading-none ${tamIsabet ? 'text-cyan-300' : 'text-slate-300'}`}
-            >
-              {tamIsabet ? 'Tam!' : yakinTas.deger}
-            </div>
-            <div className="text-[11px] text-slate-500">
-              {tamIsabet ? 'hedefe ulaştın' : `${yakinFark} fark`}
-            </div>
+            {durum.gecmis.length === 0 ? (
+              <>
+                <div data-alan="en-yakin" className="text-3xl font-black leading-none text-slate-600">—</div>
+                <div className="text-[11px] text-slate-600">bir işlem yap</div>
+              </>
+            ) : (
+              <>
+                <div
+                  data-alan="en-yakin"
+                  className={`text-3xl font-black leading-none ${tamIsabet ? 'text-cyan-300' : 'text-slate-300'}`}
+                >
+                  {tamIsabet ? 'Tam!' : yakinTas.deger}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {tamIsabet ? 'hedefe ulaştın' : `${yakinFark} fark`}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -306,24 +308,42 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           </div>
           <div className="grid grid-cols-3 gap-2">
             {JOKER_META.map((j) => {
-              const devreDisi =
-                jokerHakki <= 0 ||
-                (j.tip === 'sure' && sure <= 0) ||
-                (j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length) ||
-                (j.tip === 'yanlis' &&
-                  kullanilmayanTasIndeksleri(uretim).every((i) => durum.silinenler.includes(i)));
+              // Joker hakkı bittiyse genel nedenle devre dışı
+              const hakYok = jokerHakki <= 0;
+              // Tipe özel devre dışı kalma nedenleri
+              const suresizMod = j.tip === 'sure' && sure <= 0;
+              const adimBitti = j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length;
+              const yanlisYok = j.tip === 'yanlis' &&
+                kullanilmayanTasIndeksleri(uretim).every((i) => durum.silinenler.includes(i));
+              const devreDisi = hakYok || suresizMod || adimBitti || yanlisYok;
+
+              // Devre dışı sebebini gösterecek kısa not
+              let devreDisiNot: string | null = null;
+              if (devreDisi && !hakYok) {
+                if (yanlisYok) devreDisiNot = 'Tüm taşlar çözümde kullanılıyor';
+                else if (adimBitti) devreDisiNot = 'Tüm adımlar açıldı';
+                else if (suresizMod) devreDisiNot = 'Süresiz modda geçersiz';
+              }
+
               return (
-                <button
-                  key={j.tip}
-                  data-joker={j.tip}
-                  onClick={() => jokerKullan(j.tip)}
-                  disabled={devreDisi}
-                  className="min-h-[52px] rounded-lg border border-slate-700 bg-slate-900/60 px-1 text-[11px] font-bold text-slate-200 transition active:scale-95 disabled:opacity-30"
-                >
-                  <div className="text-base leading-none">{j.simge}</div>
-                  <div className="mt-1 leading-tight">{j.ad}</div>
-                  <div className="text-slate-500">−{JOKER_MALIYET[j.tip]} puan</div>
-                </button>
+                <div key={j.tip} className="relative">
+                  <button
+                    data-joker={j.tip}
+                    onClick={() => jokerKullan(j.tip)}
+                    disabled={devreDisi}
+                    title={devreDisiNot ?? undefined}
+                    className="min-h-[52px] w-full rounded-lg border border-slate-700 bg-slate-900/60 px-1 text-[11px] font-bold text-slate-200 transition active:scale-95 disabled:opacity-30"
+                  >
+                    <div className="text-base leading-none">{j.simge}</div>
+                    <div className="mt-1 leading-tight">{j.ad}</div>
+                    <div className="text-slate-500">−{JOKER_MALIYET[j.tip]} puan</div>
+                  </button>
+                  {devreDisiNot && (
+                    <div className="mt-0.5 text-center text-[9px] leading-tight text-slate-600">
+                      {devreDisiNot}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

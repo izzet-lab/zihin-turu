@@ -20,8 +20,13 @@ export default function Giris({ onAtla }: Props) {
   const [gonderildi, setGonderildi] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
+  const [kosullarKabul, setKosullarKabul] = useState(false);
 
   async function sihirliGonder() {
+    if (!kosullarKabul) {
+      setHata('Devam etmek için koşulları kabul etmelisin.');
+      return;
+    }
     const temiz = eposta.trim().toLowerCase();
     if (!temiz.includes('@')) {
       setHata('Geçerli bir e-posta adresi gir.');
@@ -48,6 +53,10 @@ export default function Giris({ onAtla }: Props) {
   }
 
   async function googleIleGiris() {
+    if (!kosullarKabul) {
+      setHata('Devam etmek için koşulları kabul etmelisin.');
+      return;
+    }
     setHata(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -148,10 +157,24 @@ export default function Giris({ onAtla }: Props) {
           Şimdi değil, oynamaya devam et
         </button>
 
-        {/* Küçük not */}
-        <p className="mt-8 text-center text-[11px] text-slate-700">
-          Giriş yaparak kullanım koşullarını kabul etmiş olursun.
-        </p>
+        {/* Koşullar onay */}
+        <label className="mt-6 flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={kosullarKabul}
+            onChange={(e) => {
+              setKosullarKabul(e.target.checked);
+              if (e.target.checked) setHata(null);
+            }}
+            className="mt-0.5 accent-cyan-400"
+          />
+          <span className="text-xs text-slate-400 leading-relaxed">
+            <a href="/yasal/kvkk" target="_blank" rel="noopener" className="text-cyan-400 underline">KVKK Aydınlatma Metni</a>'ni
+            okudum ve{' '}
+            <a href="/yasal/kullanim-kosullari" target="_blank" rel="noopener" className="text-cyan-400 underline">Kullanım Koşulları</a>'nı
+            kabul ediyorum.
+          </span>
+        </label>
       </div>
     </main>
   );

@@ -94,6 +94,34 @@ export default function Uygulama() {
     sesKilidiKur();
   }, []);
 
+  // URL parametreleri (?giris=1, ?yardim=1) ve zt-menu-istek olayı:
+  // sabit menü bileşeni bu yollarla Uygulama state'ine ulaşır.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('giris') === '1') {
+      setGirisOncesiEkran('kurulum');
+      setEkran('giris');
+    }
+    if (params.get('yardim') === '1') {
+      setYardimAcik(true);
+    }
+    if (params.has('giris') || params.has('yardim')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    function menuIstegi(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === 'yardim') setYardimAcik(true);
+      if (detail === 'giris') {
+        setGirisOncesiEkran(ekran as Ekran);
+        setEkran('giris');
+      }
+    }
+    window.addEventListener('zt-menu-istek', menuIstegi);
+    return () => window.removeEventListener('zt-menu-istek', menuIstegi);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auth durumunu dinle — ilk yüklemede ve değişikliklerinde.
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

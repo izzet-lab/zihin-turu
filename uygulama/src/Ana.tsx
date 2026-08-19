@@ -15,6 +15,7 @@ import type { User } from '@supabase/supabase-js';
 import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
+import Menu from './bilesenler/Menu';
 import { supabase } from './supabase';
 import {
   KVKKSayfasi,
@@ -41,6 +42,7 @@ export default function Ana() {
 
   return (
     <BrowserRouter>
+      <Menu />
       <Routes>
         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
         <Route path="/" element={<Uygulama />} />

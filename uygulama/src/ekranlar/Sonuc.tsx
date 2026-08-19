@@ -17,32 +17,59 @@ function carpanGoster(c: number): string {
  * bilgisinden deterministik bir indeks türetilir (her turda farklı
  * ama tur tekrar açıldığında sabit kalır).
  */
-const MOTIVASYON_SOZLERI = [
+/**
+ * Motivasyon mesajları bağlama göre seçilir:
+ * (a) Hiç hamle yapmadan bitti → cesaretlendirme
+ * (b) İşlem yaptı ama uzak kaldı → "yaklaşıyorsun" tarzı
+ * (c) Süre bitti (kalan=0, süreli mod) → süreyle ilgili
+ * Deterministik seçim: hedef+fark'tan indeks türetilir.
+ */
+const MESAJ_HIC_HAMLE = [
+  'Bir sonrakinde bir hamle dene, joker de var.',
+  'İki taşı birleştirmek yeterli — küçük başla.',
+  'Hızlı bitti ama sorun yok; bir sonrakinde zaman var.',
+  'Sadece bir işlem bile puan getirir, dene.',
+];
+
+const MESAJ_UZAK_KALDI = [
   'Fena değildi. Bir dahaki turda bu farkı kapatabilirsin.',
   'Her tur bir öncekinden biraz daha fazlasını öğretir.',
   'Yaklaştın. Zincirin bir adımı farklı işleseydi olurdu.',
-  'Bugün bu kadarı yeterli. Yarın tekrar denenebilir.',
   'Taşları farklı sırayla denemek genelde işe yarar.',
-  'Bu bir kayıp değil, bir deneme. Sayı zaten kaydedildi.',
-  'Zincirin başlangıcı iyiydi, devamı biraz zorlamış olabilir.',
   'Küçük farklar da ilerlemedir.',
   'Bazı turlar zor çıkar. Bu, formunla ilgili bir şey söylemez.',
   'Bir sonraki turda aynı hedefi başka bir yoldan bulabilirsin.',
   'Denemek, beklemekten her zaman daha değerli.',
-  'Bugünkü tur bitti; istersen hemen bir yenisi başlayabilir.',
   'Fark küçüldükçe zincir kurmak kolaylaşıyor, alışkanlık meselesi.',
   'Bazı hedefler ilk denemede açılmaz, bu normal.',
   'Elindeki taşlarla iyi bir kombinasyon kurmuşsun, hedef biraz uzak kalmış.',
   'İstersen bir joker ile bir dahaki turu biraz kolaylaştırabilirsin.',
-  'Süre bazen dar geliyor, acele etmeden de denenebilir.',
-  'Bu turdan sonra elin ısınmış olur.',
   'Sayılarla kurduğun her zincir bir sonrakine zemin hazırlıyor.',
   'Devam etmek, mükemmel bitirmekten daha önemli.',
 ];
 
-function motivasyonSecimi(hedef: number, fark: number): string {
-  const indeks = (hedef * 7 + fark * 13) % MOTIVASYON_SOZLERI.length;
-  return MOTIVASYON_SOZLERI[indeks]!;
+const MESAJ_SURE_BITTI = [
+  'Süre dar geldi ama elindeki zincir fena değildi.',
+  'Bir dahakinde zamana karşı daha rahat olabilirsin.',
+  'Süre baskısı zor; süresiz modda pratik yapmak işe yarar.',
+  'Son saniyelerde aceleye gelmiş olabilir, bir dahakinde daha erken başla.',
+  'Bu turdan sonra elin ısınmış olur, bir daha dene.',
+];
+
+function motivasyonSecimi(hedef: number, fark: number, adimSayisi: number, kalan: number, sure: number): string {
+  // (a) Hiç hamle yapmadı
+  if (adimSayisi === 0) {
+    const indeks = (hedef * 7 + fark * 3) % MESAJ_HIC_HAMLE.length;
+    return MESAJ_HIC_HAMLE[indeks]!;
+  }
+  // (c) Süre bitti (süreli modda, kalan=0)
+  if (sure > 0 && kalan === 0) {
+    const indeks = (hedef * 7 + fark * 13) % MESAJ_SURE_BITTI.length;
+    return MESAJ_SURE_BITTI[indeks]!;
+  }
+  // (b) İşlem yaptı ama uzak kaldı
+  const indeks = (hedef * 7 + fark * 13) % MESAJ_UZAK_KALDI.length;
+  return MESAJ_UZAK_KALDI[indeks]!;
 }
 
 interface Props {
@@ -162,7 +189,7 @@ export default function Sonuc({
           )}
           {!tam && (
             <div className="mt-3 text-sm text-slate-400" data-alan="motivasyon">
-              {motivasyonSecimi(veri.hedef, sonuc.fark)}
+              {motivasyonSecimi(veri.hedef, sonuc.fark, sonuc.adimlar.length, sonuc.kalan, sure)}
             </div>
           )}
         </div>

@@ -67,7 +67,7 @@ export default function Lig({ oyuncuId }: Props) {
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
-        <header className="mb-8">
+        <header className="mb-8 pr-12">
           <a href="/" className="mb-3 inline-flex items-center text-sm text-slate-500 hover:text-slate-300" aria-label="Ana sayfa">
             ←
           </a>

@@ -43,6 +43,13 @@ const BANNER_ID = (import.meta.env.VITE_ADMOB_BANNER_ID as string) || TEST_BANNE
 
 let baslatildi = false;
 
+/**
+ * Banner webview'ın üstüne biner; altta kalan içerik görünmez olur.
+ * Bu sınıf body'ye eklenince sayfa altına banner kadar boşluk bırakılır
+ * (kural stil.css içinde).
+ */
+const GOVDE_SINIFI = 'reklam-var';
+
 /** AdMob'u çocuğa yönelik ayarlarla başlatır. */
 export async function reklamBaslat(): Promise<void> {
   if (!nativeMi() || baslatildi) return;
@@ -85,14 +92,18 @@ export async function bannerGoster(): Promise<void> {
       // ikinci bir güvence: istek düzeyinde de kişiselleştirme kapalı.
       npa: true,
     });
+    document.body.classList.add(GOVDE_SINIFI);
   } catch (e) {
     console.warn('[reklam] Banner gösterilemedi:', e);
+    // Reklam yüklenemediyse boşluk da bırakma.
+    document.body.classList.remove(GOVDE_SINIFI);
   }
 }
 
 /** Banner'ı gizler (oyun başlarken çağrılır). */
 export async function bannerGizle(): Promise<void> {
   if (!nativeMi()) return;
+  document.body.classList.remove(GOVDE_SINIFI);
   try {
     await AdMob.hideBanner();
   } catch {
@@ -103,6 +114,7 @@ export async function bannerGizle(): Promise<void> {
 /** Banner'ı tamamen kaldırır. */
 export async function bannerKaldir(): Promise<void> {
   if (!nativeMi()) return;
+  document.body.classList.remove(GOVDE_SINIFI);
   try {
     await AdMob.removeBanner();
   } catch {

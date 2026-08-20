@@ -39,3 +39,15 @@ body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 @media (prefers-reduced-motion: reduce) {
   .konfeti-parca { animation: none; opacity: 0; }
 }
+
+/*
+ * AdMob banner ekranın altına biner. Banner görünürken sayfanın altına
+ * onun yüksekliği kadar boşluk bırakılır ki son düğme veya yazı
+ * reklamın altında kalmasın. Sınıf reklam.ts tarafından eklenir/silinir.
+ *
+ * 60px, uyarlanabilir banner'ın tipik yüksekliğidir (50-60dp).
+ * Cihaz alt güvenli alanı da eklenir.
+ */
+body.reklam-var {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}

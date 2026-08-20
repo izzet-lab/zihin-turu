@@ -9,6 +9,7 @@ import Yardim from './ekranlar/Yardim';
 import Giris from './ekranlar/Giris';
 import KullaniciAdi from './ekranlar/KullaniciAdi';
 import { sesKilidiKur } from './ses';
+import { bannerGoster, bannerGizle, bannerKaldir } from './reklam';
 import { supabase } from './supabase';
 import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import {
@@ -120,6 +121,30 @@ export default function Uygulama() {
     window.addEventListener('zt-menu-istek', menuIstegi);
     return () => window.removeEventListener('zt-menu-istek', menuIstegi);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Reklam banner'ı yalnızca Kurulum ve Sonuç ekranlarında görünür.
+   *
+   * Oyun sırasında GÖSTERİLMEZ: ekranın altındaki reklam hem dikkat
+   * dağıtır hem de taşa dokunurken yanlışlıkla tıklanabilir. Çocuğa
+   * yönelik uygulamalarda bu ciddi bir politika riskidir.
+   *
+   * Giriş ve kullanıcı adı ekranlarında da gösterilmez — form
+   * doldurulurken reklam çıkması kayıt akışını bozar.
+   *
+   * Web'de her iki çağrı da sessizce hiçbir şey yapmaz.
+   */
+  useEffect(() => {
+    const gizlensin = ekran === 'oyun' || ekran === 'giris' || ekran === 'kullanici-adi';
+    if (gizlensin) bannerGizle();
+    else bannerGoster();
+  }, [ekran]);
+
+  // Başka bir rotaya (Lig, Profil, yasal sayfalar) geçilince banner
+  // ekranda kalmasın; native katman React'ten bağımsız çalışıyor.
+  useEffect(() => () => {
+    bannerKaldir();
   }, []);
 
   // Auth durumunu dinle — ilk yüklemede ve değişikliklerinde.

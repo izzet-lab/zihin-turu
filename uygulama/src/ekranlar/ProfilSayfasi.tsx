@@ -4,13 +4,16 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { seviyeEtiketi } from '@zihinturu/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
+import { profilOku } from '../kimlik';
+import { supabase } from '../supabase';
 import { bannerGoster, bannerKaldir } from '../reklam';
 
 export default function ProfilSayfasi() {
   const { kullaniciAdi } = useParams<{ kullaniciAdi: string }>();
+  const navigate = useNavigate();
 
   // Profil de kaydırılarak okunan bir ekran; banner altta durur.
   useEffect(() => {
@@ -23,6 +26,8 @@ export default function ProfilSayfasi() {
   const [profil, setProfil] = useState<ProfilIstatistik | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState<string | null>(null);
+  // Kendi profilini mi görüntülüyor?
+  const [kendiProfili, setKendiProfili] = useState(false);
 
   useEffect(() => {
     async function yukle() {
@@ -33,6 +38,14 @@ export default function ProfilSayfasi() {
           setHata('Kullanıcı bulunamadı.');
         } else {
           setProfil(veri);
+        }
+        // Giriş yapan kullanıcının kendi profili mi kontrol et
+        const { data: oturum } = await supabase.auth.getSession();
+        if (oturum.session) {
+          const kendi = await profilOku(oturum.session.user.id);
+          if (kendi && kendi.kullaniciAdi === kullaniciAdi) {
+            setKendiProfili(true);
+          }
         }
       } catch (e) {
         setHata('Profil yüklenemedi. Lütfen tekrar deneyin.');
@@ -139,6 +152,31 @@ export default function ProfilSayfasi() {
             İki hafta / sol = daha eski
           </p>
         </div>
+
+        {/* Hesap ayarları — yalnızca kendi profilinde görünür */}
+        {kendiProfili && (
+          <div className="mt-10 space-y-2">
+            <div className="my-2 h-px bg-slate-800" />
+            <button
+              onClick={() => navigate('/gizlilik-ayarlari')}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+            >
+              🔒 Gizlilik ayarları
+            </button>
+            <button
+              onClick={() => navigate('/yasal/kvkk')}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+            >
+              📄 Yasal metinler
+            </button>
+            <button
+              onClick={() => navigate('/yasal/hesap-sil')}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-red-400/80 hover:bg-slate-800/60 hover:text-red-400"
+            >
+              🗑️ Hesabımı sil
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

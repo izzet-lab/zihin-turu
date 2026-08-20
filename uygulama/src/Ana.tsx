@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
@@ -73,9 +73,9 @@ function Div404() {
       <div className="text-center">
         <h1 className="text-4xl font-black text-white mb-2">404</h1>
         <p className="text-slate-400 mb-6">Sayfa bulunamadı</p>
-        <a href="/" className="inline-block px-6 py-2 rounded-lg bg-cyan-300 text-slate-900 font-bold hover:bg-cyan-200">
+        <Link to="/" className="inline-block px-6 py-2 rounded-lg bg-cyan-300 text-slate-900 font-bold hover:bg-cyan-200">
           Ana sayfaya dön
-        </a>
+        </Link>
       </div>
     </main>
   );

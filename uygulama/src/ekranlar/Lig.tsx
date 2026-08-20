@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@zihinturu/oyun-sayi';
 import {
   haftalikAnahtar,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export default function Lig({ oyuncuId }: Props) {
+  const gecis = useNavigate();
   const [sekme, setSekme] = useState<Sekme>('gunluk');
   const [seviye, setSeviye] = useState<string>('normal');
   const [satirlar, setSatirlar] = useState<LigSatiri[]>([]);
@@ -68,9 +70,17 @@ export default function Lig({ oyuncuId }: Props) {
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
         <header className="mb-8 pr-12">
-          <a href="/" className="mb-3 inline-flex items-center text-sm text-slate-500 hover:text-slate-300" aria-label="Ana sayfa">
-            ←
-          </a>
+          {/* Yalnızca "←" işareti soluk kaldığı için fark edilmiyordu;
+              etiketli ve dokunma hedefi yeterli bir düğmeye çevrildi.
+              Ayrıca <a href> tam sayfa yüklemesi yapıyordu — Capacitor'da
+              SPA yedeği olmadığı için bu 404 riski taşıyor. */}
+          <button
+            onClick={() => gecis('/')}
+            data-alan="geri"
+            className="mb-3 -ml-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold text-cyan-300 hover:bg-slate-800/60 hover:text-cyan-200"
+          >
+            ← Geri
+          </button>
           <h1 className="text-2xl font-black text-white mb-1">Sıralamalar</h1>
           <p className="text-xs text-slate-500">
             {sekme === 'gunluk' && 'Bugünkü en iyi puanlar'}

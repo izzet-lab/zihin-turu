@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Seviye } from '@zihinturu/cekirdek';
 import { antrenmanCarpani } from '@zihinturu/oyun-sayi';
 import { gunlukOynandiMiSunucu, ilerlemeOku, xpSeviyeHesapla, type OyuncuIlerleme } from '../kimlik';
@@ -383,17 +384,17 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
         <footer className="mt-12 pt-8 border-t border-slate-800">
           <div className="text-center space-y-2">
             <div className="text-xs text-slate-600 space-x-3">
-              <a href="/yasal/kvkk" className="hover:text-cyan-300">KVKK</a>
+              <Link to="/yasal/kvkk" className="hover:text-cyan-300">KVKK</Link>
               <span>•</span>
-              <a href="/yasal/gizlilik" className="hover:text-cyan-300">Gizlilik</a>
+              <Link to="/yasal/gizlilik" className="hover:text-cyan-300">Gizlilik</Link>
               <span>•</span>
-              <a href="/yasal/cerez" className="hover:text-cyan-300">Çerez</a>
+              <Link to="/yasal/cerez" className="hover:text-cyan-300">Çerez</Link>
               <span>•</span>
-              <a href="/yasal/kullanim-kosullari" className="hover:text-cyan-300">Koşullar</a>
+              <Link to="/yasal/kullanim-kosullari" className="hover:text-cyan-300">Koşullar</Link>
             </div>
             {kullanici && (
               <div className="text-xs text-slate-700 pt-2">
-                <a href="/yasal/hesap-sil" className="hover:text-red-400">Hesabı sil</a>
+                <Link to="/yasal/hesap-sil" className="hover:text-red-400">Hesabı sil</Link>
               </div>
             )}
           </div>

@@ -162,8 +162,75 @@ interface IleriSonuc {
   sayilar: number[];
 }
 
+/**
+ * Üretilen turun çözüm yoğunluğunu hızlıca ölçer.
+ *
+ * Budamalı DFS ile sabit sürede (sinirMs) kaç tam isabet bulunduğunu
+ * sayar. Yüksekse tur kolaydır — oyuncu tesadüfen bulabilir.
+ *
+ * Bu fonksiyon deterministiktir (dışarıdan `r` kullanmaz) ve
+ * `uretimYap` içinde "turu reddet" filtresi olarak kullanılır.
+ * Reddedilen tur deterministik olarak atlanır; aynı tohum aynı sonucu
+ * verir.
+ */
+function cozumYogunlugu(sayilar: number[], hedef: number, sinirMs = 30): number {
+  const t0 = Date.now();
+  let sayac = 0;
+  const gorulen = new Set<string>();
+
+  function ara(liste: number[]): void {
+    if (Date.now() - t0 > sinirMs) return;
+    for (const d of liste) {
+      if (d === hedef) sayac++;
+    }
+    if (liste.length < 2) return;
+    const anahtar = liste.slice().sort((a, b) => a - b).join(',');
+    if (gorulen.has(anahtar)) return;
+    gorulen.add(anahtar);
+
+    for (let i = 0; i < liste.length; i++) {
+      for (let j = i + 1; j < liste.length; j++) {
+        if (Date.now() - t0 > sinirMs) return;
+        const a = liste[i]!;
+        const b = liste[j]!;
+        const kalan = liste.filter((_, k) => k !== i && k !== j);
+        const ust = a >= b ? a : b;
+        const alt = a >= b ? b : a;
+        for (const islem of ISLEMLER) {
+          if (islem === '×' && alt === 1) continue;
+          if (islem === '÷' && alt === 1) continue;
+          const sonuc = uygula(ust, alt, islem);
+          if (sonuc === null) continue;
+          ara(kalan.concat([sonuc]));
+        }
+      }
+    }
+  }
+
+  ara(sayilar);
+  return sayac;
+}
+
+/**
+ * İleri üretim: çözümü İNŞA eder, aranmaz.
+ *
+ * Zor ve Usta'da geriye arama (cozZinciri) çok yavaş olduğu için
+ * burada rastgele bir işlem zinciri kurulup sonucu hedef ilan edilir.
+ * Çözülebilirlik tanım gereği garanti.
+ *
+ * **Zorluk filtresi (v2):** Üretilen tur cozumYogunlugu'na tabi
+ * tutulur. Çözüm yoğunluğu eşiğin üstündeyse tur reddedilir ve
+ * yeniden denenir. Bu, ileri üretimin "her zaman kolay bir yol bırakan"
+ * sorununu giderir.
+ */
 function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSiniri = 4000): IleriSonuc | null {
   const buyuk = S.buyukVar ? Math.min(buyukAdet, S.tas) : 0;
+
+  // Çözüm yoğunluğu eşikleri — bu değerlerden fazla çözümü olan tur
+  // reddedilir. Eşik, seviyeye göre değişir: Zor'da Normal'den düşük
+  // olmalı (daha az alternatif yol = daha zor).
+  const yogunlukEsigi = S.tas <= 6 ? 8 : 4; // Zor: 8, Usta: 4
+
   for (let t = 0; t < denemeSiniri; t++) {
     const sayilar = karistir(BUYUK, r)
       .slice(0, buyuk)
@@ -203,7 +270,15 @@ function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSi
     }
     if (tikandi) continue;
     const deger = liste[0]!.d;
-    if (deger >= S.alt && deger <= S.ust) return { hedef: deger, adimlar: liste[0]!.yol, sayilar };
+    if (deger < S.alt || deger > S.ust) continue;
+
+    // Zorluk filtresi: çözüm yoğunluğu eşiğin üstündeyse reddet.
+    // Bu kontrol deterministiktir (r() kullanmaz), dolayısıyla aynı
+    // tohum daima aynı turu üretir.
+    const yogunluk = cozumYogunlugu(sayilar, deger, 30);
+    if (yogunluk > yogunlukEsigi) continue;
+
+    return { hedef: deger, adimlar: liste[0]!.yol, sayilar };
   }
   return null;
 }

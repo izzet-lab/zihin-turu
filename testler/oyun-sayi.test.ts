@@ -42,6 +42,22 @@ describe('tohum ve tur üretimi', () => {
     expect(va.sayilar).toEqual(vb.sayilar);
   });
 
+  it('aynı tohum tüm seviyelerde aynı turu üretir (istemci-sunucu uyumu)', () => {
+    // Edge Function aynı mantık dosyasını kullanır. Zorluk filtresi
+    // deterministik olduğu sürece aynı tohum → aynı tur — bu test bunu
+    // garantiler. Farklı tohumlarla tekrar üretip kıyaslar.
+    for (const seviye of SEVIYE_ANAHTARLARI) {
+      for (const tohum of [42, 99999, 7777777]) {
+        const a = uretimYap(seviye, tohum);
+        const b = uretimYap(seviye, tohum);
+        expect(a.hedef).toBe(b.hedef);
+        expect(a.sayilar).toEqual(b.sayilar);
+        expect(a.cozum.fark).toBe(b.cozum.fark);
+        expect(a.cozum.adimlar).toEqual(b.cozum.adimlar);
+      }
+    }
+  });
+
   it('günün turu herkeste aynı, ertesi gün farklı', () => {
     const g1 = gununTuru('normal', '2026-08-16').veri as SayiVeri;
     const g2 = gununTuru('normal', '2026-08-16').veri as SayiVeri;

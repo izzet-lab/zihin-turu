@@ -329,6 +329,48 @@ export function sesTercihiYaz(acik: boolean): void {
   genelYaz(SES_ANAHTAR, acik ? '1' : '0');
 }
 
+/* --- Bildirim ayarı --- */
+
+const BILDIRIM_ANAHTAR = 'zihinturu.bildirim.v1';
+
+export interface BildirimAyari {
+  acik: boolean;
+  saat: number;   // 0-23
+  dakika: number; // 0-59
+}
+
+const BILDIRIM_VARSAYILAN: BildirimAyari = { acik: true, saat: 20, dakika: 0 };
+
+/** Bildirim ayarını okur. Varsayılan: açık, 20:00. */
+export function bildirimAyariOku(): BildirimAyari {
+  const ham = genelOku(BILDIRIM_ANAHTAR);
+  if (!ham) return BILDIRIM_VARSAYILAN;
+  try {
+    return { ...BILDIRIM_VARSAYILAN, ...(JSON.parse(ham) as Partial<BildirimAyari>) };
+  } catch {
+    return BILDIRIM_VARSAYILAN;
+  }
+}
+
+/** Bildirim ayarını kaydeder. */
+export function bildirimAyariYaz(a: BildirimAyari): void {
+  genelYaz(BILDIRIM_ANAHTAR, JSON.stringify(a));
+}
+
+/* --- İlk tur bildirim istemi --- */
+
+const BILDIRIM_SORULDU_ANAHTAR = 'zihinturu.bildirim-soruldu';
+
+/** Bildirim izni daha önce soruldu mu (ilk turdan sonra)? */
+export function bildirimSorulduMu(): boolean {
+  return genelOku(BILDIRIM_SORULDU_ANAHTAR) === '1';
+}
+
+/** İlk izin istemini yapıldı olarak işaretle. */
+export function bildirimSorulduIsaretle(): void {
+  genelYaz(BILDIRIM_SORULDU_ANAHTAR, '1');
+}
+
 /** Bugünün tarihi (YYYY-MM-DD), yerel saat. */
 export function bugun(): string {
   const d = new Date();

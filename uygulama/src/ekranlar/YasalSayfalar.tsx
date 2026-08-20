@@ -59,7 +59,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Oyun sonuçları</td><td className="px-3 py-2">Puan, süre, seviye, adım sayısı — ilerleme takibi ve lig sıralaması</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">IP adresi</td><td className="px-3 py-2">Supabase altyapısı tarafından sunucu günlüklerinde otomatik kaydedilir</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">Tarayıcı/cihaz bilgisi</td><td className="px-3 py-2">Supabase oturum yönetimi (user-agent)</td><td className="px-3 py-2">Otomatik</td></tr>
-              <tr><td className="px-3 py-2">Bildirim jetonu <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma bildirimi göndermek — Firebase Cloud Messaging</td><td className="px-3 py-2">Hayır, izin sorulur</td></tr>
+              <tr><td className="px-3 py-2">Bildirim tercihi <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde yerel bildirim; sunucuya veri gönderilmez</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Çökme kayıtları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Kullanım olayları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
             </tbody>
@@ -97,8 +97,10 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           </p>
           <p>
             <strong>Android uygulamasında</strong> ayrıca <strong>Google</strong>'ın
-            şu hizmetleri kullanılır: Firebase (bildirim, çökme raporu, kullanım
-            olayları, uzak ayar) ve Google AdMob (reklam). Bu hizmetler Google'ın
+            şu hizmetleri kullanılır: Firebase (çökme raporu, kullanım
+            olayları, uzak ayar) ve Google AdMob (reklam). Günlük hatırlatma
+            bildirimi cihaz üstünde yerel olarak planlanır; sunucuya bildirim
+            jetonu veya kişisel veri gönderilmez. Bu hizmetler Google'ın
             gizlilik politikasına tabidir ve verileri Google altyapısında işlenir.
           </p>
           <p>
@@ -219,7 +221,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              <tr><td className="px-3 py-2">Firebase Cloud Messaging</td><td className="px-3 py-2">Günlük hatırlatma bildirimi</td><td className="px-3 py-2">Evet, izin sorulur</td></tr>
+              <tr><td className="px-3 py-2">Yerel bildirim</td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde planlanır, sunucuya veri gitmez</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Crashlytics</td><td className="px-3 py-2">Çökme raporları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Analytics</td><td className="px-3 py-2">Kullanım olayları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Remote Config</td><td className="px-3 py-2">Oyun ayarlarını güncelleme</td><td className="px-3 py-2">Hayır (veri toplamaz)</td></tr>

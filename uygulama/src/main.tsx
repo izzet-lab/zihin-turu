@@ -5,6 +5,8 @@ import { derinBaglantiDinle } from './derinBaglanti';
 import { nativeMi } from './platform';
 import { uzakAyarlariYukle } from './firebase';
 import { tercihleriUygula } from './ekranlar/GizlilikAyarlari';
+import { bildirimiPlanla, bildirimDinleyiciKur } from './bildirim';
+import { oku } from './depo';
 import './stil.css';
 
 // Android'de e-postadaki giriş bağlantısını yakala (web'de etkisiz).
@@ -15,6 +17,12 @@ derinBaglantiDinle();
 // toplanmasın diye. Web'de ikisi de sessizce hiçbir şey yapmaz.
 tercihleriUygula();
 uzakAyarlariYukle();
+
+// Yerel bildirim: dinleyiciyi kur ve bugünkü hatırlatmayı planla.
+// Web'de her ikisi de sessizce hiçbir şey yapmaz.
+bildirimDinleyiciKur();
+const ilerleme = oku();
+bildirimiPlanla(ilerleme.seri.gun);
 
 const kok = document.getElementById('kok');
 if (!kok) throw new Error('#kok bulunamadı');

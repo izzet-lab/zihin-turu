@@ -9,7 +9,6 @@ import Yardim from './ekranlar/Yardim';
 import Giris from './ekranlar/Giris';
 import KullaniciAdi from './ekranlar/KullaniciAdi';
 import { sesKilidiKur } from './ses';
-import { bannerGoster, bannerGizle, bannerKaldir } from './reklam';
 import { supabase } from './supabase';
 import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import {
@@ -22,17 +21,7 @@ import {
   seviyeAc,
   sonAntrenmanAyariOku,
   sonAntrenmanAyariYaz,
-  bildirimSorulduMu,
-  bildirimSorulduIsaretle,
-  bildirimAyariOku,
-  bildirimAyariYaz,
 } from './depo';
-import {
-  bildirimIzniIste,
-  bildirimIzniDurumu,
-  bugunOynandiYarinPlanla,
-  bildirimiPlanla,
-} from './bildirim';
 
 type Ekran = 'kurulum' | 'oyun' | 'sonuc' | 'giris' | 'kullanici-adi';
 
@@ -100,62 +89,37 @@ export default function Uygulama() {
     sure_sn: number; jokerler: string[];
   } | null>(null);
 
-  // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
+  // Global menüden gelen istekler: aynı sayfadayken pencere olayı,
+  // başka rotadan gelindiyse ?yardim=1 / ?giris=1 sorgu parametresi.
   useEffect(() => {
-    sesKilidiKur();
-  }, []);
-
-  // URL parametreleri (?giris=1, ?yardim=1) ve zt-menu-istek olayı:
-  // sabit menü bileşeni bu yollarla Uygulama state'ine ulaşır.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('giris') === '1') {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('yardim') === '1') setYardimAcik(true);
+    if (p.get('giris') === '1') {
       setGirisOncesiEkran('kurulum');
       setEkran('giris');
     }
-    if (params.get('yardim') === '1') {
-      setYardimAcik(true);
-    }
-    if (params.has('giris') || params.has('yardim')) {
+    if (p.has('yardim') || p.has('giris')) {
       window.history.replaceState({}, '', window.location.pathname);
     }
 
-    function menuIstegi(e: Event) {
-      const detail = (e as CustomEvent<string>).detail;
-      if (detail === 'yardim') setYardimAcik(true);
-      if (detail === 'giris') {
-        setGirisOncesiEkran(ekran as Ekran);
-        setEkran('giris');
+    function istek(e: Event) {
+      const ne = (e as CustomEvent<'yardim' | 'giris'>).detail;
+      if (ne === 'yardim') setYardimAcik(true);
+      if (ne === 'giris') {
+        setGirisOncesiEkran((o) => o);
+        setEkran((mevcut) => {
+          if (mevcut !== 'giris') setGirisOncesiEkran(mevcut);
+          return 'giris';
+        });
       }
     }
-    window.addEventListener('zt-menu-istek', menuIstegi);
-    return () => window.removeEventListener('zt-menu-istek', menuIstegi);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener('zt-menu-istek', istek);
+    return () => window.removeEventListener('zt-menu-istek', istek);
   }, []);
 
-  /**
-   * Reklam banner'ının ekrana göre konumu.
-   *
-   *   Oyun          → ÜSTTE. Üst şerit yalnızca hedef sayı ve süre
-   *                   göstergesi; hiç dokunma hedefi yok. Altta ise
-   *                   "Bitir" düğmesi var, en çok basılan yer orası.
-   *   Kurulum/Sonuç → ALTTA. Bu ekranlarda alt kısımda düğme yığını
-   *                   yok, içerik kaydırılarak okunuyor.
-   *   Giriş/Ad      → GİZLİ. Form doldurulurken klavye ve reklam yer
-   *                   kavgasına giriyor, kayıt akışını bozuyor.
-   *
-   * Web'de tüm çağrılar sessizce hiçbir şey yapmaz.
-   */
+  // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
   useEffect(() => {
-    if (ekran === 'giris' || ekran === 'kullanici-adi') bannerGizle();
-    else if (ekran === 'oyun') bannerGoster('ust');
-    else bannerGoster('alt');
-  }, [ekran]);
-
-  // Başka bir rotaya (Lig, Profil, yasal sayfalar) geçilince banner
-  // ekranda kalmasın; native katman React'ten bağımsız çalışıyor.
-  useEffect(() => () => {
-    bannerKaldir();
+    sesKilidiKur();
   }, []);
 
   // Auth durumunu dinle — ilk yüklemede ve değişikliklerinde.
@@ -310,27 +274,6 @@ export default function Uygulama() {
           setYeniAcilanSeviye(sonraki);
         }
       }
-    }
-
-    // Günün Turu oynanınca bugünkü bildirimi iptal et, yarını planla.
-    // Oynamış birine "oyna" demek can sıkar.
-    if (oturum.mod === 'gunun') {
-      const il = oku();
-      bugunOynandiYarinPlanla(il.seri.gun);
-    }
-
-    // İlk turu bitirdikten sonra bildirim izni iste.
-    // Uygulama ilk açılışta istenmez — kullanıcı daha oyunu görmeden
-    // reddediyor. Bir tur bitirmiş biri, neden istendiğini anlar.
-    if (!bildirimSorulduMu()) {
-      bildirimSorulduIsaretle();
-      bildirimIzniIste().then((verildi) => {
-        if (verildi) {
-          // İzin verildi, varsayılan ayarla bildirimi planla
-          const ayar = bildirimAyariOku();
-          if (ayar.acik) bildirimiPlanla();
-        }
-      });
     }
 
     setSonSonuc(s);

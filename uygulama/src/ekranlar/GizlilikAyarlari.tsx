@@ -15,10 +15,18 @@ import { nativeMi } from '../platform';
 import {
   analyticsAyarla,
   crashlyticsAyarla,
-  bildirimIzniIste,
-  bildirimIzniVarMi,
-  bildirimiKapat,
 } from '../firebase';
+import {
+  bildirimAyariOku,
+  bildirimAyariYaz,
+  type BildirimAyari,
+} from '../depo';
+import {
+  bildirimIzniDurumu,
+  bildirimIzniIste,
+  bildirimiPlanla,
+  bildirimiIptalEt,
+} from '../bildirim';
 
 const ANAHTAR = 'zt-gizlilik';
 
@@ -62,10 +70,11 @@ export async function tercihleriUygula(): Promise<void> {
 
 export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
   const [tercih, setTercih] = useState<Tercihler>(tercihleriOku);
-  const [bildirim, setBildirim] = useState(false);
+  const [bAyar, setBAyar] = useState<BildirimAyari>(bildirimAyariOku);
+  const [bildirimIzni, setBildirimIzni] = useState(false);
 
   useEffect(() => {
-    bildirimIzniVarMi().then(setBildirim);
+    bildirimIzniDurumu().then(setBildirimIzni);
   }, []);
 
   function degistir(alan: keyof Tercihler, deger: boolean) {
@@ -78,13 +87,36 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
 
   async function bildirimDegistir(deger: boolean) {
     if (deger) {
-      const jeton = await bildirimIzniIste();
-      setBildirim(jeton !== null);
+      // İzin yoksa iste
+      if (!bildirimIzni) {
+        const verildi = await bildirimIzniIste();
+        setBildirimIzni(verildi);
+        if (!verildi) return; // Reddedildi, açmayı yapma
+      }
+      const yeni: BildirimAyari = { ...bAyar, acik: true };
+      setBAyar(yeni);
+      bildirimAyariYaz(yeni);
+      await bildirimiPlanla();
     } else {
-      await bildirimiKapat();
-      setBildirim(false);
+      const yeni: BildirimAyari = { ...bAyar, acik: false };
+      setBAyar(yeni);
+      bildirimAyariYaz(yeni);
+      await bildirimiIptalEt();
     }
   }
+
+  function saatDegistir(saatStr: string) {
+    const [s, d] = saatStr.split(':').map(Number);
+    if (s == null || d == null || isNaN(s) || isNaN(d)) return;
+    const yeni: BildirimAyari = { ...bAyar, saat: s, dakika: d };
+    setBAyar(yeni);
+    bildirimAyariYaz(yeni);
+    // Saat değiştiğinde bildirimi yeniden planla
+    if (yeni.acik) bildirimiPlanla();
+  }
+
+  /** Saat değerini HH:MM formatında döndürür. */
+  const saatDeger = `${String(bAyar.saat).padStart(2, '0')}:${String(bAyar.dakika).padStart(2, '0')}`;
 
   return (
     <SayfaSablonu
@@ -101,12 +133,37 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
             </div>
           )}
 
-          <Anahtar
-            baslik="Günlük hatırlatma"
-            aciklama="Her gün yeni tur hazır olduğunda bildirim gönderilir. İstemezsen hiç gönderilmez."
-            acik={bildirim}
-            onDegis={bildirimDegistir}
-          />
+          {/* Bildirim — saat seçici ile birlikte */}
+          <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={bAyar.acik}
+                onChange={(e) => bildirimDegistir(e.target.checked)}
+                className="mt-1 accent-cyan-400"
+              />
+              <span>
+                <span className="block font-bold text-slate-200">Günlük hatırlatma</span>
+                <span className="mt-1 block text-xs text-slate-400">
+                  Her gün seçtiğin saatte "günün turu hazır" bildirimi alırsın.
+                  O gün zaten oynadıysan bildirim gelmez.
+                </span>
+              </span>
+            </label>
+
+            {/* Saat seçici — bildirim açıkken göster */}
+            {bAyar.acik && (
+              <div className="mt-3 flex items-center gap-3 pl-7">
+                <span className="text-xs text-slate-400">Saat:</span>
+                <input
+                  type="time"
+                  value={saatDeger}
+                  onChange={(e) => saatDegistir(e.target.value)}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-200 accent-cyan-400"
+                />
+              </div>
+            )}
+          </div>
 
           <Anahtar
             baslik="Çökme raporları"

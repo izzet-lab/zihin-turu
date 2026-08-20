@@ -1,0 +1,415 @@
+From 1d2861d547e2f37682ab5427425bf4b5d5779410 Mon Sep 17 00:00:00 2001
+From: izzet <izzet@haciserif.com>
+Date: Tue, 18 Aug 2026 11:34:07 +0000
+Subject: [PATCH] =?UTF-8?q?Hamburger=20men=C3=BC=20t=C3=BCm=20sayfalarda:?=
+ =?UTF-8?q?=20global=20Menu=20bile=C5=9Feni?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ uygulama/src/Ana.tsx              |   3 +
+ uygulama/src/Uygulama.tsx         |  28 ++++++
+ uygulama/src/bilesenler/Menu.tsx  | 161 ++++++++++++++++++++++++++++++
+ uygulama/src/ekranlar/Kurulum.tsx |  97 +-----------------
+ uygulama/src/ekranlar/Oyun.tsx    |  14 +--
+ 5 files changed, 198 insertions(+), 105 deletions(-)
+ create mode 100644 uygulama/src/bilesenler/Menu.tsx
+
+diff --git a/uygulama/src/Ana.tsx b/uygulama/src/Ana.tsx
+index f072ee1..7f3dc78 100644
+--- a/uygulama/src/Ana.tsx
++++ b/uygulama/src/Ana.tsx
+@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
+ import { BrowserRouter, Routes, Route } from 'react-router-dom';
+ import type { User } from '@supabase/supabase-js';
+ import Uygulama from './Uygulama';
++import Menu from './bilesenler/Menu';
+ import Lig from './ekranlar/Lig';
+ import ProfilSayfasi from './ekranlar/ProfilSayfasi';
+ import { supabase } from './supabase';
+@@ -41,6 +42,8 @@ export default function Ana() {
+ 
+   return (
+     <BrowserRouter>
++      {/* Her rotada görünen tek hamburger menü */}
++      <Menu />
+       <Routes>
+         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
+         <Route path="/" element={<Uygulama />} />
+diff --git a/uygulama/src/Uygulama.tsx b/uygulama/src/Uygulama.tsx
+index 7953458..09dcc9f 100644
+--- a/uygulama/src/Uygulama.tsx
++++ b/uygulama/src/Uygulama.tsx
+@@ -89,6 +89,34 @@ export default function Uygulama() {
+     sure_sn: number; jokerler: string[];
+   } | null>(null);
+ 
++  // Global menüden gelen istekler: aynı sayfadayken pencere olayı,
++  // başka rotadan gelindiyse ?yardim=1 / ?giris=1 sorgu parametresi.
++  useEffect(() => {
++    const p = new URLSearchParams(window.location.search);
++    if (p.get('yardim') === '1') setYardimAcik(true);
++    if (p.get('giris') === '1') {
++      setGirisOncesiEkran('kurulum');
++      setEkran('giris');
++    }
++    if (p.has('yardim') || p.has('giris')) {
++      window.history.replaceState({}, '', window.location.pathname);
++    }
++
++    function istek(e: Event) {
++      const ne = (e as CustomEvent<'yardim' | 'giris'>).detail;
++      if (ne === 'yardim') setYardimAcik(true);
++      if (ne === 'giris') {
++        setGirisOncesiEkran((o) => o);
++        setEkran((mevcut) => {
++          if (mevcut !== 'giris') setGirisOncesiEkran(mevcut);
++          return 'giris';
++        });
++      }
++    }
++    window.addEventListener('zt-menu-istek', istek);
++    return () => window.removeEventListener('zt-menu-istek', istek);
++  }, []);
++
+   // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
+   useEffect(() => {
+     sesKilidiKur();
+diff --git a/uygulama/src/bilesenler/Menu.tsx b/uygulama/src/bilesenler/Menu.tsx
+new file mode 100644
+index 0000000..64328d8
+--- /dev/null
++++ b/uygulama/src/bilesenler/Menu.tsx
+@@ -0,0 +1,161 @@
++/**
++ * Menu.tsx — Her sayfada görünen tek hamburger menü.
++ *
++ * Daha önce menü yalnızca Kurulum ekranının başlığında vardı; Lig, Oyun,
++ * Sonuç ve yasal sayfalarda oyuncu menüsüz kalıyordu. Bu bileşen Ana.tsx'te
++ * bir kez, sabit (fixed) konumda render edilir; böylece rota fark etmeksizin
++ * menü hep aynı yerdedir.
++ *
++ * Kendi kendine yeterlidir: oturumu Supabase'ten, ses tercihini depodan okur.
++ * "Nasıl oynanır" ve "Giriş yap" ana sayfadaki Uygulama bileşenine
++ * pencere olayı (aynı sayfadaysak) veya sorgu parametresi (başka rotadaysak)
++ * ile iletilir.
++ */
++
++import { useEffect, useState } from 'react';
++import type { User } from '@supabase/supabase-js';
++import { supabase } from '../supabase';
++import { profilOku, type OyuncuProfil } from '../kimlik';
++import { sesAcikMi, sesTercihiYaz } from '../depo';
++
++/** Ana sayfadaysak olay yolla, değilsek sorgu parametresiyle ana sayfaya git. */
++function anaSayfayaIstek(istek: 'yardim' | 'giris') {
++  if (window.location.pathname === '/') {
++    window.dispatchEvent(new CustomEvent('zt-menu-istek', { detail: istek }));
++  } else {
++    window.location.href = `/?${istek}=1`;
++  }
++}
++
++export default function Menu() {
++  const [acik, setAcik] = useState(false);
++  const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi);
++  const [kullanici, setKullanici] = useState<User | null>(null);
++  const [profil, setProfil] = useState<OyuncuProfil | null>(null);
++
++  useEffect(() => {
++    supabase.auth.getSession().then(({ data }) => {
++      const u = data.session?.user ?? null;
++      setKullanici(u);
++      if (u) profilOku(u.id).then(setProfil);
++    });
++
++    const { data: dinleyici } = supabase.auth.onAuthStateChange((_e, oturum) => {
++      const u = oturum?.user ?? null;
++      setKullanici(u);
++      if (u) profilOku(u.id).then(setProfil);
++      else setProfil(null);
++    });
++
++    return () => dinleyici.subscription.unsubscribe();
++  }, []);
++
++  // Escape ile kapansın — klavye kullanıcısı menüde kilitli kalmasın.
++  useEffect(() => {
++    if (!acik) return;
++    function tus(e: KeyboardEvent) {
++      if (e.key === 'Escape') setAcik(false);
++    }
++    window.addEventListener('keydown', tus);
++    return () => window.removeEventListener('keydown', tus);
++  }, [acik]);
++
++  function sesDegistir() {
++    const yeni = !sesAcik;
++    setSesAcik(yeni);
++    sesTercihiYaz(yeni);
++  }
++
++  const ad = profil?.kullaniciAdi ?? kullanici?.email ?? 'Oyuncu';
++
++  return (
++    <div className="fixed right-4 top-4 z-50">
++      <button
++        onClick={() => setAcik((a) => !a)}
++        data-alan="menu-ac"
++        aria-label="Menü"
++        aria-expanded={acik}
++        className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/80 text-lg text-cyan-200 backdrop-blur"
++      >
++        ☰
++      </button>
++
++      {acik && (
++        <>
++          {/* Menü dışına tıklanınca kapat */}
++          <div className="fixed inset-0 -z-10" onClick={() => setAcik(false)} />
++          <div
++            data-alan="menu"
++            className="absolute right-0 top-12 w-56 rounded-xl border border-slate-800 bg-[#0F1424] p-2 shadow-xl"
++          >
++            {/* Kimlik satırı */}
++            {kullanici ? (
++              <div className="mb-1 flex items-center justify-between rounded-lg px-3 py-2">
++                <span data-alan="username" className="truncate text-sm font-bold text-slate-300" title={ad}>
++                  {ad}
++                </span>
++                <button
++                  onClick={async () => {
++                    setAcik(false);
++                    await supabase.auth.signOut();
++                    window.location.href = '/';
++                  }}
++                  data-alan="cikis"
++                  className="text-xs font-bold text-slate-500 hover:text-red-400"
++                >
++                  Çık
++                </button>
++              </div>
++            ) : (
++              <button
++                onClick={() => {
++                  setAcik(false);
++                  anaSayfayaIstek('giris');
++                }}
++                data-alan="giris-ac"
++                className="mb-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
++              >
++                Giriş yap
++              </button>
++            )}
++
++            <div className="my-1 h-px bg-slate-800" />
++
++            <a
++              href="/"
++              data-alan="ana-sayfa"
++              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
++            >
++              🏠 Ana sayfa
++            </a>
++            <a
++              href="/lig"
++              data-alan="lig-ac"
++              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
++            >
++              📊 Sıralamalar
++            </a>
++            <button
++              onClick={sesDegistir}
++              data-alan="ses-ac-kapa"
++              aria-pressed={sesAcik}
++              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
++            >
++              {sesAcik ? '🔊 Ses açık' : '🔇 Ses kapalı'}
++            </button>
++            <button
++              onClick={() => {
++                setAcik(false);
++                anaSayfayaIstek('yardim');
++              }}
++              data-alan="yardim-ac"
++              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
++            >
++              ❓ Nasıl oynanır
++            </button>
++          </div>
++        </>
++      )}
++    </div>
++  );
++}
+diff --git a/uygulama/src/ekranlar/Kurulum.tsx b/uygulama/src/ekranlar/Kurulum.tsx
+index 86bb25a..155858f 100644
+--- a/uygulama/src/ekranlar/Kurulum.tsx
++++ b/uygulama/src/ekranlar/Kurulum.tsx
+@@ -11,8 +11,6 @@ import {
+   kaliciMi,
+   acikSeviyeler as depoAcikSeviyeler,
+   sonAntrenmanAyariOku,
+-  sesAcikMi,
+-  sesTercihiYaz,
+ } from '../depo';
+ 
+ export type Mod = 'antrenman' | 'gunun';
+@@ -44,17 +42,8 @@ interface Props {
+ // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
+ const SURE_SECENEK = [90, 60, 30, 15];
+ 
+-export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, kullanici, onGirisAc, onCikisYap }: Props) {
++export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, kullanici, onGirisAc }: Props) {
+   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
+-  const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi);
+-  const [menuAcik, setMenuAcik] = useState(false);
+-
+-  function sesDegistir() {
+-    const yeni = !sesAcik;
+-    setSesAcik(yeni);
+-    sesTercihiYaz(yeni);
+-  }
+-
+   const il = oku();
+   const acik = depoAcikSeviyeler(il);
+   const ilkKezMi = acik.length <= 1;
+@@ -123,94 +112,12 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
+   return (
+     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+       <div className="mx-auto w-full max-w-md">
+-        <header className="relative flex items-center gap-3">
++        <header className="relative flex items-center gap-3 pr-12">
+           <img src="/logo.svg" alt="" className="h-9 w-9" />
+           <div className="flex-1">
+             <h1 className="text-2xl font-black leading-none text-white">Zihin Turu</h1>
+             <p className="text-xs text-slate-500">Sayı Turu — rakamlar, dört işlem, bir hedef.</p>
+           </div>
+-
+-          {/* Hamburger menü: sıralamalar, ses, yardım, kimlik tek yerde toplanır */}
+-          <button
+-            onClick={() => setMenuAcik((a) => !a)}
+-            data-alan="menu-ac"
+-            aria-label="Menü"
+-            aria-expanded={menuAcik}
+-            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg text-cyan-200"
+-          >
+-            ☰
+-          </button>
+-
+-          {menuAcik && (
+-            <>
+-              {/* Menü dışına tıklanınca kapat */}
+-              <div className="fixed inset-0 z-10" onClick={() => setMenuAcik(false)} />
+-              <div
+-                data-alan="menu"
+-                className="absolute right-0 top-12 z-20 w-56 rounded-xl border border-slate-800 bg-[#0F1424] p-2 shadow-xl"
+-              >
+-                {/* Kimlik satırı */}
+-                {kullanici ? (
+-                  <div className="mb-1 flex items-center justify-between rounded-lg px-3 py-2">
+-                    <span data-alan="username" className="truncate text-sm font-bold text-slate-300" title={kullanici.ad}>
+-                      {kullanici.ad}
+-                    </span>
+-                    <button
+-                      onClick={() => {
+-                        setMenuAcik(false);
+-                        onCikisYap?.();
+-                      }}
+-                      data-alan="cikis"
+-                      className="text-xs font-bold text-slate-500 hover:text-red-400"
+-                    >
+-                      Çık
+-                    </button>
+-                  </div>
+-                ) : (
+-                  <button
+-                    onClick={() => {
+-                      setMenuAcik(false);
+-                      onGirisAc?.();
+-                    }}
+-                    data-alan="giris-ac"
+-                    className="mb-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
+-                  >
+-                    Giriş yap
+-                  </button>
+-                )}
+-
+-                <div className="my-1 h-px bg-slate-800" />
+-
+-                <a
+-                  href="/lig"
+-                  data-alan="lig-ac"
+-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+-                >
+-                  📊 Sıralamalar
+-                </a>
+-                <button
+-                  onClick={() => {
+-                    sesDegistir();
+-                  }}
+-                  data-alan="ses-ac-kapa"
+-                  aria-pressed={sesAcik}
+-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+-                >
+-                  {sesAcik ? '🔊 Ses açık' : '🔇 Ses kapalı'}
+-                </button>
+-                <button
+-                  onClick={() => {
+-                    setMenuAcik(false);
+-                    onYardim();
+-                  }}
+-                  data-alan="yardim-ac"
+-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+-                >
+-                  ❓ Nasıl oynanır
+-                </button>
+-              </div>
+-            </>
+-          )}
+         </header>
+ 
+         {/* Mod seçimi */}
+diff --git a/uygulama/src/ekranlar/Oyun.tsx b/uygulama/src/ekranlar/Oyun.tsx
+index 7b8565f..43d6e8a 100644
+--- a/uygulama/src/ekranlar/Oyun.tsx
++++ b/uygulama/src/ekranlar/Oyun.tsx
+@@ -44,7 +44,8 @@ interface Props {
+   /** Antrenman oturumu puan/tur göstergesi — yalnızca Antrenman'da dolu gelir. */
+   oturumPuan: { toplamPuan: number; turSayisi: number } | null;
+   onBitti: (s: OyunSonuc) => void;
+-  onYardim: () => void;
++  /** Global menü "Nasıl oynanır"ı üstlendi; uyumluluk için tutuluyor. */
++  onYardim?: () => void;
+ }
+ 
+ const ISLEMLER: { op: Islem; ad: string }[] = [
+@@ -60,7 +61,7 @@ const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
+   { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
+ ];
+ 
+-export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYardim }: Props) {
++export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti }: Props) {
+   const veri = tur.veri as SayiVeri;
+   const hedef = veri.hedef;
+ 
+@@ -201,14 +202,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
+           ) : (
+             <span />
+           )}
+-          <button
+-            onClick={onYardim}
+-            data-alan="yardim-ac"
+-            aria-label="Nasıl oynanır"
+-            className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/60 text-lg font-black text-cyan-200"
+-          >
+-            ?
+-          </button>
++          <span className="min-h-[44px] min-w-[44px]" />
+         </div>
+ 
+         {/* Hedef + en yakın */}
+-- 
+2.43.0
+

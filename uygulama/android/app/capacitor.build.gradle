@@ -16,6 +16,7 @@ dependencies {
     implementation project(':capacitor-firebase-remote-config')
     implementation project(':capacitor-app')
     implementation project(':capacitor-browser')
+    implementation project(':capacitor-local-notifications')
 
 }
 

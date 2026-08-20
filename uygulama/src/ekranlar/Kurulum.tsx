@@ -173,8 +173,7 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
                   data-seviye={s.anahtar}
                   data-kilitli={kilitliMi ? 'true' : undefined}
                   onClick={() => seviyeSec(s.anahtar)}
-                  disabled={kilitliMi}
-                  aria-pressed={seviye === s.anahtar}
+                  aria-pressed={!kilitliMi && seviye === s.anahtar}
                   aria-disabled={kilitliMi}
                   className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm transition ${
                     kilitliMi

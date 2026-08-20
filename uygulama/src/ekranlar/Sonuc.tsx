@@ -355,17 +355,12 @@ export default function Sonuc({
         {/* Misafir: "Bu turu lige işlemek için giriş yap" — ana eylem
             düğmesinden daha az baskın olmalı, dikkat çalmadan bilgi vermeli. */}
         {mod === 'gunun' && !girisYapildiMi && (
-          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-center">
-            <p className="text-xs text-slate-400">
-              Giriş yaparsan puanın lige işler.{' '}
-              <button
-                onClick={onGirisAc}
-                className="font-bold text-cyan-300 hover:underline"
-              >
-                Giriş yap →
-              </button>
-            </p>
-          </div>
+          <button
+            onClick={onGirisAc}
+            className="mt-6 w-full text-center text-[11px] text-slate-500 hover:text-cyan-400 transition-colors"
+          >
+            Giriş yaparsan puanın lige işler →
+          </button>
         )}
 
         {mod === 'gunun' ? (

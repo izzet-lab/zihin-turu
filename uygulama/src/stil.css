@@ -5,10 +5,12 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* Alt güvenli alan: telefonun gezinme çubuğuyla içerik çakışmasın.
-     Üst güvenli alan StatusBar.setOverlaysWebView(false) ile çözülür;
-     overlay kapalı olduğunda webview zaten durum çubuğunun altından başlar
-     ve safe-area-inset-top sıfır döner. */
+  /* Güvenli alan: üstte durum çubuğu, altta gezinme çubuğuyla çakışmasın.
+     Üst: StatusBar.setOverlaysWebView(false) birincil çözümdür — webview
+     zaten durum çubuğunun altından başlar. padding-top ek güvenlik
+     katmanıdır (overlay:false çalıştığında inset-top sıfır döner,
+     çalışmazsa CSS telafi eder). */
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 :focus-visible { outline: 3px solid #7CEDFB; outline-offset: 2px; }

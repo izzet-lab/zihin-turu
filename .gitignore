@@ -21,6 +21,7 @@ playwright-report/
 uygulama/android/.gradle/
 uygulama/android/build/
 uygulama/android/app/build/
+uygulama/android/app/release/
 uygulama/android/local.properties
 uygulama/android/app/src/main/assets/public/
 uygulama/android/.idea/

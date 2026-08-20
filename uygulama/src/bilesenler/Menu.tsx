@@ -14,6 +14,8 @@ import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import { profilOku, type OyuncuProfil } from '../kimlik';
 import { sesAcikMi, sesTercihiYaz } from '../depo';
+import { nativeMi } from '../platform';
+import { Browser } from '@capacitor/browser';
 
 export default function Menu() {
   const gecis = useNavigate();
@@ -69,6 +71,27 @@ export default function Menu() {
   function git(yol: string) {
     setMenuAcik(false);
     gecis(yol);
+  }
+
+  /**
+   * Instagram hesabını açar.
+   *
+   * Android'de sistem tarayıcısında açılır (Capacitor Browser); doğrudan
+   * window.open kullanılırsa uygulamanın kendi webview'ında açılır ve
+   * kullanıcı oyuna geri dönemez.
+   */
+  async function instagramAc() {
+    setMenuAcik(false);
+    const adres = 'https://www.instagram.com/zihinturuapp/';
+    if (nativeMi()) {
+      try {
+        await Browser.open({ url: adres });
+        return;
+      } catch {
+        // Açılamazsa aşağıdaki yola düş.
+      }
+    }
+    window.open(adres, '_blank', 'noopener,noreferrer');
   }
 
   function sesDegistir() {
@@ -157,6 +180,35 @@ export default function Menu() {
               </button>
             )}
 
+            {/* Hesaba dair ayarlar — Profil'in hemen altında toplanır. */}
+            <button
+              onClick={() => git('/gizlilik-ayarlari')}
+              data-alan="gizlilik-ayarlari"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+            >
+              🔒 Gizlilik ayarları
+            </button>
+
+            <button
+              onClick={() => git('/yasal/kvkk')}
+              data-alan="yasal"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+            >
+              📄 Yasal metinler
+            </button>
+
+            {kullanici && (
+              <button
+                onClick={() => git('/yasal/hesap-sil')}
+                data-alan="hesap-sil"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-red-400/80 hover:bg-slate-800/60 hover:text-red-400"
+              >
+                🗑️ Hesabımı sil
+              </button>
+            )}
+
+            <div className="my-1 h-px bg-slate-800" />
+
             <button
               onClick={sesDegistir}
               data-alan="ses-ac-kapa"
@@ -177,32 +229,15 @@ export default function Menu() {
               ❓ Nasıl oynanır
             </button>
 
-            {/* Yasal bağlantılar */}
+            {/* Sosyal */}
             <div className="my-1 h-px bg-slate-800" />
             <button
-              onClick={() => git('/gizlilik-ayarlari')}
-              data-alan="gizlilik-ayarlari"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
-            >
-              🔒 Gizlilik ayarları
-            </button>
-
-            <button
-              onClick={() => git('/yasal/kvkk')}
+              onClick={instagramAc}
+              data-alan="instagram"
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-slate-500 hover:bg-slate-800/60 hover:text-slate-300"
             >
-              📄 Yasal metinler
+              📷 Instagram'da takip et
             </button>
-
-            {kullanici && (
-              <button
-                onClick={() => git('/yasal/hesap-sil')}
-                data-alan="hesap-sil"
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-red-400/70 hover:bg-slate-800/60 hover:text-red-400"
-              >
-                🗑️ Hesabımı sil
-              </button>
-            )}
           </div>
         </>
       )}

@@ -29,14 +29,13 @@
             </intent-filter>
         </activity>
 
-        <!-- AdMob uygulama kimliği.
-             Aşağıdaki değer Google'ın RESMÎ TEST kimliğidir; gerçek
-             reklam göstermez. AdMob konsolundan alınan gerçek kimlikle
-             değiştirilmelidir. Yanlış/eksik kimlik uygulamanın açılışta
-             çökmesine yol açar. -->
+        <!-- AdMob uygulama kimliği (gerçek kimlik, AdMob konsolundan).
+             Uygulama kimliğinde tilde (~), reklam birimi kimliğinde
+             eğik çizgi (/) bulunur; karıştırılırsa uygulama açılışta
+             çöker. Banner birimi kimliği .env dosyasındadır. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-6339500340265560~9019003216" />
 
         <!-- Reklam kimliği (AAID) izni kaldırılıyor.
              Çocuğa yönelik uygulamalarda reklam kimliği kullanılmaz;

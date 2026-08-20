@@ -173,13 +173,14 @@ interface IleriSonuc {
  * Reddedilen tur deterministik olarak atlanır; aynı tohum aynı sonucu
  * verir.
  */
-function cozumYogunlugu(sayilar: number[], hedef: number, sinirMs = 30): number {
-  const t0 = Date.now();
+function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): number {
   let sayac = 0;
+  let dugum = 0;
   const gorulen = new Set<string>();
 
   function ara(liste: number[]): void {
-    if (Date.now() - t0 > sinirMs) return;
+    if (dugum > dugumSiniri) return;
+    dugum++;
     for (const d of liste) {
       if (d === hedef) sayac++;
     }
@@ -190,7 +191,7 @@ function cozumYogunlugu(sayilar: number[], hedef: number, sinirMs = 30): number 
 
     for (let i = 0; i < liste.length; i++) {
       for (let j = i + 1; j < liste.length; j++) {
-        if (Date.now() - t0 > sinirMs) return;
+        if (dugum > dugumSiniri) return;
         const a = liste[i]!;
         const b = liste[j]!;
         const kalan = liste.filter((_, k) => k !== i && k !== j);
@@ -275,7 +276,7 @@ function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSi
     // Zorluk filtresi: çözüm yoğunluğu eşiğin üstündeyse reddet.
     // Bu kontrol deterministiktir (r() kullanmaz), dolayısıyla aynı
     // tohum daima aynı turu üretir.
-    const yogunluk = cozumYogunlugu(sayilar, deger, 30);
+    const yogunluk = cozumYogunlugu(sayilar, deger);
     if (yogunluk > yogunlukEsigi) continue;
 
     return { hedef: deger, adimlar: liste[0]!.yol, sayilar };
@@ -308,13 +309,25 @@ export function uretimYap(seviyeAdi: string, tohum: number, buyukAdet?: number):
       };
   } else {
     const buyuk = S.buyukVar ? Math.min(ba, S.tas) : 0;
+    // Geriye arama yapılan seviyelerde de çözüm yoğunluğu filtresi:
+    // cocuk (4 taş): filtre yok — zaten az kombinasyon, doğal zorluk yeterli.
+    // normal (5 taş): eşik 12 — 5 taşla çok fazla alternatif yol çıkabiliyor,
+    //   bu da turu cocuk'tan kolay kılıyor. Filtre, normalin cocuk'tan daha
+    //   az çözüm yoluna sahip olmasını garanti eder.
+    const yogunlukEsigi = S.tas >= 5 ? 6 : 0; // 0 = filtre yok
     for (let t = 0; t < 80; t++) {
       const sayilar = karistir(BUYUK, r)
         .slice(0, buyuk)
         .concat(karistir(KUCUK.concat(KUCUK), r).slice(0, S.tas - buyuk));
       const hedef = S.alt + Math.floor(r() * (S.ust - S.alt + 1));
       const cozum = cozZinciri(sayilar, hedef, 300);
-      if (cozum.fark === 0) return { seviye: seviyeAdi, tohum, hedef, sayilar, cozum };
+      if (cozum.fark !== 0) continue;
+      // Yoğunluk filtresi (cocuk'ta atlanır)
+      if (yogunlukEsigi > 0) {
+        const yogunluk = cozumYogunlugu(sayilar, hedef);
+        if (yogunluk > yogunlukEsigi) continue;
+      }
+      return { seviye: seviyeAdi, tohum, hedef, sayilar, cozum };
     }
   }
   return uretimYap(seviyeAdi, (tohum + 1) >>> 0, ba);

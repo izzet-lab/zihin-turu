@@ -2,7 +2,15 @@
 
 /* Tarayıcı arası tutarlılık için birkaç temel kural. */
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Alt güvenli alan: telefonun gezinme çubuğuyla içerik çakışmasın.
+     Üst güvenli alan StatusBar.setOverlaysWebView(false) ile çözülür;
+     overlay kapalı olduğunda webview zaten durum çubuğunun altından başlar
+     ve safe-area-inset-top sıfır döner. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 :focus-visible { outline: 3px solid #7CEDFB; outline-offset: 2px; }
 
 /* Sonuç ekranında çözümün "el yazısıyla" tahtaya yazılması. Yazı tipi

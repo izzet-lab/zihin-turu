@@ -7,10 +7,15 @@ import { uzakAyarlariYukle } from './firebase';
 import { tercihleriUygula } from './ekranlar/GizlilikAyarlari';
 import { bildirimiPlanla, bildirimDinleyiciKur } from './bildirim';
 import { oku } from './depo';
+import { durumCubuguAyarla } from './durumCubugu';
 import './stil.css';
 
 // Android'de e-postadaki giriş bağlantısını yakala (web'de etkisiz).
 derinBaglantiDinle();
+
+// Durum çubuğunu ayarla: overlay kapalı, arka plan tema rengiyle eşleşir.
+// Web'de sessizce hiçbir şey yapmaz.
+durumCubuguAyarla();
 
 // Kullanıcının gizlilik tercihlerini Firebase'e uygula. Bu, herhangi bir
 // olay gönderilmeden ÖNCE olmalı — reddetmiş biri için hiçbir şey

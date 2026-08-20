@@ -46,7 +46,9 @@ export default function Giris({ onAtla }: Props) {
         },
       });
       if (error) {
-        setHata('Bağlantı gönderilemedi. Biraz bekleyip tekrar dene.');
+        // Gerçek sebebi de gösteriyoruz; aksi halde yapılandırma hatası
+        // ile geçici ağ sorunu birbirinden ayırt edilemiyor.
+        setHata(`Bağlantı gönderilemedi: ${error.message}`);
       } else {
         setGonderildi(true);
       }
@@ -65,7 +67,7 @@ export default function Giris({ onAtla }: Props) {
       provider: 'google',
       options: { redirectTo: girisDonusAdresi() },
     });
-    if (error) setHata('Google girişi başlatılamadı.');
+    if (error) setHata(`Google girişi başlatılamadı: ${error.message}`);
   }
 
   if (gonderildi) {

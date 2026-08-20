@@ -1,7 +1,20 @@
 /**
  * SayfaSablonu.tsx — Yasal metinler için standart tasarım.
  * Props: başlık, içerik (JSX), geri dönüş butonu.
+ *
+ * Sayfanın altında tüm yasal metinlere bağlantı veren bir gezinme
+ * bloğu bulunur; okuyan kişi birinden diğerine geçebilsin diye.
  */
+
+import { Link, useLocation } from 'react-router-dom';
+
+/** Tüm yasal sayfalar — alt gezinme bu listeden üretilir. */
+const YASAL_SAYFALAR = [
+  { yol: '/yasal/kvkk', ad: 'KVKK Aydınlatma Metni' },
+  { yol: '/yasal/gizlilik', ad: 'Gizlilik Politikası' },
+  { yol: '/yasal/cerez', ad: 'Çerez Politikası' },
+  { yol: '/yasal/kullanim-kosullari', ad: 'Kullanım Koşulları' },
+];
 
 interface Props {
   baslik: string;
@@ -11,6 +24,8 @@ interface Props {
 }
 
 export default function SayfaSablonu({ baslik, alt, cocuklar, onGeri }: Props) {
+  const konum = useLocation();
+
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-2xl">
@@ -30,6 +45,25 @@ export default function SayfaSablonu({ baslik, alt, cocuklar, onGeri }: Props) {
         <div className="prose prose-invert max-w-none">
           {cocuklar}
         </div>
+
+        {/* Diğer yasal metinlere geçiş */}
+        <nav className="mt-12 border-t border-slate-800 pt-6">
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-600">
+            Diğer yasal metinler
+          </p>
+          <ul className="space-y-2">
+            {YASAL_SAYFALAR.filter((s) => s.yol !== konum.pathname).map((s) => (
+              <li key={s.yol}>
+                <Link
+                  to={s.yol}
+                  className="text-sm text-cyan-400 hover:text-cyan-300 hover:underline"
+                >
+                  {s.ad}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </main>
   );

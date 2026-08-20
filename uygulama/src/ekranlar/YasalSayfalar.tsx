@@ -2,23 +2,17 @@
  * YasalSayfalar.tsx — KVKK, gizlilik, çerez, kullanım koşulları, hesap silme
  *
  * Zihin Turu projesinin gerçek durumunu yansıtan yasal metinler.
- * Her metnin başında "avukat incelemesinden geçmedi" uyarısı bulunur.
+ * 19 Ağustos 2026'da avukat incelemesinden geçmiştir; metinler
+ * değiştirilirse yeniden hukuki onay alınmalıdır.
+ *
+ * Hedef kitle 8 yaş ve üzeridir — çocuk kullanıcılara ilişkin
+ * ifadeler bu yaşa göre yazılmıştır.
  */
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { hesapSil } from '../kimlik';
 import SayfaSablonu from './SayfaSablonu';
-
-/* ── Tekrarlanan uyarı kutusu ── */
-function AvukatUyarisi() {
-  return (
-    <div className="rounded-lg border border-amber-800 bg-amber-900/20 p-4 text-amber-200 text-xs mb-6">
-      ⚠️ <strong>Bu metin taslak niteliğindedir ve avukat incelemesinden geçmemiştir.</strong>{' '}
-      Herkese açık yayından önce hukuk danışmanı tarafından gözden geçirilmelidir.
-    </div>
-  );
-}
 
 /* ── Ortak stil sınıfları ── */
 const h2 = 'text-base font-bold text-white mt-6';
@@ -35,8 +29,6 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
       onGeri={onGeri}
       cocuklar={
         <div className={icerik}>
-          <AvukatUyarisi />
-
           <p>
             Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK")
             kapsamında, <strong>Zihin Turu</strong> uygulamasını kullanan siz değerli
@@ -49,7 +41,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           <h2 className={h2}>1. Veri Sorumlusu</h2>
           <p>
             Veri sorumlusu, Zihin Turu uygulamasını geliştiren ve işleten bireysel
-            girişimcidir. İletişim: <strong>izzet@haciserif.com</strong>
+            girişimcidir. İletişim: <strong>sefa162354@gmail.com</strong>
           </p>
 
           <h2 className={h2}>2. Toplanan Kişisel Veriler</h2>
@@ -67,10 +59,15 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Oyun sonuçları</td><td className="px-3 py-2">Puan, süre, seviye, adım sayısı — ilerleme takibi ve lig sıralaması</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">IP adresi</td><td className="px-3 py-2">Supabase altyapısı tarafından sunucu günlüklerinde otomatik kaydedilir</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">Tarayıcı/cihaz bilgisi</td><td className="px-3 py-2">Supabase oturum yönetimi (user-agent)</td><td className="px-3 py-2">Otomatik</td></tr>
+              <tr><td className="px-3 py-2">Bildirim jetonu <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma bildirimi göndermek — Firebase Cloud Messaging</td><td className="px-3 py-2">Hayır, izin sorulur</td></tr>
+              <tr><td className="px-3 py-2">Çökme kayıtları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Kullanım olayları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
             </tbody>
           </table>
           <p className="text-xs text-slate-500">
             Telefon numarası, adres, TC kimlik numarası gibi veriler <strong>toplanmaz</strong>.
+            Son üç satır yalnızca <strong>Android uygulamasında</strong> geçerlidir; tarayıcıdan
+            oynayanlarda bu veriler hiç toplanmaz.
           </p>
 
           <h2 className={h2}>3. Verilerin İşlenme Amaçları</h2>
@@ -99,18 +96,44 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
             gizlilik politikası da geçerlidir.
           </p>
           <p>
-            Verileriniz reklam, pazarlama veya analitik amacıyla <strong>hiçbir üçüncü
-            tarafla paylaşılmaz</strong>.
+            <strong>Android uygulamasında</strong> ayrıca <strong>Google</strong>'ın
+            şu hizmetleri kullanılır: Firebase (bildirim, çökme raporu, kullanım
+            olayları, uzak ayar) ve Google AdMob (reklam). Bu hizmetler Google'ın
+            gizlilik politikasına tabidir ve verileri Google altyapısında işlenir.
+          </p>
+          <p>
+            Verileriniz — e-posta adresiniz ve kullanıcı adınız dâhil —{' '}
+            <strong>reklam veya pazarlama amacıyla hiçbir üçüncü tarafla
+            paylaşılmaz</strong>. Reklam ağına kimliğinizi belirleyen hiçbir bilgi
+            gönderilmez.
           </p>
 
-          <h2 className={h2}>6. Saklama Süresi</h2>
+          <h2 className={h2}>6. Reklamlar</h2>
+          <p>
+            Android uygulamasında Google AdMob aracılığıyla reklam gösterilir.
+            Tarayıcı sürümünde reklam yoktur.
+          </p>
+          <p>
+            Zihin Turu çocuklara yönelik bir uygulama olduğu için reklamlar
+            <strong> kişiselleştirilmez</strong>. Teknik olarak şu ayarlar
+            uygulanmıştır:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Reklamlar "çocuğa yönelik" ve "rıza yaşının altında" olarak etiketlenir</li>
+            <li>Yalnızca <strong>genel izleyici (G)</strong> derecesindeki reklamlar gösterilir</li>
+            <li>Reklam kimliği (AAID) <strong>toplanmaz</strong>; uygulama bu izni açıkça kaldırır</li>
+            <li>Davranışsal profil çıkarılmaz; reklamlar ilgi alanınıza göre seçilmez</li>
+            <li>Oyun sırasında tam ekran reklam gösterilmez; yalnızca alt banner kullanılır</li>
+          </ul>
+
+          <h2 className={h2}>7. Saklama Süresi</h2>
           <p>
             Kişisel verileriniz hesabınız aktif olduğu sürece saklanır. Hesabınızı
             sildiğinizde tüm verileriniz <strong>30 gün içinde</strong> kalıcı olarak
             silinir. Yasal yükümlülükler gerektirdiğinde bu süre uzayabilir.
           </p>
 
-          <h2 className={h2}>7. Haklarınız (KVKK Madde 11)</h2>
+          <h2 className={h2}>8. Haklarınız (KVKK Madde 11)</h2>
           <p>KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -124,12 +147,12 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           </ul>
           <p>
             Hesabınızı silmek için menüdeki <strong>"Hesabımı sil"</strong> seçeneğini
-            kullanabilir veya <strong>izzet@haciserif.com</strong> adresine yazabilirsiniz.
+            kullanabilir veya <strong>sefa162354@gmail.com</strong> adresine yazabilirsiniz.
           </p>
 
-          <h2 className={h2}>8. Başvuru ve Şikâyet</h2>
+          <h2 className={h2}>9. Başvuru ve Şikâyet</h2>
           <p>
-            Haklarınızı kullanmak için <strong>izzet@haciserif.com</strong> adresine
+            Haklarınızı kullanmak için <strong>sefa162354@gmail.com</strong> adresine
             başvurabilirsiniz. Başvurunuz en geç 30 gün içinde yanıtlanacaktır.
           </p>
           <p>
@@ -153,8 +176,6 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
       onGeri={onGeri}
       cocuklar={
         <div className={icerik}>
-          <AvukatUyarisi />
-
           <p>
             Zihin Turu, kullanıcılarının gizliliğine saygı gösterir. Bu politika,
             hangi verilerin toplandığını, nasıl korunduğunu ve haklarınızın neler
@@ -179,11 +200,41 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
             <li><strong>Kimlik doğrulama:</strong> Supabase Auth — şifre saklanmaz, sihirli bağlantı (OTP) veya Google OAuth kullanılır</li>
           </ul>
 
-          <h2 className={h2}>3. Üçüncü Taraf Paylaşımı</h2>
+          <h2 className={h2}>3. Üçüncü Taraf Hizmetleri</h2>
           <p>
-            Kişisel verileriniz <strong>hiçbir reklam, analitik veya pazarlama
-            şirketiyle paylaşılmaz</strong>. Veriler yalnızca hizmetin sunulması için
-            gerekli altyapı sağlayıcılarında (Supabase, Cloudflare) işlenir.
+            <strong>Tarayıcı sürümünde</strong> veriler yalnızca hizmetin sunulması
+            için gerekli altyapı sağlayıcılarında (Supabase, Cloudflare) işlenir.
+            Reklam, analitik veya izleme hizmeti kullanılmaz.
+          </p>
+          <p>
+            <strong>Android uygulamasında</strong> ek olarak Google hizmetleri
+            kullanılır:
+          </p>
+          <table className="w-full text-xs border border-slate-700 rounded-lg overflow-hidden">
+            <thead>
+              <tr className="bg-slate-800/60">
+                <th className="text-left px-3 py-2 text-slate-400 font-bold">Hizmet</th>
+                <th className="text-left px-3 py-2 text-slate-400 font-bold">Ne için</th>
+                <th className="text-left px-3 py-2 text-slate-400 font-bold">Kapatılabilir mi?</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              <tr><td className="px-3 py-2">Firebase Cloud Messaging</td><td className="px-3 py-2">Günlük hatırlatma bildirimi</td><td className="px-3 py-2">Evet, izin sorulur</td></tr>
+              <tr><td className="px-3 py-2">Firebase Crashlytics</td><td className="px-3 py-2">Çökme raporları</td><td className="px-3 py-2">Evet</td></tr>
+              <tr><td className="px-3 py-2">Firebase Analytics</td><td className="px-3 py-2">Kullanım olayları</td><td className="px-3 py-2">Evet</td></tr>
+              <tr><td className="px-3 py-2">Firebase Remote Config</td><td className="px-3 py-2">Oyun ayarlarını güncelleme</td><td className="px-3 py-2">Hayır (veri toplamaz)</td></tr>
+              <tr><td className="px-3 py-2">Google AdMob</td><td className="px-3 py-2">Reklam gösterimi</td><td className="px-3 py-2">Hayır</td></tr>
+            </tbody>
+          </table>
+          <p>
+            Bu hizmetlerin hiçbirine <strong>e-posta adresiniz, kullanıcı adınız veya
+            oyuncu kimliğiniz gönderilmez</strong>. Analytics'e yalnızca oyun olayları
+            (hangi ekran, hangi seviye) iletilir; kim olduğunuzu belirten bir bilgi
+            eklenmez.
+          </p>
+          <p>
+            Bu ayarları uygulamadaki <strong>Gizlilik ayarları</strong> bölümünden
+            değiştirebilirsiniz.
           </p>
 
           <h2 className={h2}>4. Sıralama Tablosunda Görünen Bilgiler</h2>
@@ -201,8 +252,26 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>6. Çocukların Gizliliği</h2>
           <p>
-            Zihin Turu 13 yaş ve üzeri kullanıcılara yöneliktir. 18 yaş altındaki
-            kullanıcıların velisinin bilgisi dahilinde uygulamayı kullanması önerilir.
+            Zihin Turu <strong>8 yaş ve üzeri</strong> kullanıcılara yöneliktir.
+            18 yaş altındaki kullanıcıların hesap açması için velisinin izni gerekir;
+            veli, çocuğun uygulamayı kullanımından sorumludur.
+          </p>
+          <p>
+            Çocuk kullanıcılardan yalnızca hizmetin çalışması için gereken en az veri
+            toplanır: e-posta, kullanıcı adı ve oyun sonuçları. Veriler pazarlama
+            amacıyla kullanılmaz ve satılmaz.
+          </p>
+          <p>
+            Android uygulamasında reklam gösterilir; ancak uygulama çocuklara yönelik
+            olduğu için reklamlar <strong>kişiselleştirilmez</strong>. Reklam kimliği
+            (AAID) toplanmaz, davranışsal profil çıkarılmaz ve yalnızca genel izleyici
+            derecesindeki reklamlar gösterilir. Ayrıntı için{' '}
+            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma
+            Metni</Link>'nin "Reklamlar" bölümüne bakınız.
+          </p>
+          <p>
+            Velisi, çocuğuna ait hesabın silinmesini <strong>sefa162354@gmail.com</strong>
+            adresine yazarak isteyebilir.
           </p>
 
           <h2 className={h2}>7. Veri İhlali Bildirimi</h2>
@@ -220,7 +289,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>9. İletişim</h2>
           <p>
-            Gizlilik ile ilgili sorularınız için: <strong>izzet@haciserif.com</strong>
+            Gizlilik ile ilgili sorularınız için: <strong>sefa162354@gmail.com</strong>
           </p>
         </div>
       }
@@ -239,8 +308,6 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
       onGeri={onGeri}
       cocuklar={
         <div className={icerik}>
-          <AvukatUyarisi />
-
           <p>
             Bu politika, Zihin Turu uygulamasının çerez ve yerel depolama
             kullanımını açıklar.
@@ -251,7 +318,14 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>1. Çerez Kullanımı</h2>
           <p>
-            Zihin Turu, reklam veya analitik amaçlı çerez <strong>kullanmaz</strong>.
+            <strong>Tarayıcı sürümünde</strong> reklam veya analitik amaçlı çerez
+            <strong> kullanılmaz</strong>.
+          </p>
+          <p>
+            <strong>Android uygulamasında</strong> çerez kullanılmaz; ancak Google
+            Firebase ve AdMob kendi tanımlayıcılarını kullanır. Uygulama çocuklara
+            yönelik olduğu için reklam kimliği (AAID) toplanmaz ve reklamlar
+            kişiselleştirilmez.
           </p>
           <p>
             Supabase kimlik doğrulaması için tarayıcının <code className="text-xs bg-slate-800 px-1 rounded">localStorage</code> alanında
@@ -283,9 +357,13 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>3. Üçüncü Taraf Betikleri</h2>
           <p>
-            Reklam, analitik veya izleme amaçlı üçüncü taraf betikleri
-            <strong> kullanılmaz</strong>. Google Analytics, Facebook Pixel veya
-            benzeri izleme araçları yoktur.
+            <strong>Tarayıcı sürümünde</strong> reklam, analitik veya izleme amaçlı
+            üçüncü taraf betiği <strong>yüklenmez</strong>. Google Analytics, Facebook
+            Pixel veya benzeri izleme araçları yoktur.
+          </p>
+          <p>
+            Firebase ve AdMob yalnızca <strong>Android uygulamasında</strong> çalışır;
+            tarayıcıya bu kütüphaneler hiç indirilmez.
           </p>
 
           <h2 className={h2}>4. Çerez Yönetimi</h2>
@@ -310,8 +388,6 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
       onGeri={onGeri}
       cocuklar={
         <div className={icerik}>
-          <AvukatUyarisi />
-
           <p>
             Bu koşullar, Zihin Turu uygulamasını kullanımınızı düzenler.
             Hesap oluşturarak bu koşulları kabul etmiş sayılırsınız.
@@ -324,7 +400,15 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             Zihin Turu, matematik ve mantık becerileri geliştirmeye yönelik ücretsiz
             bir zihin oyunudur. Günlük bulmacalar ve antrenman modları sunar.
-            Reklam içermez ve herhangi bir ücret talep etmez.
+            Herhangi bir ücret talep etmez.
+          </p>
+          <p>
+            <strong>Android uygulamasında reklam gösterilir</strong>; tarayıcı
+            sürümünde reklam yoktur. Uygulama çocuklara yönelik olduğu için
+            reklamlar kişiselleştirilmez ve oyun sırasında tam ekran reklam
+            gösterilmez. Ayrıntı için{' '}
+            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma
+            Metni</Link>'ne bakınız.
           </p>
 
           <h2 className={h2}>2. Hesap Oluşturma</h2>
@@ -373,8 +457,10 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>8. Yaş Sınırı</h2>
           <p>
-            Uygulama 13 yaş ve üzeri kullanıcılara yöneliktir. 18 yaş altındaki
-            kullanıcıların velisinin bilgisi dahilinde kullanması önerilir.
+            Uygulama <strong>8 yaş ve üzeri</strong> kullanıcılara yöneliktir.
+            18 yaş altındaki kullanıcılar hesap açmak için velisinin iznini almalıdır.
+            Veli, çocuğun uygulamayı kullanımından sorumludur ve dilediği zaman
+            hesabın silinmesini talep edebilir.
           </p>
 
           <h2 className={h2}>9. Hesap Silme</h2>
@@ -399,7 +485,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>12. İletişim</h2>
           <p>
-            Sorularınız için: <strong>izzet@haciserif.com</strong>
+            Sorularınız için: <strong>sefa162354@gmail.com</strong>
           </p>
         </div>
       }

@@ -7,8 +7,8 @@ android {
         applicationId "com.zihinturu.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -19,7 +19,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -44,11 +44,15 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// google-services.json varsa Firebase eklentileri devreye girer.
+// Dosya yoksa uygulama yine derlenir; Firebase özellikleri sessizce kapalı kalır.
+// Dosya Firebase konsolundan indirilip android/app/ içine konur (repoya girmez).
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {
         apply plugin: 'com.google.gms.google-services'
+        apply plugin: 'com.google.firebase.crashlytics'
     }
 } catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+    logger.info("google-services.json bulunamadi; Firebase eklentileri uygulanmadi. Bildirim, Crashlytics ve Remote Config calismaz.")
 }

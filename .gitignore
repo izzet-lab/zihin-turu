@@ -27,3 +27,7 @@ uygulama/android/.idea/
 uygulama/android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
+
+# Firebase — proje anahtarlari repoya girmez
+uygulama/android/app/google-services.json
+uygulama/ios/App/App/GoogleService-Info.plist

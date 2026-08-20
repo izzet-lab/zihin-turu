@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,6 +29,20 @@
             </intent-filter>
         </activity>
 
+        <!-- AdMob uygulama kimliği.
+             Aşağıdaki değer Google'ın RESMÎ TEST kimliğidir; gerçek
+             reklam göstermez. AdMob konsolundan alınan gerçek kimlikle
+             değiştirilmelidir. Yanlış/eksik kimlik uygulamanın açılışta
+             çökmesine yol açar. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <!-- Reklam kimliği (AAID) izni kaldırılıyor.
+             Çocuğa yönelik uygulamalarda reklam kimliği kullanılmaz;
+             gizlilik metnindeki "davranışsal profil çıkarılmaz"
+             taahhüdünün teknik karşılığı budur. -->
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -40,4 +55,14 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Bildirim izni (Android 13+). Kullanıcıya sorulur, reddedilebilir. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Google Play Hizmetleri reklam kimliği izni AÇIKÇA KALDIRILIYOR.
+         AdMob kütüphanesi bu izni kendiliğinden ekler; çocuğa yönelik
+         uygulamada AAID toplanmamalıdır. -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 </manifest>

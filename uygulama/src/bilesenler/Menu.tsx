@@ -180,10 +180,18 @@ export default function Menu() {
             {/* Yasal bağlantılar */}
             <div className="my-1 h-px bg-slate-800" />
             <button
+              onClick={() => git('/gizlilik-ayarlari')}
+              data-alan="gizlilik-ayarlari"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+            >
+              🔒 Gizlilik ayarları
+            </button>
+
+            <button
               onClick={() => git('/yasal/kvkk')}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-slate-500 hover:bg-slate-800/60 hover:text-slate-300"
             >
-              📄 Yasal bilgiler
+              📄 Yasal metinler
             </button>
 
             {kullanici && (

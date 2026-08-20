@@ -3,10 +3,18 @@ import { createRoot } from 'react-dom/client';
 import Ana from './Ana';
 import { derinBaglantiDinle } from './derinBaglanti';
 import { nativeMi } from './platform';
+import { uzakAyarlariYukle } from './firebase';
+import { tercihleriUygula } from './ekranlar/GizlilikAyarlari';
 import './stil.css';
 
 // Android'de e-postadaki giriş bağlantısını yakala (web'de etkisiz).
 derinBaglantiDinle();
+
+// Kullanıcının gizlilik tercihlerini Firebase'e uygula. Bu, herhangi bir
+// olay gönderilmeden ÖNCE olmalı — reddetmiş biri için hiçbir şey
+// toplanmasın diye. Web'de ikisi de sessizce hiçbir şey yapmaz.
+tercihleriUygula();
+uzakAyarlariYukle();
 
 const kok = document.getElementById('kok');
 if (!kok) throw new Error('#kok bulunamadı');

@@ -7,8 +7,8 @@ android {
         applicationId "com.zihinturu.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "1.1.2"
+        versionCode 6
+        versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,9 +16,29 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // İmza yapılandırması: keystore bilgileri local.properties veya
+    // gradle.properties dosyasından okunur (repoya girmez).
+    //   ZIHIN_KEYSTORE_FILE=/path/to/keystore.jks
+    //   ZIHIN_KEYSTORE_PASSWORD=...
+    //   ZIHIN_KEY_ALIAS=...
+    //   ZIHIN_KEY_PASSWORD=...
+    signingConfigs {
+        release {
+            def props = new Properties()
+            def propsFile = rootProject.file('local.properties')
+            if (propsFile.exists()) props.load(new FileInputStream(propsFile))
+
+            storeFile file(props.getProperty('ZIHIN_KEYSTORE_FILE', 'keystore.jks'))
+            storePassword props.getProperty('ZIHIN_KEYSTORE_PASSWORD', '')
+            keyAlias props.getProperty('ZIHIN_KEY_ALIAS', 'zihinturu')
+            keyPassword props.getProperty('ZIHIN_KEY_PASSWORD', '')
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, type SayiVeri } from '@zihinturu/oyun-sayi';
 import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
+import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
+import { nativeMi } from '../platform';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 
@@ -87,6 +89,10 @@ interface Props {
   yeniAcilanSeviyeEtiket: string | null;
   /** Kullanıcı giriş yapmış mı? Üyelik notunun içeriğini belirler. */
   girisYapildiMi: boolean;
+  /** Seri kırıldıysa koruma fırsatı bilgisi. */
+  seriKorumaBilgi: { oncekiSeriGun: number; gun: string } | null;
+  /** Seri koruması yapıldığında çağrılır (ödüllü reklam izlendikten sonra). */
+  onSeriKoru: () => void;
   /** Günün Turu birincil düğmesi: kurulum ekranına (ana sayfaya) döner. */
   onAnaSayfa: () => void;
   /** Günün Turu ikincil bağlantısı: aynı seviyede hemen Antrenman'a geçer. */
@@ -110,6 +116,8 @@ export default function Sonuc({
   oturumPuanSonrasi,
   yeniAcilanSeviyeEtiket,
   girisYapildiMi,
+  seriKorumaBilgi,
+  onSeriKoru,
   onAnaSayfa,
   onAntrenmandaOyna,
   onYeniTur,
@@ -118,6 +126,40 @@ export default function Sonuc({
 }: Props) {
   const veri = tur.veri as SayiVeri;
   const tam = sonuc.fark === 0;
+
+  // Ödüllü reklam: antrenman modunda "reklam izle, tekrar oyna"
+  const [reklamYukleniyor, setReklamYukleniyor] = useState(false);
+  const [seriKorumaYukleniyor, setSeriKorumaYukleniyor] = useState(false);
+  const [seriKorumaTamamlandi, setSeriKorumaTamamlandi] = useState(false);
+  const reklamGosterilebilir = mod === 'antrenman' && nativeMi();
+  const seriKorumaGosterilebilir = seriKorumaBilgi != null && nativeMi() && !seriKorumaTamamlandi;
+
+  // Sonuç ekranı açıldığında ödüllü reklamı arka planda hazırla
+  useEffect(() => {
+    if (reklamGosterilebilir || seriKorumaGosterilebilir) odulluReklamHazirla();
+  }, [reklamGosterilebilir, seriKorumaGosterilebilir]);
+
+  async function reklamIzleTekrarOyna() {
+    setReklamYukleniyor(true);
+    try {
+      await odulluReklamGoster();
+      // Reklam başarılı veya başarısız — her durumda tekrar oyna
+      onYeniTur();
+    } finally {
+      setReklamYukleniyor(false);
+    }
+  }
+
+  async function reklamIzleSeriKoru() {
+    setSeriKorumaYukleniyor(true);
+    try {
+      await odulluReklamGoster();
+      onSeriKoru();
+      setSeriKorumaTamamlandi(true);
+    } finally {
+      setSeriKorumaYukleniyor(false);
+    }
+  }
 
   // Çözüm ancak tur bittikten SONRA açılır (CLAUDE.md 6).
   const cozum = useMemo(() => sayiTuru.cozumBul(tur), [tur]);
@@ -194,6 +236,33 @@ export default function Sonuc({
             </div>
           )}
         </div>
+
+        {/* Seri koruma — ödüllü reklam izleyerek kırılan seriyi geri yükle */}
+        {seriKorumaGosterilebilir && (
+          <div
+            data-alan="seri-koruma"
+            className="mt-5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center"
+          >
+            <div className="text-sm text-amber-200">
+              🔥 {seriKorumaBilgi!.oncekiSeriGun} günlük serin kırıldı!
+            </div>
+            <button
+              onClick={reklamIzleSeriKoru}
+              disabled={seriKorumaYukleniyor}
+              className="mt-2 min-h-[40px] w-full rounded-lg bg-amber-400/20 text-sm font-bold text-amber-300 hover:bg-amber-400/30 disabled:opacity-50"
+            >
+              {seriKorumaYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, serini koru'}
+            </button>
+          </div>
+        )}
+        {seriKorumaTamamlandi && (
+          <div
+            data-alan="seri-koruma-basarili"
+            className="mt-5 rounded-xl border border-green-400/30 bg-green-400/10 px-4 py-3 text-center text-sm text-green-300"
+          >
+            ✅ Serin korundu! {seri} gün devam ediyor.
+          </div>
+        )}
 
         {/* Oturum toplamı — Antrenman'ın "bir tane daha" motivasyon kartı.
             Sönük bir yan bilgi olarak kalmasın diye görsel olarak vurgulu:
@@ -325,6 +394,16 @@ export default function Sonuc({
             >
               Yeni tur
             </button>
+            {reklamGosterilebilir && (
+              <button
+                data-alan="reklam-tekrar"
+                onClick={reklamIzleTekrarOyna}
+                disabled={reklamYukleniyor}
+                className="mt-3 min-h-[44px] w-full rounded-xl border border-amber-400/30 bg-amber-400/10 text-sm font-bold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
+              >
+                {reklamYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, tekrar oyna'}
+              </button>
+            )}
             <button
               data-alan="ayarlar"
               onClick={onAyarlar}

@@ -2,19 +2,29 @@
  * Giriş / Kayıt ekranı — e-posta (sihirli bağlantı) ve Google.
  *
  * Misafir oynamak isteyen "Şimdi değil" ile geçer; üyelik zorunlu değil.
- * E-posta girildikten sonra "Gönderildi" bildirimi gösterilir ve bağlantı
- * e-postaya gider. Uygulamada şifre yönetimi yok — sihirli bağlantı hem
- * daha kolay hem de şifre sıfırlama sorunundan bizi kurtarıyor.
+ *
+ * YAŞ SINIRI (A görevi):
+ * - Doğum yılı sorulur (tam tarih değil, yıl — veri minimizasyonu)
+ * - 13 altı → kayıt yapılamaz, nazik mesajla açıklanır, misafir oynayabilir
+ * - 13–17 → veli onayı beyanı istenir
+ * - 18+ → doğrudan devam
+ * - 18 altına kişiselleştirilmiş reklam gösterilmez (reklam.ts'de)
  */
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { girisDonusAdresi } from '../platform';
+import { dogumYiliYaz, veliOnayiYaz } from '../depo';
 
 interface Props {
   /** Kullanıcı "Şimdi değil" seçtiğinde çağrılır. */
   onAtla: () => void;
+}
+
+/** Şu anki yıla göre yaklaşık yaş. */
+function yasHesapla(dogumYili: number): number {
+  return new Date().getFullYear() - dogumYili;
 }
 
 export default function Giris({ onAtla }: Props) {
@@ -24,11 +34,49 @@ export default function Giris({ onAtla }: Props) {
   const [hata, setHata] = useState<string | null>(null);
   const [kosullarKabul, setKosullarKabul] = useState(false);
 
+  // Yaş sınırı alanları
+  const [dogumYili, setDogumYili] = useState<string>('');
+  const [veliOnayi, setVeliOnayi] = useState(false);
+  const [yasEngeli, setYasEngeli] = useState(false);
+
+  const yil = dogumYili ? parseInt(dogumYili, 10) : null;
+  const yas = yil ? yasHesapla(yil) : null;
+  const kucuk = yas != null && yas < 13;
+  const veliOnayiGerekli = yas != null && yas >= 13 && yas < 18;
+
+  /** Yaş + onay doğrulaması. Geçerliyse true döner. */
+  function yasDogrula(): boolean {
+    if (!yil || isNaN(yil)) {
+      setHata('Doğum yılını gir.');
+      return false;
+    }
+    if (yil < 1930 || yil > new Date().getFullYear()) {
+      setHata('Geçerli bir doğum yılı gir.');
+      return false;
+    }
+    if (kucuk) {
+      setYasEngeli(true);
+      return false;
+    }
+    if (veliOnayiGerekli && !veliOnayi) {
+      setHata('Devam etmek için velinin onayı gerekiyor.');
+      return false;
+    }
+    return true;
+  }
+
+  /** Yaş ve onay bilgisini kaydeder. */
+  function yasBilgisiKaydet() {
+    if (yil) dogumYiliYaz(yil);
+    if (veliOnayiGerekli) veliOnayiYaz(veliOnayi);
+  }
+
   async function sihirliGonder() {
     if (!kosullarKabul) {
       setHata('Devam etmek için koşulları kabul etmelisin.');
       return;
     }
+    if (!yasDogrula()) return;
     const temiz = eposta.trim().toLowerCase();
     if (!temiz.includes('@')) {
       setHata('Geçerli bir e-posta adresi gir.');
@@ -37,17 +85,14 @@ export default function Giris({ onAtla }: Props) {
     setHata(null);
     setYukleniyor(true);
     try {
+      yasBilgisiKaydet();
       const { error } = await supabase.auth.signInWithOtp({
         email: temiz,
         options: {
-          // E-postadaki bağlantı kullanıcıyı uygulamaya geri götürür.
-          // Android'de özel şema (com.zihinturu.app://giris) kullanılır.
           emailRedirectTo: girisDonusAdresi(),
         },
       });
       if (error) {
-        // Gerçek sebebi de gösteriyoruz; aksi halde yapılandırma hatası
-        // ile geçici ağ sorunu birbirinden ayırt edilemiyor.
         setHata(`Bağlantı gönderilemedi: ${error.message}`);
       } else {
         setGonderildi(true);
@@ -62,12 +107,44 @@ export default function Giris({ onAtla }: Props) {
       setHata('Devam etmek için koşulları kabul etmelisin.');
       return;
     }
+    if (!yasDogrula()) return;
     setHata(null);
+    yasBilgisiKaydet();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: girisDonusAdresi() },
     });
     if (error) setHata(`Google girişi başlatılamadı: ${error.message}`);
+  }
+
+  // 13 yaş altı engeli
+  if (yasEngeli) {
+    return (
+      <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-5">
+        <div className="w-full max-w-sm text-center">
+          <div className="text-5xl mb-4">🎂</div>
+          <h1 className="text-xl font-black text-white mb-3">Yaşın henüz yetmiyor</h1>
+          <p className="text-slate-400 text-sm mb-2">
+            Zihin Turu'na üye olmak için en az <strong className="text-slate-200">13 yaşında</strong> olman gerekiyor.
+          </p>
+          <p className="text-slate-500 text-sm mb-8">
+            Ama misafir olarak oynamaya devam edebilirsin — hesap açmadan da bulmacaları çözebilirsin.
+          </p>
+          <button
+            onClick={onAtla}
+            className="min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          >
+            Misafir olarak oyna
+          </button>
+          <button
+            onClick={() => { setYasEngeli(false); setDogumYili(''); }}
+            className="mt-3 w-full text-center text-sm text-slate-600 hover:text-slate-400"
+          >
+            ← Geri dön
+          </button>
+        </div>
+      </main>
+    );
   }
 
   if (gonderildi) {
@@ -105,8 +182,52 @@ export default function Giris({ onAtla }: Props) {
           </p>
         </div>
 
-        {/* E-posta girişi */}
+        {/* Form */}
         <div className="space-y-3">
+          {/* Doğum yılı */}
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+              Doğum yılı
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={dogumYili}
+              onChange={(e) => {
+                setDogumYili(e.target.value);
+                setYasEngeli(false);
+                setHata(null);
+              }}
+              placeholder="Örn: 2010"
+              className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-base text-slate-200 placeholder-slate-600 outline-none focus:border-cyan-400"
+            />
+            <span className="mt-1 block text-xs text-slate-600">
+              Yalnızca yaş doğrulaması için kullanılır.
+            </span>
+          </label>
+
+          {/* Veli onayı — 13-17 arası ise göster */}
+          {veliOnayiGerekli && (
+            <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-amber-400/30 bg-amber-400/5 p-3">
+              <input
+                type="checkbox"
+                checked={veliOnayi}
+                onChange={(e) => {
+                  setVeliOnayi(e.target.checked);
+                  if (e.target.checked) setHata(null);
+                }}
+                className="mt-0.5 accent-amber-400"
+              />
+              <span className="text-xs text-slate-300 leading-relaxed">
+                <strong className="text-amber-300">Veli onayı:</strong> 18 yaşından küçüğüm.
+                Velim bu uygulamayı kullanmama izin veriyor ve{' '}
+                <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ni
+                okumuştur.
+              </span>
+            </label>
+          )}
+
+          {/* E-posta */}
           <label className="block">
             <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
               E-posta
@@ -117,7 +238,6 @@ export default function Giris({ onAtla }: Props) {
               onChange={(e) => setEposta(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sihirliGonder()}
               placeholder="ornek@mail.com"
-              autoFocus
               className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-base text-slate-200 placeholder-slate-600 outline-none focus:border-cyan-400"
             />
           </label>

@@ -201,24 +201,51 @@ export function gunlukKilitli(gun: string, il = oku()): boolean {
  * ve kesintisiz seriyi günceller. Aynı gün ikinci kez çağrılırsa
  * (kilit zaten var) hiçbir şeyi bozmaz.
  */
-export function gunlukKaydet(gun: string, seviye: string, sonuc: { fark: number; puan: number }): Ilerleme {
+/**
+ * Günlük kayıt sonucu. `seriKirildi` true ise ödüllü reklam izleyerek
+ * seri korunabilir (yalnızca önceki seri ≥ 2 günse anlamlı).
+ */
+export interface GunlukKaydetSonuc {
+  il: Ilerleme;
+  seriKirildi: boolean;
+  /** Kırılmadan önceki seri uzunluğu — koruma için geri yüklenecek değer. */
+  oncekiSeriGun: number;
+}
+
+export function gunlukKaydet(gun: string, seviye: string, sonuc: { fark: number; puan: number }): GunlukKaydetSonuc {
   const il = oku();
-  if (il.gunluk[gun]) return il; // bugün için zaten kayıtlı
+  if (il.gunluk[gun]) return { il, seriKirildi: false, oncekiSeriGun: 0 }; // bugün için zaten kayıtlı
 
   il.gunluk[gun] = { fark: sonuc.fark, puan: sonuc.puan, seviye, tarih: gun };
   if (sonuc.fark === 0) il.tam += 1;
 
   // Kesintisiz seri: dün oynandıysa uzar, arada boşluk varsa sıfırdan başlar.
   const s = il.seri;
+  const oncekiGun = s.gun;
+  let seriKirildi = false;
   if (s.son === birGunOnce(gun)) {
     s.gun += 1;
     s.son = gun;
   } else if (s.son !== gun) {
+    seriKirildi = oncekiGun >= 2; // 1 günlük seri kırılması anlamlı değil
     s.gun = 1;
     s.son = gun;
   }
   if (s.gun > s.enUzun) s.enUzun = s.gun;
 
+  yaz(il);
+  return { il, seriKirildi, oncekiSeriGun: oncekiGun };
+}
+
+/**
+ * Seri koruma: ödüllü reklam izlendikten sonra kırılan seriyi geri yükler.
+ * Önceki seri uzunluğu + 1 (bugünü sayarak) yapılır.
+ */
+export function seriKoru(gun: string, oncekiSeriGun: number): Ilerleme {
+  const il = oku();
+  il.seri.gun = oncekiSeriGun + 1; // önceki seri + bugün
+  il.seri.son = gun;
+  if (il.seri.gun > il.seri.enUzun) il.seri.enUzun = il.seri.gun;
   yaz(il);
   return il;
 }
@@ -378,4 +405,48 @@ export function bugun(): string {
   const a = String(d.getMonth() + 1).padStart(2, '0');
   const g = String(d.getDate()).padStart(2, '0');
   return `${y}-${a}-${g}`;
+}
+
+/* --- Doğum yılı ve veli onayı (yaş sınırı için) --- */
+
+const DOGUM_YILI_ANAHTAR = 'zihinturu.dogumyili';
+const VELI_ONAYI_ANAHTAR = 'zihinturu.veli-onayi';
+
+/** Kaydedilmiş doğum yılını okur, yoksa null. */
+export function dogumYiliOku(): number | null {
+  const ham = genelOku(DOGUM_YILI_ANAHTAR);
+  if (!ham) return null;
+  const yil = parseInt(ham, 10);
+  return isNaN(yil) ? null : yil;
+}
+
+/** Doğum yılını kaydeder. */
+export function dogumYiliYaz(yil: number): void {
+  genelYaz(DOGUM_YILI_ANAHTAR, String(yil));
+}
+
+/** Veli onayı verilmiş mi? (13–17 yaş arası için gerekli.) */
+export function veliOnayiVar(): boolean {
+  return genelOku(VELI_ONAYI_ANAHTAR) === '1';
+}
+
+/** Veli onayını kaydet. */
+export function veliOnayiYaz(onay: boolean): void {
+  genelYaz(VELI_ONAYI_ANAHTAR, onay ? '1' : '0');
+}
+
+/**
+ * Kullanıcının şu anki yaşını hesaplar (yaklaşık — yalnızca yıl bilgisi var).
+ * Doğum yılı kaydedilmemişse null döner.
+ */
+export function yasiHesapla(): number | null {
+  const yil = dogumYiliOku();
+  if (yil == null) return null;
+  return new Date().getFullYear() - yil;
+}
+
+/** Kullanıcı 18 yaş altında mı? Doğum yılı yoksa bilinmiyor → false (varsayılan: yetişkin). */
+export function resinDegilMi(): boolean {
+  const yas = yasiHesapla();
+  return yas != null && yas < 18;
 }

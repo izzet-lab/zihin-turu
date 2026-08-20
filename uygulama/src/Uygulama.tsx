@@ -15,6 +15,7 @@ import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import {
   bugun,
   gunlukKaydet,
+  seriKoru,
   oku,
   yardimGoruldu,
   yardimGorulduIsaretle,
@@ -80,6 +81,8 @@ export default function Uygulama() {
   const [seri, setSeri] = useState<number>(oku().seri.gun);
   const [yeniAcilanSeviye, setYeniAcilanSeviye] = useState<string | null>(null);
   const [oturumPuanDurumu, setOturumPuanDurumu] = useState<OturumPuanDurumu | null>(null);
+  // Seri koruma: ödüllü reklam izleyerek kırılan seriyi geri yükleme
+  const [seriKorumaBilgi, setSeriKorumaBilgi] = useState<{ oncekiSeriGun: number; gun: string } | null>(null);
   // Kurulum ekranı hangi modla açılacak: "Ana sayfaya dön" hep Günün
   // Turu'nu gösterir, Antrenman'daki "Seviye değiştir" ise Antrenman
   // sekmesinde kalmalı (bkz. ayarlaraDon).
@@ -136,9 +139,9 @@ export default function Uygulama() {
   /**
    * Reklam banner'ının ekrana göre konumu.
    *
-   *   Oyun          → ÜSTTE. Üst şerit yalnızca hedef sayı ve süre
-   *                   göstergesi; hiç dokunma hedefi yok. Altta ise
-   *                   "Bitir" düğmesi var, en çok basılan yer orası.
+   *   Oyun          → YOK. Oyun sırasında banner dikkat dağıtır ve
+   *                   oyun alanını daraltır; ayrıca dokunma hedefleri
+   *                   (taşlar, işlemler, bitir) çok yakın olur.
    *   Kurulum/Sonuç → ALTTA. Bu ekranlarda alt kısımda düğme yığını
    *                   yok, içerik kaydırılarak okunuyor.
    *   Giriş/Ad      → GİZLİ. Form doldurulurken klavye ve reklam yer
@@ -147,8 +150,7 @@ export default function Uygulama() {
    * Web'de tüm çağrılar sessizce hiçbir şey yapmaz.
    */
   useEffect(() => {
-    if (ekran === 'giris' || ekran === 'kullanici-adi') bannerGizle();
-    else if (ekran === 'oyun') bannerGoster('ust');
+    if (ekran === 'giris' || ekran === 'kullanici-adi' || ekran === 'oyun') bannerGizle();
     else bannerGoster('alt');
   }, [ekran]);
 
@@ -237,8 +239,16 @@ export default function Uygulama() {
     if (!oturum) return;
 
     if (oturum.mod === 'gunun') {
-      const il = gunlukKaydet(oturum.gun, oturum.seviye, { fark: s.fark, puan: s.puan });
+      const kaydetSonuc = gunlukKaydet(oturum.gun, oturum.seviye, { fark: s.fark, puan: s.puan });
+      const il = kaydetSonuc.il;
       setSeri(il.seri.gun);
+
+      // Seri kırıldıysa koruma fırsatı sun
+      if (kaydetSonuc.seriKirildi) {
+        setSeriKorumaBilgi({ oncekiSeriGun: kaydetSonuc.oncekiSeriGun, gun: oturum.gun });
+      } else {
+        setSeriKorumaBilgi(null);
+      }
 
       // Giriş yapıldıysa sunucuya gönder (sunucu doğrular, kaydeder)
       if (kullanici) {
@@ -386,6 +396,14 @@ export default function Uygulama() {
     });
   }
 
+  /** Seri koruma: ödüllü reklam izlendikten sonra çağrılır. */
+  function seriKorumaYap() {
+    if (!seriKorumaBilgi) return;
+    const il = seriKoru(seriKorumaBilgi.gun, seriKorumaBilgi.oncekiSeriGun);
+    setSeri(il.seri.gun);
+    setSeriKorumaBilgi(null);
+  }
+
   let ekranBileseni;
 
   if (ekran === 'giris') {
@@ -435,6 +453,8 @@ export default function Uygulama() {
           yeniAcilanSeviye ? sayiTuru.seviyeler.find((sv) => sv.anahtar === yeniAcilanSeviye)?.etiket ?? null : null
         }
         girisYapildiMi={!!kullanici}
+        seriKorumaBilgi={seriKorumaBilgi}
+        onSeriKoru={seriKorumaYap}
         onAnaSayfa={anaSayfaya}
         onAntrenmandaOyna={antrenmandaOyna}
         onYeniTur={yeniTur}

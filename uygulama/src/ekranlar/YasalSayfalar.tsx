@@ -2,11 +2,23 @@
  * YasalSayfalar.tsx — KVKK, gizlilik, çerez, kullanım koşulları, hesap silme
  *
  * Zihin Turu projesinin gerçek durumunu yansıtan yasal metinler.
- * 19 Ağustos 2026'da avukat incelemesinden geçmiştir; metinler
- * değiştirilirse yeniden hukuki onay alınmalıdır.
  *
- * Hedef kitle 8 yaş ve üzeridir — çocuk kullanıcılara ilişkin
- * ifadeler bu yaşa göre yazılmıştır.
+ * ⚠️ AVUKAT ONAYINDAN SONRA YAYINLANMALIDIR
+ * Bu metinler 20 Ağustos 2026'da güncellenmiştir. Önceki onay (19 Ağustos
+ * 2026) asgari 8 yaş ve kişiselleştirmesiz reklam varsayımıyla verilmişti.
+ * Yeni metinler asgari 13 yaş, veli onayı ve UMP üzerinden reklam
+ * kişiselleştirmesi onay akışını içermektedir. AVUKAT YENİDEN ONAYLAYINCA
+ * bu uyarı kaldırılacak ve tarih güncellenecektir.
+ *
+ * Değişiklik özeti:
+ * - Asgari yaş 8 → 13
+ * - 13–17 arası kullanıcılar için veli onayı zorunlu hale getirildi
+ * - Doğum yılının toplandığı ve neden toplandığı eklendi
+ * - Reklam kişiselleştirmesi: 18+ kullanıcılara UMP ile onay sorulur;
+ *   onay vermeyene kişiselleştirilmemiş reklam gösterilir
+ * - 18 altına kişiselleştirilmiş reklam gösterilmez
+ * - UMP üzerinden Google'a aktarılan veriler açıklandı
+ * - maxAdContentRating: General → Teen
  */
 
 import { useState } from 'react';
@@ -35,7 +47,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
             kullanıcılarımızı bilgilendirmek amacıyla hazırlanmıştır.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 19 Ağustos 2026
+            <strong>Son güncelleme:</strong> 20 Ağustos 2026
           </p>
 
           <h2 className={h2}>1. Veri Sorumlusu</h2>
@@ -55,6 +67,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
             </thead>
             <tbody className="divide-y divide-slate-800">
               <tr><td className="px-3 py-2">E-posta adresi</td><td className="px-3 py-2">Hesap oluşturma ve giriş (sihirli bağlantı / Google OAuth)</td><td className="px-3 py-2">Evet</td></tr>
+              <tr><td className="px-3 py-2">Doğum yılı</td><td className="px-3 py-2">Yaş doğrulaması (asgari yaş kontrolü ve reklam kişiselleştirme kararı)</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Kullanıcı adı</td><td className="px-3 py-2">Sıralama tablosunda ve profilde gösterim</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Oyun sonuçları</td><td className="px-3 py-2">Puan, süre, seviye, adım sayısı — ilerleme takibi ve lig sıralaması</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">IP adresi</td><td className="px-3 py-2">Supabase altyapısı tarafından sunucu günlüklerinde otomatik kaydedilir</td><td className="px-3 py-2">Otomatik</td></tr>
@@ -62,26 +75,30 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Bildirim tercihi <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde yerel bildirim; sunucuya veri gönderilmez</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Çökme kayıtları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Kullanım olayları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Reklam onayı <span className="text-slate-500">(Android, 18+)</span></td><td className="px-3 py-2">Kişiselleştirilmiş reklam onay durumu — Google UMP SDK</td><td className="px-3 py-2">Kapatılabilir</td></tr>
             </tbody>
           </table>
           <p className="text-xs text-slate-500">
             Telefon numarası, adres, TC kimlik numarası gibi veriler <strong>toplanmaz</strong>.
-            Son üç satır yalnızca <strong>Android uygulamasında</strong> geçerlidir; tarayıcıdan
-            oynayanlarda bu veriler hiç toplanmaz.
+            Doğum yılı yalnızca cihazda saklanır; tam doğum tarihi istenmez (veri minimizasyonu).
+            Son dört satır yalnızca <strong>Android uygulamasında</strong> geçerlidir.
           </p>
 
           <h2 className={h2}>3. Verilerin İşlenme Amaçları</h2>
           <ul className="list-disc pl-5 space-y-1">
             <li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li>
+            <li>Yaş doğrulaması ve yasal yükümlülüklerin yerine getirilmesi</li>
             <li>Oyun sonuçlarını kaydetme ve sıralama tablosu oluşturma</li>
             <li>Kullanıcı profili ve ilerleme gösterimi</li>
             <li>Hizmetin teknik olarak çalışmasını sağlama</li>
+            <li>Reklam gösterimi ve onay tercihlerinin yönetimi</li>
           </ul>
 
           <h2 className={h2}>4. Hukuki Dayanak</h2>
           <p>
             Verileriniz KVKK madde 5/2-c (sözleşmenin ifası) ve madde 5/1 (açık rıza)
-            kapsamında işlenmektedir.
+            kapsamında işlenmektedir. 18 yaş altındaki kullanıcılar için velinin açık
+            rızası aranır.
           </p>
 
           <h2 className={h2}>5. Verilerin Aktarılması</h2>
@@ -110,23 +127,45 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
             gönderilmez.
           </p>
 
-          <h2 className={h2}>6. Reklamlar</h2>
+          <h2 className={h2}>6. Reklamlar ve Kişiselleştirme</h2>
           <p>
             Android uygulamasında Google AdMob aracılığıyla reklam gösterilir.
             Tarayıcı sürümünde reklam yoktur.
           </p>
           <p>
-            Zihin Turu çocuklara yönelik bir uygulama olduğu için reklamlar
-            <strong> kişiselleştirilmez</strong>. Teknik olarak şu ayarlar
-            uygulanmıştır:
+            Reklam kişiselleştirmesi, kullanıcının yaşına ve onayına bağlıdır:
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Reklamlar "çocuğa yönelik" ve "rıza yaşının altında" olarak etiketlenir</li>
-            <li>Yalnızca <strong>genel izleyici (G)</strong> derecesindeki reklamlar gösterilir</li>
-            <li>Reklam kimliği (AAID) <strong>toplanmaz</strong>; uygulama bu izni açıkça kaldırır</li>
-            <li>Davranışsal profil çıkarılmaz; reklamlar ilgi alanınıza göre seçilmez</li>
-            <li>Oyun sırasında tam ekran reklam gösterilmez; yalnızca alt banner kullanılır</li>
+            <li>
+              <strong>18 yaş altı kullanıcılar:</strong> Kişiselleştirilmiş reklam
+              gösterilmez. Reklam kimliği (AAID) toplanmaz, davranışsal profil
+              çıkarılmaz. Yalnızca genel içerikli reklamlar gösterilir.
+            </li>
+            <li>
+              <strong>18 yaş ve üzeri kullanıcılar:</strong> İlk kullanımda Google'ın
+              UMP (User Messaging Platform) SDK'sı aracılığıyla reklam kişiselleştirmesi
+              için <strong>açık onay</strong> istenir. Onay vermezseniz kişiselleştirilmemiş
+              reklam gösterilir — reklam tamamen kalkmaz.
+            </li>
           </ul>
+          <p>
+            Reklam kişiselleştirmesi onayınızı <strong>istediğiniz zaman</strong>{' '}
+            değiştirebilirsiniz: Gizlilik Ayarları → "Reklam tercihlerini değiştir"
+            düğmesini kullanın. Onayınızı geri aldığınızda kişiselleştirilmiş
+            reklam gösterimi derhal durur.
+          </p>
+          <p>
+            UMP onay akışında Google'a aktarılan bilgiler: onay durumu (verildi/verilmedi),
+            cihaz tanımlayıcısı ve reklam tercihi. Bu bilgiler Google'ın{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+              gizlilik politikasına
+            </a>{' '}
+            tabidir.
+          </p>
+          <p>
+            Reklam içerik derecesi <strong>"Teen" (13+)</strong> olarak ayarlanmıştır;
+            yalnızca bu yaş grubuna uygun reklamlar gösterilir.
+          </p>
 
           <h2 className={h2}>7. Saklama Süresi</h2>
           <p>
@@ -184,14 +223,14 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
             olduğunu açıklar.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 19 Ağustos 2026
+            <strong>Son güncelleme:</strong> 20 Ağustos 2026
           </p>
 
           <h2 className={h2}>1. Toplanan Veriler</h2>
           <p>
             Ayrıntılı liste için <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ne
-            bakınız. Özetle: e-posta, kullanıcı adı, oyun sonuçları ve teknik
-            bağlantı bilgileri (IP, user-agent).
+            bakınız. Özetle: e-posta, doğum yılı (yalnızca yıl), kullanıcı adı, oyun
+            sonuçları ve teknik bağlantı bilgileri (IP, user-agent).
           </p>
 
           <h2 className={h2}>2. Barındırma ve Güvenlik</h2>
@@ -226,6 +265,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Firebase Analytics</td><td className="px-3 py-2">Kullanım olayları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Remote Config</td><td className="px-3 py-2">Oyun ayarlarını güncelleme</td><td className="px-3 py-2">Hayır (veri toplamaz)</td></tr>
               <tr><td className="px-3 py-2">Google AdMob</td><td className="px-3 py-2">Reklam gösterimi</td><td className="px-3 py-2">Hayır</td></tr>
+              <tr><td className="px-3 py-2">Google UMP SDK</td><td className="px-3 py-2">Reklam kişiselleştirmesi onay yönetimi (yalnızca 18+)</td><td className="px-3 py-2">Onay geri alınabilir</td></tr>
             </tbody>
           </table>
           <p>
@@ -254,42 +294,55 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>6. Çocukların Gizliliği</h2>
           <p>
-            Zihin Turu <strong>8 yaş ve üzeri</strong> kullanıcılara yöneliktir.
-            18 yaş altındaki kullanıcıların hesap açması için velisinin izni gerekir;
-            veli, çocuğun uygulamayı kullanımından sorumludur.
+            Zihin Turu <strong>13 yaş ve üzeri</strong> kullanıcılara yöneliktir.
+            13 yaş altındaki kişiler hesap açamaz.
+          </p>
+          <p>
+            <strong>13–17 yaş arası kullanıcılar</strong> hesap açmak için velisinin
+            onayını beyan eder. Veli, çocuğun uygulamayı kullanımından sorumludur
+            ve dilediği zaman hesabın silinmesini talep edebilir.
+          </p>
+          <p>
+            <strong>18 yaş altındaki tüm kullanıcılara</strong> kişiselleştirilmiş
+            reklam gösterilmez — yaştan bağımsız olarak onay akışı da sorulmaz.
+            Reklam kimliği (AAID) toplanmaz, davranışsal profil çıkarılmaz.
+            Yalnızca "Teen" (13+) derecesindeki genel reklamlar gösterilir.
           </p>
           <p>
             Çocuk kullanıcılardan yalnızca hizmetin çalışması için gereken en az veri
-            toplanır: e-posta, kullanıcı adı ve oyun sonuçları. Veriler pazarlama
-            amacıyla kullanılmaz ve satılmaz.
-          </p>
-          <p>
-            Android uygulamasında reklam gösterilir; ancak uygulama çocuklara yönelik
-            olduğu için reklamlar <strong>kişiselleştirilmez</strong>. Reklam kimliği
-            (AAID) toplanmaz, davranışsal profil çıkarılmaz ve yalnızca genel izleyici
-            derecesindeki reklamlar gösterilir. Ayrıntı için{' '}
-            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma
-            Metni</Link>'nin "Reklamlar" bölümüne bakınız.
+            toplanır: e-posta, doğum yılı, kullanıcı adı ve oyun sonuçları. Veriler
+            pazarlama amacıyla kullanılmaz ve satılmaz.
           </p>
           <p>
             Velisi, çocuğuna ait hesabın silinmesini <strong>sefa162354@gmail.com</strong>
             adresine yazarak isteyebilir.
           </p>
 
-          <h2 className={h2}>7. Veri İhlali Bildirimi</h2>
+          <h2 className={h2}>7. Reklamlar ve Kişiselleştirme</h2>
+          <p>
+            Ayrıntılı bilgi için <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK
+            Aydınlatma Metni</Link>'nin "Reklamlar ve Kişiselleştirme" bölümüne bakınız.
+          </p>
+          <p>
+            Özetle: 18 altına kişiselleştirilmiş reklam gösterilmez. 18+ kullanıcılara
+            onay sorulur; onay vermeyene de kişiselleştirilmemiş reklam gösterilir.
+            Onay istediğiniz zaman Gizlilik Ayarları'ndan geri alınabilir.
+          </p>
+
+          <h2 className={h2}>8. Veri İhlali Bildirimi</h2>
           <p>
             Bir veri ihlali tespit edilmesi durumunda, KVKK'nın öngördüğü süre
             içinde etkilenen kullanıcılar ve Kişisel Verileri Koruma Kurumu
             bilgilendirilecektir.
           </p>
 
-          <h2 className={h2}>8. Değişiklikler</h2>
+          <h2 className={h2}>9. Değişiklikler</h2>
           <p>
             Bu politika güncellenebilir. Önemli değişiklikler uygulama içinde
             duyurulacaktır.
           </p>
 
-          <h2 className={h2}>9. İletişim</h2>
+          <h2 className={h2}>10. İletişim</h2>
           <p>
             Gizlilik ile ilgili sorularınız için: <strong>sefa162354@gmail.com</strong>
           </p>
@@ -315,7 +368,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
             kullanımını açıklar.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 19 Ağustos 2026
+            <strong>Son güncelleme:</strong> 20 Ağustos 2026
           </p>
 
           <h2 className={h2}>1. Çerez Kullanımı</h2>
@@ -325,8 +378,10 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
           </p>
           <p>
             <strong>Android uygulamasında</strong> çerez kullanılmaz; ancak Google
-            Firebase ve AdMob kendi tanımlayıcılarını kullanır. Uygulama çocuklara
-            yönelik olduğu için reklam kimliği (AAID) toplanmaz ve reklamlar
+            Firebase ve AdMob kendi tanımlayıcılarını kullanır. 18 yaş altı
+            kullanıcılara kişiselleştirilmiş reklam gösterilmez ve reklam kimliği
+            (AAID) toplanmaz. 18 yaş ve üzeri kullanıcılara reklam kişiselleştirmesi
+            için UMP SDK üzerinden açık onay istenir; onay verilmezse reklamlar
             kişiselleştirilmez.
           </p>
           <p>
@@ -346,6 +401,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
             </thead>
             <tbody className="divide-y divide-slate-800">
               <tr><td className="px-3 py-2">Oturum token'ı</td><td className="px-3 py-2">Giriş durumunuzu korumak (Supabase Auth)</td></tr>
+              <tr><td className="px-3 py-2">Doğum yılı</td><td className="px-3 py-2">Yaş doğrulaması ve reklam kişiselleştirme kararı</td></tr>
               <tr><td className="px-3 py-2">Ses tercihi</td><td className="px-3 py-2">Ses açık/kapalı ayarınızı hatırlamak</td></tr>
               <tr><td className="px-3 py-2">Oyun durumu</td><td className="px-3 py-2">Devam eden turun geçici verileri</td></tr>
             </tbody>
@@ -395,7 +451,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
             Hesap oluşturarak bu koşulları kabul etmiş sayılırsınız.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 19 Ağustos 2026
+            <strong>Son güncelleme:</strong> 20 Ağustos 2026
           </p>
 
           <h2 className={h2}>1. Hizmet Tanımı</h2>
@@ -406,9 +462,10 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
           </p>
           <p>
             <strong>Android uygulamasında reklam gösterilir</strong>; tarayıcı
-            sürümünde reklam yoktur. Uygulama çocuklara yönelik olduğu için
-            reklamlar kişiselleştirilmez ve oyun sırasında tam ekran reklam
-            gösterilmez. Ayrıntı için{' '}
+            sürümünde reklam yoktur. 18 yaş altındaki kullanıcılara
+            kişiselleştirilmiş reklam gösterilmez. 18 yaş ve üzeri kullanıcılara
+            reklam kişiselleştirmesi için onay sorulur; onay istediğiniz zaman
+            Gizlilik Ayarları'ndan geri alınabilir. Ayrıntı için{' '}
             <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma
             Metni</Link>'ne bakınız.
           </p>
@@ -459,10 +516,18 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>8. Yaş Sınırı</h2>
           <p>
-            Uygulama <strong>8 yaş ve üzeri</strong> kullanıcılara yöneliktir.
-            18 yaş altındaki kullanıcılar hesap açmak için velisinin iznini almalıdır.
-            Veli, çocuğun uygulamayı kullanımından sorumludur ve dilediği zaman
-            hesabın silinmesini talep edebilir.
+            Uygulama <strong>13 yaş ve üzeri</strong> kullanıcılara yöneliktir.
+            13 yaş altındaki kişiler hesap oluşturamaz; misafir olarak oynamaya devam
+            edebilir.
+          </p>
+          <p>
+            <strong>13–17 yaş arası kullanıcılar</strong> hesap açmak için velisinin
+            onayını beyan etmelidir. Veli, çocuğun uygulamayı kullanımından
+            sorumludur ve dilediği zaman hesabın silinmesini talep edebilir.
+          </p>
+          <p>
+            <strong>18 yaş altındaki kullanıcılara kişiselleştirilmiş reklam
+            gösterilmez.</strong>
           </p>
 
           <h2 className={h2}>9. Hesap Silme</h2>

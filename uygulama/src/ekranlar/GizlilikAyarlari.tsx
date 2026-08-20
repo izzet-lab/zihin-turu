@@ -27,6 +27,8 @@ import {
   bildirimiPlanla,
   bildirimiIptalEt,
 } from '../bildirim';
+import { reklamOnayFormunuGoster, kisiselReklamOnayliMi } from '../reklam';
+import { resinDegilMi } from '../depo';
 
 const ANAHTAR = 'zt-gizlilik';
 
@@ -179,13 +181,50 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
             onDegis={(d) => degistir('analytics', d)}
           />
 
+          {/* Reklam kişiselleştirmesi — yalnızca 18+ Android kullanıcılarına */}
+          {nativeMi() && !resinDegilMi() && (
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+              <div className="flex items-start gap-3">
+                <span>
+                  <span className="block font-bold text-slate-200">Reklam kişiselleştirmesi</span>
+                  <span className="mt-1 block text-xs text-slate-400">
+                    {kisiselReklamOnayliMi()
+                      ? 'Reklamlar ilgi alanlarına göre kişiselleştiriliyor.'
+                      : 'Reklamlar kişiselleştirilmiyor — yalnızca genel reklamlar gösteriliyor.'}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      await reklamOnayFormunuGoster();
+                      // Bileşeni yeniden çiz — onay durumu değişmiş olabilir
+                      setTercih({ ...tercih });
+                    }}
+                    className="mt-2 rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-bold text-cyan-300 hover:bg-slate-800"
+                  >
+                    Reklam tercihlerini değiştir
+                  </button>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* 18 altı kullanıcılar için bilgilendirme */}
+          {nativeMi() && resinDegilMi() && (
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+              <span className="block font-bold text-slate-200">Reklamlar</span>
+              <span className="mt-1 block text-xs text-slate-400">
+                18 yaş altı kullanıcılara kişiselleştirilmiş reklam gösterilmez.
+                Yalnızca genel reklamlar görürsün.
+              </span>
+            </div>
+          )}
+
           <div className="mt-8 border-t border-slate-800 pt-6 text-xs text-slate-500">
-            <p className="mb-2">
-              <strong className="text-slate-400">Reklamlar hakkında:</strong> Android
-              uygulamasında reklam gösterilir ve bu kapatılamaz. Ancak uygulama
-              çocuklara yönelik olduğu için reklamlar kişiselleştirilmez; reklam
-              kimliğin toplanmaz ve davranışsal profil çıkarılmaz.
-            </p>
+            {!nativeMi() && (
+              <p className="mb-2">
+                <strong className="text-slate-400">Reklamlar hakkında:</strong> Tarayıcıdan
+                oynuyorsun — tarayıcı sürümünde reklam yoktur.
+              </p>
+            )}
             <p>
               Verilerinin tamamını silmek istersen menüdeki "Hesabımı sil"
               seçeneğini kullanabilirsin.

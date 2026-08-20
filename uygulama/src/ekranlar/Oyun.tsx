@@ -16,6 +16,8 @@ import {
 } from '@zihinturu/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
+import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
+import { nativeMi } from '../platform';
 import Konfeti from '../bilesenler/Konfeti';
 import type { Mod } from './Kurulum';
 
@@ -79,6 +81,33 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   const [jokerHakki, setJokerHakki] = useState<number>(JOKER_HAK_SAYISI);
   const [kullanilanJokerler, setKullanilanJokerler] = useState<JokerTip[]>([]);
   const [acikAdimlar, setAcikAdimlar] = useState<string[]>([]);
+
+  // Ödüllü reklam: joker hakkı bitince ek joker kazanmak için.
+  // Günün Turu'nda gösterilmez — lig adaleti.
+  const [reklamYukleniyor, setReklamYukleniyor] = useState(false);
+  const [reklamIzlendi, setReklamIzlendi] = useState(false);
+  const reklamGosterilebilir = mod !== 'gunun' && jokerHakki <= 0 && !reklamIzlendi && nativeMi();
+
+  // Joker hakkı bittiğinde ödüllü reklamı arka planda hazırla
+  useEffect(() => {
+    if (reklamGosterilebilir) {
+      odulluReklamHazirla();
+    }
+  }, [reklamGosterilebilir]);
+
+  async function reklamIzleJokerKazan() {
+    if (reklamYukleniyor || reklamIzlendi) return;
+    setReklamYukleniyor(true);
+    try {
+      const kazandi = await odulluReklamGoster();
+      if (kazandi) {
+        setJokerHakki((h) => h + 1); // 1 ek joker hakkı
+        setReklamIzlendi(true); // Tur başına en fazla 1 kez
+      }
+    } finally {
+      setReklamYukleniyor(false);
+    }
+  }
 
   const yakinTas = enYakinTas(durum, hedef);
   const yakinFark = enYakinFark(durum, hedef);
@@ -354,6 +383,19 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
                 <li key={i}>{m}</li>
               ))}
             </ul>
+          )}
+
+          {/* Ödüllü reklam: joker hakkı bitince ek joker kazanma.
+              Günün Turu'nda gösterilmez — lig adaleti. Tur başına 1 kez. */}
+          {reklamGosterilebilir && (
+            <button
+              onClick={reklamIzleJokerKazan}
+              disabled={reklamYukleniyor}
+              className="mt-2 w-full rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/20 disabled:opacity-50"
+              data-alan="reklam-joker"
+            >
+              {reklamYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, +1 joker kazan'}
+            </button>
           )}
         </div>
 

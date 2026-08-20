@@ -111,6 +111,19 @@ export function sonrakiSeviyeAnahtari(seviye: string): string | null {
   return SEVIYE_ANAHTARLARI[i + 1]!;
 }
 
+/**
+ * Seviye anahtarının kullanıcıya gösterilecek etiketi.
+ * 'cocuk' → 'Isınma', 'normal' → 'Normal' …
+ *
+ * Ham anahtar hiçbir ekranda gösterilmemeli; 'cocuk' gibi iç adlar
+ * kullanıcıya anlamsız gelir. Eski kayıtlardan gelen bilinmeyen bir
+ * anahtar olursa etiket yerine anahtarın kendisi döner — boş bir
+ * satır göstermektense ham değer daha az kafa karıştırıcıdır.
+ */
+export function seviyeEtiketi(anahtar: string): string {
+  return SEVIYE_LISTESI.find((s) => s.anahtar === anahtar)?.etiket ?? anahtar;
+}
+
 // Bot (sunucu tarafı): rakip yoksa maçı kuran eklenti.
 export { botUret, botPlani, PROFILLER } from './bot.ts';
 export type { Bot, BotPlani, ProfilAd } from './bot.ts';

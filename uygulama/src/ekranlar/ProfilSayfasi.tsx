@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { seviyeEtiketi } from '@zihinturu/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
 import { bannerGoster, bannerKaldir } from '../reklam';
 
@@ -110,7 +111,7 @@ export default function ProfilSayfasi() {
                 .sort((a, b) => b.puan - a.puan)
                 .map((s) => (
                   <div key={s.seviye} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3">
-                    <span className="font-bold text-slate-200">{s.seviye}</span>
+                    <span className="font-bold text-slate-200">{seviyeEtiketi(s.seviye)}</span>
                     <span className="font-bold text-cyan-300">{s.puan}</span>
                   </div>
                 ))}

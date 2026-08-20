@@ -3,12 +3,18 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.zihinturu.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    // Sürüm bilgisi version.properties dosyasından okunur.
+    // Her yayında versionCode artırılır: ./surum-artir.sh
+    def versionProps = new Properties()
+    def versionFile = rootProject.file('version.properties')
+    if (versionFile.exists()) versionProps.load(new FileInputStream(versionFile))
+
     defaultConfig {
         applicationId "com.zihinturu.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.2.0"
+        versionCode (versionProps.getProperty('VERSION_CODE', '1') as int)
+        versionName versionProps.getProperty('VERSION_NAME', '1.0.0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

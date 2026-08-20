@@ -118,8 +118,9 @@ uygulama/android/app/build/outputs/bundle/release/app-release.aab
 
 ### Sürüm bilgisi
 
-- `versionCode`: 6
-- `versionName`: 1.2.0
+- `versionCode`: `version.properties` dosyasından okunur (şu an 7)
+- `versionName`: `version.properties` dosyasından okunur (şu an 1.3.0)
+- Artırmak için: `cd uygulama/android && ./surum-artir.sh [yeni-versiyon]`
 - `targetSdk`: 36 (Play Store'un 2025 gereksinimine uygun)
 - R8 minify + shrinkResources: açık
 - ProGuard kuralları: Capacitor, Firebase, AdMob, Crashlytics korunuyor

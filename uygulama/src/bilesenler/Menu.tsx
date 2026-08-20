@@ -107,9 +107,11 @@ export default function Menu() {
   }
 
   return (
-    // zt-menu sınıfı: üst banner varken menüyü aşağı kaydırmak için
-    // stil.css tarafından kullanılıyor.
-    <div className="zt-menu fixed right-4 top-4 z-50">
+    // zt-menu sınıfı: üst konumu stil.css belirler. Tailwind'in top-4'ü
+    // kullanılamaz çünkü durum çubuğu yüksekliği (safe-area) eklenmeli;
+    // aksi halde düğme saat/pil göstergesinin altında kalır ve
+    // dokunulamaz.
+    <div className="zt-menu fixed right-4 z-50">
       <button
         onClick={() => setMenuAcik((a) => !a)}
         data-alan="menu-ac"

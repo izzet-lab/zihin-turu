@@ -27,8 +27,13 @@ interface Tercihler {
   crashlytics: boolean;
 }
 
-/** Varsayılan: çökme raporu açık, kullanım olayları KAPALI. */
-const VARSAYILAN: Tercihler = { analytics: false, crashlytics: true };
+/**
+ * Varsayılan: ikisi de AÇIK. Kullanıcı istemezse kapatır.
+ *
+ * Kapatma yolu her zaman tek dokunuş uzaklıkta ve gizlilik metninde
+ * bu ekrana yönlendiriliyor.
+ */
+const VARSAYILAN: Tercihler = { analytics: true, crashlytics: true };
 
 export function tercihleriOku(): Tercihler {
   try {

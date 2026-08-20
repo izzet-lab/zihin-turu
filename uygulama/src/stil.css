@@ -64,3 +64,18 @@ body.reklam-ust {
 body.reklam-ust .zt-menu {
   top: calc(76px + env(safe-area-inset-top, 0px));
 }
+
+/*
+ * Hamburger menunun ust konumu.
+ *
+ * viewport-fit=cover oldugu icin webview durum cubugunun ALTINA
+ * uzaniyor. Sabit 16px verilirse dugme saat ve pil gostergesinin
+ * altinda kalir; hem kotu gorunur hem de dokunulamaz (durum cubugu
+ * dokunuslari yakalar). safe-area-inset-top bunu telafi eder.
+ *
+ * Ust banner varken yukaridaki body.reklam-ust kurali gecerli olur;
+ * daha ozgul oldugu icin sirasi onemli degil.
+ */
+.zt-menu {
+  top: calc(16px + env(safe-area-inset-top, 0px));
+}

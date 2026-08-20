@@ -124,21 +124,22 @@ export default function Uygulama() {
   }, []);
 
   /**
-   * Reklam banner'ı yalnızca Kurulum ve Sonuç ekranlarında görünür.
+   * Reklam banner'ının ekrana göre konumu.
    *
-   * Oyun sırasında GÖSTERİLMEZ: ekranın altındaki reklam hem dikkat
-   * dağıtır hem de taşa dokunurken yanlışlıkla tıklanabilir. Çocuğa
-   * yönelik uygulamalarda bu ciddi bir politika riskidir.
+   *   Oyun          → ÜSTTE. Üst şerit yalnızca hedef sayı ve süre
+   *                   göstergesi; hiç dokunma hedefi yok. Altta ise
+   *                   "Bitir" düğmesi var, en çok basılan yer orası.
+   *   Kurulum/Sonuç → ALTTA. Bu ekranlarda alt kısımda düğme yığını
+   *                   yok, içerik kaydırılarak okunuyor.
+   *   Giriş/Ad      → GİZLİ. Form doldurulurken klavye ve reklam yer
+   *                   kavgasına giriyor, kayıt akışını bozuyor.
    *
-   * Giriş ve kullanıcı adı ekranlarında da gösterilmez — form
-   * doldurulurken reklam çıkması kayıt akışını bozar.
-   *
-   * Web'de her iki çağrı da sessizce hiçbir şey yapmaz.
+   * Web'de tüm çağrılar sessizce hiçbir şey yapmaz.
    */
   useEffect(() => {
-    const gizlensin = ekran === 'oyun' || ekran === 'giris' || ekran === 'kullanici-adi';
-    if (gizlensin) bannerGizle();
-    else bannerGoster();
+    if (ekran === 'giris' || ekran === 'kullanici-adi') bannerGizle();
+    else if (ekran === 'oyun') bannerGoster('ust');
+    else bannerGoster('alt');
   }, [ekran]);
 
   // Başka bir rotaya (Lig, Profil, yasal sayfalar) geçilince banner

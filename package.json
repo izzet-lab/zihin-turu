@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:izle": "vitest",
     "tip": "tsc --noEmit -p tsconfig.json",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "yamala": "node araclar/eklenti-yamalari.mjs",
+    "postinstall": "node araclar/eklenti-yamalari.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

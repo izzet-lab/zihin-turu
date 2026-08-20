@@ -1,7 +1,7 @@
 /**
  * Lig.tsx — Günlük, haftalık, aylık sıralamalar + Antrenman
  * Sekmeler: Günlük / Hafta / Ay / Antrenman
- * Seviye seçici: Isınma, Kolay, Normal, Zor, Usta
+ * Seviye seçici: Isınma, Normal, Zor, Usta
  * İlk 100 + kendi sıra hep görünür
  */
 
@@ -20,6 +20,7 @@ import {
   type KendiDurumu,
 } from '../lig-sorgu';
 import { bugun } from '../depo';
+import { bannerGoster, bannerKaldir } from '../reklam';
 
 type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'antrenman';
 
@@ -29,6 +30,16 @@ interface Props {
 
 export default function Lig({ oyuncuId }: Props) {
   const gecis = useNavigate();
+
+  // Sıralama ekranı kaydırılarak okunuyor; altta düğme yığını yok,
+  // banner için uygun bir yer. Sayfadan çıkınca kaldırılır.
+  useEffect(() => {
+    bannerGoster('alt');
+    return () => {
+      bannerKaldir();
+    };
+  }, []);
+
   const [sekme, setSekme] = useState<Sekme>('gunluk');
   const [seviye, setSeviye] = useState<string>('normal');
   const [satirlar, setSatirlar] = useState<LigSatiri[]>([]);

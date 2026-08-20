@@ -44,11 +44,21 @@ const BANNER_ID = (import.meta.env.VITE_ADMOB_BANNER_ID as string) || TEST_BANNE
 let baslatildi = false;
 
 /**
- * Banner webview'ın üstüne biner; altta kalan içerik görünmez olur.
- * Bu sınıf body'ye eklenince sayfa altına banner kadar boşluk bırakılır
- * (kural stil.css içinde).
+ * Banner webview'ın üstüne biner; altında kalan içerik görünmez olur.
+ * Bu sınıflar body'ye eklenince o yönde banner kadar boşluk bırakılır
+ * (kurallar stil.css içinde).
  */
-const GOVDE_SINIFI = 'reklam-var';
+const SINIF_ALT = 'reklam-alt';
+const SINIF_UST = 'reklam-ust';
+
+/** Banner'ın nerede duracağı. */
+export type ReklamKonumu = 'alt' | 'ust';
+
+/**
+ * Şu an gösterilen konum. Konum değişince banner'ı yerinde taşımak
+ * mümkün değil; önce kaldırıp yeniden göstermek gerekir.
+ */
+let mevcutKonum: ReklamKonumu | null = null;
 
 /** AdMob'u çocuğa yönelik ayarlarla başlatır. */
 export async function reklamBaslat(): Promise<void> {
@@ -71,39 +81,57 @@ export async function reklamBaslat(): Promise<void> {
 }
 
 /**
- * Alt banner gösterir.
+ * Banner gösterir.
  *
- * Oyun ekranında ÇAĞRILMAZ — tur sırasında ekranın altında reklam
- * olması hem dikkat dağıtır hem de yanlışlıkla tıklamaya yol açar
- * (çocuk hedefli uygulamalarda bu ciddi bir politika riskidir).
- * Yalnızca Kurulum ve Sonuç ekranlarında gösterilir.
+ * `konum` neden önemli: banner, dokunma hedeflerinden UZAKTA durmalı.
+ * Yanlışlıkla tıklama, AdMob tarafından geçersiz trafik sayılır ve
+ * tekrarlanırsa hesap askıya alınır; ayrıca Play Families politikası
+ * oyun akışını bozan yerleşimi yasaklar.
+ *
+ *   'alt'  — Kurulum, Sonuç, Lig, Profil. Bu ekranlarda altta düğme
+ *            yığını yok; içerik kaydırılarak okunur.
+ *   'ust'  — Oyun ekranı. Üst şerit yalnızca hedef sayı ve süre
+ *            göstergesidir, hiç dokunma hedefi içermez. Alt kısımda
+ *            ise "Bitir" düğmesi durur; en çok basılan yer orasıdır.
  */
-export async function bannerGoster(): Promise<void> {
+export async function bannerGoster(konum: ReklamKonumu = 'alt'): Promise<void> {
   if (!nativeMi()) return;
+
+  // Zaten aynı konumda gösteriliyorsa dokunma; her ekran geçişinde
+  // reklamı yeniden yüklemek hem yanıp sönmeye hem gereksiz istek
+  // sayısına yol açar.
+  if (mevcutKonum === konum) return;
+
+  // Konum değiştiyse önce kaldır: AdMob banner'ı yerinde taşıyamıyor.
+  if (mevcutKonum !== null) await bannerKaldir();
+
   await reklamBaslat();
   try {
     await AdMob.showBanner({
       adId: BANNER_ID,
       adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
+      position: konum === 'ust' ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
       margin: 0,
       isTesting: import.meta.env.DEV,
       // npa = non-personalized ads. initialize()'daki etiketlere ek
       // ikinci bir güvence: istek düzeyinde de kişiselleştirme kapalı.
       npa: true,
     });
-    document.body.classList.add(GOVDE_SINIFI);
+    mevcutKonum = konum;
+    document.body.classList.add(konum === 'ust' ? SINIF_UST : SINIF_ALT);
   } catch (e) {
     console.warn('[reklam] Banner gösterilemedi:', e);
     // Reklam yüklenemediyse boşluk da bırakma.
-    document.body.classList.remove(GOVDE_SINIFI);
+    sinifTemizle();
+    mevcutKonum = null;
   }
 }
 
-/** Banner'ı gizler (oyun başlarken çağrılır). */
+/** Banner'ı gizler (giriş formlarında çağrılır). */
 export async function bannerGizle(): Promise<void> {
   if (!nativeMi()) return;
-  document.body.classList.remove(GOVDE_SINIFI);
+  sinifTemizle();
+  mevcutKonum = null;
   try {
     await AdMob.hideBanner();
   } catch {
@@ -111,10 +139,15 @@ export async function bannerGizle(): Promise<void> {
   }
 }
 
+function sinifTemizle(): void {
+  document.body.classList.remove(SINIF_ALT, SINIF_UST);
+}
+
 /** Banner'ı tamamen kaldırır. */
 export async function bannerKaldir(): Promise<void> {
   if (!nativeMi()) return;
-  document.body.classList.remove(GOVDE_SINIFI);
+  sinifTemizle();
+  mevcutKonum = null;
   try {
     await AdMob.removeBanner();
   } catch {

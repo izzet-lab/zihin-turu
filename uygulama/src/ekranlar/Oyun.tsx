@@ -189,7 +189,9 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   const sureYuzde = toplamSure > 0 ? Math.max(0, (kalan / toplamSure) * 100) : 100;
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-6">
+    // pt-16: sabit hamburger menü (top-4 + 44px) içeriğin üstüne
+    // binmesin diye. Menü düğmesi artık başlığın üstünde duruyor.
+    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       {konfetiGoster && <Konfeti />}
       <div className="mx-auto flex w-full max-w-md flex-col">
         <div className="flex items-center justify-between">
@@ -201,7 +203,6 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           ) : (
             <span />
           )}
-          <span className="min-h-[44px] min-w-[44px]" />
         </div>
 
         {/* Hedef + en yakın */}

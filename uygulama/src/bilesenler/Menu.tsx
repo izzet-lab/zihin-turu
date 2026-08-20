@@ -107,7 +107,9 @@ export default function Menu() {
   }
 
   return (
-    <div className="fixed right-4 top-4 z-50">
+    // zt-menu sınıfı: üst banner varken menüyü aşağı kaydırmak için
+    // stil.css tarafından kullanılıyor.
+    <div className="zt-menu fixed right-4 top-4 z-50">
       <button
         onClick={() => setMenuAcik((a) => !a)}
         data-alan="menu-ac"

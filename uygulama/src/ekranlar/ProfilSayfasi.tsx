@@ -6,9 +6,19 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
+import { bannerGoster, bannerKaldir } from '../reklam';
 
 export default function ProfilSayfasi() {
   const { kullaniciAdi } = useParams<{ kullaniciAdi: string }>();
+
+  // Profil de kaydırılarak okunan bir ekran; banner altta durur.
+  useEffect(() => {
+    bannerGoster('alt');
+    return () => {
+      bannerKaldir();
+    };
+  }, []);
+
   const [profil, setProfil] = useState<ProfilIstatistik | null>(null);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState<string | null>(null);

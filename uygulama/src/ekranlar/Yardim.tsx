@@ -21,8 +21,8 @@ const KONTROLLER: Madde[] = [
   { isaret: '7', ad: 'Taşlar', aciklama: 'Birleştireceğin sayılar. Önce bir taşa dokun.' },
   { isaret: '+ − × ÷', ad: 'İşlemler', aciklama: 'Taşı seçtikten sonra bir işlem seç, sonra ikinci taşa dokun. İkisi birleşir, yeni bir taş olur.' },
   { isaret: '◎', ad: 'En yakın', aciklama: 'Hedefe ne kadar yaklaştığını gösterir. 0 fark = tam isabet.' },
-  { isaret: '↶', ad: 'Geri al', aciklama: 'Son yaptığın işlemi geri alır.' },
-  { isaret: '⟲', ad: 'Sıfırla', aciklama: 'Taşları başa döndürür, baştan denersin.' },
+  { isaret: '↩️', ad: 'Geri al', aciklama: 'Son yaptığın işlemi geri alır.' },
+  { isaret: '🔄', ad: 'Sıfırla', aciklama: 'Taşları başa döndürür, baştan denersin.' },
   { isaret: '✓', ad: 'Bitir', aciklama: 'Turu bitirir; puanını ve bir çözümü gösterir.' },
 ];
 
@@ -135,8 +135,8 @@ export default function Yardim({ acik, kapat }: Props) {
         <Bolum baslik="Seri Ödülleri">
           <div className="space-y-1.5 text-sm text-slate-300">
             <p className="text-xs text-slate-500">Günün turunu <b>tamamla</b> (açmak yetmez, turu bitirmek gerekir).</p>
-            <SeriSatir gun="Her gün" xp={10} rozet="" />
-            <SeriSatir gun="3 gün üst üste" xp={25} rozet="" />
+            <SeriSatir gun="Her gün" xp={10} rozet="🔥 Günlük" />
+            <SeriSatir gun="3 gün üst üste" xp={25} rozet="⚡ Üç Gün" />
             <SeriSatir gun="7 gün üst üste" xp={75} rozet="🏅 Haftalık" />
             <SeriSatir gun="30 gün üst üste" xp={300} rozet="🏅 Aylık" />
             <SeriSatir gun="100 gün üst üste" xp={1000} rozet="🏅 Yüz Gün" />
@@ -148,13 +148,15 @@ export default function Yardim({ acik, kapat }: Props) {
 
         {/* XP Seviyeleri */}
         <Bolum baslik="Oyuncu Seviyeleri (XP)">
-          <div className="space-y-1.5 text-sm text-slate-300">
-            <p className="text-xs text-slate-500">Antrenman puanları ve seri ödülleri XP olarak birikir. Hiç sıfırlanmaz.</p>
-            <XpSatir seviye={1} unvan="Çaylak" xp={0} />
-            <XpSatir seviye={2} unvan="Hesapçı" xp={500} />
-            <XpSatir seviye={3} unvan="Zihin İşçisi" xp={2000} />
-            <XpSatir seviye={4} unvan="Rakam Ustası" xp={5000} />
-            <XpSatir seviye={5} unvan="Zihin Turu Ustası" xp={12000} />
+          <div className="text-sm text-slate-300">
+            <p className="mb-2 text-xs text-slate-500">Antrenman puanları ve seri ödülleri XP olarak birikir. Hiç sıfırlanmaz.</p>
+            <div className="divide-y divide-slate-800 rounded-lg bg-slate-900/50">
+              <XpSatir seviye={1} unvan="Çaylak" xp={0} />
+              <XpSatir seviye={2} unvan="Hesapçı" xp={500} />
+              <XpSatir seviye={3} unvan="Zihin İşçisi" xp={2000} />
+              <XpSatir seviye={4} unvan="Rakam Ustası" xp={5000} />
+              <XpSatir seviye={5} unvan="Zihin Turu Ustası" xp={12000} />
+            </div>
           </div>
         </Bolum>
 
@@ -225,7 +227,7 @@ function SeriSatir({ gun, xp, rozet }: { gun: string; xp: number; rozet: string 
 
 function XpSatir({ seviye, unvan, xp }: { seviye: number; unvan: string; xp: number }) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-slate-900/50 px-3 py-2">
+    <div className="flex items-center justify-between px-3 py-1.5">
       <span className="text-slate-200">
         <span className="font-bold text-cyan-300">Lv.{seviye}</span> {unvan}
       </span>

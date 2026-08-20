@@ -45,6 +45,7 @@ const SURE_SECENEK = [90, 60, 30, 15];
 
 export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
+  const [kilitAciklama, setKilitAciklama] = useState<string | null>(null);
 
   const il = oku();
   const acik = depoAcikSeviyeler(il);
@@ -99,7 +100,14 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
   const seri = il.seri.gun;
 
   function seviyeSec(anahtar: string) {
-    if (!acik.includes(anahtar)) return; // kilitli seviye seçilemez
+    if (!acik.includes(anahtar)) {
+      // Kilitli seviyeye dokunulduğunda kısa açıklama göster.
+      const idx = seviyeler.findIndex((s) => s.anahtar === anahtar);
+      const onceki = idx > 0 ? seviyeler[idx - 1]!.etiket : 'önceki seviye';
+      setKilitAciklama(`${onceki}'de tam isabet yap, ${seviyeler[idx]!.etiket} açılsın.`);
+      return;
+    }
+    setKilitAciklama(null);
     setSeviye(anahtar);
   }
 
@@ -185,9 +193,14 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
               );
             })}
           </div>
-          {ilkKezMi && (
+          {ilkKezMi && !kilitAciklama && (
             <p className="mt-2 text-[11px] text-slate-500">
               Isınma'da tam isabet yaptığında bir sonraki seviye açılır.
+            </p>
+          )}
+          {kilitAciklama && (
+            <p className="mt-2 text-[11px] text-amber-300/80">
+              🔒 {kilitAciklama}
             </p>
           )}
         </div>
@@ -341,16 +354,16 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
 
         {/* Misafir uyarısı — Günün Turu'nda giriş yapmamış kullanıcıya */}
         {mod === 'gunun' && !kullanici && !kilitli && (
-          <div className="mt-6 rounded-xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-center">
-            <p className="text-xs text-amber-200/80">
-              Giriş yaparsan bugünkü turun lige işler.
+          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-center">
+            <p className="text-xs text-slate-400">
+              Giriş yaparsan bugünkü turun lige işler.{' '}
+              <button
+                onClick={() => onGirisAc?.()}
+                className="font-bold text-cyan-300 hover:underline"
+              >
+                Giriş yap →
+              </button>
             </p>
-            <button
-              onClick={() => onGirisAc?.()}
-              className="mt-1 text-xs font-bold text-cyan-300 hover:underline"
-            >
-              Giriş yap →
-            </button>
           </div>
         )}
 

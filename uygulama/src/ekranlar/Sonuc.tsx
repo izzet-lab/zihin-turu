@@ -7,6 +7,7 @@ import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
+import SayanSayi from '../bilesenler/SayanSayi';
 
 /** Çarpanı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
 function carpanGoster(c: number): string {
@@ -215,9 +216,11 @@ export default function Sonuc({
             {tam ? 'Tam isabet 🎯' : `${sonuc.fark} fark`}
           </div>
           <div className="mt-1 text-lg text-slate-400">
-            <span className="font-black text-white" data-alan="puan">
-              {sonuc.puan}
-            </span>{' '}
+            <SayanSayi
+              deger={sonuc.puan}
+              className="zt-rakam font-black text-white"
+              data-alan="puan"
+            />{' '}
             puan
           </div>
           {mod === 'antrenman' && sonuc.carpan != null && (

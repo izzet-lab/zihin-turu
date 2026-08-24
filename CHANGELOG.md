@@ -3,6 +3,61 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Tema 2: puan sayması ve ses dokusu
+
+Temanın ikinci turu. Birinci tur yazı, derinlik ve birleşme
+animasyonuydu; bu tur ödül anı ve ses.
+
+### Puan artık sayılıyor
+
+Tam isabet yapınca puan bir anda ekrana yazılıyordu. Oyunlarda tatmini
+yaratan şey sonucun kendisi değil, sonuca **varış**. Puan artık sıfırdan
+yükselerek yerine oturuyor.
+
+- Eğri hızlı başlayıp sona doğru yavaşlıyor; doğrusal sayma makine gibi
+  hissettiriyordu.
+- Süre puanla birlikte uzuyor (150 puan ile 8 puan aynı sürede
+  sayılırsa büyük sayı gözle takip edilemez) ama **üst sınırı var** —
+  oyuncuyu bekletmek ödülü ödül olmaktan çıkarır.
+- Sayma yalnızca görsel bir süs: gerçek değer her zaman `data-deger` ve
+  `aria-label` içinde son hâliyle duruyor. Ekran okuyucu sayının
+  zıplamasını okumuyor, testler de ara değeri yakalayıp yanlış sonuç
+  vermiyor.
+- "Hareketi azalt" açıksa sayma hiç yapılmıyor.
+
+Oturum özeti bilerek **animasyonsuz** bırakıldı: antrenman e2e testi o
+metindeki sayıyı okuyor, animasyon eklenirse test kırılgan hâle gelirdi.
+
+### Sesler artık sinyal değil, enstrüman
+
+Ses altyapısı zaten sağlamdı — dosya indirmiyor, çevrimdışı çalışıyor,
+mobildeki ses kilidi doğru çözülmüş. Eksik olan tonların **dokusuydu**:
+tek osilatörlü saf sinüs, yani "bip".
+
+Üçü de dosya gerektirmeden eklendi:
+
+| Ekleme | Ne yapıyor |
+|---|---|
+| Çift osilatör, hafif akort kayması (9 sent) | Ton kalınlaşır; tek osilatörün ince, elektronik tınısı gider |
+| Alçak geçiren süzgeç | Tiz kenarları yumuşatır, ses kulağı tırmalamaz. Kesim frekansı tonla yükselir ki pes sesler boğuk, tiz sesler cılız kalmasın |
+| Kısa yankı | Sesin bittiği yerde küçük bir kuyruk bırakır; kuyruksuz ses kapalı kutuda çalıyormuş gibi durur |
+
+Yankı odası da kodla üretiliyor (gürültü patlaması + üstel sönüm), dosya
+yok. Odanın üretiminde `Math.random` kullanılıyor ve bu güvenli: ses
+dokusu oyun kuralı değil, deterministik olması gerekmiyor.
+
+Tarayıcı bu üçünden birini desteklemezse ses yine çalıyor, yalnızca o
+katman atlanıyor. Ayrıca ton bittiğinde düğümler bırakılıyor — uzun
+oturumda birikmesinler.
+
+### Testler
+
+`sayim.test.ts` — 13 test. En kritik olanı: sayma bittiğinde **gerçek
+puan** görünmeli; yuvarlama yüzünden 149'da kalan bir sayaç oyuncuya
+yanlış puan göstermiş olur. Toplam **160 test** geçiyor.
+
+---
+
 ## 2026-08-24 — Tema: yazı kimliği, derinlik ve birleşme animasyonu
 
 Oyun "amatör" duruyordu. Sebep zevk değil, üç somut eksikti.

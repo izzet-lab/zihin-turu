@@ -56,6 +56,20 @@ interface SeviyeConfig {
   tolerans: [number, number];
   buyukVar: boolean;
   ileri: boolean;
+  /**
+   * Çözüm yoğunluğu eşiği: bu sayıdan FAZLA tam isabet yolu olan tur
+   * reddedilip yeniden üretilir. 0 = filtre yok.
+   *
+   * Yoğunluk, sabit düğüm bütçesiyle (DUGUM_SINIRI) ölçülür — yani
+   * "eşit emekle kaç çözüm bulunuyor". Bu yüzden taş sayısı farklı
+   * seviyeler arasında karşılaştırılabilir.
+   *
+   * **Eşik seviye yükseldikçe DÜŞMELİ.** Yükselirse üst seviye alt
+   * seviyeden daha çok alternatif yola izin verir, yani daha kolay
+   * olur. 24 Ağustos 2026'da tam bu olmuştu: Zor'un eşiği 8, Normal'in
+   * 6'ydı ve Zor ölçümde Normal'den kolay çıkıyordu.
+   */
+  yogunlukEsigi: number;
 }
 
 /** Zincir arama düğümü. */
@@ -74,6 +88,16 @@ export const BUYUK: readonly number[] = [25, 50, 75, 100];
 const ISLEMLER: readonly Islem[] = ['+', '−', '×', '÷'];
 
 /**
+ * Tur üretilirken çözücünün harcayabileceği düğüm bütçesi.
+ *
+ * Süre değil düğüm: üretim her makinede birebir aynı sonucu vermeli,
+ * yoksa istemci ile Edge Function farklı tur üretir ve gönderilen her
+ * tur reddedilir. Bu sayı değişirse ÜRETİLEN TÜM TURLAR değişir —
+ * Edge Function'ın yeniden dağıtılması zorunludur.
+ */
+const URETIM_DUGUM_SINIRI = 60000;
+
+/**
  * Seviyeler. Sıra önemlidir: SEVIYE_ANAHTARLARI bu nesnenin anahtar
  * sırasından türer ve seviye açma zinciri (sonrakiSeviyeAnahtari) buna
  * dayanır.
@@ -86,10 +110,10 @@ const ISLEMLER: readonly Islem[] = ['+', '−', '×', '÷'];
  * Yeni 'normal' 5 taşla 3 haneli hedefleri kapsar.
  */
 export const SEVIYELER: Record<string, SeviyeConfig> = {
-  cocuk: { etiket: 'Isınma', hane: 2, tas: 4, alt: 10, ust: 99, tolerans: [2, 4], buyukVar: false, ileri: false },
-  normal: { etiket: 'Normal', hane: 3, tas: 5, alt: 100, ust: 999, tolerans: [4, 10], buyukVar: true, ileri: false },
-  zor: { etiket: 'Zor', hane: 4, tas: 6, alt: 1000, ust: 9999, tolerans: [15, 50], buyukVar: true, ileri: true },
-  usta: { etiket: 'Usta', hane: 5, tas: 7, alt: 10000, ust: 99999, tolerans: [100, 500], buyukVar: true, ileri: true },
+  cocuk: { etiket: 'Isınma', hane: 2, tas: 4, alt: 10, ust: 99, tolerans: [2, 4], buyukVar: false, ileri: false, yogunlukEsigi: 0 },
+  normal: { etiket: 'Normal', hane: 3, tas: 5, alt: 100, ust: 999, tolerans: [4, 10], buyukVar: true, ileri: false, yogunlukEsigi: 6 },
+  zor: { etiket: 'Zor', hane: 4, tas: 6, alt: 1000, ust: 9999, tolerans: [15, 50], buyukVar: true, ileri: true, yogunlukEsigi: 2 },
+  usta: { etiket: 'Usta', hane: 5, tas: 7, alt: 10000, ust: 99999, tolerans: [100, 500], buyukVar: true, ileri: true, yogunlukEsigi: 1 },
 };
 
 /* ------------------------------------------------------------------ */
@@ -109,8 +133,21 @@ export function uygula(a: number, b: number, islem: Islem): number | null {
 /* Küçük hedeflerde hem üretim hem "en iyi çözüm" için kullanılır.     */
 /* ------------------------------------------------------------------ */
 
-export function cozZinciri(sayilar: number[], hedef: number, sinirMs = 1500): CozSonuc {
-  const t0 = Date.now();
+export function cozZinciri(
+  sayilar: number[],
+  hedef: number,
+  sinirMs = 1500,
+  dugumSiniri?: number,
+): CozSonuc {
+  // ÜRETİMDE SÜRE SINIRI KULLANILAMAZ.
+  // Süre sınırı makineye göre değişir: yavaş makinede arama kesilir,
+  // aday reddedilir; hızlı makinede kabul edilir. Aynı tohum farklı
+  // makinede farklı tur üretir — istemci ile Edge Function ayrışır ve
+  // sunucu her turu reddeder. `dugumSiniri` verildiğinde süre hiç
+  // okunmaz ve arama deterministik olur.
+  const dugumModu = dugumSiniri !== undefined;
+  const t0 = dugumModu ? 0 : Date.now();
+  let dugum = 0;
   let enIyi: CozSonuc = { fark: Infinity, deger: null, adimlar: [] };
   const gorulen = new Set<string>();
 
@@ -120,7 +157,9 @@ export function cozZinciri(sayilar: number[], hedef: number, sinirMs = 1500): Co
       if (f < enIyi.fark) enIyi = { fark: f, deger: it.d, adimlar: it.yol };
       if (enIyi.fark === 0) return true;
     }
-    if (liste.length < 2 || Date.now() - t0 > sinirMs) return false;
+    dugum++;
+    const bittiMi = dugumModu ? dugum > dugumSiniri! : Date.now() - t0 > sinirMs;
+    if (liste.length < 2 || bittiMi) return false;
     const anahtar = liste.map((x) => x.d).sort((a, b) => a - b).join(',');
     if (gorulen.has(anahtar)) return false;
     gorulen.add(anahtar);
@@ -162,24 +201,45 @@ interface IleriSonuc {
   sayilar: number[];
 }
 
+/** Çözüm yoğunluğu ölçümünün ayrıntılı sonucu. */
+export interface YogunlukSonuc {
+  /** Bulunan tam isabet sayısı. */
+  sayac: number;
+  /** Gezilen düğüm sayısı — insan zorluğunun en iyi vekili. */
+  dugum: number;
+  /**
+   * Arama düğüm sınırına takıldı mı? Takıldıysa `sayac` gerçek
+   * çözüm sayısının ALTINDA kalır ve seviyeler arası karşılaştırma
+   * yanıltıcı olur. Ölçüm bu bayrağı raporlamak zorunda.
+   */
+  kesildi: boolean;
+}
+
 /**
- * Üretilen turun çözüm yoğunluğunu hızlıca ölçer.
+ * Üretilen turun çözüm yoğunluğunu ölçer.
  *
- * Budamalı DFS ile sabit sürede (sinirMs) kaç tam isabet bulunduğunu
- * sayar. Yüksekse tur kolaydır — oyuncu tesadüfen bulabilir.
+ * Budamalı DFS ile kaç tam isabet bulunduğunu sayar. Yüksekse tur
+ * kolaydır — oyuncu tesadüfen bulabilir.
  *
- * Bu fonksiyon deterministiktir (dışarıdan `r` kullanmaz) ve
+ * Sınır SÜRE değil DÜĞÜM SAYISIDIR. Süre sınırı makineye göre değişir
+ * ve aynı tohum farklı makinede farklı tur üretirdi; bu, istemci ile
+ * Edge Function'ın ayrışması demektir ve her tur reddedilirdi.
+ * Düğüm sınırı deterministiktir.
+ *
  * `uretimYap` içinde "turu reddet" filtresi olarak kullanılır.
- * Reddedilen tur deterministik olarak atlanır; aynı tohum aynı sonucu
- * verir.
  */
-function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): number {
+export function cozumYogunluguDetay(
+  sayilar: number[],
+  hedef: number,
+  dugumSiniri = 50000,
+): YogunlukSonuc {
   let sayac = 0;
   let dugum = 0;
+  let kesildi = false;
   const gorulen = new Set<string>();
 
   function ara(liste: number[]): void {
-    if (dugum > dugumSiniri) return;
+    if (dugum > dugumSiniri) { kesildi = true; return; }
     dugum++;
     for (const d of liste) {
       if (d === hedef) sayac++;
@@ -191,7 +251,7 @@ function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): 
 
     for (let i = 0; i < liste.length; i++) {
       for (let j = i + 1; j < liste.length; j++) {
-        if (dugum > dugumSiniri) return;
+        if (dugum > dugumSiniri) { kesildi = true; return; }
         const a = liste[i]!;
         const b = liste[j]!;
         const kalan = liste.filter((_, k) => k !== i && k !== j);
@@ -209,7 +269,12 @@ function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): 
   }
 
   ara(sayilar);
-  return sayac;
+  return { sayac, dugum, kesildi };
+}
+
+/** Yalnızca çözüm sayısı — üretim filtresinin kullandığı sade biçim. */
+function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): number {
+  return cozumYogunluguDetay(sayilar, hedef, dugumSiniri).sayac;
 }
 
 /**
@@ -227,10 +292,9 @@ function cozumYogunlugu(sayilar: number[], hedef: number, dugumSiniri = 50000): 
 function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSiniri = 4000): IleriSonuc | null {
   const buyuk = S.buyukVar ? Math.min(buyukAdet, S.tas) : 0;
 
-  // Çözüm yoğunluğu eşikleri — bu değerlerden fazla çözümü olan tur
-  // reddedilir. Eşik, seviyeye göre değişir: Zor'da Normal'den düşük
-  // olmalı (daha az alternatif yol = daha zor).
-  const yogunlukEsigi = S.tas <= 6 ? 8 : 4; // Zor: 8, Usta: 4
+  // Eşik artık seviye tanımında (SEVIYELER). Tek kaynak: iki üretim
+  // yolu da aynı değeri okur, biri güncellenip diğeri unutulamaz.
+  const yogunlukEsigi = S.yogunlukEsigi;
 
   for (let t = 0; t < denemeSiniri; t++) {
     const sayilar = karistir(BUYUK, r)
@@ -309,18 +373,15 @@ export function uretimYap(seviyeAdi: string, tohum: number, buyukAdet?: number):
       };
   } else {
     const buyuk = S.buyukVar ? Math.min(ba, S.tas) : 0;
-    // Geriye arama yapılan seviyelerde de çözüm yoğunluğu filtresi:
-    // cocuk (4 taş): filtre yok — zaten az kombinasyon, doğal zorluk yeterli.
-    // normal (5 taş): eşik 12 — 5 taşla çok fazla alternatif yol çıkabiliyor,
-    //   bu da turu cocuk'tan kolay kılıyor. Filtre, normalin cocuk'tan daha
-    //   az çözüm yoluna sahip olmasını garanti eder.
-    const yogunlukEsigi = S.tas >= 5 ? 6 : 0; // 0 = filtre yok
+    // Eşik seviye tanımından gelir (SEVIYELER). cocuk'ta 0, yani filtre
+    // yok: 4 taşla zaten az kombinasyon var, doğal zorluk yeterli.
+    const yogunlukEsigi = S.yogunlukEsigi;
     for (let t = 0; t < 80; t++) {
       const sayilar = karistir(BUYUK, r)
         .slice(0, buyuk)
         .concat(karistir(KUCUK.concat(KUCUK), r).slice(0, S.tas - buyuk));
       const hedef = S.alt + Math.floor(r() * (S.ust - S.alt + 1));
-      const cozum = cozZinciri(sayilar, hedef, 300);
+      const cozum = cozZinciri(sayilar, hedef, 0, URETIM_DUGUM_SINIRI);
       if (cozum.fark !== 0) continue;
       // Yoğunluk filtresi (cocuk'ta atlanır)
       if (yogunlukEsigi > 0) {

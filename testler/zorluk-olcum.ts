@@ -4,19 +4,36 @@
  * Çalıştırma:
  *   npx tsx testler/zorluk-olcum.ts
  *
- * Beklenen: her ölçüt Isınma → Normal → Zor → Usta boyunca tek yönlü
- * artmalı (çözüm yoğunluğu azalmalı). Artmıyorsa zorluk sırası bozuk.
+ * ÖLÇÜM NEDEN BÖYLE
+ *
+ * Önceki sürüm süre sınırlı arama kullanıyordu (50ms gibi). İki sorunu
+ * vardı: makineye göre değişiyordu ve taş sayısı arttıkça aynı sürede
+ * daha az yol gezildiği için seviyeler karşılaştırılamıyordu. Şimdi
+ * ölçüm, ÜRETİCİNİN KENDİ kullandığı `cozumYogunluguDetay`
+ * fonksiyonunu çağırıyor: düğüm sınırlı, deterministik, tek kaynak.
+ *
+ * Rakam "toplam çözüm sayısı" DEĞİL, "eşit emekle bulunan çözüm
+ * sayısı". Her seviye aynı düğüm bütçesini harcadığı için karşılaştırma
+ * adil; "Kesildi %" sütunu yalnızca bütçenin nerede dolduğunu gösterir.
+ *
+ * Beklenen: zorluk Isınma → Normal → Zor → Usta boyunca tek yönlü
+ * artmalı. Bozuksa betik kırmızı verir.
  */
 
 import {
   SEVIYELER,
   uretimYap,
-  uygula,
+  cozumYogunluguDetay,
   BUYUK,
   type Adim,
 } from '@zihinturu/oyun-sayi';
 
-// Seviye başına tur sayısı — zor/usta'da arama pahalı, daha az tur yeterli
+/**
+ * Seviye başına tur sayısı. Taş sayısı arttıkça arama pahalılaşıyor;
+ * üst seviyelerde daha az tur ölçülüyor. Ölçüm deterministik olduğu
+ * için tur sayısı sonucun doğruluğunu değil yalnızca gürültüsünü
+ * etkiler.
+ */
 const TUR_SAYILARI: Record<string, number> = {
   cocuk: 2000,
   normal: 2000,
@@ -24,96 +41,36 @@ const TUR_SAYILARI: Record<string, number> = {
   usta: 200,
 };
 
-const ISLEMLER: readonly ('+' | '−' | '×' | '÷')[] = ['+', '−', '×', '÷'];
-
-/* ------------------------------------------------------------------ */
-/* Hızlı çözüm yoğunluğu ölçümü                                       */
-/* Sabit sürede (50ms) kaç farklı tam isabet bulunabildiğini sayar.    */
-/* ------------------------------------------------------------------ */
-
-interface OlcumSonuc {
-  cozumSayisi: number;
-  enKisaAdim: number;
-  dugumSayisi: number;
-}
-
-function hizliOlcum(sayilar: number[], hedef: number, sinirMs = 50): OlcumSonuc {
-  const t0 = Date.now();
-  let cozumSayisi = 0;
-  let enKisaAdim = Infinity;
-  let dugumSayisi = 0;
-  const gorulen = new Set<string>();
-
-  interface Dugum { d: number; derinlik: number; }
-
-  function ara(liste: Dugum[]): void {
-    if (Date.now() - t0 > sinirMs) return;
-    dugumSayisi++;
-
-    for (const it of liste) {
-      if (it.d === hedef) {
-        cozumSayisi++;
-        if (it.derinlik < enKisaAdim) enKisaAdim = it.derinlik;
-      }
-    }
-
-    if (liste.length < 2) return;
-
-    const anahtar = liste.map((x) => x.d).sort((a, b) => a - b).join(',');
-    if (gorulen.has(anahtar)) return;
-    gorulen.add(anahtar);
-
-    for (let i = 0; i < liste.length; i++) {
-      for (let j = i + 1; j < liste.length; j++) {
-        if (Date.now() - t0 > sinirMs) return;
-        const a = liste[i]!;
-        const b = liste[j]!;
-        const kalan = liste.filter((_, k) => k !== i && k !== j);
-        const ust = a.d >= b.d ? a : b;
-        const alt = a.d >= b.d ? b : a;
-        for (const islem of ISLEMLER) {
-          if (islem === '×' && alt.d === 1) continue;
-          if (islem === '÷' && alt.d === 1) continue;
-          const sonuc = uygula(ust.d, alt.d, islem);
-          if (sonuc === null) continue;
-          const yeniDerinlik = Math.max(ust.derinlik, alt.derinlik) + 1;
-          ara(kalan.concat([{ d: sonuc, derinlik: yeniDerinlik }]));
-        }
-      }
-    }
-  }
-
-  ara(sayilar.map((d) => ({ d, derinlik: 0 })));
-  return { cozumSayisi, enKisaAdim, dugumSayisi };
-}
-
-/* ------------------------------------------------------------------ */
-/* Metrik toplama                                                      */
-/* ------------------------------------------------------------------ */
+/**
+ * Ölçümde kullanılan düğüm sınırı. Üretim filtresinin kullandığı
+ * sınırla AYNI olmalı — yoksa ölçüm, üreticinin gördüğünden başka bir
+ * şeyi ölçer.
+ */
+const DUGUM_SINIRI = 50000;
 
 interface SeviyeMetrik {
   seviye: string;
   etiket: string;
   turSayisi: number;
-  ortalamaCozumYogunlugu: number;
-  ortalamaEnKisaAdim: number;
-  ortalamaAramaMaliyeti: number;
+  cozumYogunlugu: number;
+  aramaMaliyeti: number;
   tekCozumOrani: number;
+  kesilmeOrani: number;
   bolmeOrani: number;
   buyukSayiOrani: number;
 }
 
-console.log(`\n🔬 Zorluk ölçümü başlıyor...\n`);
+console.log('\n🔬 Zorluk ölçümü başlıyor...\n');
 
 const sonuclar: SeviyeMetrik[] = [];
 
 for (const [anahtar, config] of Object.entries(SEVIYELER)) {
   const turSayisi = TUR_SAYILARI[anahtar] ?? 500;
   const t0 = Date.now();
-  let toplamCozumYogunlugu = 0;
-  let toplamEnKisa = 0;
-  let toplamAramaMaliyeti = 0;
+  let toplamYogunluk = 0;
+  let toplamDugum = 0;
   let tekCozum = 0;
+  let kesilen = 0;
   let bolmeVar = 0;
   let buyukVar = 0;
 
@@ -122,33 +79,27 @@ for (const [anahtar, config] of Object.entries(SEVIYELER)) {
   for (let i = 0; i < turSayisi; i++) {
     if (i > 0 && i % 100 === 0) process.stdout.write('.');
 
-    const tohum = 1000000 + i;
-    const uretim = uretimYap(anahtar, tohum);
+    const uretim = uretimYap(anahtar, 1000000 + i);
+    const olcum = cozumYogunluguDetay(uretim.sayilar, uretim.hedef, DUGUM_SINIRI);
 
-    // Taş sayısı arttıkça arama uzayı patlar; sabit süre sınırı
-    // seviyeleri karşılaştırılamaz kılar. Taş sayısına göre ölçekle.
-    const olcumMs = config.tas <= 4 ? 30 : config.tas <= 5 ? 80 : config.tas <= 6 ? 200 : 400;
-    const olcum = hizliOlcum(uretim.sayilar, uretim.hedef, olcumMs);
-
-    toplamCozumYogunlugu += olcum.cozumSayisi;
-    toplamEnKisa += olcum.enKisaAdim === Infinity ? (config.tas - 1) : olcum.enKisaAdim;
-    toplamAramaMaliyeti += olcum.dugumSayisi;
-    if (olcum.cozumSayisi <= 1) tekCozum++;
+    toplamYogunluk += olcum.sayac;
+    toplamDugum += olcum.dugum;
+    if (olcum.sayac <= 1) tekCozum++;
+    if (olcum.kesildi) kesilen++;
     if (uretim.cozum.adimlar.some((a: Adim) => a.islem === '÷')) bolmeVar++;
     if (uretim.sayilar.some((s: number) => BUYUK.includes(s))) buyukVar++;
   }
 
-  const sure = ((Date.now() - t0) / 1000).toFixed(1);
-  console.log(` ${sure}s`);
+  console.log(` ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
   sonuclar.push({
     seviye: anahtar,
     etiket: config.etiket,
     turSayisi,
-    ortalamaCozumYogunlugu: toplamCozumYogunlugu / turSayisi,
-    ortalamaEnKisaAdim: toplamEnKisa / turSayisi,
-    ortalamaAramaMaliyeti: toplamAramaMaliyeti / turSayisi,
+    cozumYogunlugu: toplamYogunluk / turSayisi,
+    aramaMaliyeti: toplamDugum / turSayisi,
     tekCozumOrani: (tekCozum / turSayisi) * 100,
+    kesilmeOrani: (kesilen / turSayisi) * 100,
     bolmeOrani: (bolmeVar / turSayisi) * 100,
     buyukSayiOrani: (buyukVar / turSayisi) * 100,
   });
@@ -158,108 +109,127 @@ for (const [anahtar, config] of Object.entries(SEVIYELER)) {
 /* Sonuç tablosu                                                       */
 /* ------------------------------------------------------------------ */
 
-console.log('\n' + '='.repeat(105));
+const CIZGI = '='.repeat(104);
+console.log('\n' + CIZGI);
 console.log('ZORLUK METRİKLERİ');
-console.log('='.repeat(105));
-
-const basliklar = [
-  'Seviye'.padEnd(10),
-  'N'.padStart(5),
-  'Çöz.Yoğ.'.padStart(10),
-  'Kısa Adım'.padStart(10),
-  'Arama Mal.'.padStart(12),
-  'Tek Çöz.%'.padStart(10),
-  'Bölme %'.padStart(9),
-  'Büyük %'.padStart(9),
-];
-console.log(basliklar.join(' | '));
-console.log('-'.repeat(105));
+console.log(CIZGI);
+console.log(
+  [
+    'Seviye'.padEnd(10),
+    'N'.padStart(5),
+    'Çöz.Yoğ.'.padStart(10),
+    'Arama Mal.'.padStart(12),
+    'Tek Çöz.%'.padStart(10),
+    'Kesildi %'.padStart(10),
+    'Bölme %'.padStart(9),
+    'Büyük %'.padStart(9),
+  ].join(' | '),
+);
+console.log('-'.repeat(104));
 
 for (const m of sonuclar) {
-  const satir = [
-    m.etiket.padEnd(10),
-    String(m.turSayisi).padStart(5),
-    m.ortalamaCozumYogunlugu.toFixed(1).padStart(10),
-    m.ortalamaEnKisaAdim.toFixed(2).padStart(10),
-    m.ortalamaAramaMaliyeti.toFixed(0).padStart(12),
-    m.tekCozumOrani.toFixed(1).padStart(10),
-    m.bolmeOrani.toFixed(1).padStart(9),
-    m.buyukSayiOrani.toFixed(1).padStart(9),
-  ];
-  console.log(satir.join(' | '));
+  console.log(
+    [
+      m.etiket.padEnd(10),
+      String(m.turSayisi).padStart(5),
+      m.cozumYogunlugu.toFixed(1).padStart(10),
+      m.aramaMaliyeti.toFixed(0).padStart(12),
+      m.tekCozumOrani.toFixed(1).padStart(10),
+      m.kesilmeOrani.toFixed(1).padStart(10),
+      m.bolmeOrani.toFixed(1).padStart(9),
+      m.buyukSayiOrani.toFixed(1).padStart(9),
+    ].join(' | '),
+  );
 }
-
-console.log('='.repeat(105));
+console.log(CIZGI);
 
 /* ------------------------------------------------------------------ */
 /* Monotonluk kontrolü                                                 */
 /* ------------------------------------------------------------------ */
 
+type OlcutAdi = 'cozumYogunlugu' | 'aramaMaliyeti' | 'tekCozumOrani' | 'buyukSayiOrani';
+
+/**
+ * Hangi ölçüt hangi yöne gitmeli.
+ *
+ * `bolmeOrani` burada YOK ve bu bilinçli: bölme oranı üretim yöntemine
+ * bağlı (geriye arama ile ileri üretim farklı davranıyor), zorluğa
+ * değil. Onu ölçüte çevirmek yanlış sinyal verir. Tabloda bilgi olarak
+ * duruyor.
+ *
+ * `kesilmeOrani` de ölçüt değil ama KRİTİK: yüksekse çözüm yoğunluğu
+ * rakamı güvenilmez demektir, ayrıca uyarılır.
+ */
+const BEKLENEN: Record<OlcutAdi, { yon: 'artmali' | 'azalmali'; etiket: string }> = {
+  cozumYogunlugu: { yon: 'azalmali', etiket: 'Çözüm yoğunluğu (azalmalı)' },
+  aramaMaliyeti: { yon: 'artmali', etiket: 'Arama maliyeti (artmalı)' },
+  tekCozumOrani: { yon: 'artmali', etiket: 'Tek çözüm oranı (artmalı)' },
+  buyukSayiOrani: { yon: 'artmali', etiket: 'Büyük sayı oranı (artmalı)' },
+};
+
+
+
+
 console.log('\nMonotonluk kontrolü:');
-
-type OlcutAdi = keyof Omit<SeviyeMetrik, 'seviye' | 'etiket' | 'turSayisi'>;
-
-// Monotonluk kontrolünde yalnızca yapısal olarak karşılaştırılabilir
-// metrikler yer alır. Diğerleri "bilgi" olarak gösterilir:
-//
-// - ortalamaCozumYogunlugu: zaman sınırlı DFS ile ölçülür; taş sayısı
-//   arttıkça arama uzayı patladığı için aynı sürede bulunan çözüm
-//   sayısı karşılaştırılamaz. Gerçek zorluk filtresi mantik.ts'teki
-//   cozumYogunlugu eşikleridir (cocuk: yok, normal: 6, zor: 8, usta: 4).
-//
-// - bolmeOrani: geriye arama (cocuk/normal) çözümde bölme bulabilir ama
-//   ileri üretim (zor/usta) rastgele işlem seçtiğinden bölme oranı
-//   yönteme bağlıdır, zorluğa değil.
-const beklenen: Record<OlcutAdi, 'artmali' | 'azalmali' | 'bilgi'> = {
-  ortalamaCozumYogunlugu: 'bilgi',
-  ortalamaEnKisaAdim: 'artmali',
-  ortalamaAramaMaliyeti: 'artmali',
-  tekCozumOrani: 'bilgi',
-  bolmeOrani: 'bilgi',
-  buyukSayiOrani: 'artmali',
-};
-
-const etiketler: Record<OlcutAdi, string> = {
-  ortalamaCozumYogunlugu: 'Çözüm yoğunluğu (azalmalı)',
-  ortalamaEnKisaAdim: 'En kısa adım (artmalı)',
-  ortalamaAramaMaliyeti: 'Arama maliyeti (artmalı)',
-  tekCozumOrani: 'Tek çözüm oranı (artmalı)',
-  bolmeOrani: 'Bölme oranı (artmalı)',
-  buyukSayiOrani: 'Büyük sayı oranı (artmalı)',
-};
 
 let bozukVar = false;
 
-for (const [olcut, yon] of Object.entries(beklenen) as [OlcutAdi, 'artmali' | 'azalmali' | 'bilgi'][]) {
-  if (yon === 'bilgi') {
-    console.log(`  ℹ️  ${etiketler[olcut]} (yalnızca bilgi, monotonluk beklenmez)`);
-    continue;
-  }
-  const degerler = sonuclar.map((s) => s[olcut]);
+for (const [olcut, { yon, etiket }] of Object.entries(BEKLENEN) as [
+  OlcutAdi,
+  { yon: 'artmali' | 'azalmali'; etiket: string },
+][]) {
   let sorun = '';
-  for (let i = 1; i < degerler.length; i++) {
-    const onceki = degerler[i - 1]!;
-    const simdiki = degerler[i]!;
-    if (yon === 'artmali' && simdiki < onceki) {
-      sorun = `${sonuclar[i-1]!.etiket}(${onceki.toFixed(1)}) > ${sonuclar[i]!.etiket}(${simdiki.toFixed(1)})`;
-      break;
-    }
-    if (yon === 'azalmali' && simdiki > onceki) {
-      sorun = `${sonuclar[i-1]!.etiket}(${onceki.toFixed(1)}) < ${sonuclar[i]!.etiket}(${simdiki.toFixed(1)})`;
+  for (let i = 1; i < sonuclar.length; i++) {
+    const onceki = sonuclar[i - 1]!;
+    const simdiki = sonuclar[i]!;
+    const a = onceki[olcut];
+    const b = simdiki[olcut];
+    const bozuk = yon === 'artmali' ? b < a : b > a;
+    if (bozuk) {
+      sorun = `${onceki.etiket}(${a.toFixed(1)}) → ${simdiki.etiket}(${b.toFixed(1)})`;
       break;
     }
   }
   if (sorun) {
     bozukVar = true;
-    console.log(`  ❌ ${etiketler[olcut]}  — ${sorun}`);
+    console.log(`  ❌ ${etiket}  — ${sorun}`);
   } else {
-    console.log(`  ✅ ${etiketler[olcut]}`);
+    console.log(`  ✅ ${etiket}`);
   }
 }
 
-if (bozukVar) {
-  console.log('\n⚠️  Bazı ölçütler monoton değil — zorluk sırası bozuk olabilir.\n');
-  process.exit(1);
-} else {
-  console.log('\n✅ Tüm ölçütler monoton.\n');
+/*
+ * Kesilme bir HATA değil, ölçümün doğası.
+ *
+ * Her seviye AYNI düğüm bütçesini harcıyor, yani rakam "eşit emekle kaç
+ * çözüm bulunuyor" demek — karşılaştırma bu yüzden adil. Kesilme yalnızca
+ * şunu söylüyor: bu rakam "toplam çözüm sayısı" değil.
+ *
+ * Kesilmenin gerçek maliyeti başka: yoğunluk sıfıra yaklaştıkça filtre
+ * ayırt etme gücünü kaybeder. Ortalama yoğunluk eşiğin altına düşmüşse
+ * o seviyede filtre neredeyse hiçbir turu reddetmiyordur. Bunu görünür
+ * tutmak, "filtre koyduk, iş bitti" yanılgısını engelliyor.
+ */
+console.log('\nFiltrenin ayırt etme gücü:');
+for (const m of sonuclar) {
+  const esik = SEVIYELER[m.seviye]!.yogunlukEsigi;
+  const kesilmeNotu = `kesilme %${m.kesilmeOrani.toFixed(0)}`;
+  if (esik === 0) {
+    console.log(`  ⚪ ${m.etiket}: filtre yok (${kesilmeNotu})`);
+  } else if (m.cozumYogunlugu < esik) {
+    console.log(
+      `  ⚠️  ${m.etiket}: ortalama yoğunluk ${m.cozumYogunlugu.toFixed(1)} < eşik ${esik} — ` +
+        `filtre burada az tur reddediyor, zorluğu asıl taş sayısı taşıyor (${kesilmeNotu})`,
+    );
+  } else {
+    console.log(`  ✅ ${m.etiket}: yoğunluk ${m.cozumYogunlugu.toFixed(1)} ≥ eşik ${esik} (${kesilmeNotu})`);
+  }
 }
+
+console.log(`\n(Bölme oranı bilgi amaçlı: ${sonuclar.map((s) => `${s.etiket} %${s.bolmeOrani.toFixed(0)}`).join(', ')})`);
+
+if (bozukVar) {
+  console.log('\n⚠️  Zorluk sırası bozuk.\n');
+  process.exit(1);
+}
+console.log('\n✅ Zorluk sırası tutarlı: her ölçüt Isınma → Usta boyunca tek yönlü.\n');

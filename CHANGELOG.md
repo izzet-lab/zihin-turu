@@ -3,6 +3,34 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — İlk oturum reklamsız
+
+### Değişen
+
+- **İlk 3 tur tamamlanana kadar hiç banner gösterilmiyor.** Kaldırmaların
+  çoğu ilk 24 saatte oluyor ve bu kategoride birinci sebep reklam;
+  kullanıcıya değer görmeden maliyet gösterilmiyor.
+- Sayaç **kalıcı saklanıyor** (`zihinturu.tamamlanan-tur`); uygulama
+  kapanıp açılınca sıfırlanmıyor. Eşiğe ulaşınca artmayı bırakıyor.
+- Kapı `bannerGoster` içinde, tek yerde. Kurulum, Sonuç, Lig ve Profil
+  ekranları kuralı otomatik uyguluyor.
+- **Ödüllü video muaf** — kullanıcı onu kendisi istiyor.
+
+### Doğrulanan
+
+- Ödüllü video da 18 yaş altı kullanıcılarda `npa: true` ile çağrılıyor.
+  Banner ve ödüllü video AdMob'da ayrı çağrı yolları kullanıyor; ikisi de
+  doğru.
+
+### Ayrıca düzeltilen (eskiden kırmızı duran testler)
+
+- `depo.test.ts`: `gunlukKaydet` seri koruma eklendiğinde dönüş biçimini
+  değiştirmişti, testler eski biçime bakıyordu
+- `determinizm.test.ts`: dosyada `it(...)` yoktu, vitest "test yok" diyordu
+- `ilk-kez.spec.ts`: kaldırılan "Kolay" seviyesini arıyordu
+
+---
+
 ## 2026-08-19 — Seviye birleştirmesi ve zorluk dengesi
 
 ### Değişen

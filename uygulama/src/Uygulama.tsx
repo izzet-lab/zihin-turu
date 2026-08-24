@@ -26,11 +26,11 @@ import {
   bildirimSorulduMu,
   bildirimSorulduIsaretle,
   bildirimAyariOku,
-  bildirimAyariYaz,
+  tamamlananTurArtir,
+  tamamlananTurSayisi,
 } from './depo';
 import {
   bildirimIzniIste,
-  bildirimIzniDurumu,
   bugunOynandiYarinPlanla,
   bildirimiPlanla,
 } from './bildirim';
@@ -80,6 +80,12 @@ export default function Uygulama() {
   const [sonSonuc, setSonSonuc] = useState<OyunSonuc | null>(null);
   const [seri, setSeri] = useState<number>(oku().seri.gun);
   const [yeniAcilanSeviye, setYeniAcilanSeviye] = useState<string | null>(null);
+  /**
+   * Tamamlanan tur sayısı. Banner kapısı buna bakıyor (ilk oturum
+   * reklamsız); sayaç değişince banner etkisinin yeniden çalışması için
+   * durum olarak da tutuluyor. Gerçek kaynak yine kalıcı depo.
+   */
+  const [turSayaci, setTurSayaci] = useState<number>(() => tamamlananTurSayisi());
   const [oturumPuanDurumu, setOturumPuanDurumu] = useState<OturumPuanDurumu | null>(null);
   // Seri koruma: ödüllü reklam izleyerek kırılan seriyi geri yükleme
   const [seriKorumaBilgi, setSeriKorumaBilgi] = useState<{ oncekiSeriGun: number; gun: string } | null>(null);
@@ -152,7 +158,9 @@ export default function Uygulama() {
   useEffect(() => {
     if (ekran === 'giris' || ekran === 'kullanici-adi' || ekran === 'oyun') bannerGizle();
     else bannerGoster('alt');
-  }, [ekran]);
+    // turSayaci bağımlılıkta: ilk turlar reklamsız geçtikten sonra eşik
+    // dolduğu anda banner'ın açılması için etkinin yeniden çalışması gerekir.
+  }, [ekran, turSayaci]);
 
   // Başka bir rotaya (Lig, Profil, yasal sayfalar) geçilince banner
   // ekranda kalmasın; native katman React'ten bağımsız çalışıyor.
@@ -342,6 +350,10 @@ export default function Uygulama() {
         }
       });
     }
+
+    // İlk oturum reklamsızlığı için tamamlanan tur sayacını artır.
+    // Kalıcı saklanır; uygulama kapanıp açılınca sıfırlanmaz.
+    setTurSayaci(tamamlananTurArtir());
 
     setSonSonuc(s);
     setEkran('sonuc');

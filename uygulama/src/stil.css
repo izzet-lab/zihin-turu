@@ -259,3 +259,31 @@ button,
 .zt-menu-oge:hover {
   background-color: rgb(30 41 59 / 0.6);
 }
+
+/*
+ * SEÇİM DÜĞMELERİ (oyun türü ve zorluk)
+ *
+ * Seçili olanla olmayan neredeyse aynı görünüyordu: ikisi de sönük,
+ * ince çerçeveli. Kullanıcı hangisinin açık olduğunu anlamıyordu.
+ *
+ * Artık seçili olan hem dolgulu hem hafif ışıklı; seçili olmayan ise
+ * "devre dışı" değil "basılabilir" duruyor. Fark ekranda tek bakışta
+ * görülüyor.
+ */
+.zt-secim {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.zt-secim:active {
+  transform: scale(0.97);
+}
+
+.zt-secim-acik {
+  box-shadow:
+    0 0 0 3px rgb(124 237 251 / 0.18),
+    0 4px 14px -4px rgb(124 237 251 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-secim:active { transform: none; }
+}

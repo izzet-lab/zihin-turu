@@ -3,6 +3,44 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Kurulum ekranı: anlaşılır başlıklar, belirgin seçim
+
+### "MOD" kimseye bir şey anlatmıyordu
+
+Başlık `MOD` yazıyordu. Oyun terimi bilmeyen için bu bir şey ifade
+etmiyor ve orada bir seçim yapılması gerektiğini de söylemiyor.
+
+| Önce | Sonra |
+|---|---|
+| MOD | **Nasıl oynamak istersin?** |
+| SEVİYE | **Zorluk** |
+
+Soru cümlesi hem anlaşılır hem de seçim beklendiğini kendisi söylüyor.
+"Serbest, sınırsız" da "İstediğin kadar" oldu.
+
+### Seçili olan, seçili olmayandan ayırt edilemiyordu
+
+İkisi de sönük ve ince çerçeveliydi; hangisinin açık olduğu tek bakışta
+anlaşılmıyordu.
+
+**Oyun türü düğmeleri:** 56px'ten 76px'e çıktı, simge kazandı. Seçili
+olan dolgulu, çerçevesi tam renkli, hafif ışıklı ve sağ üstünde onay
+işareti taşıyor. Seçili olmayan artık "devre dışı" değil
+"basılabilir" duruyor.
+
+**Zorluk düğmeleri:** 44px'ten 48px'e çıktı. Seçili olan **dolu
+renkte** — arka planı camgöbeği, yazısı koyu. Bu, ekrandaki en yüksek
+karşıtlık; hangisinin seçili olduğu tartışmasız.
+
+Ana eylem düğmesinin baskınlığı korundu: "Başla" düğmesi seçili zorluk
+düğmesinden **2.5 kat** büyük ve yazısı daha iri. Seçim düğmeleri
+dikkat çekiyor ama asıl eylemi gölgelemiyor.
+
+Basılınca hafif küçülme geri bildirimi eklendi; hareket azaltma açıksa
+uygulanmıyor.
+
+---
+
 ## 2026-08-24 — Menü büyütüldü, yasal bağlantılardaki kopya kaldırıldı
 
 ### Yasal bağlantılar iki yerde yaşıyordu

@@ -129,38 +129,63 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
           </div>
         </header>
 
-        {/* Mod seçimi */}
+        {/*
+          Başlık "MOD" idi. Oyun terimi bilmeyen için bu bir şey
+          anlatmıyor; soru cümlesi hem anlaşılır hem de seçim yapılması
+          gerektiğini kendisi söylüyor.
+
+          Seçili/seçili değil ayrımı da çok zayıftı: ikisi de sönük
+          duruyor, hangisinin açık olduğu anlaşılmıyordu. Artık seçili
+          olan dolgulu ve işaretli, seçili olmayan ise "sönük" değil
+          "basılabilir" görünüyor.
+        */}
         <div className="mt-7">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Mod</div>
-          <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="Mod">
+          <div className="mb-2 text-sm font-bold text-slate-300">Nasıl oynamak istersin?</div>
+          <div className="grid grid-cols-2 gap-2.5" role="tablist" aria-label="Oyun türü">
             {(
               [
-                { k: 'gunun', ad: 'Günün Turu', not: 'Herkese aynı bulmaca' },
-                { k: 'antrenman', ad: 'Antrenman', not: 'Serbest, sınırsız' },
+                { k: 'gunun', ad: 'Günün Turu', not: 'Herkese aynı bulmaca', simge: '📅' },
+                { k: 'antrenman', ad: 'Antrenman', not: 'İstediğin kadar', simge: '♾️' },
               ] as const
-            ).map((m) => (
-              <button
-                key={m.k}
-                data-mod={m.k}
-                onClick={() => setMod(m.k)}
-                aria-pressed={mod === m.k}
-                className={`min-h-[56px] rounded-xl border px-4 py-3 text-left transition ${
-                  mod === m.k
-                    ? 'border-cyan-300/50 bg-cyan-300/10'
-                    : 'border-slate-800 bg-slate-900/40 hover:border-slate-700'
-                }`}
-              >
-                <div className="font-bold text-slate-100">{m.ad}</div>
-                <div className="text-[11px] text-slate-500">{m.not}</div>
-              </button>
-            ))}
+            ).map((m) => {
+              const secili = mod === m.k;
+              return (
+                <button
+                  key={m.k}
+                  data-mod={m.k}
+                  onClick={() => setMod(m.k)}
+                  aria-pressed={secili}
+                  className={`zt-secim relative min-h-[76px] rounded-xl border-2 px-3 py-3 text-left transition ${
+                    secili
+                      ? 'zt-secim-acik border-cyan-300 bg-cyan-300/15'
+                      : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
+                  }`}
+                >
+                  {secili && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-300 text-[11px] font-black text-slate-900"
+                    >
+                      ✓
+                    </span>
+                  )}
+                  <div className="text-lg leading-none" aria-hidden="true">{m.simge}</div>
+                  <div className={`mt-1.5 font-black ${secili ? 'text-cyan-100' : 'text-slate-100'}`}>
+                    {m.ad}
+                  </div>
+                  <div className={`text-[11px] ${secili ? 'text-cyan-200/70' : 'text-slate-400'}`}>
+                    {m.not}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Seviye seçimi */}
         <div className="mt-6">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</span>
+            <span className="text-sm font-bold text-slate-300">Zorluk</span>
             {ilkKezMi && <span className="text-[11px] text-cyan-300">Isınma ile başlıyorsun</span>}
           </div>
           <div className="flex flex-wrap gap-2" data-alan="seviyeler">
@@ -174,19 +199,29 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
                   onClick={() => seviyeSec(s.anahtar)}
                   aria-pressed={!kilitliMi && seviye === s.anahtar}
                   aria-disabled={kilitliMi}
-                  className={`min-h-[44px] rounded-lg border px-3 py-2 text-sm transition ${
+                  className={`zt-secim min-h-[48px] rounded-xl border-2 px-3.5 py-2 text-sm transition ${
                     kilitliMi
-                      ? 'cursor-not-allowed border-slate-800 bg-slate-900/20 text-slate-600'
+                      ? 'cursor-not-allowed border-slate-800 bg-slate-900/30 text-slate-600'
                       : seviye === s.anahtar
-                        ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                        : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                        ? 'zt-secim-acik border-cyan-300 bg-cyan-300 text-slate-900'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:border-slate-600 hover:bg-slate-800/80'
                   }`}
                 >
-                  <span className="font-bold">
+                  <span className="font-black">
                     {kilitliMi && '🔒 '}
                     {s.etiket}
                   </span>
-                  <span className="ml-1.5 text-[11px] text-slate-500">{s.altEtiket}</span>
+                  <span
+                    className={`ml-1.5 text-[11px] ${
+                      kilitliMi
+                        ? 'text-slate-600'
+                        : seviye === s.anahtar
+                          ? 'text-slate-900/70'
+                          : 'text-slate-400'
+                    }`}
+                  >
+                    {s.altEtiket}
+                  </span>
                 </button>
               );
             })}

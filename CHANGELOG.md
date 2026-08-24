@@ -3,6 +3,89 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Tema: yazı kimliği, derinlik ve birleşme animasyonu
+
+Oyun "amatör" duruyordu. Sebep zevk değil, üç somut eksikti.
+
+### 1. Yazı tipi yoktu
+
+Her şey `system-ui` ile yazılıyordu — yani oyun, telefonun **Ayarlar
+ekranıyla aynı yazıyı** kullanıyordu. Bu tek başına "uygulama" hissi
+verip "oyun" hissini öldürüyordu. El yazısı yedeğinde ayrıca
+**Comic Sans** vardı.
+
+Artık iki yazı, iki iş:
+
+| Değişken | Nerede | Neden |
+|---|---|---|
+| `--zt-yazi-oyun` (Space Grotesk) | taşlar, hedef, süre, başlıklar, düğmeler | rakam çizimi güçlü, geometrik, teknik |
+| `--zt-yazi-metin` (sistem) | yasal sayfalar, uzun açıklamalar | uzun metinde okunurluk önce gelir |
+| `--zt-yazi-el` (Caveat) | çözüm tahtası | Comic Sans yedeği kaldırıldı |
+
+Yazı tipleri uygulamanın **içine gömülü** — PWA çevrimdışı çalışmalı ve
+Capacitor paketinde dış kaynak isteği engelleniyor. Türkçe harfler
+(ı, ğ, ş, İ) `latin-ext` alt kümesinde; tarayıcı yalnızca gerekeni
+indiriyor. Rakamlar `tabular-nums` ile sabit genişlikte — sayı
+değişirken zıplamıyor.
+
+Uygulama tek yerden: `h1..h3`, `button`, taşlar ve gösterge alanları CSS
+seçicisiyle yakalanıyor. Ekran ekran sınıf eklenmedi; yeni bir ekran
+açıldığında kimliği hatırlamak gerekmiyor.
+
+### 2. Taşlar düz dikdörtgendi
+
+Gölge, ışık, katman yoktu — kâğıt gibi duruyorlardı. Oysa markanın kendi
+hikâyesi "iki taş birleşir"; taşın tutulabilir bir nesne gibi
+hissettirmesi gerekiyor.
+
+Üç katman eklendi: üstten gelen ışık, gövde eğimi ve zemin gölgesi.
+Seçili taş artık ışık kaynağı gibi davranıyor. Hepsi boya işi — düzeni
+hiç etkilemiyor.
+
+### 3. Oyunun çekirdek anı animasyonsuzdu
+
+**En önemli eksik buydu.** Bütün oyun tek bir jestin üstüne kurulu: iki
+taş birleşir, yeni bir taş olur. O an hiç canlandırılmıyordu — iki taş
+kayboluyor, yerine üçüncüsü beliriyordu.
+
+Artık birleşen taşların görüntü kopyaları yeni taşa doğru süzülüp
+sönüyor, yeni taş hafif bir sıçramayla doğuyor.
+
+- Animasyon oyunun durumuna **hiç dokunmuyor**; yarıda kesilse de oyun
+  doğru çalışır.
+- Yalnızca `transform` ve `opacity` kullanılıyor — telefonun ekran
+  işlemcisinde çalışır, alt segment cihazda da akar.
+- Cihazda "hareketi azalt" açıksa hiç oynatılmaz.
+- Karar mantığı (`birlesmeMi`) saf bir fonksiyonda; DOM'a dokunmadan
+  test ediliyor.
+
+**Yol boyunca bulunan kırılganlık:** temizlik yalnızca animasyonun
+bitmesine bağlıydı. Kullanıcı birleşme anında uygulamadan çıkarsa
+tarayıcı animasyonu ilerletmez, bitiş olayı hiç gelmez ve kopya ekranda
+takılı kalırdı — geri dönen kullanıcı dokunulamayan hayalet bir taş
+görürdü. Artık zaman aşımı da var; hangisi önce gelirse siliyor.
+
+### Boyut
+
+Türkçe bir kullanıcı için Space Grotesk ~49 KB. Caveat (~69 KB)
+yalnızca sonuç ekranına varıldığında yükleniyor. Servis çalışanı
+kullanıldıkça önbelleğe aldığı için Kiril alfabesi dosyaları hiç
+indirilmiyor.
+
+### Testler
+
+`tas-animasyon.test.ts` — geri alma, sıfırlama ve tur başlangıcının
+birleşme sayılmadığı; kayma hesabının merkezden merkeze doğru
+çalıştığı; animasyon sürelerinin oyunu bekletecek kadar uzun
+olmadığı. Toplam **147 test** geçiyor.
+
+### Sırada
+
+Puan sayma animasyonu, sonuç ekranı açılışı ve seslerin
+zenginleştirilmesi (şu an tek osilatörlü saf tonlar — "bip" karakterinde).
+
+---
+
 ## 2026-08-24 — Güvenli alan ve arayüz rötuşları (E)
 
 ### Alt banner gezinme çubuğunun üstüne alındı

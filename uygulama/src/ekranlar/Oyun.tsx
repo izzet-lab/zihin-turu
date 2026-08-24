@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
 import {
   puanlaHesap,
@@ -19,6 +19,7 @@ import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim 
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
 import Konfeti from '../bilesenler/Konfeti';
+import { birlesmeMi, birlesmeyiOynat, yeriOku, type TasYeri } from '../tasAnimasyon';
 import type { Mod } from './Kurulum';
 
 export interface OyunSonuc {
@@ -77,6 +78,16 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   const [toplamSure, setToplamSure] = useState<number>(sure); // joker ile uzayabilir
   const bittiRef = useRef(false);
 
+  /*
+   * Birleşme animasyonu için taşların bir önceki hâli ve DOM
+   * karşılıkları. Ref kullanılıyor çünkü bunlar ekranı yeniden
+   * çizdirmemeli — yalnızca "ne değişti" sorusuna cevap veriyorlar.
+   */
+  const oncekiTasIdRef = useRef<number[]>([]);
+  const tasElRef = useRef<Map<number, HTMLElement>>(new Map());
+  const rafRef = useRef<HTMLDivElement | null>(null);
+  const tasYeriRef = useRef<Map<number, TasYeri>>(new Map());
+
   // --- Joker durumu ---
   const [jokerHakki, setJokerHakki] = useState<number>(JOKER_HAK_SAYISI);
   const [kullanilanJokerler, setKullanilanJokerler] = useState<JokerTip[]>([]);
@@ -89,6 +100,58 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   const reklamGosterilebilir = mod !== 'gunun' && jokerHakki <= 0 && !reklamIzlendi && nativeMi();
 
   // Joker hakkı bittiğinde ödüllü reklamı arka planda hazırla
+  /*
+   * Birleşme animasyonu.
+   *
+   * Sıra önemli: React eski taşları zaten sildiği için yerlerini
+   * ŞİMDİ okuyamayız. Bu yüzden her çizimden sonra taşların yerleri
+   * saklanıyor; birleşme olduğunda kaybolanların yeri bir önceki
+   * çizimden geliyor.
+   *
+   * `useLayoutEffect` kullanılıyor: tarayıcı boyamadan önce çalışır,
+   * böylece yeni taş bir kare boyunca animasyonsuz görünmez.
+   */
+  useLayoutEffect(() => {
+    const simdikiIdler = durum.taslar.map((t) => t.id);
+    const { birlesmeVar, gidenler, gelen } = birlesmeMi(oncekiTasIdRef.current, simdikiIdler);
+
+    if (birlesmeVar && gelen !== null) {
+      const kaybolanlar = gidenler
+        .map((id) => tasYeriRef.current.get(id))
+        .filter((y): y is TasYeri => y !== undefined);
+      const yeniEl = tasElRef.current.get(gelen) ?? null;
+
+      if (kaybolanlar.length === 2 && yeniEl) {
+        birlesmeyiOynat(
+          { kaybolanlar, yeni: yeriOku(yeniEl) },
+          (yer) => {
+            // Kaybolan taşın görüntü kopyası. Oyun durumuna dokunmaz,
+            // yalnızca ekranda süzülüp silinir.
+            const kopya = document.createElement('div');
+            kopya.setAttribute('aria-hidden', 'true');
+            kopya.className = 'zt-tas-kopya';
+            kopya.style.left = `${yer.sol}px`;
+            kopya.style.top = `${yer.ust}px`;
+            kopya.style.width = `${yer.genislik}px`;
+            kopya.style.height = `${yer.yukseklik}px`;
+            document.body.appendChild(kopya);
+            return kopya;
+          },
+          yeniEl,
+        );
+      }
+    }
+
+    // Bir sonraki karşılaştırma için bu çizimin durumunu sakla.
+    oncekiTasIdRef.current = simdikiIdler;
+    const yeniHarita = new Map<number, TasYeri>();
+    for (const t of durum.taslar) {
+      const el = tasElRef.current.get(t.id);
+      if (el) yeniHarita.set(t.id, yeriOku(el));
+    }
+    tasYeriRef.current = yeniHarita;
+  }, [durum.taslar]);
+
   useEffect(() => {
     if (reklamGosterilebilir) {
       odulluReklamHazirla();
@@ -280,13 +343,17 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         </div>
 
         {/* Taş rafı */}
-        <div className="mt-5 grid grid-cols-4 gap-2.5" data-alan="raf">
+        <div ref={rafRef} className="mt-5 grid grid-cols-4 gap-2.5" data-alan="raf">
           {durum.taslar.map((t) => {
             const secili = durum.secimA === t.id;
             const uretilmis = t.yol.length > 0;
             return (
               <button
                 key={t.id}
+                ref={(el) => {
+                  if (el) tasElRef.current.set(t.id, el);
+                  else tasElRef.current.delete(t.id);
+                }}
                 data-tas={t.deger}
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}

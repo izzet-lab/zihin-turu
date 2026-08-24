@@ -26,11 +26,13 @@ import {
   bildirimSorulduMu,
   bildirimSorulduIsaretle,
   bildirimAyariOku,
-  bildirimAyariYaz,
+  tamamlananTurArtir,
+  tamamlananTurSayisi,
+  seriKorumaHakkiVarMi,
+  seriKorumaHakkiKullan,
 } from './depo';
 import {
   bildirimIzniIste,
-  bildirimIzniDurumu,
   bugunOynandiYarinPlanla,
   bildirimiPlanla,
 } from './bildirim';
@@ -80,6 +82,12 @@ export default function Uygulama() {
   const [sonSonuc, setSonSonuc] = useState<OyunSonuc | null>(null);
   const [seri, setSeri] = useState<number>(oku().seri.gun);
   const [yeniAcilanSeviye, setYeniAcilanSeviye] = useState<string | null>(null);
+  /**
+   * Tamamlanan tur sayısı. Banner kapısı buna bakıyor (ilk oturum
+   * reklamsız); sayaç değişince banner etkisinin yeniden çalışması için
+   * durum olarak da tutuluyor. Gerçek kaynak yine kalıcı depo.
+   */
+  const [turSayaci, setTurSayaci] = useState<number>(() => tamamlananTurSayisi());
   const [oturumPuanDurumu, setOturumPuanDurumu] = useState<OturumPuanDurumu | null>(null);
   // Seri koruma: ödüllü reklam izleyerek kırılan seriyi geri yükleme
   const [seriKorumaBilgi, setSeriKorumaBilgi] = useState<{ oncekiSeriGun: number; gun: string } | null>(null);
@@ -131,8 +139,21 @@ export default function Uygulama() {
         setEkran('giris');
       }
     }
+    // Bildirime dokunulunca doğrudan Günün Turu'na git. Kurulum ekranı
+    // Günün Turu sekmesiyle açılır; oyuncu bildirimden geldiyse araya
+    // başka hiçbir ekran girmemeli.
+    function bildirimTiklandi() {
+      setKurulumMod('gunun');
+      setYardimAcik(false);
+      setEkran('kurulum');
+    }
+
     window.addEventListener('zt-menu-istek', menuIstegi);
-    return () => window.removeEventListener('zt-menu-istek', menuIstegi);
+    window.addEventListener('zt-bildirim-tiklandi', bildirimTiklandi);
+    return () => {
+      window.removeEventListener('zt-menu-istek', menuIstegi);
+      window.removeEventListener('zt-bildirim-tiklandi', bildirimTiklandi);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,7 +173,9 @@ export default function Uygulama() {
   useEffect(() => {
     if (ekran === 'giris' || ekran === 'kullanici-adi' || ekran === 'oyun') bannerGizle();
     else bannerGoster('alt');
-  }, [ekran]);
+    // turSayaci bağımlılıkta: ilk turlar reklamsız geçtikten sonra eşik
+    // dolduğu anda banner'ın açılması için etkinin yeniden çalışması gerekir.
+  }, [ekran, turSayaci]);
 
   // Başka bir rotaya (Lig, Profil, yasal sayfalar) geçilince banner
   // ekranda kalmasın; native katman React'ten bağımsız çalışıyor.
@@ -243,8 +266,10 @@ export default function Uygulama() {
       const il = kaydetSonuc.il;
       setSeri(il.seri.gun);
 
-      // Seri kırıldıysa koruma fırsatı sun
-      if (kaydetSonuc.seriKirildi) {
+      // Seri kırıldıysa koruma fırsatı sun — ama yalnızca bu ayki
+      // koruma hakkı henüz kullanılmadıysa. Hak ayda bir; Yardım
+      // ekranında da böyle anlatılıyor.
+      if (kaydetSonuc.seriKirildi && seriKorumaHakkiVarMi(oturum.gun)) {
         setSeriKorumaBilgi({ oncekiSeriGun: kaydetSonuc.oncekiSeriGun, gun: oturum.gun });
       } else {
         setSeriKorumaBilgi(null);
@@ -325,8 +350,7 @@ export default function Uygulama() {
     // Günün Turu oynanınca bugünkü bildirimi iptal et, yarını planla.
     // Oynamış birine "oyna" demek can sıkar.
     if (oturum.mod === 'gunun') {
-      const il = oku();
-      bugunOynandiYarinPlanla(il.seri.gun);
+      bugunOynandiYarinPlanla();
     }
 
     // İlk turu bitirdikten sonra bildirim izni iste.
@@ -342,6 +366,10 @@ export default function Uygulama() {
         }
       });
     }
+
+    // İlk oturum reklamsızlığı için tamamlanan tur sayacını artır.
+    // Kalıcı saklanır; uygulama kapanıp açılınca sıfırlanmaz.
+    setTurSayaci(tamamlananTurArtir());
 
     setSonSonuc(s);
     setEkran('sonuc');
@@ -400,6 +428,8 @@ export default function Uygulama() {
   function seriKorumaYap() {
     if (!seriKorumaBilgi) return;
     const il = seriKoru(seriKorumaBilgi.gun, seriKorumaBilgi.oncekiSeriGun);
+    // Aylık hak burada tükenir — aynı ay içinde ikinci kez teklif edilmez.
+    seriKorumaHakkiKullan(seriKorumaBilgi.gun);
     setSeri(il.seri.gun);
     setSeriKorumaBilgi(null);
   }

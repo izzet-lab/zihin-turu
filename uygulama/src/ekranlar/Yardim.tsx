@@ -141,7 +141,8 @@ export default function Yardim({ acik, kapat }: Props) {
             <SeriSatir gun="30 gün üst üste" xp={300} rozet="🏅 Aylık" />
             <SeriSatir gun="100 gün üst üste" xp={1000} rozet="🏅 Yüz Gün" />
             <p className="mt-2 text-xs text-slate-500">
-              Ayda bir <b>seri koruma</b> hakkın var: bir gün kaçırırsan seri kırılmaz.
+              Ayda bir <b>seri koruma</b> hakkın var: serin kırılırsa kısa bir
+              reklam izleyip geri alabilirsin. Hak her ayın başında tazelenir.
             </p>
           </div>
         </Bolum>

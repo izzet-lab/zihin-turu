@@ -5,15 +5,15 @@ import { zinciriBulVeOyna } from './oyun-yardimcilari';
   Yeni oyuncu akışı — gerçek tarayıcıda, uçtan uca:
   1) İlk kez giren oyuncu seviye SEÇMEZ; yalnızca Isınma açık ve
      seçili gelir, diğer seviyeler kilitli görünür.
-  2) Isınma'da tam isabet yapınca bir sonraki seviye (Kolay) açılır
+  2) Isınma'da tam isabet yapınca bir sonraki seviye (Normal) açılır
      ve sonuç ekranında bildirilir.
-  3) Kurulum ekranına dönüldüğünde Kolay artık seçilebilir.
+  3) Kurulum ekranına dönüldüğünde Normal artık seçilebilir.
 
   Fresh bir tarayıcı bağlamıyla çalışır (localStorage önceden
   doldurulmaz) — bu, "hiç oynamamış" durumun kendisidir.
 */
 
-test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Kolay açılır', async ({ page }) => {
+test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Normal açılır', async ({ page }) => {
   await page.goto('/');
 
   // İlk açılışta tanıtım kendiliğinden çıkar; kapat ve devam et.
@@ -46,18 +46,18 @@ test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Kolay açıl
   // --- 3) Yeni seviye açıldı bildirimi ---
   const yeniSeviye = page.locator('[data-alan="yeni-seviye"]');
   await expect(yeniSeviye).toBeVisible();
-  await expect(yeniSeviye).toContainText('Kolay');
+  await expect(yeniSeviye).toContainText('Normal');
 
-  // --- 4) Kurulum ekranına dön: Kolay artık seçilebilir ---
+  // --- 4) Kurulum ekranına dön: Normal artık seçilebilir ---
   // Antrenman'da birincil düğme artık "Yeni tur" (aynı ayarlarla devam
   // eder); Kurulum'a dönmek için ikincil "Ayarlar" düğmesi kullanılır.
   await page.locator('[data-alan="ayarlar"]').click();
 
-  const kolayCip2 = page.locator('[data-seviye="normal"]');
-  await expect(kolayCip2).toBeEnabled();
-  await expect(kolayCip2).not.toHaveAttribute('data-kilitli', 'true');
-  await kolayCip2.click();
-  await expect(kolayCip2).toHaveAttribute('aria-pressed', 'true');
+  const normalCip = page.locator('[data-seviye="normal"]');
+  await expect(normalCip).toBeEnabled();
+  await expect(normalCip).not.toHaveAttribute('data-kilitli', 'true');
+  await normalCip.click();
+  await expect(normalCip).toHaveAttribute('aria-pressed', 'true');
 
   // Artık deneyimli sayılır; "ilk kez" mesajı bir daha çıkmaz.
   await expect(page.locator('text=Isınma ile başlıyorsun')).toHaveCount(0);

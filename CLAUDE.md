@@ -1,7 +1,12 @@
 # CLAUDE.md
 
-Bu dosya deponun köküne konur. Claude Code her oturumda otomatik okur.
-Amacı: her yeni sohbette aynı şeyleri baştan anlatmak zorunda kalmamak.
+Deponun kökünde durur, her oturumda okunur.
+
+> **Sürüm notu:** Bu dosya 20 Ağustos 2026'da yeniden yazıldı. Önceki
+> sürümde "reklam yok" kuralı vardı; bu karar değişti ve projede artık
+> AdMob var. Kural 5'e bak. Bu dosya ile projenin gerçek durumu
+> arasında çelişki görürsen **çalışmayı durdur ve sor** — geçen sefer
+> bunu doğru yaptın.
 
 ---
 
@@ -9,67 +14,128 @@ Amacı: her yeni sohbette aynı şeyleri baştan anlatmak zorunda kalmamak.
 
 Türkçe zihin oyunu platformu. İki oyun, tek altyapı:
 
-- **Sayı turu** — 6 rakam verilir, dört işlemle hedef sayıya ulaşılır
-- **Kelime turu** — 8 harf verilir, en uzun kelime türetilir *(Faz 6)*
+- **Sayı Turu** — 6 rakam verilir, dört işlemle hedef sayıya ulaşılır
+- **Kelime Turu** — 8 harf verilir, en uzun kelime türetilir *(Faz 6, henüz yok)*
 
 Platform oyunu bilmez. Oyunlar `TurSaglayici` arayüzüyle takılır.
+
+**Marka:** Zihin Turu · **Paket:** `com.zihinturu.app` ·
+**Web:** zihin.artei.net · **Depo:** `izzet-lab/zihin-turu`
 
 ## Kiminle konuşuyorsun
 
 Proje sahibi kod yazmıyor ve okumuyor. Bu şu demek:
 
-- **Ne yaptığını Türkçe ve sade anlat.** Değişkenle değil, davranışla:
-  "artık süre bitince tur kapanıyor", "artık raftaki taşlar yeniden
-  boyutlanıyor" gibi.
-- **Kod parçası yapıştırma** — açıklaması gerekiyorsa cümleyle açıkla.
+- **Ne yaptığını Türkçe ve sade anlat.** Değişkenle değil davranışla:
+  "artık süre bitince tur kapanıyor" gibi.
+- **Kod parçası yapıştırma** — cümleyle açıkla.
 - **Her değişiklikten sonra testleri çalıştır ve sonucu söyle.**
   Kırmızıysa ilerlemeden düzelt.
-- Bir şey riskliyse ya da iki yol varsa, **karar verip gerekçesini
-  söyle.** Seçenek listesi sunup beklemek işi yavaşlatıyor.
+- Bir şey riskliyse ya da iki yol varsa **karar verip gerekçesini söyle.**
+  Seçenek listesi sunup beklemek işi yavaşlatıyor.
+- **Bu dosyayla çelişen bir durum görürsen sor.** Sessizce varsayımla
+  devam etmek en pahalı hata.
+
+---
 
 ## Değişmez kurallar
 
 1. **Oyun mantığı tek yerde.** Kural, üretim, doğrulama ve puanlama
-   yalnızca `paketler/oyun-*` içinde yaşar. Arayüzde veya sunucu
-   fonksiyonunda kural kopyası bulunursa bu bir hatadır.
-2. **Doğrulama sunucuda.** İstemci "buldum" diyemez. Gönderilen cevap
-   Edge Function'da sıfırdan yeniden hesaplanır. Puanı sunucu verir.
+   yalnızca `paketler/oyun-*` içinde yaşar. Arayüzde veya Edge
+   Function'da kural kopyası bulunursa bu bir hatadır.
+
+2. **Doğrulama sunucuda.** İstemci "buldum" ya da "15 puan aldım"
+   diyemez. Gönderilen zincir Edge Function'da sıfırdan yeniden
+   hesaplanır, puanı sunucu verir.
+
 3. **Tur içeriği saklanmaz, tohum saklanır.** Bulmaca `tohum → tur`
-   fonksiyonuyla yeniden üretilir. Rövanş, maç tekrarı ve günün turu
-   bundan bedavaya gelir.
+   ile yeniden üretilir. Günün turu, rövanş ve maç tekrarı bundan
+   bedavaya gelir.
+
 4. **Rekabet modlarında süre zorunlu.** Süresiz yalnızca Antrenman'da,
-   ve Antrenman lige işlemez.
-5. **Reklam yok.** Reklam SDK'sı, izleyici takibi, üçüncü taraf
-   analitik eklenmez. Sadece kendi sayaçlarımız.
-6. **Çözüm sızmaz.** Tur bitmeden çözüm istemciye gönderilmez.
+   ve Antrenman beceri ligine işlemez (kendi çalışkanlık tablosu var).
+
+5. **Reklam var, ama kuralları katı.** *(Bu kural Ağustos 2026'da
+   değişti — eskiden "reklam yok"tu.)*
+   - **Banner:** Kurulum, Sonuç, Lig, Profil ekranlarında.
+     **Oyun ekranında banner YOK** — oynarken dikkat dağıtıyor.
+     Giriş ve yasal sayfalarda da yok.
+   - **Ödüllü video:** joker yenileme, antrenman turunu tekrar oynama,
+     seri koruma. Asla kendiliğinden başlamaz, kullanıcı düğmeye basar.
+     **Reklam yüklenemezse ödül yine verilir.**
+   - **Geçiş (interstitial) reklamı YOK.** Oyun akışını kırıyor.
+   - **Günün Turu'nda joker reklamı YOK** — lig adaleti bozulur.
+   - **İlk 3 tur tamamlanana kadar hiç banner yok.** Kaldırmaların çoğu
+     ilk 24 saatte oluyor; değer görmeden maliyet gösterilmez.
+     Sayaç kalıcı saklanır.
+
+6. **Yaş ve reklam kişiselleştirmesi.**
+   - Asgari yaş **13**. 13 altı kayıt olamaz, misafir oynayabilir.
+   - **13–17 arası veli onayı zorunlu** (Türk hukuku 18 altını küçük
+     sayıyor; 13 yalnızca AdMob eşiği).
+   - **18 altına asla kişiselleştirilmiş reklam gösterilmez**
+     (`npa: true`), onay formu da sorulmaz. Banner ve ödüllü video için
+     ayrı ayrı doğrula — ikisi farklı çağrı yolu kullanıyor.
+   - 18+ için UMP onay akışı. Onay **sonradan geri alınabilir** olmalı
+     (yasal zorunluluk), gizlilik ayarlarından erişilir.
+
+7. **Gizlilik varsayılanları.** Firebase Analytics **varsayılan kapalı.**
+   Crashlytics ve bildirimler gizlilik ayarlarından kapatılabilir.
+   Kullanıcı kapattığında gerçekten kapanmalı.
+
+8. **Çözüm sızmaz.** Tur bitmeden çözüm istemciye gönderilmez.
    Paylaşım kartında adımlar, işlem işaretleri ve ara sonuçlar yer almaz.
-7. **Mobil önce.** Her ekran önce 360px genişlikte doğru çalışır.
-   Dokunma hedefleri en az 44px.
-8. **Türkçe.** Kod içindeki isimler, yorumlar ve arayüz metinleri
-   Türkçe. Değişken adlarında Türkçe karakter yok (`buyukSayi`,
-   `büyükSayı` değil).
 
-## Testler
+9. **Oyun avantajı satılmaz.** Abonelik reklamı kaldırır, kozmetik verir.
+   Ödeyen oyuncu daha iyi puan alıyorsa lig biter.
 
-```bash
-npm test          # birim + entegrasyon
-npm run e2e       # Playwright, gerçek tarayıcı
-npm run insa      # derleme
-```
+10. **Mobil önce.** Her ekran önce 360px genişlikte doğru çalışır.
+    Dokunma hedefleri en az 44px. Güvenli alan (`env(safe-area-inset-*)`)
+    tek yerde çözülür, ekran başına boşluk eklenmez.
 
-Kural: **her faz kendi kabul testiyle biter.** Test yazmadan özellik
-tamamlanmış sayılmaz. Test, proje sahibinin kodu okumadan
-"çalışıyor mu?" sorusunu cevaplama yolu.
+11. **Türkçe.** Kod içindeki isimler, yorumlar ve arayüz metinleri
+    Türkçe. Değişken adlarında Türkçe karakter yok (`buyukSayi`,
+    `büyükSayı` değil).
+
+12. **Capacitor'da SPA yedeği yok.** `<a href>` ile tam sayfa geçişi
+    Android'de 404 verir. Tüm gezinme router üzerinden.
+
+13. **Yeşil takımdan başla.** Her işe başlamadan **önce** `npm test`,
+    `npm run tip` ve `npm run e2e` çalıştır. Kırmızı varsa önce onu
+    düzelt, sonra yeni işe başla. *(24 Ağustos 2026'da üç ayrı yerde
+    eski kırmızı bulundu — bu kural o yüzden var. Kırmızı bir takımın
+    üstüne çalışmak, yeni hatayı eskilerin arasında kaybetmek demek.)*
+
+---
+
+## Üç dağıtım katmanı — sıra önemli
+
+Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
+**Sıra bozulursa canlı site hata verir.**
+
+| # | Katman | Nasıl güncellenir |
+|---|---|---|
+| 1 | **Veritabanı** (tablolar, tetikleyiciler) | Supabase SQL editörü / migration |
+| 2 | **Edge Functions** (puan doğrulama) | `npx supabase functions deploy` |
+| 3 | **Web + Android** (arayüz) | `git push` → Cloudflare otomatik |
+
+Yeni arayüz kodu olmayan sütunları arayacağı için **önce veritabanı,
+sonra fonksiyon, en son push.**
+
+**Oyun mantığı değiştiyse Edge Function'ı yeniden dağıtmak zorunludur.**
+İstemci ve sunucu farklı tur üretirse her tur reddedilir.
+
+---
 
 ## Mimari
 
 ```
-paketler/cekirdek       TurSaglayici arayüzü, ortak tipler, tohumlu rastgelelik
+paketler/cekirdek       TurSaglayici arayüzü, tohumlu rastgelelik
 paketler/oyun-sayi      sayı turu: üretici, çözücü, doğrulayıcı, puanlayıcı, bot
-paketler/oyun-kelime    kelime turu (Faz 6)
-uygulama                React + Vite arayüz, PWA
-sunucu/fonksiyonlar     Supabase Edge Functions: doğrulama, eşleştirme, bot
-sunucu/gocler           SQL şema göçleri
+paketler/oyun-kelime    kelime turu (Faz 6, henüz yok)
+uygulama                React + Vite arayüz, PWA, Capacitor
+sunucu/fonksiyonlar     Supabase Edge Functions
+sunucu/gocler           SQL göçleri
 testler                 birim, entegrasyon, e2e
 ```
 
@@ -77,116 +143,106 @@ testler                 birim, entegrasyon, e2e
 
 ```ts
 interface TurSaglayici {
-  ad: 'sayi' | 'kelime';
-  seviyeler: Seviye[];
+  ad: string;
+  seviyeler: readonly Seviye[];
   turUret(seviye: string, tohum: number): Tur;
   dogrula(tur: Tur, cevap: Cevap): Dogrulama;
-  puanla(seviye: string, d: Dogrulama, kalanSn: number, ilkMi: boolean): Puan;
+  puanla(seviye, d, kalanSn, toplamSn, ilkMi): Puan;
   cozumBul(tur: Tur, sinirMs?: number): Cozum;
 }
 ```
 
-Platform yalnızca bu arayüzü çağırır. Platform kodunda `hedef`,
-`rakam`, `harf` gibi oyuna özgü kelimeler geçmemeli.
-
-## Yığın
-
-TypeScript · React + Vite · Tailwind · Supabase (Postgres, Auth,
-Realtime, Edge Functions) · Cloudflare Pages · Vitest + Playwright ·
-Capacitor (Faz 7)
+Platform yalnızca bunu çağırır. Platform kodunda `hedef`, `rakam`,
+`harf` gibi oyuna özgü kelimeler geçmemeli. `Dogrulama.uzaklik`
+alanının **anlamını platform bilmez**, yalnızca "0 ise tam isabet"
+kuralını uygular.
 
 ---
 
-## Faz faz komutlar
+## Mevcut durum
 
-Aşağıdakileri sırayla Claude Code'a ver. Her komut bir oturum.
-Bir faz bitmeden sonrakine geçme.
+**Seviyeler** (Kolay ve Normal birleştirildi, beşten dörde indi):
 
-### Faz 0 — Kurulum
+| Seviye | Hane | Taş | Aralık | Süre |
+|---|---|---|---|---|
+| Isınma | 2 | 4 | 10–99 | 60 sn |
+| Normal | 3 | 5 | 100–999 | 60 sn |
+| Zor | 4 | 6 | 1.000–9.999 | 75 sn |
+| Usta | 5 | 7 | 10.000–99.999 | 90 sn |
 
-> Bu depoyu sıfırdan kur: TypeScript monorepo, npm workspaces ile
-> `paketler/cekirdek`, `paketler/oyun-sayi`, `uygulama`, `sunucu`,
-> `testler` klasörleri. Uygulama React + Vite + Tailwind olsun,
-> Türkçe yerelleştirilmiş. Vitest ve Playwright kurulu gelsin.
-> Cloudflare Pages'e deploy edilebilir bir "yakında" sayfası yap.
-> Kurulum bitince bana ne yaptığını ve nasıl çalıştıracağımı anlat.
+**Puanlama:** Günün Turu puanı ×10 (tam isabet ~150). Antrenman'da
+süre çarpanı (90/60/30/15 sn → ×1/1.5/2.5/4) ve seviye çarpanı
+(Isınma ×0.5 … Usta ×2) çarpılır. Antrenman puanı XP'ye gider.
 
-### Faz 1 — Çekirdek
+**Lig:** Seviye başına ayrı tablo. Günlük tabloya o günün **en iyi**
+maçı yazılır, toplamı değil. Haftalık ve aylık, günlük en iyilerin
+toplamı. Antrenman ayrı "çalışkanlık" tablosunda, haftalık sıfırlanır.
 
-> `CLAUDE.md`'deki `TurSaglayici` arayüzünü `paketler/cekirdek`
-> içinde yaz. Sonra `tohum-kod/` klasöründeki JavaScript sayı oyunu
-> mantığını TypeScript'e çevirip `paketler/oyun-sayi` içine bu
-> arayüzü uygulayacak şekilde taşı. Mevcut testleri de taşı ve
-> çalıştır. Her seviyede 200'er tur üretip hepsinin tam çözümlü
-> olduğunu doğrulayan testi koru.
->
-> *(Not: Faz 1'de beş seviye vardı. 19 Ağustos 2026'da Kolay ve Normal
-> birleştirildi; artık dört seviye var — bkz. `CHANGELOG.md`.)*
+**XP:** Lv.1 Çaylak (0), Lv.2 Hesapçı (500), Lv.3 Zihin İşçisi (2.000),
+Lv.4 Rakam Ustası (5.000), Lv.5 Zihin Turu Ustası (12.000).
+Seri ödülleri: her gün +10, 3 gün +25, 7 gün +75, 30 gün +300,
+100 gün +1.000. **Puan oynamadan verilmez.** Ayda bir seri koruma hakkı.
 
-### Faz 2 — Tek kişilik yayın ⭐
+**Tamamlanan:** Faz 0–3C (çekirdek, tek kişilik oyun, PWA, üyelik,
+misafir geçişi, sunucu doğrulama, lig, XP, seri, gerçek oyuncu
+sayaçları, yasal metinler, hesap silme), Capacitor Android paketi,
+Firebase (Analytics/Crashlytics/Remote Config), AdMob banner,
+yaş 13 + UMP onay akışı.
 
-> Mobil öncelikli React arayüzü yap: Antrenman modu, Günün Turu,
-> sonuç ekranı ve paylaşım kartı. Günün turu tarihten türeyen
-> tohumla üretilsin, günde bir hak olsun, ilerleme tarayıcıda
-> saklansın. PWA yap: manifest, servis çalışanı, ana ekrana ekleme,
-> çevrimdışı çalışma. Üyelik yok, misafir oynuyor.
-> Playwright ile şu senaryoyu test et: günün turunu oyna, tam isabet
-> yap, paylaşım kartı üretilsin, sayfayı yenile, günlük kilit dursun.
+**Yığın:** TypeScript · React + Vite · Tailwind · Supabase (Frankfurt) ·
+Cloudflare Pages · Capacitor · Vitest + Playwright
 
-### Faz 3 — Kimlik ve lig
+---
 
-> Supabase Auth kur: e-posta ve Google girişi. Misafir oynamaya devam
-> etsin; üye olduğunda misafirken biriken ilerleme yeni hesaba
-> devrolsun — bu kritik, kimse ilerlemesini kaybetmemeli.
-> Şema: oyuncu, mac, tur, gonderim, lig_gunluk, lig_aylik, odul.
-> Seviye başına ayrı lig tablosu. Günlük tabloya oyuncunun o günkü
-> EN İYİ maçı yazılsın, toplamı değil. Profil sayfaları herkese açık
-> olsun (SEO). KVKK aydınlatma metni, çerez politikası ve kullanım
-> koşulları sayfalarını da ekle.
+## Bekleyen işler
+
+### ~~B komutu~~ — bitti (24 Ağustos 2026)
+İlk oturum reklamsızlığı yapıldı, ödüllü videonun `npa` doğrulaması
+tamam. Ayrıntı `CHANGELOG.md`'de.
+
+### ~~C komutu~~ — bitti (24 Ağustos 2026)
+Günlük hatırlatma tamam. Karar mantığı `bildirim-karar.ts` içinde saf ve
+test edilebilir; native katman yalnızca uyguluyor. Ayrıntı `CHANGELOG.md`'de.
+
+### Şimdi — D — Zorluk dengesi
+"Zor, Normal'den kolay geliyor" gözlemi var. Önce **ölç**:
+`testler/zorluk-olcum.ts`, seviye başına 2.000 tur. Ölçütler: çözüm
+yoğunluğu, en kısa çözüm uzunluğu, **çözücünün denediği düğüm sayısı**
+(insan zorluğunun en iyi vekili), tek çözümlü tur oranı, bölme
+gerektiren tur oranı. Her ölçüt Isınma → Usta boyunca tek yönlü
+artmalı. Muhtemel sebep: Zor/Usta'da ileri üretim her zaman kolay bir
+çözüm yolu bırakıyor — çözüm yoğunluğu eşiğin üstündeyse turu reddedip
+yeniden üret. **Sonra Edge Function'ı yeniden dağıt.**
+
+### E — Güvenli alan ve arayüz rötuşları
+Durum çubuğu boşluğu (tek yerde), Yardım'da XP listesi aralığı,
+seri rozet tutarlılığı, Geri al/Sıfırla ikonlarının ayrışması,
+kilitli seviyeye dokununca açıklama, sonuç ekranında ana eylemin
+en baskın öğe olması.
+
+### F — Play Store paketi
+AAB, versionCode otomatiği, R8 küçültme sonrası çalışma doğrulaması,
+Data safety özeti. **Data safety formu artık reklam kimliği
+toplandığını söylemeli** — yasal metinlerle birebir tutarlı olmalı.
 
 ### Faz 4 — Düello
-
-> Supabase Realtime ile 1v1 düello yap. Akış: eşleştirme kuyruğu
-> (ELO'ya yakın rakip), 5 tur, her turda süre. Tam isabet bulan ilk
-> oyuncu turu anında kapatır; kimse bulamazsa süre sonunda en yakın
-> kazanır. Rakibin yalnızca hedefe uzaklığı canlı yayınlansın —
-> hangi taşı kullandığı asla gitmesin.
-> Cevap doğrulaması Edge Function'da yapılsın, puanı sunucu versin.
-> 8 saniyede rakip bulunamazsa bot devreye girsin; bot çözümü hazır
-> almasın, kendi çözücüsünü sınırlı süreyle çalıştırsın.
-> Bağlantı koparsa maç düzgün sonlansın, kısa kopmada geri dönülebilsin.
-> İki tarayıcı açıp gerçek maç oynatan bir e2e testi yaz.
-
-### Faz 5 — Arena
-
-> 5 kişilik eşzamanlı arena yap. Sıra yok, herkes aynı anda oynar.
-> İlk tam isabet turu kapatır. Eksik koltuklar botla dolar.
-> Podyum ekranı, kupa ve madalya.
-
-### Faz 6 — Kelime turu
-
-> TDK sözlüğünden Türkçe kelime listesi hazırla (kök + çekimli
-> biçimler, uzunluk indeksli). `paketler/oyun-kelime` içinde
-> `TurSaglayici` arayüzünü uygulayan kelime turunu yaz: 8 harf üret,
-> girilen kelimeyi sözlükte ve harf havuzunda doğrula, harf sayısına
-> göre puanla, en uzun kelimeyi bul.
-> **Platform kodunda hiçbir değişiklik yapma.** Değişiklik gerekiyorsa
-> bu, arayüzün eksik olduğu anlamına gelir — önce bana söyle.
-
-### Faz 7 — Mağazalar
-
-> Capacitor ekle, iOS ve Android paketlerini üret. Mağaza görselleri,
-> açıklama metinleri, gizlilik beyanı ve yaş derecelendirmesi
-> bilgilerini hazırla.
+Kapalı testin 14 günü işlerken yazılacak. Eşleştirme kuyruğu (ELO),
+gerçek zamanlı tur akışı, **rakibin yalnızca uzaklığı yayınlanır**,
+sunucu doğrulaması, rakip yoksa bot (çözümü hazır almaz), bağlantı
+kopması, rövanş, özel oda. FCM burada devreye girer.
 
 ---
 
-## Sık yapılan hatalar (yapma)
+## Sık yapılan hatalar
 
 - Oyun kuralını arayüze kopyalamak — tek kaynak bozulur
 - İstemcinin bildirdiği puana güvenmek — hile kapısı
 - Tur içeriğini veritabanına yazmak — tohum varken gereksiz
 - Paylaşım kartına çözüm adımı koymak — oynamamışa cevabı verir
-- Antrenman maçını lige işlemek — tablo kirlenir
-- Reklam veya üçüncü taraf takip kodu eklemek — konumlandırma biter
+- Antrenmanı beceri ligine işlemek — tablo kirlenir
+- Oyun ekranına banner koymak — oynarken dikkat dağıtır
+- 18 altına kişiselleştirilmiş reklam göstermek — beyanla çelişir
+- Oyun mantığını değiştirip Edge Function'ı dağıtmamak — her tur reddedilir
+- Veritabanı göçünden önce push etmek — canlı site hata verir
+- `<a href>` ile gezinmek — Android'de 404
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

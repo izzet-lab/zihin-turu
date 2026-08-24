@@ -46,16 +46,16 @@ describe('günlük kilit — genel, seviyeden bağımsız', () => {
   });
 
   it('aynı gün ikinci kayıt hiçbir şeyi değiştirmez (idempotent)', () => {
-    const il1 = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
-    const il2 = gunlukKaydet('2026-08-16', 'normal', { fark: 5, puan: 3 });
+    const { il: il1 } = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
+    const { il: il2 } = gunlukKaydet('2026-08-16', 'normal', { fark: 5, puan: 3 });
     expect(il2.tam).toBe(il1.tam);
     expect(il2.gunluk['2026-08-16']!.seviye).toBe('normal'); // ilk kayıt korunur
   });
 
   it('tam isabet sayacı günde yalnızca bir kez artar', () => {
-    const il = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
+    const { il } = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
     expect(il.tam).toBe(1);
-    const il2 = gunlukKaydet('2026-08-16', 'zor', { fark: 0, puan: 20 });
+    const { il: il2 } = gunlukKaydet('2026-08-16', 'zor', { fark: 0, puan: 20 });
     expect(il2.tam).toBe(1);
   });
 });
@@ -64,15 +64,17 @@ describe('kesintisiz seri', () => {
   it('art arda günlerde seri büyür', () => {
     gunlukKaydet('2026-08-14', 'normal', { fark: 0, puan: 10 });
     gunlukKaydet('2026-08-15', 'normal', { fark: 0, puan: 10 });
-    const il = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
+    const { il } = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
     expect(il.seri.gun).toBe(3);
     expect(il.seri.enUzun).toBe(3);
   });
 
   it('araya gün girerse seri sıfırdan başlar', () => {
     gunlukKaydet('2026-08-10', 'normal', { fark: 0, puan: 10 });
-    const il = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
+    const { il, seriKirildi } = gunlukKaydet('2026-08-16', 'normal', { fark: 0, puan: 10 });
     expect(il.seri.gun).toBe(1);
+    // 1 günlük seri kırılması "kırıldı" sayılmaz — koruma teklif edilmez.
+    expect(seriKirildi).toBe(false);
   });
 });
 

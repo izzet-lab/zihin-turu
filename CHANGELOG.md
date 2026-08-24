@@ -3,6 +3,64 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Günlük hatırlatma (C) ve seri koruma sınırı
+
+### Değişen
+
+- **Bildirim karar mantığı native katmandan ayrıldı** (`bildirim-karar.ts`).
+  "Bugün mü yarın mı, hangi metinle, yoksa hiç mi" sorusu artık saf bir
+  fonksiyon; gerçek cihaz olmadan test edilebiliyor. `bildirim.ts` yalnızca
+  bu kararı uyguluyor, kural kopyası tutmuyor.
+- **Seri koruma hakkı gerçekten ayda bir oldu.** Yardım ekranı böyle
+  anlatıyordu ama kodda hiçbir sınır yoktu — seri her kırıldığında koruma
+  tekrar tekrar teklif ediliyordu. Sınır artık depoda, ay anahtarıyla.
+- Yardım metni gerçek davranışı anlatacak şekilde düzeltildi.
+
+### Düzeltilen hatalar
+
+- **Bildirime dokununca hiçbir şey olmuyordu.** `zt-bildirim-tiklandi`
+  olayı yayınlanıyordu ama dinleyicisi yoktu. Artık dokununca Günün Turu
+  açılıyor.
+- **Seri koruma notu bildirimde hiç çıkmıyordu.** Koruma durumu her
+  yerden `false` geçiliyordu; artık gerçek hak durumu okunuyor.
+
+### Değişmeyen
+
+Yasal metinler zaten doğruydu: bildirimin cihaz üstünde planlandığı ve
+sunucuya token gönderilmediği hem KVKK aydınlatma metninde hem çerez
+tablosunda yazılı. FCM altyapısına dokunulmadı — Faz 4 düellosunda
+gerekecek.
+
+---
+
+## 2026-08-24 — İlk oturum reklamsız
+
+### Değişen
+
+- **İlk 3 tur tamamlanana kadar hiç banner gösterilmiyor.** Kaldırmaların
+  çoğu ilk 24 saatte oluyor ve bu kategoride birinci sebep reklam;
+  kullanıcıya değer görmeden maliyet gösterilmiyor.
+- Sayaç **kalıcı saklanıyor** (`zihinturu.tamamlanan-tur`); uygulama
+  kapanıp açılınca sıfırlanmıyor. Eşiğe ulaşınca artmayı bırakıyor.
+- Kapı `bannerGoster` içinde, tek yerde. Kurulum, Sonuç, Lig ve Profil
+  ekranları kuralı otomatik uyguluyor.
+- **Ödüllü video muaf** — kullanıcı onu kendisi istiyor.
+
+### Doğrulanan
+
+- Ödüllü video da 18 yaş altı kullanıcılarda `npa: true` ile çağrılıyor.
+  Banner ve ödüllü video AdMob'da ayrı çağrı yolları kullanıyor; ikisi de
+  doğru.
+
+### Ayrıca düzeltilen (eskiden kırmızı duran testler)
+
+- `depo.test.ts`: `gunlukKaydet` seri koruma eklendiğinde dönüş biçimini
+  değiştirmişti, testler eski biçime bakıyordu
+- `determinizm.test.ts`: dosyada `it(...)` yoktu, vitest "test yok" diyordu
+- `ilk-kez.spec.ts`: kaldırılan "Kolay" seviyesini arıyordu
+
+---
+
 ## 2026-08-19 — Seviye birleştirmesi ve zorluk dengesi
 
 ### Değişen

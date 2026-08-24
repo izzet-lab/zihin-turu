@@ -27,6 +27,10 @@
  * Reklam biçimleri: BANNER + ÖDÜLLÜ VİDEO (rewarded).
  * Banner: Kurulum, Sonuç, Lig, Profil ekranlarında. Oyun ekranında yok.
  * Ödüllü video: joker hakkı bitince ek joker, antrenman tekrarı, seri koruma.
+ *
+ * İLK OTURUM REKLAMSIZ
+ * İlk 3 tur tamamlanana kadar hiç banner gösterilmez (sayaç kalıcı).
+ * Ödüllü video bundan muaftır — kullanıcı onu kendisi istiyor.
  */
 
 import {
@@ -39,7 +43,7 @@ import {
   type AdMobRewardItem,
 } from '@capacitor-community/admob';
 import { nativeMi } from './platform';
-import { resinDegilMi } from './depo';
+import { resinDegilMi, bannerGosterilebilirMi } from './depo';
 
 /**
  * Reklam birimi kimlikleri.
@@ -172,6 +176,15 @@ export function kisiselReklamOnayliMi(): boolean {
  */
 export async function bannerGoster(konum: ReklamKonumu = 'alt'): Promise<void> {
   if (!nativeMi()) return;
+
+  // İlk oturum reklamsız: kullanıcı yeterince tur tamamlamadıysa
+  // hiç banner gösterilmez. Kapı burada duruyor ki çağıran her ekran
+  // (Kurulum, Sonuç, Lig, Profil) aynı kuralı otomatik uygulasın.
+  // Ödüllü video bu kapıdan geçmez — onu kullanıcı kendisi istiyor.
+  if (!bannerGosterilebilirMi()) {
+    if (mevcutKonum !== null) await bannerKaldir();
+    return;
+  }
 
   if (mevcutKonum === konum) return;
   if (mevcutKonum !== null) await bannerKaldir();

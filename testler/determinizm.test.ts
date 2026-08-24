@@ -9,6 +9,7 @@
  *   npx tsx testler/determinizm.test.ts
  */
 
+import { describe, it, expect } from 'vitest';
 import { SEVIYELER, uretimYap, type Uretim } from '@zihinturu/oyun-sayi';
 
 const TEKRAR = 5;       // her turu kaç kez üretip karşılaştıracağız
@@ -58,7 +59,20 @@ console.log(`\nSonuç: ${basarili}/${toplam} karşılaştırma başarılı.`);
 if (hatalar.length > 0) {
   console.log(`\n❌ ${hatalar.length} hata:`);
   for (const h of hatalar.slice(0, 10)) console.log(`  - ${h}`);
-  process.exit(1);
 } else {
   console.log('✅ Tüm tohumlar deterministik.\n');
 }
+
+/*
+ * Karşılaştırmalar yukarıda modül yüklenirken yapılıyor (dosya aynı
+ * zamanda `npx tsx testler/determinizm.test.ts` ile tek başına da
+ * çalıştırılabiliyor). Buradaki test, toplanan sonucu vitest'e bildirir
+ * — yoksa vitest "bu dosyada test yok" diyerek kırmızı veriyordu.
+ */
+describe('tohum determinizmi', () => {
+  it('aynı tohum her çağrıda birebir aynı turu üretir', () => {
+    expect(hatalar).toEqual([]);
+    expect(basarili).toBe(toplam);
+    expect(toplam).toBeGreaterThan(0);
+  });
+});

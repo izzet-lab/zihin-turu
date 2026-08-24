@@ -398,6 +398,70 @@ export function bildirimSorulduIsaretle(): void {
   genelYaz(BILDIRIM_SORULDU_ANAHTAR, '1');
 }
 
+/* --- Seri koruma hakkı (ayda bir) --- */
+
+const SERI_KORUMA_ANAHTAR = 'zihinturu.seri-koruma-ay';
+
+/** Bir tarihin ay anahtarı: '2026-08'. */
+function ayAnahtari(gun: string): string {
+  return gun.slice(0, 7);
+}
+
+/**
+ * Seri koruma hakkı ayda bir kez kullanılabilir.
+ * Yardım ekranında böyle anlatılıyor; sınır burada uygulanır.
+ */
+export function seriKorumaHakkiVarMi(gun = bugun()): boolean {
+  return genelOku(SERI_KORUMA_ANAHTAR) !== ayAnahtari(gun);
+}
+
+/** Bu ayın seri koruma hakkını kullanılmış olarak işaretler. */
+export function seriKorumaHakkiKullan(gun = bugun()): void {
+  genelYaz(SERI_KORUMA_ANAHTAR, ayAnahtari(gun));
+}
+
+/* --- İlk oturum reklamsızlığı --- */
+
+const TAMAMLANAN_TUR_ANAHTAR = 'zihinturu.tamamlanan-tur';
+
+/**
+ * Bu sayıda tur tamamlanana kadar hiç banner gösterilmez.
+ *
+ * Neden: kaldırmaların çoğu ilk 24 saatte oluyor ve bu kategoride
+ * birinci sebep reklam. Kullanıcı değeri görmeden maliyeti görmemeli.
+ * Ödüllü video bu kuraldan muaftır — onu kullanıcı kendisi istiyor.
+ */
+export const REKLAMSIZ_TUR_SAYISI = 3;
+
+/**
+ * Şimdiye kadar tamamlanan toplam tur sayısı.
+ * Kalıcıdır: uygulama kapanıp açılınca sıfırlanmaz.
+ */
+export function tamamlananTurSayisi(): number {
+  const ham = genelOku(TAMAMLANAN_TUR_ANAHTAR);
+  if (!ham) return 0;
+  const n = parseInt(ham, 10);
+  return isNaN(n) || n < 0 ? 0 : n;
+}
+
+/**
+ * Tamamlanan tur sayacını bir artırır ve yeni değeri döner.
+ * Eşiğe ulaşıldıktan sonra artırmaya devam etmenin bir maliyeti yok,
+ * ama gereksiz yazma yapmamak için eşikte durur.
+ */
+export function tamamlananTurArtir(): number {
+  const mevcut = tamamlananTurSayisi();
+  if (mevcut >= REKLAMSIZ_TUR_SAYISI) return mevcut;
+  const yeni = mevcut + 1;
+  genelYaz(TAMAMLANAN_TUR_ANAHTAR, String(yeni));
+  return yeni;
+}
+
+/** Banner gösterilebilir mi? İlk turlarda gösterilmez. */
+export function bannerGosterilebilirMi(): boolean {
+  return tamamlananTurSayisi() >= REKLAMSIZ_TUR_SAYISI;
+}
+
 /** Bugünün tarihi (YYYY-MM-DD), yerel saat. */
 export function bugun(): string {
   const d = new Date();

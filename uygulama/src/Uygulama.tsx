@@ -28,6 +28,8 @@ import {
   bildirimAyariOku,
   tamamlananTurArtir,
   tamamlananTurSayisi,
+  seriKorumaHakkiVarMi,
+  seriKorumaHakkiKullan,
 } from './depo';
 import {
   bildirimIzniIste,
@@ -137,8 +139,21 @@ export default function Uygulama() {
         setEkran('giris');
       }
     }
+    // Bildirime dokunulunca doğrudan Günün Turu'na git. Kurulum ekranı
+    // Günün Turu sekmesiyle açılır; oyuncu bildirimden geldiyse araya
+    // başka hiçbir ekran girmemeli.
+    function bildirimTiklandi() {
+      setKurulumMod('gunun');
+      setYardimAcik(false);
+      setEkran('kurulum');
+    }
+
     window.addEventListener('zt-menu-istek', menuIstegi);
-    return () => window.removeEventListener('zt-menu-istek', menuIstegi);
+    window.addEventListener('zt-bildirim-tiklandi', bildirimTiklandi);
+    return () => {
+      window.removeEventListener('zt-menu-istek', menuIstegi);
+      window.removeEventListener('zt-bildirim-tiklandi', bildirimTiklandi);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -251,8 +266,10 @@ export default function Uygulama() {
       const il = kaydetSonuc.il;
       setSeri(il.seri.gun);
 
-      // Seri kırıldıysa koruma fırsatı sun
-      if (kaydetSonuc.seriKirildi) {
+      // Seri kırıldıysa koruma fırsatı sun — ama yalnızca bu ayki
+      // koruma hakkı henüz kullanılmadıysa. Hak ayda bir; Yardım
+      // ekranında da böyle anlatılıyor.
+      if (kaydetSonuc.seriKirildi && seriKorumaHakkiVarMi(oturum.gun)) {
         setSeriKorumaBilgi({ oncekiSeriGun: kaydetSonuc.oncekiSeriGun, gun: oturum.gun });
       } else {
         setSeriKorumaBilgi(null);
@@ -333,8 +350,7 @@ export default function Uygulama() {
     // Günün Turu oynanınca bugünkü bildirimi iptal et, yarını planla.
     // Oynamış birine "oyna" demek can sıkar.
     if (oturum.mod === 'gunun') {
-      const il = oku();
-      bugunOynandiYarinPlanla(il.seri.gun);
+      bugunOynandiYarinPlanla();
     }
 
     // İlk turu bitirdikten sonra bildirim izni iste.
@@ -412,6 +428,8 @@ export default function Uygulama() {
   function seriKorumaYap() {
     if (!seriKorumaBilgi) return;
     const il = seriKoru(seriKorumaBilgi.gun, seriKorumaBilgi.oncekiSeriGun);
+    // Aylık hak burada tükenir — aynı ay içinde ikinci kez teklif edilmez.
+    seriKorumaHakkiKullan(seriKorumaBilgi.gun);
     setSeri(il.seri.gun);
     setSeriKorumaBilgi(null);
   }

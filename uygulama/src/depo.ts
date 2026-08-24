@@ -398,6 +398,28 @@ export function bildirimSorulduIsaretle(): void {
   genelYaz(BILDIRIM_SORULDU_ANAHTAR, '1');
 }
 
+/* --- Seri koruma hakkı (ayda bir) --- */
+
+const SERI_KORUMA_ANAHTAR = 'zihinturu.seri-koruma-ay';
+
+/** Bir tarihin ay anahtarı: '2026-08'. */
+function ayAnahtari(gun: string): string {
+  return gun.slice(0, 7);
+}
+
+/**
+ * Seri koruma hakkı ayda bir kez kullanılabilir.
+ * Yardım ekranında böyle anlatılıyor; sınır burada uygulanır.
+ */
+export function seriKorumaHakkiVarMi(gun = bugun()): boolean {
+  return genelOku(SERI_KORUMA_ANAHTAR) !== ayAnahtari(gun);
+}
+
+/** Bu ayın seri koruma hakkını kullanılmış olarak işaretler. */
+export function seriKorumaHakkiKullan(gun = bugun()): void {
+  genelYaz(SERI_KORUMA_ANAHTAR, ayAnahtari(gun));
+}
+
 /* --- İlk oturum reklamsızlığı --- */
 
 const TAMAMLANAN_TUR_ANAHTAR = 'zihinturu.tamamlanan-tur';

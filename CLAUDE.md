@@ -200,15 +200,11 @@ Cloudflare Pages · Capacitor · Vitest + Playwright
 İlk oturum reklamsızlığı yapıldı, ödüllü videonun `npa` doğrulaması
 tamam. Ayrıntı `CHANGELOG.md`'de.
 
-### Şimdi — C — Günlük hatırlatma (yerel bildirim)
-`@capacitor/local-notifications`. **FCM kullanma** — FCM sunucudan
-tetiklenen bildirimler için, Faz 4 düellosunda gerekecek, silme.
-Saat seçilebilir, varsayılan 20:00. O gün oynanmışsa bildirim iptal.
-Bildirime dokununca Günün Turu açılır. Metin dönsün, seri varsa
-seriyi hatırlatsın. **İzin ilk açılışta istenmesin** — ilk tur
-bittikten sonra sonuç ekranında istensin.
+### ~~C komutu~~ — bitti (24 Ağustos 2026)
+Günlük hatırlatma tamam. Karar mantığı `bildirim-karar.ts` içinde saf ve
+test edilebilir; native katman yalnızca uyguluyor. Ayrıntı `CHANGELOG.md`'de.
 
-### D — Zorluk dengesi
+### Şimdi — D — Zorluk dengesi
 "Zor, Normal'den kolay geliyor" gözlemi var. Önce **ölç**:
 `testler/zorluk-olcum.ts`, seviye başına 2.000 tur. Ölçütler: çözüm
 yoğunluğu, en kısa çözüm uzunluğu, **çözücünün denediği düğüm sayısı**

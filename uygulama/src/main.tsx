@@ -6,7 +6,6 @@ import { nativeMi } from './platform';
 import { uzakAyarlariYukle } from './firebase';
 import { tercihleriUygula } from './ekranlar/GizlilikAyarlari';
 import { bildirimiPlanla, bildirimDinleyiciKur } from './bildirim';
-import { oku } from './depo';
 import { durumCubuguAyarla } from './durumCubugu';
 import './stil.css';
 
@@ -26,8 +25,7 @@ uzakAyarlariYukle();
 // Yerel bildirim: dinleyiciyi kur ve bugünkü hatırlatmayı planla.
 // Web'de her ikisi de sessizce hiçbir şey yapmaz.
 bildirimDinleyiciKur();
-const ilerleme = oku();
-bildirimiPlanla(ilerleme.seri.gun);
+bildirimiPlanla();
 
 const kok = document.getElementById('kok');
 if (!kok) throw new Error('#kok bulunamadı');

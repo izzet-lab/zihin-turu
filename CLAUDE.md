@@ -209,13 +209,12 @@ Zorluk sırası düzeldi. Yol boyunca kritik bir hata bulundu: üretim makine
 hızına bağlıydı, aynı tohum farklı makinede farklı tur üretiyordu.
 Ayrıntı `CHANGELOG.md`'de.
 
-### Şimdi — E — Güvenli alan ve arayüz rötuşları
-Durum çubuğu boşluğu (tek yerde), Yardım'da XP listesi aralığı,
-seri rozet tutarlılığı, Geri al/Sıfırla ikonlarının ayrışması,
-kilitli seviyeye dokununca açıklama, sonuç ekranında ana eylemin
-en baskın öğe olması.
+### ~~E komutu~~ — bitti (24 Ağustos 2026)
+Alt banner gezinme çubuğunun üstüne alındı (AdMob geçersiz tıklama
+riski), Yardım gerçek arayüzü anlatır hale getirildi, dokunma hedefleri
+44px'e çıkarıldı. Ayrıntı `CHANGELOG.md`'de.
 
-### F — Play Store paketi
+### Şimdi — F — Play Store paketi
 AAB, versionCode otomatiği, R8 küçültme sonrası çalışma doğrulaması,
 Data safety özeti. **Data safety formu artık reklam kimliği
 toplandığını söylemeli** — yasal metinlerle birebir tutarlı olmalı.

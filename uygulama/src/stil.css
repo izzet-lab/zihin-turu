@@ -89,3 +89,39 @@ body.reklam-ust .zt-menu {
 .zt-menu {
   top: calc(16px + env(safe-area-inset-top, 0px));
 }
+
+/*
+ * Küçük yazılı bağlantılar için dokunma alanı.
+ *
+ * Yasal bağlantılar (KVKK, Gizlilik…) 12px yazıyla duruyor; yazı
+ * boyutunu büyütmek footer'ı ağırlaştırır ama 16px yüksekliğinde bir
+ * dokunma hedefi mobilde ıskalanır (kural 10: en az 44px). Çözüm,
+ * yazıyı büyütmeden hedefi büyütmek: dikey boşlukla yükseklik 44px'e
+ * çıkarılır, görünüm aynı kalır.
+ */
+.zt-dokunma-alani {
+  display: inline-block;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/*
+ * Cümlenin içinde geçen bağlantılar için dokunma alanı.
+ *
+ * `.zt-dokunma-alani` burada kullanılamaz: dikey boşluk satır kutusunu
+ * büyütür ve cümlenin dizilişi bozulur. Bunun yerine görünmez bir
+ * katman, yazının üstüne ortalanmış 44px yükseklikte yayılır. Görünüm
+ * hiç değişmez, dokunma hedefi kurala uyar.
+ */
+.zt-dokunma-satirici {
+  position: relative;
+}
+.zt-dokunma-satirici::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+}

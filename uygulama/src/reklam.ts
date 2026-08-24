@@ -71,6 +71,38 @@ const SINIF_UST = 'reklam-ust';
 export type ReklamKonumu = 'alt' | 'ust';
 
 /**
+ * Alt güvenli alanın (telefonun gezinme çubuğu) yüksekliğini piksel
+ * olarak okur.
+ *
+ * NEDEN GEREKLİ: banner'ı native katman yerleştiriyor ve varsayılan
+ * olarak ekranın en altına koyuyor — yani gezinme çubuğunun ALTINA.
+ * İki sonucu var, ikisi de kötü:
+ *
+ *   1. Reklam kısmen görünmez olur — gösterildi sayılır ama görülmez.
+ *   2. Kullanıcı gezinme çubuğuna basarken reklama değer. AdMob bunu
+ *      geçersiz tıklama sayar; tekrarlanırsa hesap askıya alınır.
+ *
+ * CSS `env(safe-area-inset-bottom)` değerini JavaScript'ten doğrudan
+ * okumanın yolu yok; bu yüzden o yüksekliğe sahip görünmez bir öğe
+ * yaratılıp ölçülüyor ve hemen kaldırılıyor.
+ *
+ * Değer okunamazsa 0 döner — banner yine gösterilir, yalnızca boşluk
+ * bırakılmaz. Reklamı hiç göstermemektense yerinde göstermek yeğdir.
+ */
+export function altGuvenliAlanPx(): number {
+  if (typeof document === 'undefined') return 0;
+  const olcer = document.createElement('div');
+  olcer.style.cssText =
+    'position:fixed;left:0;bottom:0;width:0;' +
+    'height:env(safe-area-inset-bottom, 0px);' +
+    'visibility:hidden;pointer-events:none;';
+  document.body.appendChild(olcer);
+  const yukseklik = olcer.getBoundingClientRect().height;
+  olcer.remove();
+  return Number.isFinite(yukseklik) && yukseklik > 0 ? Math.round(yukseklik) : 0;
+}
+
+/**
  * Şu an gösterilen konum. Konum değişince banner'ı yerinde taşımak
  * mümkün değil; önce kaldırıp yeniden göstermek gerekir.
  */
@@ -194,11 +226,15 @@ export async function bannerGoster(konum: ReklamKonumu = 'alt'): Promise<void> {
     // 18 altı veya onay verilmemiş → kişiselleştirilmemiş reklam
     const npa = resinDegilMi() || !kisiselReklamOnay;
 
+    // Alt banner gezinme çubuğunun üstünde dursun (bkz. altGuvenliAlanPx).
+    // Üstte durum çubuğu overlay kapalı olduğu için boşluk gerekmiyor.
+    const kenarBosluk = konum === 'alt' ? altGuvenliAlanPx() : 0;
+
     await AdMob.showBanner({
       adId: BANNER_ID,
       adSize: BannerAdSize.ADAPTIVE_BANNER,
       position: konum === 'ust' ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
-      margin: 0,
+      margin: kenarBosluk,
       isTesting: import.meta.env.DEV,
       npa,
     });

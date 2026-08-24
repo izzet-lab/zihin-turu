@@ -188,7 +188,17 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
             <span className="text-sm font-bold text-slate-300">Zorluk</span>
             {ilkKezMi && <span className="text-[11px] text-cyan-300">Isınma ile başlıyorsun</span>}
           </div>
-          <div className="flex flex-wrap gap-2" data-alan="seviyeler">
+          {/*
+            Önceden bunlar yan yana sarılan çipler ("Isınma 2 hane · 4 taş")
+            hâlindeydi. Etiket ile alt bilgi aynı satırda olunca çipler
+            farklı genişliklerde çıkıyor, satır sonları düzensiz sarıyor ve
+            ekran dağınık görünüyordu.
+
+            Artık iki sütunlu ızgara: her düğme aynı boyda, ad üstte, ayrıntı
+            altta. Yukarıdaki oyun türü düğmeleriyle aynı düzen — göz iki
+            bloğu tek bir sistem olarak okuyor.
+          */}
+          <div className="grid grid-cols-2 gap-2.5" data-alan="seviyeler">
             {seviyeler.map((s) => {
               const kilitliMi = !acik.includes(s.anahtar);
               return (
@@ -199,24 +209,40 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
                   onClick={() => seviyeSec(s.anahtar)}
                   aria-pressed={!kilitliMi && seviye === s.anahtar}
                   aria-disabled={kilitliMi}
-                  className={`zt-secim min-h-[48px] rounded-xl border-2 px-3.5 py-2 text-sm transition ${
+                  className={`zt-secim relative min-h-[60px] rounded-xl border-2 px-3 py-2.5 text-left transition ${
                     kilitliMi
-                      ? 'cursor-not-allowed border-slate-800 bg-slate-900/30 text-slate-600'
+                      ? 'cursor-not-allowed border-slate-800 bg-slate-900/30'
                       : seviye === s.anahtar
-                        ? 'zt-secim-acik border-cyan-300 bg-cyan-300 text-slate-900'
-                        : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:border-slate-600 hover:bg-slate-800/80'
+                        ? 'zt-secim-acik border-cyan-300 bg-cyan-300'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
                   }`}
                 >
-                  <span className="font-black">
+                  {!kilitliMi && seviye === s.anahtar && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-2 top-2 text-[11px] font-black text-slate-900/60"
+                    >
+                      ✓
+                    </span>
+                  )}
+                  <span
+                    className={`block font-black ${
+                      kilitliMi
+                        ? 'text-slate-600'
+                        : seviye === s.anahtar
+                          ? 'text-slate-900'
+                          : 'text-slate-100'
+                    }`}
+                  >
                     {kilitliMi && '🔒 '}
                     {s.etiket}
                   </span>
                   <span
-                    className={`ml-1.5 text-[11px] ${
+                    className={`mt-0.5 block text-[11px] ${
                       kilitliMi
-                        ? 'text-slate-600'
+                        ? 'text-slate-700'
                         : seviye === s.anahtar
-                          ? 'text-slate-900/70'
+                          ? 'text-slate-900/65'
                           : 'text-slate-400'
                     }`}
                   >

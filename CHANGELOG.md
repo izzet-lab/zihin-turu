@@ -39,6 +39,16 @@ dikkat çekiyor ama asıl eylemi gölgelemiyor.
 Basılınca hafif küçülme geri bildirimi eklendi; hareket azaltma açıksa
 uygulanmıyor.
 
+### Zorluk düğmelerindeki görüntü kirliliği
+
+Etiket ile ayrıntı aynı satırdaydı ("Isınma 2 hane · 4 taş"). Bu yüzden
+düğmeler farklı genişliklerde çıkıyor, satır sonları düzensiz sarıyor ve
+blok dağınık görünüyordu.
+
+Artık iki sütunlu ızgara: her düğme aynı boyda (155×67), **ad üstte,
+ayrıntı altta**. Yukarıdaki oyun türü düğmeleriyle aynı düzen — göz iki
+bloğu tek bir sistem olarak okuyor. Seçili olana onay işareti de geldi.
+
 ---
 
 ## 2026-08-24 — Menü büyütüldü, yasal bağlantılardaki kopya kaldırıldı

@@ -228,3 +228,34 @@ button,
 @media (prefers-reduced-motion: reduce) {
   .zt-tas-kopya { display: none; }
 }
+
+/*
+ * MENÜ ÖĞELERİ
+ *
+ * Öğeler 36px yüksekliğindeydi — kural 10'un (en az 44px) altında ve
+ * mobilde ıskalanıyordu. Yükseklik ve yazı büyüdü, panel genişledi.
+ *
+ * Panel genişliği ekranla birlikte büyüyor ama bir sınıra kadar:
+ * dar telefonda okunaklı olsun, geniş ekranda ekranı kaplamasın.
+ */
+.zt-menu-panel {
+  width: min(78vw, 17rem);
+}
+
+.zt-menu-oge {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 48px;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.625rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.zt-menu-oge:hover {
+  background-color: rgb(30 41 59 / 0.6);
+}

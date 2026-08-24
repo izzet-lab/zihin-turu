@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Seviye } from '@zihinturu/cekirdek';
 import { antrenmanCarpani } from '@zihinturu/oyun-sayi';
 import { gunlukOynandiMiSunucu, ilerlemeOku, xpSeviyeHesapla, type OyuncuIlerleme } from '../kimlik';
@@ -392,25 +391,12 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
           </p>
         )}
 
-        {/* Yasal metinler footer */}
-        <footer className="mt-12 pt-8 border-t border-slate-800">
-          <div className="text-center space-y-2">
-            <div className="text-xs text-slate-600 space-x-3">
-              <Link to="/yasal/kvkk" className="zt-dokunma-alani hover:text-cyan-300">KVKK</Link>
-              <span>•</span>
-              <Link to="/yasal/gizlilik" className="zt-dokunma-alani hover:text-cyan-300">Gizlilik</Link>
-              <span>•</span>
-              <Link to="/yasal/cerez" className="zt-dokunma-alani hover:text-cyan-300">Çerez</Link>
-              <span>•</span>
-              <Link to="/yasal/kullanim-kosullari" className="zt-dokunma-alani hover:text-cyan-300">Koşullar</Link>
-            </div>
-            {kullanici && (
-              <div className="text-xs text-slate-700 pt-2">
-                <Link to="/yasal/hesap-sil" className="zt-dokunma-alani hover:text-red-400">Hesabı sil</Link>
-              </div>
-            )}
-          </div>
-        </footer>
+        {/*
+          Yasal bağlantılar buradan KALDIRILDI. Aynı bağlantılar hem bu
+          alt bilgide hem profil sayfasında duruyordu. Artık tek yol var:
+          giriş yapan kullanıcı profilinden, misafir menüdeki "Gizlilik
+          ve yasal" öğesinden ulaşır (/yasal).
+        */}
       </div>
     </main>
   );

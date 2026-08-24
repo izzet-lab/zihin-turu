@@ -3,6 +3,55 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Menü büyütüldü, yasal bağlantılardaki kopya kaldırıldı
+
+### Yasal bağlantılar iki yerde yaşıyordu
+
+KVKK, Gizlilik, Çerez, Koşullar ve "Hesabı sil" giriş yapan kullanıcı
+için profil sayfasına taşınmıştı — ama **Kurulum ve Sonuç ekranlarının
+alt bilgisinden silinmemişti.** Aynı bağlantılar iki ayrı yerde
+duruyordu; biri güncellenip diğeri unutulabilirdi.
+
+Alt bilgiler kaldırıldı. Ama tamamen kaldırmak tek başına yanlış olurdu:
+
+> **Misafirin profili yok.** Profil sayfası `/o/kullanici-adi`
+> adresinde, yani bir kullanıcı adı ister. Bağlantılar yalnızca profile
+> bırakılsaydı giriş yapmamış kullanıcı KVKK metnine **hiçbir yerden**
+> ulaşamazdı. Bu hem KVKK açısından hem Play Store şartları açısından
+> kabul edilemez.
+
+Bu yüzden erişim **menüye** taşındı: menü her ekranda ve misafirde de
+var. Yeni `/yasal` sayfası hepsini tek listede topluyor — gizlilik
+ayarları, dört yasal metin ve (yalnızca üyeye) hesap silme.
+
+Giriş yapan kullanıcı için profildeki bölüm olduğu gibi duruyor.
+
+### Menü öğeleri çok küçüktü
+
+Öğeler **36px** yüksekliğindeydi (Instagram satırı 32px) — kural 10'un
+en az 44px şartının altında ve mobilde ıskalanıyordu.
+
+| | Önce | Sonra |
+|---|---|---|
+| Menü öğesi yüksekliği | 36px | **48px** |
+| Hamburger düğmesi | 44px | **48px** |
+| Panel genişliği (360px ekranda) | 224px | **272px** (%76) |
+| Yazı boyutu | 14px | 15px |
+
+Panel genişliği ekranla birlikte büyüyor ama sınırlı: dar telefonda
+okunaklı, geniş ekranda ekranı kaplamıyor.
+
+### Test
+
+`yasal-erisim.spec.ts` — misafirin menüden yasal metinlere ulaştığını,
+"Hesabı sil"in misafire gösterilmediğini ve alt bilgilerin geri
+gelmediğini doğruluyor. Biri menüdeki "Gizlilik ve yasal" öğesini
+kaldırırsa bu test kırmızı verir.
+
+Toplam 160 birim testi ve **5 e2e** geçiyor.
+
+---
+
 ## 2026-08-24 — Tema 2: puan sayması ve ses dokusu
 
 Temanın ikinci turu. Birinci tur yazı, derinlik ve birleşme

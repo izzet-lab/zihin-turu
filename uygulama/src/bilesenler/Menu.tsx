@@ -117,7 +117,7 @@ export default function Menu() {
         data-alan="menu-ac"
         aria-label="Menü"
         aria-expanded={menuAcik}
-        className="min-h-[44px] min-w-[44px] rounded-full border border-slate-700 bg-slate-900/80 text-lg text-cyan-200 backdrop-blur-sm"
+        className="min-h-[48px] min-w-[48px] rounded-full border border-slate-700 bg-slate-900/85 text-xl text-cyan-200 shadow-lg backdrop-blur-sm"
       >
         ☰
       </button>
@@ -128,18 +128,18 @@ export default function Menu() {
           <div className="fixed inset-0 -z-10" onClick={() => setMenuAcik(false)} />
           <div
             data-alan="menu"
-            className="absolute right-0 top-12 z-20 w-56 rounded-xl border border-slate-800 bg-[#0F1424] p-2 shadow-xl"
+            className="zt-menu-panel absolute right-0 top-14 z-20 rounded-2xl border border-slate-700 bg-[#0F1424] p-2 shadow-2xl"
           >
             {/* Kimlik satırı */}
             {kullanici && profil ? (
-              <div className="mb-1 flex items-center justify-between rounded-lg px-3 py-2">
+              <div className="mb-1 flex items-center justify-between rounded-lg px-4 py-2">
                 <span data-alan="username" className="truncate text-sm font-bold text-slate-300" title={profil.kullaniciAdi}>
                   {profil.kullaniciAdi}
                 </span>
                 <button
                   onClick={cikisYap}
                   data-alan="cikis"
-                  className="text-xs font-bold text-slate-500 hover:text-red-400"
+                  className="zt-dokunma-alani px-2 text-sm font-bold text-slate-400 hover:text-red-400"
                 >
                   Çık
                 </button>
@@ -151,7 +151,7 @@ export default function Menu() {
                   anaSayfayaIstek('giris');
                 }}
                 data-alan="giris-ac"
-                className="mb-1 flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
+                className="zt-menu-oge text-cyan-300"
               >
                 Giriş yap
               </button>
@@ -162,7 +162,7 @@ export default function Menu() {
             <button
               onClick={() => git('/')}
               data-alan="ana-sayfa"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="zt-menu-oge text-slate-200"
             >
               🏠 Ana sayfa
             </button>
@@ -170,7 +170,7 @@ export default function Menu() {
             <button
               onClick={() => git('/lig')}
               data-alan="lig-ac"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="zt-menu-oge text-slate-200"
             >
               📊 Sıralamalar
             </button>
@@ -178,7 +178,7 @@ export default function Menu() {
             {kullanici && profil && (
               <button
                 onClick={() => git(`/o/${profil.kullaniciAdi}`)}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+                className="zt-menu-oge text-slate-200"
               >
                 👤 Profil
               </button>
@@ -191,7 +191,7 @@ export default function Menu() {
               onClick={sesDegistir}
               data-alan="ses-ac-kapa"
               aria-pressed={sesAcik}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="zt-menu-oge text-slate-200"
             >
               {sesAcik ? '🔊 Ses açık' : '🔇 Ses kapalı'}
             </button>
@@ -202,9 +202,25 @@ export default function Menu() {
                 anaSayfayaIstek('yardim');
               }}
               data-alan="yardim-ac"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="zt-menu-oge text-slate-200"
             >
               ❓ Nasıl oynanır
+            </button>
+
+            {/*
+              Gizlilik ve yasal metinler MENÜDE durmalı.
+              Giriş yapan kullanıcı bunlara profilinden de ulaşıyor, ama
+              misafirin profili yok (/o/kullanici-adi bir kullanıcı adı
+              ister). Yalnızca profile koyarsak misafir KVKK metnine
+              hiçbir yerden ulaşamaz — bu hem KVKK hem Play Store
+              açısından kabul edilemez.
+            */}
+            <button
+              onClick={() => git('/yasal')}
+              data-alan="yasal-ac"
+              className="zt-menu-oge text-slate-200"
+            >
+              🔒 Gizlilik ve yasal
             </button>
 
             {/* Sosyal */}
@@ -212,7 +228,7 @@ export default function Menu() {
             <button
               onClick={instagramAc}
               data-alan="instagram"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-slate-500 hover:bg-slate-800/60 hover:text-slate-300"
+              className="zt-menu-oge text-slate-400"
             >
               📷 Instagram'da takip et
             </button>

@@ -1,3 +1,14 @@
+/*
+ * Yazı tipleri uygulamanın İÇİNE gömülür, dışarıdan çekilmez.
+ * İki sebep: PWA çevrimdışı çalışmalı ve Capacitor paketinde dış
+ * kaynak isteği engelleniyor. Türkçe harfler (ı, ğ, ş, İ) latin-ext
+ * alt kümesinde; toplu dosya unicode-range ile geldiği için tarayıcı
+ * yalnızca gereken parçayı indirir.
+ */
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/caveat/600.css';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import Ana from './Ana';

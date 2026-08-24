@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, type SayiVeri } from '@zihinturu/oyun-sayi';
 import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
@@ -7,6 +6,7 @@ import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
+import SayanSayi from '../bilesenler/SayanSayi';
 
 /** Çarpanı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
 function carpanGoster(c: number): string {
@@ -215,9 +215,11 @@ export default function Sonuc({
             {tam ? 'Tam isabet 🎯' : `${sonuc.fark} fark`}
           </div>
           <div className="mt-1 text-lg text-slate-400">
-            <span className="font-black text-white" data-alan="puan">
-              {sonuc.puan}
-            </span>{' '}
+            <SayanSayi
+              deger={sonuc.puan}
+              className="zt-rakam font-black text-white"
+              data-alan="puan"
+            />{' '}
             puan
           </div>
           {mod === 'antrenman' && sonuc.carpan != null && (
@@ -409,20 +411,12 @@ export default function Sonuc({
           </>
         )}
 
-        {/* Yasal metinler footer */}
-        <footer className="mt-12 pt-8 border-t border-slate-800">
-          <div className="text-center space-y-2">
-            <div className="text-xs text-slate-600 space-x-3">
-              <Link to="/yasal/kvkk" className="zt-dokunma-alani hover:text-cyan-300">KVKK</Link>
-              <span>•</span>
-              <Link to="/yasal/gizlilik" className="zt-dokunma-alani hover:text-cyan-300">Gizlilik</Link>
-              <span>•</span>
-              <Link to="/yasal/cerez" className="zt-dokunma-alani hover:text-cyan-300">Çerez</Link>
-              <span>•</span>
-              <Link to="/yasal/kullanim-kosullari" className="zt-dokunma-alani hover:text-cyan-300">Koşullar</Link>
-            </div>
-          </div>
-        </footer>
+        {/*
+          Yasal bağlantılar buradan KALDIRILDI. Aynı bağlantılar hem bu
+          alt bilgide hem profil sayfasında duruyordu. Artık tek yol var:
+          giriş yapan kullanıcı profilinden, misafir menüdeki "Gizlilik
+          ve yasal" öğesinden ulaşır (/yasal).
+        */}
       </div>
     </main>
   );

@@ -16,6 +16,7 @@ import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
+import YasalIndeks from './ekranlar/YasalIndeks';
 import GizlilikAyarlari from './ekranlar/GizlilikAyarlari';
 import { supabase } from './supabase';
 import {
@@ -53,6 +54,7 @@ export default function Ana() {
         <Route path="/o/:kullaniciAdi" element={<ProfilSayfasi />} />
 
         {/* Yasal sayfalar */}
+        <Route path="/yasal" element={<YasalIndeks onGeri={() => window.history.back()} />} />
         <Route path="/yasal/kvkk" element={<KVKKSayfasi onGeri={() => window.history.back()} />} />
         <Route path="/yasal/gizlilik" element={<GizlilikSayfasi onGeri={() => window.history.back()} />} />
         <Route path="/yasal/cerez" element={<CerezSayfasi onGeri={() => window.history.back()} />} />

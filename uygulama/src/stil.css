@@ -1,10 +1,31 @@
 @import "tailwindcss";
 
+:root {
+  /*
+   * İKİ YAZI, İKİ İŞ.
+   *
+   * Önceden her şey system-ui idi — yani oyun, telefonun Ayarlar
+   * ekranıyla aynı yazıyı kullanıyordu. Bu tek başına "uygulama"
+   * hissi verip "oyun" hissini öldürüyordu.
+   *
+   * --zt-yazi-oyun  : oyun yüzeyi (taşlar, hedef, süre, başlıklar,
+   *                   düğmeler). Geometrik ve teknik; rakamlar bu
+   *                   oyunun yıldızı olduğu için rakam çizimi güçlü
+   *                   olan bir yazı seçildi.
+   * --zt-yazi-metin : uzun metin (yasal sayfalar, açıklamalar).
+   *                   Okunurluk önce gelir; sistem yazısı burada
+   *                   doğru tercih.
+   */
+  --zt-yazi-oyun: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --zt-yazi-metin: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --zt-yazi-el: 'Caveat', 'Segoe Script', cursive;
+}
+
 /* Tarayıcı arası tutarlılık için birkaç temel kural. */
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--zt-yazi-metin);
   /* Güvenli alan: üstte durum çubuğu, altta gezinme çubuğuyla çakışmasın.
      Üst: StatusBar.setOverlaysWebView(false) birincil çözümdür — webview
      zaten durum çubuğunun altından başlar. padding-top ek güvenlik
@@ -18,7 +39,9 @@ body {
 /* Sonuç ekranında çözümün "el yazısıyla" tahtaya yazılması. Yazı tipi
    yoksa okunur bir imzaya düşer; abartısız, oyunun sakin diline uygun. */
 .elyazisi {
-  font-family: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive;
+  /* Comic Sans yedeği kaldırıldı — profesyonellik iddiasıyla çelişiyordu. */
+  font-family: var(--zt-yazi-el);
+  font-size: 1.15em;
   letter-spacing: 0.02em;
 }
 .tahta-satir {
@@ -124,4 +147,143 @@ body.reklam-ust .zt-menu {
   top: 50%;
   transform: translateY(-50%);
   height: 44px;
+}
+
+/*
+ * OYUN YÜZEYİ YAZISI
+ *
+ * Tek yerden uygulanıyor; ekran ekran sınıf eklenmiyor. Böylece yeni
+ * bir ekran açıldığında kimliği hatırlamak gerekmez.
+ */
+h1, h2, h3,
+button,
+[data-tas], [data-islem],
+[data-alan='hedef'], [data-alan='en-yakin'], [data-alan='sure-kalan'],
+.zt-rakam {
+  font-family: var(--zt-yazi-oyun);
+}
+
+/* Rakamların sütun sütun hizalanması — sayı zıplamasın. */
+[data-tas], [data-alan='hedef'], [data-alan='en-yakin'], [data-alan='sure-kalan'], .zt-rakam {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/*
+ * TAŞLARA DERİNLİK
+ *
+ * Taşlar düz dikdörtgendi; kâğıt gibi duruyordu. Oysa markanın kendi
+ * hikâyesi "iki taş birleşir" — taşın tutulabilir bir nesne gibi
+ * hissettirmesi gerekiyor.
+ *
+ * Üç katman: üstten gelen ışık (üst kenarda ince aydınlık çizgi),
+ * gövde eğimi (hafif degrade) ve altta oturduğu zemin gölgesi.
+ * Hepsi boya işi — düzeni (layout) hiç etkilemez, ucuz telefonda da
+ * bedava sayılır.
+ */
+[data-tas] {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.07) 0%, rgb(255 255 255 / 0) 45%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.10),
+    0 1px 0 0 rgb(0 0 0 / 0.35),
+    0 4px 10px -4px rgb(0 0 0 / 0.55);
+}
+
+/* Seçili taş: ışık kaynağı gibi davransın, yalnızca çerçeve değişmesin. */
+[data-tas][aria-pressed='true'] {
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.18),
+    0 0 0 1px rgb(124 237 251 / 0.35),
+    0 0 18px -2px rgb(124 237 251 / 0.45),
+    0 4px 12px -4px rgb(0 0 0 / 0.6);
+}
+
+/* İşlem tuşları taşlardan bir kademe geride dursun. */
+[data-islem] {
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 2px 6px -3px rgb(0 0 0 / 0.5);
+}
+
+/*
+ * BİRLEŞME KOPYASI
+ *
+ * Birleşen taşların ekranda süzülen görüntü kopyası. Gerçek taş değil;
+ * tıklanamaz, ekran okuyucuya görünmez, oyun durumuna dokunmaz.
+ * Sayfanın en üstünde durur ki raftaki diğer taşların arkasında
+ * kalmasın.
+ */
+.zt-tas-kopya {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(124 237 251 / 0.25);
+  background-color: rgb(30 41 59 / 0.85);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.07) 0%, rgb(255 255 255 / 0) 45%);
+  box-shadow: 0 0 16px -4px rgb(124 237 251 / 0.5);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-tas-kopya { display: none; }
+}
+
+/*
+ * MENÜ ÖĞELERİ
+ *
+ * Öğeler 36px yüksekliğindeydi — kural 10'un (en az 44px) altında ve
+ * mobilde ıskalanıyordu. Yükseklik ve yazı büyüdü, panel genişledi.
+ *
+ * Panel genişliği ekranla birlikte büyüyor ama bir sınıra kadar:
+ * dar telefonda okunaklı olsun, geniş ekranda ekranı kaplamasın.
+ */
+.zt-menu-panel {
+  width: min(78vw, 17rem);
+}
+
+.zt-menu-oge {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 48px;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.625rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.zt-menu-oge:hover {
+  background-color: rgb(30 41 59 / 0.6);
+}
+
+/*
+ * SEÇİM DÜĞMELERİ (oyun türü ve zorluk)
+ *
+ * Seçili olanla olmayan neredeyse aynı görünüyordu: ikisi de sönük,
+ * ince çerçeveli. Kullanıcı hangisinin açık olduğunu anlamıyordu.
+ *
+ * Artık seçili olan hem dolgulu hem hafif ışıklı; seçili olmayan ise
+ * "devre dışı" değil "basılabilir" duruyor. Fark ekranda tek bakışta
+ * görülüyor.
+ */
+.zt-secim {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.zt-secim:active {
+  transform: scale(0.97);
+}
+
+.zt-secim-acik {
+  box-shadow:
+    0 0 0 3px rgb(124 237 251 / 0.18),
+    0 4px 14px -4px rgb(124 237 251 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-secim:active { transform: none; }
 }

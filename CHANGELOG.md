@@ -3,6 +3,241 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Kurulum ekranı: anlaşılır başlıklar, belirgin seçim
+
+### "MOD" kimseye bir şey anlatmıyordu
+
+Başlık `MOD` yazıyordu. Oyun terimi bilmeyen için bu bir şey ifade
+etmiyor ve orada bir seçim yapılması gerektiğini de söylemiyor.
+
+| Önce | Sonra |
+|---|---|
+| MOD | **Nasıl oynamak istersin?** |
+| SEVİYE | **Zorluk** |
+
+Soru cümlesi hem anlaşılır hem de seçim beklendiğini kendisi söylüyor.
+"Serbest, sınırsız" da "İstediğin kadar" oldu.
+
+### Seçili olan, seçili olmayandan ayırt edilemiyordu
+
+İkisi de sönük ve ince çerçeveliydi; hangisinin açık olduğu tek bakışta
+anlaşılmıyordu.
+
+**Oyun türü düğmeleri:** 56px'ten 76px'e çıktı, simge kazandı. Seçili
+olan dolgulu, çerçevesi tam renkli, hafif ışıklı ve sağ üstünde onay
+işareti taşıyor. Seçili olmayan artık "devre dışı" değil
+"basılabilir" duruyor.
+
+**Zorluk düğmeleri:** 44px'ten 48px'e çıktı. Seçili olan **dolu
+renkte** — arka planı camgöbeği, yazısı koyu. Bu, ekrandaki en yüksek
+karşıtlık; hangisinin seçili olduğu tartışmasız.
+
+Ana eylem düğmesinin baskınlığı korundu: "Başla" düğmesi seçili zorluk
+düğmesinden **2.5 kat** büyük ve yazısı daha iri. Seçim düğmeleri
+dikkat çekiyor ama asıl eylemi gölgelemiyor.
+
+Basılınca hafif küçülme geri bildirimi eklendi; hareket azaltma açıksa
+uygulanmıyor.
+
+### Zorluk düğmelerindeki görüntü kirliliği
+
+Etiket ile ayrıntı aynı satırdaydı ("Isınma 2 hane · 4 taş"). Bu yüzden
+düğmeler farklı genişliklerde çıkıyor, satır sonları düzensiz sarıyor ve
+blok dağınık görünüyordu.
+
+Artık iki sütunlu ızgara: her düğme aynı boyda (155×67), **ad üstte,
+ayrıntı altta**. Yukarıdaki oyun türü düğmeleriyle aynı düzen — göz iki
+bloğu tek bir sistem olarak okuyor. Seçili olana onay işareti de geldi.
+
+---
+
+## 2026-08-24 — Menü büyütüldü, yasal bağlantılardaki kopya kaldırıldı
+
+### Yasal bağlantılar iki yerde yaşıyordu
+
+KVKK, Gizlilik, Çerez, Koşullar ve "Hesabı sil" giriş yapan kullanıcı
+için profil sayfasına taşınmıştı — ama **Kurulum ve Sonuç ekranlarının
+alt bilgisinden silinmemişti.** Aynı bağlantılar iki ayrı yerde
+duruyordu; biri güncellenip diğeri unutulabilirdi.
+
+Alt bilgiler kaldırıldı. Ama tamamen kaldırmak tek başına yanlış olurdu:
+
+> **Misafirin profili yok.** Profil sayfası `/o/kullanici-adi`
+> adresinde, yani bir kullanıcı adı ister. Bağlantılar yalnızca profile
+> bırakılsaydı giriş yapmamış kullanıcı KVKK metnine **hiçbir yerden**
+> ulaşamazdı. Bu hem KVKK açısından hem Play Store şartları açısından
+> kabul edilemez.
+
+Bu yüzden erişim **menüye** taşındı: menü her ekranda ve misafirde de
+var. Yeni `/yasal` sayfası hepsini tek listede topluyor — gizlilik
+ayarları, dört yasal metin ve (yalnızca üyeye) hesap silme.
+
+Giriş yapan kullanıcı için profildeki bölüm olduğu gibi duruyor.
+
+### Menü öğeleri çok küçüktü
+
+Öğeler **36px** yüksekliğindeydi (Instagram satırı 32px) — kural 10'un
+en az 44px şartının altında ve mobilde ıskalanıyordu.
+
+| | Önce | Sonra |
+|---|---|---|
+| Menü öğesi yüksekliği | 36px | **48px** |
+| Hamburger düğmesi | 44px | **48px** |
+| Panel genişliği (360px ekranda) | 224px | **272px** (%76) |
+| Yazı boyutu | 14px | 15px |
+
+Panel genişliği ekranla birlikte büyüyor ama sınırlı: dar telefonda
+okunaklı, geniş ekranda ekranı kaplamıyor.
+
+### Test
+
+`yasal-erisim.spec.ts` — misafirin menüden yasal metinlere ulaştığını,
+"Hesabı sil"in misafire gösterilmediğini ve alt bilgilerin geri
+gelmediğini doğruluyor. Biri menüdeki "Gizlilik ve yasal" öğesini
+kaldırırsa bu test kırmızı verir.
+
+Toplam 160 birim testi ve **5 e2e** geçiyor.
+
+---
+
+## 2026-08-24 — Tema 2: puan sayması ve ses dokusu
+
+Temanın ikinci turu. Birinci tur yazı, derinlik ve birleşme
+animasyonuydu; bu tur ödül anı ve ses.
+
+### Puan artık sayılıyor
+
+Tam isabet yapınca puan bir anda ekrana yazılıyordu. Oyunlarda tatmini
+yaratan şey sonucun kendisi değil, sonuca **varış**. Puan artık sıfırdan
+yükselerek yerine oturuyor.
+
+- Eğri hızlı başlayıp sona doğru yavaşlıyor; doğrusal sayma makine gibi
+  hissettiriyordu.
+- Süre puanla birlikte uzuyor (150 puan ile 8 puan aynı sürede
+  sayılırsa büyük sayı gözle takip edilemez) ama **üst sınırı var** —
+  oyuncuyu bekletmek ödülü ödül olmaktan çıkarır.
+- Sayma yalnızca görsel bir süs: gerçek değer her zaman `data-deger` ve
+  `aria-label` içinde son hâliyle duruyor. Ekran okuyucu sayının
+  zıplamasını okumuyor, testler de ara değeri yakalayıp yanlış sonuç
+  vermiyor.
+- "Hareketi azalt" açıksa sayma hiç yapılmıyor.
+
+Oturum özeti bilerek **animasyonsuz** bırakıldı: antrenman e2e testi o
+metindeki sayıyı okuyor, animasyon eklenirse test kırılgan hâle gelirdi.
+
+### Sesler artık sinyal değil, enstrüman
+
+Ses altyapısı zaten sağlamdı — dosya indirmiyor, çevrimdışı çalışıyor,
+mobildeki ses kilidi doğru çözülmüş. Eksik olan tonların **dokusuydu**:
+tek osilatörlü saf sinüs, yani "bip".
+
+Üçü de dosya gerektirmeden eklendi:
+
+| Ekleme | Ne yapıyor |
+|---|---|
+| Çift osilatör, hafif akort kayması (9 sent) | Ton kalınlaşır; tek osilatörün ince, elektronik tınısı gider |
+| Alçak geçiren süzgeç | Tiz kenarları yumuşatır, ses kulağı tırmalamaz. Kesim frekansı tonla yükselir ki pes sesler boğuk, tiz sesler cılız kalmasın |
+| Kısa yankı | Sesin bittiği yerde küçük bir kuyruk bırakır; kuyruksuz ses kapalı kutuda çalıyormuş gibi durur |
+
+Yankı odası da kodla üretiliyor (gürültü patlaması + üstel sönüm), dosya
+yok. Odanın üretiminde `Math.random` kullanılıyor ve bu güvenli: ses
+dokusu oyun kuralı değil, deterministik olması gerekmiyor.
+
+Tarayıcı bu üçünden birini desteklemezse ses yine çalıyor, yalnızca o
+katman atlanıyor. Ayrıca ton bittiğinde düğümler bırakılıyor — uzun
+oturumda birikmesinler.
+
+### Testler
+
+`sayim.test.ts` — 13 test. En kritik olanı: sayma bittiğinde **gerçek
+puan** görünmeli; yuvarlama yüzünden 149'da kalan bir sayaç oyuncuya
+yanlış puan göstermiş olur. Toplam **160 test** geçiyor.
+
+---
+
+## 2026-08-24 — Tema: yazı kimliği, derinlik ve birleşme animasyonu
+
+Oyun "amatör" duruyordu. Sebep zevk değil, üç somut eksikti.
+
+### 1. Yazı tipi yoktu
+
+Her şey `system-ui` ile yazılıyordu — yani oyun, telefonun **Ayarlar
+ekranıyla aynı yazıyı** kullanıyordu. Bu tek başına "uygulama" hissi
+verip "oyun" hissini öldürüyordu. El yazısı yedeğinde ayrıca
+**Comic Sans** vardı.
+
+Artık iki yazı, iki iş:
+
+| Değişken | Nerede | Neden |
+|---|---|---|
+| `--zt-yazi-oyun` (Space Grotesk) | taşlar, hedef, süre, başlıklar, düğmeler | rakam çizimi güçlü, geometrik, teknik |
+| `--zt-yazi-metin` (sistem) | yasal sayfalar, uzun açıklamalar | uzun metinde okunurluk önce gelir |
+| `--zt-yazi-el` (Caveat) | çözüm tahtası | Comic Sans yedeği kaldırıldı |
+
+Yazı tipleri uygulamanın **içine gömülü** — PWA çevrimdışı çalışmalı ve
+Capacitor paketinde dış kaynak isteği engelleniyor. Türkçe harfler
+(ı, ğ, ş, İ) `latin-ext` alt kümesinde; tarayıcı yalnızca gerekeni
+indiriyor. Rakamlar `tabular-nums` ile sabit genişlikte — sayı
+değişirken zıplamıyor.
+
+Uygulama tek yerden: `h1..h3`, `button`, taşlar ve gösterge alanları CSS
+seçicisiyle yakalanıyor. Ekran ekran sınıf eklenmedi; yeni bir ekran
+açıldığında kimliği hatırlamak gerekmiyor.
+
+### 2. Taşlar düz dikdörtgendi
+
+Gölge, ışık, katman yoktu — kâğıt gibi duruyorlardı. Oysa markanın kendi
+hikâyesi "iki taş birleşir"; taşın tutulabilir bir nesne gibi
+hissettirmesi gerekiyor.
+
+Üç katman eklendi: üstten gelen ışık, gövde eğimi ve zemin gölgesi.
+Seçili taş artık ışık kaynağı gibi davranıyor. Hepsi boya işi — düzeni
+hiç etkilemiyor.
+
+### 3. Oyunun çekirdek anı animasyonsuzdu
+
+**En önemli eksik buydu.** Bütün oyun tek bir jestin üstüne kurulu: iki
+taş birleşir, yeni bir taş olur. O an hiç canlandırılmıyordu — iki taş
+kayboluyor, yerine üçüncüsü beliriyordu.
+
+Artık birleşen taşların görüntü kopyaları yeni taşa doğru süzülüp
+sönüyor, yeni taş hafif bir sıçramayla doğuyor.
+
+- Animasyon oyunun durumuna **hiç dokunmuyor**; yarıda kesilse de oyun
+  doğru çalışır.
+- Yalnızca `transform` ve `opacity` kullanılıyor — telefonun ekran
+  işlemcisinde çalışır, alt segment cihazda da akar.
+- Cihazda "hareketi azalt" açıksa hiç oynatılmaz.
+- Karar mantığı (`birlesmeMi`) saf bir fonksiyonda; DOM'a dokunmadan
+  test ediliyor.
+
+**Yol boyunca bulunan kırılganlık:** temizlik yalnızca animasyonun
+bitmesine bağlıydı. Kullanıcı birleşme anında uygulamadan çıkarsa
+tarayıcı animasyonu ilerletmez, bitiş olayı hiç gelmez ve kopya ekranda
+takılı kalırdı — geri dönen kullanıcı dokunulamayan hayalet bir taş
+görürdü. Artık zaman aşımı da var; hangisi önce gelirse siliyor.
+
+### Boyut
+
+Türkçe bir kullanıcı için Space Grotesk ~49 KB. Caveat (~69 KB)
+yalnızca sonuç ekranına varıldığında yükleniyor. Servis çalışanı
+kullanıldıkça önbelleğe aldığı için Kiril alfabesi dosyaları hiç
+indirilmiyor.
+
+### Testler
+
+`tas-animasyon.test.ts` — geri alma, sıfırlama ve tur başlangıcının
+birleşme sayılmadığı; kayma hesabının merkezden merkeze doğru
+çalıştığı; animasyon sürelerinin oyunu bekletecek kadar uzun
+olmadığı. Toplam **147 test** geçiyor.
+
+### Sırada
+
+Puan sayma animasyonu, sonuç ekranı açılışı ve seslerin
+zenginleştirilmesi (şu an tek osilatörlü saf tonlar — "bip" karakterinde).
+
+---
+
 ## 2026-08-24 — Güvenli alan ve arayüz rötuşları (E)
 
 ### Alt banner gezinme çubuğunun üstüne alındı

@@ -413,13 +413,13 @@ export default function Sonuc({
         <footer className="mt-12 pt-8 border-t border-slate-800">
           <div className="text-center space-y-2">
             <div className="text-xs text-slate-600 space-x-3">
-              <Link to="/yasal/kvkk" className="hover:text-cyan-300">KVKK</Link>
+              <Link to="/yasal/kvkk" className="zt-dokunma-alani hover:text-cyan-300">KVKK</Link>
               <span>•</span>
-              <Link to="/yasal/gizlilik" className="hover:text-cyan-300">Gizlilik</Link>
+              <Link to="/yasal/gizlilik" className="zt-dokunma-alani hover:text-cyan-300">Gizlilik</Link>
               <span>•</span>
-              <Link to="/yasal/cerez" className="hover:text-cyan-300">Çerez</Link>
+              <Link to="/yasal/cerez" className="zt-dokunma-alani hover:text-cyan-300">Çerez</Link>
               <span>•</span>
-              <Link to="/yasal/kullanim-kosullari" className="hover:text-cyan-300">Koşullar</Link>
+              <Link to="/yasal/kullanim-kosullari" className="zt-dokunma-alani hover:text-cyan-300">Koşullar</Link>
             </div>
           </div>
         </footer>

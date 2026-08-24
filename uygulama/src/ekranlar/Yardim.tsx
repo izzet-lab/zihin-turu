@@ -17,13 +17,22 @@ interface Madde {
   aciklama: string;
 }
 
+/*
+ * Bu liste OYUN EKRANINDA GÖRÜNENİ anlatmalı.
+ *
+ * Önceki sürümde ↶ ve ⟲ gibi ikonlar yazıyordu; oyun ekranında böyle
+ * ikonlar hiç yok, düğmelerin üstünde düz yazı var. Yardım, olmayan bir
+ * arayüzü tarif ediyordu — üstelik iki ikon birbirine o kadar benziyordu
+ * ki hangisinin hangisi olduğu da anlaşılmıyordu. Artık `isaret` alanı
+ * düğmenin gerçek yazısını taşıyor.
+ */
 const KONTROLLER: Madde[] = [
   { isaret: '7', ad: 'Taşlar', aciklama: 'Birleştireceğin sayılar. Önce bir taşa dokun.' },
   { isaret: '+ − × ÷', ad: 'İşlemler', aciklama: 'Taşı seçtikten sonra bir işlem seç, sonra ikinci taşa dokun. İkisi birleşir, yeni bir taş olur.' },
-  { isaret: '◎', ad: 'En yakın', aciklama: 'Hedefe ne kadar yaklaştığını gösterir. 0 fark = tam isabet.' },
-  { isaret: '↶', ad: 'Geri al', aciklama: 'Son yaptığın işlemi geri alır.' },
-  { isaret: '⟲', ad: 'Sıfırla', aciklama: 'Taşları başa döndürür, baştan denersin.' },
-  { isaret: '✓', ad: 'Bitir', aciklama: 'Turu bitirir; puanını ve bir çözümü gösterir.' },
+  { isaret: 'En yakın', ad: 'En yakın', aciklama: 'Hedefe ne kadar yaklaştığını gösterir. 0 fark = tam isabet.' },
+  { isaret: 'Geri al', ad: 'Geri al', aciklama: 'Yalnızca son işlemi geri alır. Bir adım geri gidersin.' },
+  { isaret: 'Sıfırla', ad: 'Sıfırla', aciklama: 'Bütün işlemleri siler, taşlar en baştaki hâline döner.' },
+  { isaret: 'Bitir', ad: 'Bitir', aciklama: 'Turu bitirir; puanını ve bir çözümü gösterir.' },
 ];
 
 export default function Yardim({ acik, kapat }: Props) {
@@ -52,7 +61,7 @@ export default function Yardim({ acik, kapat }: Props) {
           <button
             onClick={kapat}
             aria-label="Kapat"
-            className="min-h-[40px] min-w-[40px] rounded-lg border border-slate-700 text-slate-300"
+            className="min-h-[44px] min-w-[44px] rounded-lg border border-slate-700 text-slate-300"
           >
             ✕
           </button>
@@ -166,11 +175,13 @@ export default function Yardim({ acik, kapat }: Props) {
           <ul className="space-y-2">
             {KONTROLLER.map((m) => (
               <li key={m.ad} className="flex items-start gap-3">
-                <span className="mt-0.5 inline-flex min-h-[32px] min-w-[44px] items-center justify-center rounded-md border border-slate-700 bg-slate-900/60 px-2 text-sm font-black text-cyan-200">
+                <span className="mt-0.5 inline-flex min-h-[32px] min-w-[44px] shrink-0 items-center justify-center whitespace-nowrap rounded-md border border-slate-700 bg-slate-900/60 px-2 text-xs font-black text-cyan-200">
                   {m.isaret}
                 </span>
                 <div className="text-sm">
-                  <div className="font-bold text-slate-100">{m.ad}</div>
+                  {/* İşaret düğmenin gerçek yazısıysa adı tekrar yazma —
+                      "Geri al / Geri al" diye çift satır çıkıyordu. */}
+                  {m.isaret !== m.ad && <div className="font-bold text-slate-100">{m.ad}</div>}
                   <div className="text-slate-400">{m.aciklama}</div>
                 </div>
               </li>

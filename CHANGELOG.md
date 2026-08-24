@@ -3,6 +3,68 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Güvenli alan ve arayüz rötuşları (E)
+
+### Alt banner gezinme çubuğunun üstüne alındı
+
+Banner'ı native katman yerleştiriyor ve varsayılan olarak ekranın en
+altına koyuyordu — telefonun gezinme çubuğunun **altına**. İki sonucu
+vardı: reklamın bir kısmı görünmez oluyordu (gösterildi sayılıp
+görülmüyordu) ve kullanıcı gezinme çubuğuna basarken reklama değiyordu.
+AdMob ikincisini **geçersiz tıklama** sayar; tekrarlanırsa hesap askıya
+alınır.
+
+`env(safe-area-inset-bottom)` değeri JavaScript'ten doğrudan okunamadığı
+için o yükseklikte görünmez bir öğe ölçülüp hemen kaldırılıyor; çıkan
+değer banner'a kenar boşluğu olarak veriliyor. Ölçüm başarısız olursa 0
+dönüyor — banner yine gösteriliyor, yalnızca boşluk bırakılmıyor.
+
+### Yardım, olmayan bir arayüzü anlatıyordu
+
+"Düğmeler" bölümü `↶` ve `⟲` gibi ikonlar gösteriyordu. **Oyun ekranında
+böyle ikonlar hiç yok** — düğmelerin üstünde düz yazı var ("Geri al",
+"Sıfırla", "Bitir"). Yani yardım, var olmayan bir arayüzü tarif ediyordu;
+üstelik iki ikon birbirine o kadar benziyordu ki hangisinin hangisi
+olduğu da anlaşılmıyordu.
+
+Liste artık düğmelerin gerçek yazılarını taşıyor. Geri al ile Sıfırla'nın
+farkı da açıkça yazıldı: biri **yalnızca son işlemi** geri alır, diğeri
+**bütün işlemleri** siler.
+
+### Dokunma hedefleri 44px kuralına getirildi
+
+| Öğe | Önce | Sonra |
+|---|---|---|
+| Yardım'ın kapatma düğmesi | 40px | 44px |
+| Yasal bağlantılar (KVKK, Gizlilik, Çerez, Koşullar, Hesabı sil) | 16px | 44px |
+| Cümle içindeki "Giriş yap →" | 16px | 44px |
+
+Yazı boyutları değişmedi. Yasal bağlantılarda dikey boşluk, cümle içindeki
+bağlantıda ise görünmez bir katman kullanıldı — ikincisinde dikey boşluk
+satır dizilişini bozardı.
+
+### Değişmeyen
+
+Üst güvenli alan, kilitli seviye açıklaması, seri rozetlerinin
+tutarlılığı ve sonuç ekranında ana eylemin baskınlığı zaten yapılmıştı;
+tarayıcıda doğrulanıp olduğu gibi bırakıldı.
+
+### Doğrulama
+
+- 360px ve 375px genişlikte yatay taşma yok
+- Çentikli cihaz taklit edildi (üst 47px, alt 34px): menü durum
+  çubuğunun altında kalıyor, banner boşluğu 94px'e çıkıyor (60 reklam +
+  34 gezinme çubuğu), taşma yok
+- `guvenli-alan.test.ts`: ölçümün 0/negatif/geçersiz durumlarda güvenli
+  davrandığı ve ölçtüğü öğeyi sayfada bırakmadığı test edildi
+- Toplam 135 test geçiyor
+
+> **Not:** Banner ile gezinme çubuğunun gerçekten çakışmadığı ancak
+> Android cihazda ya da öykünücüde kesinleşir. Tarayıcıda güvenli alan
+> değerleri sıfır olduğu için formül elle değer verilerek doğrulandı.
+
+---
+
 ## 2026-08-24 — Zorluk dengesi (D)
 
 > ⚠️ **Bu sürüm üretilen tüm turları değiştirir.** Edge Function

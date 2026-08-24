@@ -19,6 +19,7 @@ import {
 } from './mantik.ts';
 
 export type {
+  YogunlukSonuc,
   Adim,
   Islem,
   SayiVeri,
@@ -28,6 +29,7 @@ export type {
   JokerSonuc,
 } from './mantik.ts';
 export {
+  cozumYogunluguDetay,
   SEVIYELER,
   KUCUK,
   BUYUK,

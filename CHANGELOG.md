@@ -3,6 +3,71 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-24 — Zorluk dengesi (D)
+
+> ⚠️ **Bu sürüm üretilen tüm turları değiştirir.** Edge Function
+> (`tur-gonder`) yeniden dağıtılmadan yayınlanırsa istemci ile sunucu
+> farklı tur üretir ve **gönderilen her tur reddedilir.**
+
+### Düzeltilen kritik hata — üretim makine hızına bağlıydı
+
+Tur üretimindeki çözücü **süreye göre** kesiliyordu (`Date.now`, 300 ms).
+Yavaş bir makinede arama zaman aşımına uğrayıp adayı reddediyor, hızlı
+makinede kabul ediyordu. Sonuç: **aynı tohum farklı makinede farklı tur
+üretiyordu.** İstemci ile Edge Function ayrışırsa sunucu gönderilen her
+turu reddeder ve oyun tamamen durur. Üstelik yerelde fark edilmez, çünkü
+iki taraf da aynı hızlı makinede çalışır.
+
+Ölçüm sırasında ayrıca görüldü ki yavaş makinede üretilen tur **çözümsüz
+bile kalabiliyordu**.
+
+Çözücü artık süre değil **düğüm sayısı** harcıyor (`URETIM_DUGUM_SINIRI`),
+yani her makinede birebir aynı sonucu veriyor. Süre sınırlı biçim
+duruyor; bot ve arayüz gibi deterministik olması gerekmeyen yerlerde
+kullanılıyor.
+
+### Düzeltilen — Zor, Normal'den kolaydı
+
+Çözüm yoğunluğu eşikleri seviye yükseldikçe **sıkılaşacağına gevşiyordu**:
+Normal 6, Zor 8, Usta 4. Zor'un eşiği Normal'inkinden yüksek olduğu için
+Zor daha çok alternatif çözüm yoluna izin veriyordu.
+
+Eşikler artık seviye tanımının içinde (tek kaynak; iki üretim yolu da
+aynı değeri okuyor) ve tek yönlü sıkılaşıyor: Isınma yok, Normal 6,
+Zor 2, Usta 1.
+
+| Ölçüt | Isınma | Normal | Zor | Usta |
+|---|---|---|---|---|
+| Çözüm yoğunluğu — **önce** | 4.4 | 2.6 | **8.6** | 19.1 |
+| Çözüm yoğunluğu — **sonra** | 4.4 | 2.6 | **0.9** | 0.1 |
+| Tek çözüm oranı — **önce** | %34 | %37 | **%6** | %24 |
+| Tek çözüm oranı — **sonra** | %34 | %37 | **%78** | %100 |
+
+### Ölçüm betiği dürüstleştirildi
+
+- Süre sınırlı kendi kopyası yerine **üreticinin kullandığı fonksiyonun
+  aynısını** çağırıyor (kural 1: hesap tek yerde). Ölçüm artık
+  deterministik.
+- Sorunu gösteren iki ölçüt (çözüm yoğunluğu, tek çözüm oranı) "bilgi"
+  olarak işaretlenip kontrol dışı bırakılmıştı; betik bu yüzden bozuk
+  duruma "yeşil" diyordu. İkisi de kontrole geri alındı.
+- Rakamın anlamı netleştirildi: "toplam çözüm" değil, **eşit düğüm
+  bütçesiyle bulunan çözüm**. Bütçe her seviyede aynı olduğu için
+  karşılaştırma adil.
+- Yeni "filtrenin ayırt etme gücü" bölümü, eşiğin fiilen çalışmadığı
+  seviyeleri açıkça söylüyor. Zor ve Usta'da zorluğu asıl taş sayısı
+  taşıyor; filtre orada az tur reddediyor.
+
+### Testler
+
+- `uretim-determinizm.test.ts`: saati ileri sararak "çok yavaş makine"
+  taklit ediliyor; üretim saate bakarsa test kırmızı veriyor.
+  Düzeltme geri alınarak testin hatayı gerçekten yakaladığı doğrulandı.
+- Eşiklerin seviye yükseldikçe gevşemediğini doğrulayan test
+- Toplam 129 test geçiyor
+
+---
+
 ## 2026-08-24 — Günlük hatırlatma (C) ve seri koruma sınırı
 
 ### Değişen

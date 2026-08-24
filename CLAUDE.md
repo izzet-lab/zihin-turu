@@ -204,17 +204,12 @@ tamam. Ayrıntı `CHANGELOG.md`'de.
 Günlük hatırlatma tamam. Karar mantığı `bildirim-karar.ts` içinde saf ve
 test edilebilir; native katman yalnızca uyguluyor. Ayrıntı `CHANGELOG.md`'de.
 
-### Şimdi — D — Zorluk dengesi
-"Zor, Normal'den kolay geliyor" gözlemi var. Önce **ölç**:
-`testler/zorluk-olcum.ts`, seviye başına 2.000 tur. Ölçütler: çözüm
-yoğunluğu, en kısa çözüm uzunluğu, **çözücünün denediği düğüm sayısı**
-(insan zorluğunun en iyi vekili), tek çözümlü tur oranı, bölme
-gerektiren tur oranı. Her ölçüt Isınma → Usta boyunca tek yönlü
-artmalı. Muhtemel sebep: Zor/Usta'da ileri üretim her zaman kolay bir
-çözüm yolu bırakıyor — çözüm yoğunluğu eşiğin üstündeyse turu reddedip
-yeniden üret. **Sonra Edge Function'ı yeniden dağıt.**
+### ~~D komutu~~ — bitti (24 Ağustos 2026)
+Zorluk sırası düzeldi. Yol boyunca kritik bir hata bulundu: üretim makine
+hızına bağlıydı, aynı tohum farklı makinede farklı tur üretiyordu.
+Ayrıntı `CHANGELOG.md`'de.
 
-### E — Güvenli alan ve arayüz rötuşları
+### Şimdi — E — Güvenli alan ve arayüz rötuşları
 Durum çubuğu boşluğu (tek yerde), Yardım'da XP listesi aralığı,
 seri rozet tutarlılığı, Geri al/Sıfırla ikonlarının ayrışması,
 kilitli seviyeye dokununca açıklama, sonuç ekranında ana eylemin

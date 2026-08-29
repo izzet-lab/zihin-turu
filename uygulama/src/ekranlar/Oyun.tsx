@@ -4,7 +4,7 @@ import {
   puanlaHesap,
   jokerVer,
   jokerliPuan,
-  uretimYap,
+  turdanUretim,
   kullanilmayanTasIndeksleri,
   antrenmanToplamCarpani,
   GUNUN_TURU_CARPANI,
@@ -71,7 +71,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   // yeniden üretiliyor (tohumdan) — istemciye ayrıca "gönderilmiyor",
   // zaten istemcinin kendisinde hesaplanıyor. Joker, kuralı gereği
   // bilerek çözümün bir kısmını açar (bkz. oyun-sayi joker belgesi).
-  const uretim = useMemo(() => uretimYap(tur.seviye, tur.tohum), [tur]);
+  const uretim = useMemo(() => turdanUretim(tur), [tur]);
 
   const [durum, gonder] = useReducer(ilerle, veri.sayilar, baslat);
   const [kalan, setKalan] = useState<number>(sure);

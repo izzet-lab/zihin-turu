@@ -3,6 +3,96 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-30 — ACİL DÜZELTME: çözüm ve joker yanlış turu gösteriyordu
+
+> ⚠️ **Edge Function yeniden dağıtılmalı.** Sunucudaki Günün Turu
+> doğrulaması değişti (aşağıya bakın). Oyun üretimi değişmedi, yani
+> mevcut turlar aynı kalıyor.
+
+### Belirti
+
+Antrenman · Normal, tahtada `2, 4, 10, 4, 5`, hedef `105`. "Bir adım aç"
+jokeri `6×4=24`, `24×7=168`, `50÷25=2` gösteriyordu. Bu sayılar tahtada
+yoktu. Sonuç ekranındaki çözüm de aynı turdan değildi.
+
+### Sebep — bildirilen iki hipotezin de değil
+
+Tur `uretimYap(seviye, tohum, buyukAdet)` ile üretiliyor. Seviye ve
+tohum turda saklanıyordu ama **`buyukAdet` saklanmıyordu.**
+
+Çözüm ve joker turu tohumdan yeniden ürettiğinde bu ayarı bilmiyor,
+seviyenin varsayılanını (Normal için 2 büyük sayı) kullanıyordu. Oyuncu
+büyük sayıyı 0 seçtiği için yeniden üretim **başka bir tur** çıkarıyordu
+— 50 ve 25 oradan geliyordu.
+
+Yani `turUret` de `cozumBul` de tek başına doğruydu; eksik olan, turun
+kendi üretim ayarını taşımamasıydı.
+
+**D komutuyla ilgisi yok.** Hata, oyuncu Antrenman'da büyük sayı ayarını
+varsayılandan (2) saptırdığı her durumda vardı. D'den önce de vardı.
+
+### Düzeltme — iki katman
+
+1. **Kök neden:** `buyukAdet` artık turun içinde saklanıyor
+   (`SayiVeri.buyukAdet`) ve her yeniden üretimde kullanılıyor.
+2. **Güvenlik ağı:** yeni `turdanUretim` fonksiyonu, yeniden ürettiği
+   turu ekrandaki turla karşılaştırıyor. Taşlar veya hedef tutmuyorsa
+   yeniden üretime **hiç güvenmiyor**, ekrandaki gerçek tahtayı çözüyor.
+   Böylece ileride başka bir üretim parametresi eklense bile oyuncuya
+   yanlış çözüm gösterilemez.
+
+`turUret` platform arayüzünde 2 parametreli kaldı — `buyukAdet` oyuna
+özgü bir kavram, platformun bilmesi gerekmiyor (kural 1). Özel ayarlı
+tur için oyuna ait `turKur` fonksiyonu eklendi.
+
+### Sunucu tarafı
+
+**Lig ve Günün Turu etkilenmemiş.** Edge Function `buyuk_adet`i
+istemciden açıkça alıyor ve onunla üretiyor; istemciyle ayrışma yoktu.
+Canlı veritabanında doğrulandı: 12 Günün Turu kaydının hepsinde
+`tur_sonuc` ile `lig_gunluk` tutarlı, tetikleyici doğru çalışıyor.
+
+Ama incelerken **ayrı bir açık** bulundu ve kapatıldı: Günün Turu'nda
+`buyuk_adet` istemciden geldiği gibi kullanılıyordu. Oyuncu kendine
+daha kolay bir yapılandırma seçip aynı tohumla başka bir tur üretebilir
+ve onu oynayıp lige puan yazdırabilirdi. Sunucu artık Günün Turu'nda
+kendi varsayılanını dayatıyor (kural 2).
+
+### Test boşluğu kapatıldı
+
+Bu hatanın fark edilmeden canlıya çıkmasının sebebi, çözümün tura ait
+olduğunu doğrulayan bir testin hiç olmamasıydı.
+
+`cozum-tura-ait.test.ts` — her seviyede 500 tur:
+
+- Yeniden üretilen tur, turun kendisiyle aynı mı
+- Çözümdeki her adım tahtadaki taşlarla oynanabiliyor mu
+- Çözümün son satırı hedefe eşit mi
+- Joker, o turun çözümünün ilk adımını mı gösteriyor
+
+**Kritik ayrıntı:** testler `buyukAdet`i turdan tura değiştirerek
+çalışıyor. Yalnızca varsayılanla çalışan bir test bu hatayı
+yakalayamazdı — hata tam da varsayılandan sapıldığında ortaya çıkıyor.
+
+Ayrıca güvenlik ağının çalıştığı, bozuk/eksik ayarlı turlarda bile
+çözümün ekrandaki tahtaya ait olduğu test ediliyor.
+
+### Yol boyunca bulunan ayrı kusur (bu PR'da düzeltilmedi)
+
+Isınma'da binde ~6 turda **hedef zaten tahtada** çıkıyor (örnek:
+hedef 10, taşlar 2-9-10-5). Bulmaca başlamadan çözülmüş oluyor.
+
+Düzeltmesi üretimi değiştirir, yani üretilen bütün turlar değişir ve
+Edge Function'ın yeniden dağıtılmasını gerektirir. Acil düzeltmeyi
+bekletmemek için ayrıldı. Test bu kusuru kayıt altına alıyor: oran
+artarsa kırmızı verir.
+
+### Testler
+
+169 test, 5 e2e, tip denetimi ve derleme yeşil.
+
+---
+
 ## 2026-08-24 — Kurulum ekranı: anlaşılır başlıklar, belirgin seçim
 
 ### "MOD" kimseye bir şey anlatmıyordu

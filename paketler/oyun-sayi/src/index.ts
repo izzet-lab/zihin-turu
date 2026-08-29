@@ -11,12 +11,61 @@ import type { Tur, Cevap, Dogrulama, Puan, Cozum, Seviye, TurSaglayici } from '@
 import {
   SEVIYELER,
   uretimYap,
+  varsayilanBuyukAdet,
+  cozZinciri,
   dogrulaZinciri,
   puanlaHesap,
   bicimle,
   type Adim,
   type SayiVeri,
+  type Uretim,
 } from './mantik.ts';
+
+/**
+ * Bir turdan onun üretimini (taşlar, hedef, çözüm) geri getirir.
+ *
+ * NEDEN AYRI BİR FONKSİYON
+ * Çözüm ve joker, turu tohumdan yeniden üreterek buluyor. Yeniden
+ * üretim parametreleri turla birebir aynı değilse ORTAYA BAŞKA BİR TUR
+ * çıkar ve oyuncuya ekrandaki taşlarla ilgisi olmayan bir çözüm
+ * gösterilir. Ağustos 2026'da tam bu oldu: `buyukAdet` turda
+ * saklanmadığı için yeniden üretim varsayılanı kullandı.
+ *
+ * Bu fonksiyon iki katmanlı koruma sağlar:
+ *
+ *   1. Turun kendi `buyukAdet` değeriyle üretir (kök çözüm).
+ *   2. Üretilen tur, turdaki taş ve hedefle BİREBİR AYNI MI diye
+ *      denetler. Değilse yeniden üretime hiç güvenmez; ekrandaki
+ *      gerçek tahtayı çözer.
+ *
+ * İkinci adım, bu sınıf hatanın bir daha kullanıcıya ulaşmasını
+ * engelliyor: çözüm her zaman ekrandaki tura aittir.
+ */
+export function turdanUretim(tur: Tur): Uretim {
+  const veri = tur.veri as SayiVeri;
+  const ba = veri.buyukAdet ?? varsayilanBuyukAdet(tur.seviye);
+  const u = uretimYap(tur.seviye, tur.tohum, ba);
+
+  if (uyusuyorMu(u.sayilar, veri.sayilar) && u.hedef === veri.hedef) return u;
+
+  // Yeniden üretim tutmadı — ekrandaki tahtayı çöz.
+  const cozum = cozZinciri(veri.sayilar, veri.hedef, 0, 60000);
+  return {
+    seviye: tur.seviye,
+    tohum: tur.tohum,
+    hedef: veri.hedef,
+    sayilar: veri.sayilar,
+    cozum,
+  };
+}
+
+/** İki taş listesi (sıradan bağımsız) aynı mı? */
+function uyusuyorMu(a: readonly number[], b: readonly number[]): boolean {
+  if (a.length !== b.length) return false;
+  const x = [...a].sort((m, n) => m - n);
+  const y = [...b].sort((m, n) => m - n);
+  return x.every((d, i) => d === y[i]);
+}
 
 export type {
   YogunlukSonuc,
@@ -30,6 +79,7 @@ export type {
 } from './mantik.ts';
 export {
   cozumYogunluguDetay,
+  varsayilanBuyukAdet,
   SEVIYELER,
   KUCUK,
   BUYUK,
@@ -71,9 +121,9 @@ export const sayiTuru: TurSaglayici = {
   seviyeler: SEVIYE_LISTESI,
 
   turUret(seviye: string, tohum: number): Tur {
-    const u = uretimYap(seviye, tohum);
-    const veri: SayiVeri = { hedef: u.hedef, sayilar: u.sayilar };
-    return { oyun: 'sayi', seviye, tohum, veri };
+    // Platform arayüzü oyuna özgü ayar taşımaz (kural 1). Özel ayarla
+    // tur kurmak için `turKur` kullanılır.
+    return turKur(seviye, tohum);
   },
 
   dogrula(tur: Tur, cevap: Cevap): Dogrulama {
@@ -87,12 +137,30 @@ export const sayiTuru: TurSaglayici = {
   },
 
   cozumBul(tur: Tur, _sinirMs?: number): Cozum {
-    // Tur tohumdan yeniden üretilir; saklanan çözüm buradan gelir.
-    // (Üretim deterministik olduğu için sınır süresine gerek yok.)
-    const u = uretimYap(tur.seviye, tur.tohum);
+    // Çözüm her zaman EKRANDAKİ tura ait olmalı; turdanUretim bunu
+    // garanti ediyor (bkz. o fonksiyonun açıklaması).
+    const u = turdanUretim(tur);
     return { uzaklik: u.cozum.fark, satirlar: u.cozum.adimlar.map(bicimle) };
   },
 };
+
+/**
+ * Belirli bir üretim ayarıyla tur kurar.
+ *
+ * `buyukAdet` TURLA BİRLİKTE SAKLANIR. Saklanmazsa çözüm ve joker turu
+ * tohumdan yeniden üretirken varsayılanı kullanır ve başka bir tur
+ * çıkarır — oyuncuya ekrandaki taşlarla ilgisi olmayan bir çözüm
+ * gösterilir (Ağustos 2026 hatası).
+ *
+ * Bu fonksiyon `TurSaglayici` arayüzünün dışında duruyor: `buyukAdet`
+ * oyuna özgü bir kavram, platformun bilmesi gerekmiyor.
+ */
+export function turKur(seviye: string, tohum: number, buyukAdet?: number): Tur {
+  const ba = buyukAdet ?? varsayilanBuyukAdet(seviye);
+  const u = uretimYap(seviye, tohum, ba);
+  const veri: SayiVeri = { hedef: u.hedef, sayilar: u.sayilar, buyukAdet: ba };
+  return { oyun: 'sayi', seviye, tohum, veri };
+}
 
 /** Günün turu: tarihten türeyen tohumla herkeste aynı bulmaca. */
 export function gununTuru(seviye: string, gun?: string): Tur {

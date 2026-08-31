@@ -19,7 +19,7 @@ yapılmalıdır.
 | **Kullanıcı adı / görünen ad** | ✅ | Kısmen (lig tablosunda diğer oyunculara) | Evet (hesap) | Profil, lig sıralaması | Evet |
 | **Oyun ilerleme verisi** | ✅ | ❌ | Otomatik | Skor, seri, XP, seviye, açılmış modlar | Evet |
 | **Çökme günlükleri** | ✅ | ❌ | Kapatılabilir | Uygulama kararlılığı (Firebase Crashlytics) | Otomatik (90 gün sonra Firebase siler) |
-| **Uygulama kullanım olayları** | ✅ | ❌ | Kapatılabilir | Analitik (Firebase Analytics) — ekran açılışı, tur tamamlama | Evet (hesap silinince) |
+| **Uygulama kullanım olayları** | Koşullu | ❌ | **Varsayılan KAPALI** | Analitik (Firebase Analytics) — yalnızca kullanıcı gizlilik ayarlarından açarsa toplanır | Evet (hesap silinince) |
 | **Cihaz / tarayıcı bilgisi** | ✅ | ❌ | Otomatik | Supabase oturum yönetimi (user-agent) | Evet |
 | **Reklam tanımlayıcıları** | Koşullu | ❌ | — | 18 altına AAID toplanmaz. 18+ kullanıcıya UMP onayı ile kişiselleştirilmiş reklam gösterilebilir | — |
 

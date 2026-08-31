@@ -35,6 +35,7 @@ import {
   dogrulaZinciri,
   puanlaHesap,
   nihaiPuanHesap,
+  gonderimDogrula,
   antrenmanToplamCarpani,
   GUNUN_TURU_CARPANI,
   SEVIYE_LISTESI,
@@ -88,12 +89,24 @@ Deno.serve(async (req: Request) => {
 
     const { oyun, mod, seviye, tarih, tohum, adimlar, sure_sn, kalan_sn, jokerler, buyuk_adet } = body;
 
-    // Temel alan kontrolü
-    if (oyun !== 'sayi') return hata('Bilinmeyen oyun: ' + oyun, 400);
-    if (!['gunun', 'antrenman'].includes(mod)) return hata('Geçersiz mod.', 400);
-    if (!seviye || !tarih || tohum == null) return hata('Eksik alan.', 400);
+    // --- Girdi denetimi ---
+    // Kurallar oyun-sayi/gonderim.ts içinde ve test ediliyor (kural 1).
+    // Buraya satır arası yazılırsa test edilemez ve gözden kaçar.
     if (!Array.isArray(adimlar)) return hata('adimlar dizi olmalı.', 400);
-    if (kalan_sn < 0 || kalan_sn > sure_sn + 30) return hata('Geçersiz süre.', 400);
+
+    const denetim = gonderimDogrula({
+      oyun,
+      mod,
+      seviye,
+      tarih,
+      tohum,
+      adimSayisi: adimlar.length,
+      sureSn: sure_sn,
+      kalanSn: kalan_sn,
+      jokerler,
+      simdiMs: Date.now(),
+    });
+    if (denetim) return hata(denetim, 400);
 
     // --- Günün Turu'nda tohum kontrolü ---
     // Tarihten bağımsız bir tohum göndermek, dün veya gelecekteki turu

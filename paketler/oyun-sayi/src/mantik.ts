@@ -112,6 +112,21 @@ const ISLEMLER: readonly Islem[] = ['+', '−', '×', '÷'];
 const URETIM_DUGUM_SINIRI = 60000;
 
 /**
+ * Hedef, taşlardan birine eşit mi?
+ *
+ * Böyle bir tur bulmaca değildir: oyuncu hiçbir işlem yapmadan tam
+ * isabet almış olur, "En yakın" göstergesi daha başlarken 0 der ve tur
+ * anında kapanır. Isınma'da binde birkaç turda oluyordu ve Isınma yeni
+ * oyuncunun gördüğü İLK seviye — bedavaya kazanılan bir bulmaca kötü
+ * bir ilk izlenim.
+ *
+ * Üretimin iki kolunda da (geriye arama ve ileri üretim) uygulanır.
+ */
+function hedefTahtadaMi(sayilar: readonly number[], hedef: number): boolean {
+  return sayilar.includes(hedef);
+}
+
+/**
  * Seviyeler. Sıra önemlidir: SEVIYE_ANAHTARLARI bu nesnenin anahtar
  * sırasından türer ve seviye açma zinciri (sonrakiSeviyeAnahtari) buna
  * dayanır.
@@ -357,6 +372,9 @@ function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSi
     const yogunluk = cozumYogunlugu(sayilar, deger);
     if (yogunluk > yogunlukEsigi) continue;
 
+    // Hedef zaten raftaysa bulmaca yok; reddet ve yeniden dene.
+    if (hedefTahtadaMi(sayilar, deger)) continue;
+
     return { hedef: deger, adimlar: liste[0]!.yol, sayilar };
   }
   return null;
@@ -405,6 +423,8 @@ export function uretimYap(seviyeAdi: string, tohum: number, buyukAdet?: number):
         .slice(0, buyuk)
         .concat(karistir(KUCUK.concat(KUCUK), r).slice(0, S.tas - buyuk));
       const hedef = S.alt + Math.floor(r() * (S.ust - S.alt + 1));
+      // Hedef zaten raftaysa bulmaca yok; çözücüyü hiç çalıştırma.
+      if (hedefTahtadaMi(sayilar, hedef)) continue;
       const cozum = cozZinciri(sayilar, hedef, 0, URETIM_DUGUM_SINIRI);
       if (cozum.fark !== 0) continue;
       // Yoğunluk filtresi (cocuk'ta atlanır)

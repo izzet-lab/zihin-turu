@@ -198,6 +198,9 @@ export function seviyeEtiketi(anahtar: string): string {
 }
 
 // Bot (sunucu tarafı): rakip yoksa maçı kuran eklenti.
+export { gonderimDogrula, gunNumarasi, enFazlaAdim, TARIH_PAYI_GUN, SURE_JOKERI_SANIYE } from './gonderim.ts';
+export type { GonderimGirdi, GonderimHata } from './gonderim.ts';
+
 export { botUret, botPlani, PROFILLER } from './bot.ts';
 export type { Bot, BotPlani, ProfilAd } from './bot.ts';
 

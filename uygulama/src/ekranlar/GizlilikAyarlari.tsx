@@ -29,39 +29,8 @@ import {
 } from '../bildirim';
 import { reklamOnayFormunuGoster, kisiselReklamOnayliMi } from '../reklam';
 import { resinDegilMi } from '../depo';
+import { tercihleriOku, tercihleriYaz, type Tercihler } from '../gizlilik-tercih';
 
-const ANAHTAR = 'zt-gizlilik';
-
-interface Tercihler {
-  analytics: boolean;
-  crashlytics: boolean;
-}
-
-/**
- * Varsayılan: ikisi de AÇIK. Kullanıcı istemezse kapatır.
- *
- * Kapatma yolu her zaman tek dokunuş uzaklıkta ve gizlilik metninde
- * bu ekrana yönlendiriliyor.
- */
-const VARSAYILAN: Tercihler = { analytics: true, crashlytics: true };
-
-export function tercihleriOku(): Tercihler {
-  try {
-    const ham = localStorage.getItem(ANAHTAR);
-    if (!ham) return VARSAYILAN;
-    return { ...VARSAYILAN, ...(JSON.parse(ham) as Partial<Tercihler>) };
-  } catch {
-    return VARSAYILAN;
-  }
-}
-
-function tercihleriYaz(t: Tercihler): void {
-  try {
-    localStorage.setItem(ANAHTAR, JSON.stringify(t));
-  } catch {
-    // Depo yazılamıyorsa tercih oturumluk kalır; oyun etkilenmez.
-  }
-}
 
 /** Açılışta çağrılır: kayıtlı tercihleri Firebase'e uygular. */
 export async function tercihleriUygula(): Promise<void> {
@@ -263,3 +232,6 @@ function Anahtar({
     </label>
   );
 }
+
+// Geriye dönük: tercih okuma/yazma artık gizlilik-tercih.ts içinde.
+export { tercihleriOku, tercihleriYaz } from '../gizlilik-tercih';

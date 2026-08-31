@@ -3,6 +3,124 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-31 - Yayin oncesi guvenlik ve QA denetimi
+
+Canliya cikmadan once sistem bastan sona denetlendi. Alti bulgu cikti,
+hepsi duzeltildi.
+
+> Veritabani gocu **uygulandi** (`005_guvenlik_sertlestirme.sql`),
+> Edge Function **surum 10** dagitildi.
+
+### 1. Oyuncu kendi XP'sini ve serisini yazabiliyordu - YUKSEK
+
+`oyuncu` tablosundaki `xp`, `seri_gun`, `seri_son`, `seri_koruma_ay`
+sunucu tarafindan (lig tetikleyicisiyle) yaziliyor. Ama RLS
+kullanicinin **kendi satirini guncellemesine** izin veriyordu.
+
+Bir oyuncu REST'e tek istek atip `xp = 999999` yazabilir, herkese acik
+profilinde sahte seviye ve unvan gosterebilirdi. Kural 2 ihlali.
+
+RLS satir bazlidir, sutun ayrimi yapmaz - bunun icin sutun duzeyinde
+GRANT gerekiyor. Uygulama bu tabloya zaten yalnizca kayit sirasinda
+INSERT yapiyordu, hic UPDATE yapmiyordu; yani izin tumuyle
+kullanilmiyor ama aciti.
+
+Artik INSERT yalnizca `(id, kullanici_adi, gorunen_ad)`, UPDATE
+yalnizca `(gorunen_ad)`. `kullanici_adi` bilerek disarida - tasarim
+geregi bir kerelik seciliyor.
+
+### 2. Gecmis tarihli gonderimle lig gecmisi doldurulabiliyordu - YUKSEK
+
+Edge Function `tarih` alanini istemciden aliyor ve tohumun o tarihe ait
+oldugunu doguluyordu - ama **tarihin bugun oldugunu hic kontrol
+etmiyordu.**
+
+Yani bir oyuncu 30 gun geriye "mukemmel" turlar gonderip aylik ligi
+tepeden alabilir, seri gecmisi uydurabilirdi.
+
+Artik tarih sunucunun gunune gore +/-1 gun penceresinde olmali. Pay
+gerekli: oyuncunun tarihi yerel saatine gore, sunucu UTC calisiyor;
+Turkiye'de gece 01:00'de yerel tarih bir gun ileride oluyor.
+
+### 3. Sure ve joker alanlari denetlenmiyordu - ORTA
+
+Antrenman carpani secilen sureye bakiyor (15 sn -> x4). Istemci uydurma
+bir sure gonderip carpani sisirebilirdi. Kalan sure de toplam sureyi
+asabiliyordu (hiz primi siser).
+
+Artik sure yalnizca sunulan degerlerden biri olabilir, kalan sure
+toplami asamaz (sure jokeri payiyla), joker sayisi hakki asamaz,
+bilinmeyen joker turu reddedilir, adim sayisi seviyede mumkun olani
+asamaz.
+
+Denetim `oyun-sayi/gonderim.ts` icinde ve test ediliyor - Edge
+Function'da satir arasina yaziliydi, test edilemiyordu.
+
+### 4. Analytics varsayilan ACIK'ti - kural 7 ihlali
+
+CLAUDE.md kural 7: "Firebase Analytics varsayilan kapali." Kod
+varsayilani acik yapiyordu; kullanici hicbir sey secmeden davranisi
+olculuyordu.
+
+Varsayilan kapatildi. Crashlytics acik kaldi - cokme raporu kisisel
+davranis olcumu degil, uygulamanin ayakta kalmasi icin teshis. Play
+Store Data safety notu da buna gore guncellendi.
+
+### 5. Kullanici adi denetimi yalnizca tarayicidaydi - ORTA
+
+Uzunluk, karakter ve kufur denetimi istemcide. REST'e dogrudan yazan
+biri bosluklu, kontrol karakterli veya cok uzun ad koyabilirdi - bu
+adlar lig tablosunda ve herkese acik profillerde gorunuyor.
+
+Veritabanina bicim kisiti eklendi (3-16 karakter, bosluk ve kontrol
+karakteri yasak). Kufur listesi hala istemcide; asil koruma artik
+kullanici adinin degistirilememesi.
+
+### 6. Lig tetikleyicisi disaridan cagrilabiliyordu - ORTA
+
+`lig_guncelle` SECURITY DEFINER'di, `search_path` ayarli degildi ve
+`/rest/v1/rpc/lig_guncelle` uzerinden anon ve authenticated rollerince
+cagrilabiliyordu. Ikisi de klasik yetki yukseltme yolu.
+
+`search_path` sabitlendi, EXECUTE izni geri alindi. Tetikleyici
+calisirken EXECUTE izni aranmadigi icin tetikleme etkilenmiyor -
+canlida geri alinan bir islemle dogrulandi: lig satiri 137, XP 0->10.
+
+### Temiz cikanlar
+
+| Alan | Sonuc |
+|---|---|
+| `tur_sonuc` yazma izni | Hicbir kullanicida yok, yalnizca Edge Function |
+| Edge Function kimlik dogrulamasi | Kimlik govdeden degil, dogrulanmis oturumdan |
+| Hesap silme | Yalnizca kendi hesabini siler, kimlik JWT'den |
+| Depoya sizmis sir | Yok - gecmis tarandi, bulunanlar `.env.example` yer tutuculari |
+| Android izinleri | Asgari (INTERNET, bildirim, reklam kimligi) |
+| 18 alti reklam kisisellestirmesi | Banner ve odullu videoda ayri ayri dogru |
+| Yasal metinler | Web/Android ayrimi dogru anlatilmis |
+| Parola guvenligi uyarisi | Gecersiz - parola girisi yok, sihirli baglanti ve Google |
+
+### Tekrari onleyen duzenleme
+
+Uc karar Capacitor'a bagli dosyalarin icinde yasiyordu ve test
+edilemiyordu. Projede bunun cozulmus kalibi vardi (`bildirim-karar.ts`);
+aynisi uygulandi:
+
+- `gonderim.ts` - sunucu girdi denetimi
+- `gizlilik-tercih.ts` - gizlilik varsayilanlari
+- `reklam-karar.ts` - reklam kisisellestirme karari (banner ve odullu
+  video artik ayni kaynagi okuyor; ikisi ayrisamaz)
+
+### Testler
+
+- `gonderim-guvenlik.test.ts` - 17 test: gecmis/gelecek tarih, carpan
+  sisirme, joker istismari, bozuk tip ve enjeksiyon denemeleri
+- `gizlilik-reklam.test.ts` - 5 test: analitik varsayilani, 18 alti ve
+  onaysiz kullanicida kisisellestirmesiz reklam
+
+Toplam **211 test**, 5 e2e, tip denetimi ve derleme yesil.
+
+---
+
 ## 2026-08-30 — Joker bedeli gerçekten düşüyor
 
 > ⚠️ **Edge Function yeniden dağıtılmalı.** Puan hesabı değişti. Tur

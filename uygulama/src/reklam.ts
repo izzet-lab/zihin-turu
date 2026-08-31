@@ -44,6 +44,7 @@ import {
 } from '@capacitor-community/admob';
 import { nativeMi } from './platform';
 import { resinDegilMi, bannerGosterilebilirMi } from './depo';
+import { npaKarari } from './reklam-karar';
 
 /**
  * Reklam birimi kimlikleri.
@@ -194,6 +195,22 @@ export function kisiselReklamOnayliMi(): boolean {
 }
 
 /**
+ * Bu çağrıda kişiselleştirilmemiş reklam mı istenmeli?
+ *
+ * TEK KAYNAK. Banner ve ödüllü video AdMob'da AYRI çağrı yolları
+ * kullanıyor ve bu kararı ikisinde de ayrı ayrı yazmak, birinin
+ * güncellenip diğerinin unutulması demekti — CLAUDE.md'nin özellikle
+ * uyardığı yer burası.
+ *
+ * `true` dönerse kişiselleştirilmemiş reklam gösterilir. İki koşuldan
+ * biri yeterli: kullanıcı 18 yaşından küçükse (yaşından bağımsız olarak
+ * onay da sorulmaz) ya da onay verilmemişse.
+ */
+export function npaGerekliMi(): boolean {
+  return npaKarari(resinDegilMi(), kisiselReklamOnay);
+}
+
+/**
  * Banner gösterir.
  *
  * `konum` neden önemli: banner, dokunma hedeflerinden UZAKTA durmalı.
@@ -223,8 +240,7 @@ export async function bannerGoster(konum: ReklamKonumu = 'alt'): Promise<void> {
 
   await reklamBaslat();
   try {
-    // 18 altı veya onay verilmemiş → kişiselleştirilmemiş reklam
-    const npa = resinDegilMi() || !kisiselReklamOnay;
+    const npa = npaGerekliMi();
 
     // Alt banner gezinme çubuğunun üstünde dursun (bkz. altGuvenliAlanPx).
     // Üstte durum çubuğu overlay kapalı olduğu için boşluk gerekmiyor.
@@ -287,7 +303,7 @@ export async function odulluReklamHazirla(): Promise<boolean> {
   if (!nativeMi()) return false;
   await reklamBaslat();
   try {
-    const npa = resinDegilMi() || !kisiselReklamOnay;
+    const npa = npaGerekliMi();
     await AdMob.prepareRewardVideoAd({
       adId: REWARDED_ID,
       isTesting: import.meta.env.DEV,

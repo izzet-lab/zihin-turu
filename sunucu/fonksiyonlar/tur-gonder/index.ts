@@ -31,6 +31,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { gunlukTohum } from '@zihinturu/cekirdek';
 import {
   uretimYap,
+  varsayilanBuyukAdet,
   dogrulaZinciri,
   puanlaHesap,
   jokerliPuan,
@@ -103,7 +104,18 @@ Deno.serve(async (req: Request) => {
     }
 
     // --- Turu yeniden üret (deterministik) ---
-    const uretim = uretimYap(seviye, tohum, buyuk_adet);
+    //
+    // GÜNÜN TURU'NDA ÜRETİM AYARI İSTEMCİDEN ALINMAZ.
+    // Günün turu herkese aynı bulmaca demek. `buyuk_adet` istemciden
+    // geldiği gibi kullanılsaydı oyuncu kendine daha kolay bir
+    // yapılandırma seçip aynı tohumla başka bir tur üretebilir ve o
+    // turu oynayıp lige puan yazdırabilirdi. Sunucu burada kendi
+    // varsayılanını dayatıyor (kural 2: istemciye güvenilmez).
+    //
+    // Antrenman'da ayar oyuncunun kendi tercihi ve lige işlemiyor;
+    // orada istemciden gelen değer kullanılır.
+    const etkinBuyukAdet = mod === 'gunun' ? varsayilanBuyukAdet(seviye) : buyuk_adet;
+    const uretim = uretimYap(seviye, tohum, etkinBuyukAdet);
 
     // --- Adım zincirini doğrula ---
     // Oyuncu hiç adım atmadıysa uzaklık = hedefe başlangıç uzaklığı (tüm taşlar)

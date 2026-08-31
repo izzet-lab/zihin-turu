@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { Tur } from '@zihinturu/cekirdek';
-import { sayiTuru, gununTuru, uretimYap, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
+import { sayiTuru, gununTuru, turKur, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';
@@ -72,8 +72,12 @@ function turHazirla(ayar: BaslaAyar, gun: string): Tur {
     return gununTuru(ayar.seviye, gun);
   }
   // Antrenman: büyük sayı ayarını onurlandırmak için doğrudan üretim.
-  const u = uretimYap(ayar.seviye, rastgeleTohum(), ayar.buyukAdet);
-  return { oyun: 'sayi', seviye: ayar.seviye, tohum: u.tohum, veri: { hedef: u.hedef, sayilar: u.sayilar } };
+  //
+  // buyukAdet TURLA BİRLİKTE SAKLANMALI. Saklanmazsa çözüm ve joker
+  // turu tohumdan yeniden üretirken varsayılanı kullanır ve başka bir
+  // tur çıkarır — oyuncuya ekrandaki taşlarla ilgisi olmayan bir çözüm
+  // gösterilir. (Ağustos 2026'da yaşanan hata buydu.)
+  return turKur(ayar.seviye, rastgeleTohum(), ayar.buyukAdet);
 }
 
 export default function Uygulama() {

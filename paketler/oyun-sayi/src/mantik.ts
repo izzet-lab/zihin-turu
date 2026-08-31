@@ -29,6 +29,20 @@ export interface Adim {
 export interface SayiVeri {
   hedef: number;
   sayilar: number[];
+  /**
+   * Turun kaç büyük sayıyla (25/50/75/100) üretildiği.
+   *
+   * BU ALAN NEDEN VAR: tur `uretimYap(seviye, tohum, buyukAdet)` ile
+   * üretiliyor. Seviye ve tohum turda saklanıyordu ama buyukAdet
+   * saklanmıyordu. Çözüm ve joker turu tohumdan yeniden ürettiğinde
+   * varsayılan değeri kullanıyor, dolayısıyla BAŞKA BİR TUR üretiyordu:
+   * oyuncuya ekrandaki taşlarla ilgisi olmayan bir çözüm gösteriliyordu.
+   *
+   * Antrenman'da oyuncu bu sayıyı kendisi seçebildiği için hata orada
+   * görünür oldu. Alan opsiyonel: eski kayıtlarda yoksa seviyenin
+   * varsayılanına düşülür.
+   */
+  buyukAdet?: number;
 }
 
 /** Çözücünün döndürdüğü ham sonuç (adım zinciriyle birlikte). */
@@ -355,10 +369,20 @@ function ileriUret(S: SeviyeConfig, buyukAdet: number, r: () => number, denemeSi
 /* imkânsız ama turu oynanabilir bırakır).                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Bir seviyenin varsayılan büyük sayı adedi.
+ * Tek yerde dursun: hem üretim hem doğrulama aynı değeri okusun.
+ */
+export function varsayilanBuyukAdet(seviyeAdi: string): number {
+  const S = SEVIYELER[seviyeAdi];
+  if (!S) return 0;
+  return S.buyukVar ? 2 : 0;
+}
+
 export function uretimYap(seviyeAdi: string, tohum: number, buyukAdet?: number): Uretim {
   const S = SEVIYELER[seviyeAdi];
   if (!S) throw new Error('Bilinmeyen seviye: ' + seviyeAdi);
-  const ba = buyukAdet ?? (S.buyukVar ? 2 : 0);
+  const ba = buyukAdet ?? varsayilanBuyukAdet(seviyeAdi);
   const r = rastgele(tohum);
 
   if (S.ileri) {

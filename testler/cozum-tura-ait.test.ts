@@ -98,19 +98,15 @@ describe('çözüm ve joker, ekrandaki tura ait', () => {
             `${nerede} çözüm tahtaya uymuyor`,
           ).toBe(true);
 
-          // 3) Çözümün son satırı hedefe eşit olmalı.
+          // 3) Çözüm en az bir adım içermeli ve son satırı hedefe eşit olmalı.
           //
-          // Tek istisna: hedef zaten tahtadaysa çözüm sıfır adımdır.
-          // Bu ayrı bir kusur (aşağıdaki teste bakın) ve bilerek burada
-          // gizlenmiyor — yalnızca "sıfır adım" ile "bozuk çözüm"
-          // birbirinden ayrılıyor. Sıfır adımlı bir çözüm ancak hedef
-          // gerçekten raftaysa meşrudur.
-          if (u.cozum.adimlar.length === 0) {
-            expect(veri.sayilar, `${nerede} boş çözüm ama hedef tahtada yok`).toContain(
-              veri.hedef,
-            );
-            continue;
-          }
+          // Sıfır adımlı çözüm, hedefin zaten tahtada olduğu anlamına
+          // gelir — yani bulmaca başlamadan çözülmüştür. Üretim böyle
+          // turları artık reddediyor.
+          expect(
+            u.cozum.adimlar.length,
+            `${nerede} çözüm boş — hedef tahtada mı?`,
+          ).toBeGreaterThan(0);
 
           const sonAdim = u.cozum.adimlar[u.cozum.adimlar.length - 1]!;
           expect(sonAdim.sonuc, `${nerede} son adım hedef değil`).toBe(veri.hedef);
@@ -185,36 +181,33 @@ describe('turUret — üretilen tur ayarını saklar', () => {
 
 
 /**
- * BİLİNEN KUSUR — hedef bazen zaten tahtada.
+ * HEDEF ASLA TAHTADA OLMAMALI.
  *
  * Isınma'da binde birkaç turda hedef sayı raftaki taşlardan biri
- * oluyor (örnek: hedef 10, taşlar 2-9-10-5). Bulmaca daha başlamadan
- * çözülmüş oluyor; oyuncu hiçbir işlem yapmadan tam isabet alıyor.
+ * oluyordu (örnek: hedef 10, taşlar 2-9-10-5). Bulmaca başlamadan
+ * çözülmüş oluyor; oyuncu hiçbir işlem yapmadan tam isabet alıyor ve
+ * tur anında kapanıyordu. Isınma yeni oyuncunun gördüğü İLK seviye
+ * olduğu için bu kötü bir ilk izlenimdi.
  *
- * Bu, yanlış çözüm hatasından AYRI bir kusur ve düzeltmesi üretimi
- * değiştirir — yani üretilen bütün turlar değişir ve Edge Function'ın
- * yeniden dağıtılması gerekir. O yüzden bu PR'a alınmadı.
- *
- * Test kusuru KAYIT ALTINA alıyor: sayı artarsa (üretim bozulursa)
- * kırmızı verir, düzeltilince de bu testin güncellenmesi gerektiğini
- * hatırlatır.
+ * Üretim artık böyle turları reddediyor. Bu test kuralı koruyor.
  */
-describe('bilinen kusur: hedef zaten tahtada', () => {
-  it("Isınma'da nadir de olsa görülüyor — oran %2'yi geçmemeli", () => {
-    let sifirAdim = 0;
-    const N = 500;
-    for (let i = 0; i < N; i++) {
-      const tur = turKur('cocuk', 500000 + i, 0);
-      const veri = tur.veri as SayiVeri;
-      const u = turdanUretim(tur);
-      if (u.cozum.adimlar.length === 0) {
-        // Meşru sebep: hedef gerçekten raftaymış.
-        expect(veri.sayilar).toContain(veri.hedef);
-        sifirAdim++;
-      }
-    }
-    expect(sifirAdim, 'sıfır adımlı tur oranı arttı — üretim bozulmuş olabilir').toBeLessThan(
-      N * 0.02,
+describe('hedef tahtada olamaz', () => {
+  for (const seviye of SEVIYE_ADLARI) {
+    const adetler = denenecekBuyukAdetler(seviye);
+    it(
+      `${seviye} — hiçbir turda hedef raftaki taşlardan biri değil`,
+      () => {
+        for (let i = 0; i < TUR_SAYISI; i++) {
+          const ba = adetler[i % adetler.length]!;
+          const u = uretimYap(seviye, 900000 + i, ba);
+          expect(
+            u.sayilar.includes(u.hedef),
+            `${seviye}/ba=${ba}/tohum=${900000 + i}: hedef ${u.hedef} tahtada [${u.sayilar}]`,
+          ).toBe(false);
+          expect(u.cozum.adimlar.length, 'çözüm en az bir adım olmalı').toBeGreaterThan(0);
+        }
+      },
+      180_000,
     );
-  });
+  }
 });

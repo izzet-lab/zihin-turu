@@ -3,6 +3,60 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-30 — Hedef artık asla tahtada olmuyor
+
+> ⚠️ **Bu sürüm üretilen tüm turları değiştirir.** Edge Function
+> (`tur-gonder`) yeniden dağıtılmadan yayınlanırsa istemci ile sunucu
+> farklı tur üretir ve gönderilen her tur reddedilir. Sıra: önce
+> fonksiyon, sonra push.
+
+### Kusur
+
+Isınma'da binde ~6 turda hedef sayı raftaki taşlardan biri oluyordu —
+örnek: hedef `10`, taşlar `2, 9, 10, 5`. Bulmaca daha başlamadan
+çözülmüş oluyordu: "En yakın" göstergesi 0 diyor, oyuncu hiçbir işlem
+yapmadan tam isabet alıyor ve tur anında kapanıyordu.
+
+Isınma yeni oyuncunun gördüğü **ilk** seviye. Bedavaya kazanılan bir
+bulmaca, oyunun ne olduğunu daha anlamadan yanlış bir izlenim bırakıyor.
+
+Kusur, önceki düzeltmenin regresyon testi yazılırken ortaya çıktı:
+çözüm zinciri boş dönüyordu, sebebi araştırılınca bu bulundu.
+
+### Düzeltme
+
+Üretim artık hedefi taşlardan birine eşit olan turu reddedip yeniden
+üretiyor. Kontrol üretimin **iki kolunda da** var (geriye arama ve ileri
+üretim) ve deterministik — aynı tohum yine aynı turu veriyor.
+
+Geriye aramada kontrol çözücüden **önce** yapılıyor: böyle bir turu
+çözmeye çalışmak boşa iş.
+
+### Etkisi ölçüldü
+
+5.000 tur üretildi (dört seviye, değişen büyük sayı adedi):
+
+| | Sonuç |
+|---|---|
+| Hedefi tahtada olan tur | **0** |
+| Sıfır adımlı çözüm | **0** |
+| Çözümsüz tur | **0** |
+| Üretim hızı | değişmedi |
+
+Zorluk sırası korunuyor — dört ölçüt de Isınma → Usta boyunca tek
+yönlü. Isınma'nın çözüm yoğunluğu 4.4'ten 4.1'e indi: bedava turlar
+elendiği için seviye hafifçe zorlaştı, beklenen ve istenen yön.
+
+### Test
+
+`cozum-tura-ait.test.ts` içindeki "bilinen kusur" kaydı, kuralı koruyan
+bir teste dönüştürüldü: her seviyede 500 tur, hiçbirinde hedef tahtada
+olamaz ve çözüm en az bir adım içermeli.
+
+172 test, 5 e2e, tip denetimi ve derleme yeşil.
+
+---
+
 ## 2026-08-30 — ACİL DÜZELTME: çözüm ve joker yanlış turu gösteriyordu
 
 > ⚠️ **Edge Function yeniden dağıtılmalı.** Sunucudaki Günün Turu

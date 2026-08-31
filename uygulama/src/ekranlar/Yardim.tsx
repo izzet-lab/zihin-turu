@@ -120,7 +120,11 @@ export default function Yardim({ acik, kapat }: Props) {
         {/* Jokerler */}
         <Bolum baslik="Jokerler">
           <div className="space-y-2 text-sm text-slate-300">
-            <p className="text-xs text-slate-500">Tur başına en fazla 3 joker kullanabilirsin. Her joker puandan düşer.</p>
+            <p className="text-xs text-slate-500">
+              Tur başına en fazla 3 joker kullanabilirsin. Bedel, çarpanlar
+              uygulanmadan <b>önce</b> düşülür — yani üçünü de kullanırsan
+              puanının yaklaşık yarısını verirsin.
+            </p>
             <div className="space-y-2">
               <JokerSatir emoji="💡" ad="Adım ipucu" bedel={3} aciklama="Çözümün bir adımını gösterir." />
               <JokerSatir emoji="❌" ad="Yanlışı sil" bedel={2} aciklama="Çözümde kullanılmayan bir taşı siler." />
@@ -218,7 +222,14 @@ function JokerSatir({ emoji, ad, bedel, aciklama }: { emoji: string; ad: string;
       <span className="text-lg">{emoji}</span>
       <div>
         <span className="font-bold text-slate-100">{ad}</span>
-        <span className="ml-1.5 text-xs text-amber-300">−{bedel} puan</span>
+        {/*
+          Bedel TEMEL puandan düşülür. Günün Turu puanları ×10
+          gösterildiği için orada bu sayı on katı görünür — bunu
+          söylememek "3 puan mı kaybettim?" diye düşündürüyordu.
+        */}
+        <span className="ml-1.5 text-xs text-amber-300">
+          −{bedel} <span className="text-amber-300/60">(Günün Turu'nda −{bedel * 10})</span>
+        </span>
         <p className="text-xs text-slate-400">{aciklama}</p>
       </div>
     </div>

@@ -3,6 +3,79 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-08-30 — Joker bedeli gerçekten düşüyor
+
+> ⚠️ **Edge Function yeniden dağıtılmalı.** Puan hesabı değişti. Tur
+> üretimi değişmedi; mevcut turlar aynı.
+
+### Belirti
+
+Üç jokerin üçü de kullanıldı, tam isabet yapıldı ve puan neredeyse hiç
+düşmedi.
+
+### Sebep
+
+Joker bedelleri (3/2/2) **0–15'lik temel puan ölçeğine** göre
+belirlenmişti — üçünün toplamı temel puanın yaklaşık yarısı. Ama bedel
+**çarpandan sonra** uygulanıyordu.
+
+Faz 3C'de Günün Turu puanı ×10 ile büyütüldü; bedeller büyütülmedi ve
+sıra da gözden geçirilmedi. Sonuç:
+
+| | Jokersiz | 3 joker | Düşen |
+|---|---|---|---|
+| Günün Turu (eski) | 140 | 133 | **7 (%5)** |
+| Antrenman 60sn (eski) | 21 | 14 | 7 (%33) |
+
+Yani Günün Turu'nda joker pratikte **bedavaydı** — ve aynı hak, moda
+göre bambaşka fiyattaydı.
+
+### Düzeltme
+
+Bedel artık **çarpandan önce** düşülüyor. Oran her modda aynı kalıyor:
+
+| Senaryo | Jokersiz | 1 joker | 3 joker | Düşüş |
+|---|---|---|---|---|
+| Günün Turu · normal | 140 | 110 | 70 | %50 |
+| Günün Turu · usta | 130 | 100 | 60 | %54 |
+| Antrenman · normal 60sn | 21 | 17 | 11 | %48 |
+| Antrenman · normal 15sn | 52 | 40 | 24 | %54 |
+| Antrenman · usta 30sn | 65 | 50 | 30 | %54 |
+
+### Hesap tek yere alındı
+
+Çarpan ve joker sırası **iki ayrı yerde** yazılıydı: arayüzde ve Edge
+Function'da. Aynı sıra iki kez elle yazıldığı için biri düzeltilip
+diğerinin unutulması kaçınılmazdı — kural 1 ihlali.
+
+Yeni `nihaiPuanHesap` fonksiyonu `paketler/oyun-sayi` içinde; hem arayüz
+hem sunucu onu çağırıyor. Artık ayrışamazlar.
+
+### Yardım metni düzeltildi
+
+"−3 puan" yazıyordu ama Günün Turu'nda bu 30 puana denk geliyor.
+Kullanıcı "3 puan mı kaybettim?" diye düşünüyordu. Artık her iki ölçek
+de gösteriliyor ve üç jokerin puanın yaklaşık yarısını götürdüğü
+yazıyor.
+
+### Geçmiş veri
+
+Canlıda yalnızca 3 turda joker kullanılmış (2 Günün Turu, 1 Antrenman) —
+hepsi geliştirme testleri. Veri düzeltmesi gerekmedi.
+
+### Test
+
+`joker-bedeli.test.ts` — 17 test. Beş farklı mod/seviye/süre birleşiminde
+üç jokerin puanın en az üçte birini götürdüğü, tek jokerin bile görünür
+fark yarattığı ve **oranın modlar arasında tutarlı** olduğu doğrulanıyor.
+Ayrıca bedellerin ölçeğe uygun kaldığını denetleyen bir test var: puan
+ölçeği ileride yine değişirse bedellerin de gözden geçirilmesi gerektiğini
+hatırlatır.
+
+189 test, 5 e2e, tip denetimi ve derleme yeşil.
+
+---
+
 ## 2026-08-30 — Hedef artık asla tahtada olmuyor
 
 > ⚠️ **Bu sürüm üretilen tüm turları değiştirir.** Edge Function

@@ -76,6 +76,8 @@ export type {
   Uretim,
   JokerTip,
   JokerSonuc,
+  NihaiPuanGirdi,
+  NihaiPuan,
 } from './mantik.ts';
 export {
   cozumYogunluguDetay,
@@ -90,6 +92,7 @@ export {
   puanlaHesap,
   jokerVer,
   jokerliPuan,
+  nihaiPuanHesap,
   kullanilmayanTasIndeksleri,
   JOKER_MALIYET,
   JOKER_HAK_SAYISI,

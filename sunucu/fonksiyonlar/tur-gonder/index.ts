@@ -34,7 +34,7 @@ import {
   varsayilanBuyukAdet,
   dogrulaZinciri,
   puanlaHesap,
-  jokerliPuan,
+  nihaiPuanHesap,
   antrenmanToplamCarpani,
   GUNUN_TURU_CARPANI,
   SEVIYE_LISTESI,
@@ -135,15 +135,19 @@ Deno.serve(async (req: Request) => {
 
     const temel = puanlaHesap(seviye, dogr.uzaklik, kalan_sn, sure_sn, false);
 
-    // Antrenman: risk çarpanı (süre × seviye). Günün Turu: ×10 (küçük sayılar büyütülür).
-    let carpanli: number;
-    if (mod === 'antrenman') {
-      carpanli = Math.round(temel.toplam * antrenmanToplamCarpani(seviye, sure_sn));
-    } else {
-      carpanli = temel.toplam * GUNUN_TURU_CARPANI;
-    }
-
-    const nihai = jokerliPuan(carpanli, Array.isArray(jokerler) ? jokerler : []);
+    // Puanın tamamı oyun-sayi'da hesaplanıyor (kural 1): çarpan ve
+    // joker bedeli aynı fonksiyonda, aynı sırada. İstemci de aynı
+    // fonksiyonu çağırıyor; ikisi ayrışamaz.
+    const p = nihaiPuanHesap({
+      seviye,
+      fark: dogr.uzaklik,
+      kalanSaniye: kalan_sn,
+      toplamSaniye: sure_sn,
+      mod: mod === 'antrenman' ? 'antrenman' : 'gunun',
+      secilenSure: sure_sn,
+      kullanilanJokerler: Array.isArray(jokerler) ? jokerler : [],
+    });
+    const nihai = p.nihai;
 
     // --- Veritabanına yaz ---
     const { error: yazmaHata } = await supabase.from('tur_sonuc').insert({

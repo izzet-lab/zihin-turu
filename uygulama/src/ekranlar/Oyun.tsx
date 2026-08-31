@@ -1,13 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
 import {
-  puanlaHesap,
   jokerVer,
-  jokerliPuan,
+  nihaiPuanHesap,
   turdanUretim,
   kullanilmayanTasIndeksleri,
-  antrenmanToplamCarpani,
-  GUNUN_TURU_CARPANI,
   JOKER_HAK_SAYISI,
   JOKER_MALIYET,
   type Islem,
@@ -211,15 +208,28 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     const t: Tas = enYakinTas(durum, hedef);
     const fark = Math.abs(t.deger - hedef);
     // Tek kişilikte "ilk bulan" primi yok (rakip yok).
-    const temel = puanlaHesap(seviye, fark, kalan, toplamSure, false);
-    // Antrenman'da risk çarpanı (süre × seviye) seçilen SÜREYE göre
-    // uygulanır (joker ile uzatılmış süreye göre değil — oyuncu riski
-    // baştan üstlendi). Günün Turu'nda çarpan yok — puanlar kıyaslanabilir
-    // kalmalı.
-    const carpan = mod === 'antrenman' ? antrenmanToplamCarpani(seviye, sure) : GUNUN_TURU_CARPANI;
-    const carpanli = mod === 'antrenman' ? Math.round(temel.toplam * carpan) : temel.toplam * carpan;
-    const nihai = jokerliPuan(carpanli, kullanilanJokerler);
-    onBitti({ fark, puan: nihai, kalan, ulasilan: t.deger, jokerler: kullanilanJokerler, carpan, adimlar: t.yol });
+    // Puanın tamamı oyun-sayi'da hesaplanıyor (kural 1). Sıra —joker
+    // bedelinin çarpandan ÖNCE düşülmesi— orada tanımlı; burada ve
+    // Edge Function'da ayrı ayrı yazılırsa biri düzeltilip diğeri
+    // unutulur.
+    const p = nihaiPuanHesap({
+      seviye,
+      fark,
+      kalanSaniye: kalan,
+      toplamSaniye: toplamSure,
+      mod,
+      secilenSure: sure,
+      kullanilanJokerler,
+    });
+    onBitti({
+      fark,
+      puan: p.nihai,
+      kalan,
+      ulasilan: t.deger,
+      jokerler: kullanilanJokerler,
+      carpan: p.carpan,
+      adimlar: t.yol,
+    });
   }
 
   // Süre sayacı (yalnızca süreli modda)

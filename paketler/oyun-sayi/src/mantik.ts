@@ -654,3 +654,65 @@ export function jokerliPuan(temelToplam: number, kullanilanJokerler: readonly Jo
 export function bicimle(ad: Adim): string {
   return ad.a + ' ' + ad.islem + ' ' + ad.b + ' = ' + ad.sonuc;
 }
+
+/* ------------------------------------------------------------------ */
+/* Nihai puan — TEK KAYNAK                                             */
+/* ------------------------------------------------------------------ */
+
+/** Nihai puan hesabının girdisi. */
+export interface NihaiPuanGirdi {
+  seviye: string;
+  /** Hedefe uzaklık; 0 = tam isabet. */
+  fark: number;
+  kalanSaniye: number;
+  toplamSaniye: number;
+  mod: 'gunun' | 'antrenman';
+  /**
+   * Oyuncunun BAŞTA seçtiği süre. Antrenman çarpanı buna bakar; joker
+   * ile uzatılmış süreye değil, çünkü riski baştan üstlendi.
+   */
+  secilenSure: number;
+  kullanilanJokerler: readonly JokerTip[];
+  ilkBulanMi?: boolean;
+}
+
+/** Nihai puanın dökümü. */
+export interface NihaiPuan {
+  temel: Puan;
+  /** Joker bedeli düşülmüş TEMEL puan (çarpandan önce). */
+  temelJokerli: number;
+  carpan: number;
+  nihai: number;
+}
+
+/**
+ * Turun nihai puanını hesaplar.
+ *
+ * SIRA ÖNEMLİ: joker bedeli ÇARPANDAN ÖNCE düşülür.
+ *
+ * Neden: joker bedelleri (3/2/2) 0–15'lik temel puan ölçeğine göre
+ * belirlendi — üç jokerin tamamı temel puanın yaklaşık yarısı eder.
+ * Faz 3C'de Günün Turu puanı ×10 ile büyütüldü ama bedeller
+ * büyütülmedi ve bedel çarpandan SONRA uygulanıyordu. Sonuç: 140
+ * puanlık bir turda üç joker yalnızca 7 puan düşürüyordu (%5) — joker
+ * pratikte bedavaydı. Aynı üç joker Antrenman'da (çarpan 1.5) %33
+ * düşürüyordu; yani aynı hak, moda göre bambaşka fiyattaydı.
+ *
+ * Bedel çarpandan önce düşülünce oran her modda aynı kalıyor.
+ *
+ * Bu fonksiyon TEK KAYNAK: hem arayüz hem Edge Function bunu çağırır.
+ * Önceden sıralama iki yerde ayrı ayrı yazılıydı; biri düzeltilip
+ * diğeri unutulabilirdi.
+ */
+export function nihaiPuanHesap(g: NihaiPuanGirdi): NihaiPuan {
+  const temel = puanlaHesap(g.seviye, g.fark, g.kalanSaniye, g.toplamSaniye, g.ilkBulanMi ?? false);
+  const temelJokerli = jokerliPuan(temel.toplam, g.kullanilanJokerler);
+
+  const carpan =
+    g.mod === 'antrenman' ? antrenmanToplamCarpani(g.seviye, g.secilenSure) : GUNUN_TURU_CARPANI;
+
+  const nihai =
+    g.mod === 'antrenman' ? Math.round(temelJokerli * carpan) : temelJokerli * carpan;
+
+  return { temel, temelJokerli, carpan, nihai };
+}

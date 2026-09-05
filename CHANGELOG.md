@@ -3,6 +3,111 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-05 - Üyelik daveti baştan tasarlandı; iki sessiz hata düzeldi
+
+### Davet: soyut vaat yerine somut kayıp
+
+Eski davet gri bir metin satırıydı: "Üye olursan puanların kalıcı olur."
+Soyut, ve tam da o anda ekranda duran gerçek kaybı söylemiyordu. Artık
+kart ve içinde **oyuncunun kendi sayısı** geçiyor.
+
+- **Antrenman sonucu:** "114 puanın kaydedilmedi". 3. turdan itibaren ve
+  iki turda bir çıkar; ilk iki turda hiç çıkmaz. "Şimdi değil" denince o
+  oturumda susar — bıktırmak hiç göstermemekten kötü.
+- **Günün Turu sonucu:** "150 puan aldın ama lige işlemedi". Günde tek
+  hak olduğu için tek seferlik fırsat: her seferinde ve vurgulu çıkar.
+  Konumu puanın hemen altı — önce sayfanın en dibindeydi, paylaşım kartı
+  uzun olduğu için oyuncuların çoğu oraya hiç ulaşmıyordu.
+- **Lig:** "Sen bu listede yoksun". Liste boş olsa da gösterilir.
+- **Kurulum:** seri sayacının yanında "3 günlük serin kaydedilmiyor".
+
+Hiçbiri açılır pencere değil; akışı kesmez, kapatılabilir, kapatılınca o
+oturumda tekrar çıkmaz. Karar mantığı `uyelik-daveti.ts` içinde saf ve
+test edilebilir.
+
+### Hata 1: "Giriş yap ve kaydet" sözü boşa çıkıyordu
+
+Misafirin oynadığı Günün Turu yalnızca React state'inde tutuluyordu. Ama
+girişin iki gerçek yolu da sayfayı baştan yüklüyor: e-postadaki sihirli
+bağlantı ve Google ile giriş. Sayfa yeniden yüklenince tur siliniyor,
+oyuncu giriş yapıyor ve turu yine lige işlemiyordu.
+
+Ayrıca gönderim yalnızca profili HAZIR olan kullanıcı için yapılıyordu.
+Yeni üye olan — yani asıl dönüşüm hedefi — kullanıcı adı ekranına
+gidiyor ve turu sessizce kayboluyordu.
+
+Tur artık kalıcı depoda saklanıyor (yine tohum ve adımlar, tur içeriği
+değil — kural 3) ve kullanıcı adı seçildikten sonra da gönderiliyor.
+
+### Hata 2: reklamı izleyen oyuncu turunu kaybediyordu
+
+İstemci, ödüllü reklam izleyene dördüncü joker hakkını veriyordu. Ama
+sunucu doğrulaması üçten fazlasını reddediyordu: "Joker hakkı aşıldı."
+Yani reklamı izleyip dört joker kullanan **meşru** oyuncunun turu
+sunucuda reddediliyor, puanı hiç işlenmiyordu.
+
+Üst sınır artık tek kaynakta ve moda bağlı: Antrenman'da 3 + 1 ödüllü
+hak, Günün Turu'nda 3 (orada joker reklamı zaten yok — lig adaleti).
+
+> **Edge Function dağıtıldı — sürüm 11.** Canlıdaki kodun yeni joker
+> sınırını içerdiği doğrulandı. Dağıtım komutu `--import-map` bayrağı
+> olmadan başarısız oluyor; CLAUDE.md'deki komut buna göre düzeltildi.
+
+### Joker satırı okunurluğu
+
+"Süre ekle, Süre ekle, Süre ekle, Süre ekle" yerine "Süre ekle ×4".
+
+## 2026-09-05 - Play Store paketi: reklam kimliği geri kondu, imzalı AAB üretildi
+
+### Çelişki: reklam kimliği izni kaldırılmıştı
+
+Manifest, reklam kimliği (AAID) iznini `tools:node="remove"` ile açıkça
+kaldırıyordu. Gerekçesi eski kuraldı: uygulama çocuğa yönelik sayılıyor ve
+hiç kişiselleştirme yapılmıyordu.
+
+Ağustos 2026'da kural değişti (kural 6): 18 yaş üstüne UMP ile onay sorulur
+ve onay verirse kişiselleştirilmiş reklam gösterilir. Ama izin kaldırılmış
+olduğu için bu çalışmıyordu — AdMob reklam kimliğini okuyamadığından onay
+veren kullanıcıya da kişiselleştirilmemiş reklam gidiyordu. Onay ekranı
+olmayan bir seçim sunuyordu ve yasal metindeki vaat karşılıksızdı. Üstelik
+F maddesi "Data safety formu reklam kimliği toplandığını söylemeli" diyordu;
+izin yokken bu beyan yanlış olurdu.
+
+Proje sahibinin kararıyla izinler geri kondu (`AD_ID` ve Privacy Sandbox
+karşılıkları). Kişiselleştirmenin asıl kapısı izin değil, `reklam.ts`
+içindeki `npa` bayrağı: **18 altına hâlâ her zaman `npa: true` gidiyor**,
+yani kural 6'nın yaş yasağı olduğu gibi duruyor.
+
+Yasal metinler bu gerçeğe göre düzeltildi: "reklam kimliği toplanmaz" diyen
+ifadeler çıkarıldı, yerine reklam kimliğinin Google'a iletildiği ama 18 altı
+için yalnızca sayım ve sahtecilik denetiminde kullanıldığı, kişiselleştirme
+için kullanılmadığı yazıldı. Veri tablosuna ve üçüncü taraf tablosuna da
+eklendi. **Bu metinler avukat onayından geçmelidir** — dosya başında uyarı var.
+
+### Paket üretimi
+
+- `paket-uret.sh` eklendi. Web derlemesi, Capacitor senkronu ve imzalı paket
+  üretimini tek komutta yapıyor. Gradle Java 17+ istiyor ama bu makinede
+  sistem varsayılanı Java 8 ve `./gradlew` doğrudan hata veriyordu; betik
+  uygun JDK'yı kendisi buluyor (önce `JAVA_HOME`, sonra Android Studio'nun
+  kendi JDK'sı).
+- Sürüm 1.3.0 (versionCode 7) → **1.4.0 (versionCode 8)**.
+- İmzalı AAB ve APK üretildi, R8 küçültme ve kaynak temizleme açık.
+- Data safety notları gerçek duruma göre güncellendi: reklam kimliği artık
+  "toplanıyor ve Google ile paylaşılıyor" olarak beyan edilecek.
+
+### R8 sonrası doğrulama
+
+Paketin içi denetlendi: MainActivity, Capacitor köprüsü, SystemBars (güvenli
+alan enjeksiyonunu yapan sınıf), AdMob, UMP onay SDK'sı, Crashlytics,
+Analytics ve yerel bildirim eklentisi küçültmeden sağ çıktı. UMP sınıfları
+yeniden adlandırılmış ama duruyor — adla çağrılmadıkları için sorun değil.
+Web varlıkları ve imza yerinde, sürüm bilgisi doğru.
+
+> **Eksik kalan:** Paketin gerçekten AÇILDIĞI cihazda doğrulanmadı — bu
+> makinede bağlı telefon ve kurulu emülatör yok. İmzalı APK proje sahibine
+> gönderildi; Play'e yüklemeden önce telefonda bir kez açılmalı.
+
 ## 2026-09-05 - Antrenman sonuç ekranı sadeleşti, üstteki beyaz şerit gitti
 
 ### Sonuç ekranı

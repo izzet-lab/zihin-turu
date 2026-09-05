@@ -4,6 +4,14 @@
  * Zihin Turu projesinin gerçek durumunu yansıtan yasal metinler.
  *
  * ⚠️ AVUKAT ONAYINDAN SONRA YAYINLANMALIDIR
+ *
+ * 5 EYLÜL 2026 DEĞİŞİKLİĞİ — YENİDEN ONAY GEREKTİRİR:
+ * Reklam kimliği (AAID) izni uygulamaya geri kondu; onay veren 18 yaş
+ * üstü kullanıcıya kişiselleştirilmiş reklam gösterilebiliyor. Metinde
+ * "reklam kimliği toplanmaz" diyen ifadeler bu yüzden düzeltildi —
+ * eskisi artık doğru değildi. 18 altı için kişiselleştirme yasağı
+ * aynen sürüyor.
+ *
  * Bu metinler 20 Ağustos 2026'da güncellenmiştir. Önceki onay (19 Ağustos
  * 2026) asgari 8 yaş ve kişiselleştirmesiz reklam varsayımıyla verilmişti.
  * Yeni metinler asgari 13 yaş, veli onayı ve UMP üzerinden reklam
@@ -76,6 +84,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Çökme kayıtları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Kullanım olayları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Reklam onayı <span className="text-slate-500">(Android, 18+)</span></td><td className="px-3 py-2">Kişiselleştirilmiş reklam onay durumu — Google UMP SDK</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Reklam kimliği (AAID) <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Google AdMob'a iletilir. 18 yaş üstü onay verirse reklam kişiselleştirmesi; onay yoksa ve 18 altında yalnızca reklam sayımı ve sahtecilik denetimi</td><td className="px-3 py-2">Onay geri alınabilir</td></tr>
             </tbody>
           </table>
           <p className="text-xs text-slate-500">
@@ -138,8 +147,11 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           <ul className="list-disc pl-5 space-y-1">
             <li>
               <strong>18 yaş altı kullanıcılar:</strong> Kişiselleştirilmiş reklam
-              gösterilmez. Reklam kimliği (AAID) toplanmaz, davranışsal profil
-              çıkarılmaz. Yalnızca genel içerikli reklamlar gösterilir.
+              gösterilmez, onay da sorulmaz; ilgi alanlarına göre davranışsal
+              profil çıkarılmaz. Reklam kimliğiniz (AAID) Google'a iletilir ama
+              yalnızca reklamın kaç kez gösterildiğini saymak ve sahteciliği
+              önlemek için kullanılır. Yalnızca genel içerikli reklamlar
+              gösterilir.
             </li>
             <li>
               <strong>18 yaş ve üzeri kullanıcılar:</strong> İlk kullanımda Google'ın
@@ -264,7 +276,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Firebase Crashlytics</td><td className="px-3 py-2">Çökme raporları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Analytics</td><td className="px-3 py-2">Kullanım olayları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Remote Config</td><td className="px-3 py-2">Oyun ayarlarını güncelleme</td><td className="px-3 py-2">Hayır (veri toplamaz)</td></tr>
-              <tr><td className="px-3 py-2">Google AdMob</td><td className="px-3 py-2">Reklam gösterimi</td><td className="px-3 py-2">Hayır</td></tr>
+              <tr><td className="px-3 py-2">Google AdMob</td><td className="px-3 py-2">Reklam gösterimi; reklam kimliği (AAID) Google'a iletilir</td><td className="px-3 py-2">Reklam kişiselleştirmesi kapatılabilir</td></tr>
               <tr><td className="px-3 py-2">Google UMP SDK</td><td className="px-3 py-2">Reklam kişiselleştirmesi onay yönetimi (yalnızca 18+)</td><td className="px-3 py-2">Onay geri alınabilir</td></tr>
             </tbody>
           </table>
@@ -304,9 +316,11 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
           </p>
           <p>
             <strong>18 yaş altındaki tüm kullanıcılara</strong> kişiselleştirilmiş
-            reklam gösterilmez — yaştan bağımsız olarak onay akışı da sorulmaz.
-            Reklam kimliği (AAID) toplanmaz, davranışsal profil çıkarılmaz.
-            Yalnızca "Teen" (13+) derecesindeki genel reklamlar gösterilir.
+            reklam gösterilmez — onay akışı da sorulmaz. İlgi alanlarına göre
+            davranışsal profil çıkarılmaz. Reklam kimliği (AAID) yalnızca reklam
+            sayımı ve sahtecilik denetimi için kullanılır, kişiselleştirme için
+            kullanılmaz. Yalnızca "Teen" (13+) derecesindeki genel reklamlar
+            gösterilir.
           </p>
           <p>
             Çocuk kullanıcılardan yalnızca hizmetin çalışması için gereken en az veri

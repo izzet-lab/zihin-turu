@@ -116,8 +116,19 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 | # | Katman | Nasıl güncellenir |
 |---|---|---|
 | 1 | **Veritabanı** (tablolar, tetikleyiciler) | Supabase SQL editörü / migration |
-| 2 | **Edge Functions** (puan doğrulama) | `npx supabase functions deploy` |
+| 2 | **Edge Functions** (puan doğrulama) | aşağıdaki komut — **`--import-map` şart** |
 | 3 | **Web + Android** (arayüz) | `git push` → Cloudflare otomatik |
+
+**Edge Function dağıtım komutu:**
+
+```bash
+npx supabase functions deploy tur-gonder --project-ref ruoyofzujzmhwvumquzu --import-map sunucu/fonksiyonlar/import_map.json
+```
+
+`--import-map` olmadan dağıtım **başarısız olur**: fonksiyon oyun
+paketini `@zihinturu/oyun-sayi` diye çağırıyor, harita verilmezse Deno
+bunu çözemez ve paketleme 400 döner. Harita ayrıca paket kaynaklarının
+da yüklenmesini sağlar — onsuz yalnızca fonksiyon dosyası gider.
 
 Yeni arayüz kodu olmayan sütunları arayacağı için **önce veritabanı,
 sonra fonksiyon, en son push.**
@@ -214,10 +225,22 @@ Alt banner gezinme çubuğunun üstüne alındı (AdMob geçersiz tıklama
 riski), Yardım gerçek arayüzü anlatır hale getirildi, dokunma hedefleri
 44px'e çıkarıldı. Ayrıntı `CHANGELOG.md`'de.
 
-### Şimdi — F — Play Store paketi
-AAB, versionCode otomatiği, R8 küçültme sonrası çalışma doğrulaması,
-Data safety özeti. **Data safety formu artık reklam kimliği
-toplandığını söylemeli** — yasal metinlerle birebir tutarlı olmalı.
+### F — Play Store paketi — büyük ölçüde bitti (5 Eylül 2026)
+İmzalı AAB üretildi (1.4.0, versionCode 8), `paket-uret.sh` ile tek
+komuta indirildi, R8 sonrası paket içeriği denetlendi, Data safety
+notları gerçek duruma göre yazıldı.
+
+Yol boyunca bir çelişki çıktı ve karara bağlandı: manifest reklam
+kimliği iznini kaldırıyordu, bu yüzden kural 6'nın "18+ onay verirse
+kişiselleştirilmiş reklam" vaadi çalışmıyordu. İzin geri kondu; 18 altı
+yasağı `npa` bayrağıyla aynen sürüyor. Ayrıntı `CHANGELOG.md`'de.
+
+**Kalan iki iş:**
+1. Paket bir cihazda açılıp çalıştığı doğrulanmalı (R8'in bir şeyi
+   bozmadığından emin olmanın tek kesin yolu). Bu makinede telefon ve
+   emülatör yok.
+2. Yasal metinler avukat onayından geçmeli — reklam kimliği ifadeleri
+   değişti.
 
 ### Faz 4 — Düello
 Kapalı testin 14 günü işlerken yazılacak. Eşleştirme kuyruğu (ELO),

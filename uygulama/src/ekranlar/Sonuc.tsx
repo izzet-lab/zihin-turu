@@ -11,12 +11,14 @@ import {
   type SayiVeri,
   type JokerTip,
 } from '@zihinturu/oyun-sayi';
-import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
+import { kartMetni, kartDataUrl, jokerOzeti, type Kayit } from '../kart';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 import SayanSayi from '../bilesenler/SayanSayi';
+import UyelikDaveti from '../bilesenler/UyelikDaveti';
+import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
 /** Sayıyı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
 function sayiGoster(c: number): string {
@@ -258,6 +260,34 @@ export default function Sonuc({
     }
   }
 
+  // --- Misafir daveti ---
+  // Karar mantığı uyelik-daveti.ts içinde; burada yalnızca uygulanır.
+  // `kapatmaSayaci` state'i, "Şimdi değil" dendiğinde bileşenin yeniden
+  // çizilmesini sağlar (kapatma hafızası React state'i değil).
+  const [kapatmaSayaci, setKapatmaSayaci] = useState(0);
+  function davetiKapat(yer: 'antrenman-sonuc' | 'gunun-sonuc') {
+    davetKapat(yer);
+    setKapatmaSayaci((n) => n + 1);
+  }
+
+  const antrenmanDaveti =
+    mod === 'antrenman' &&
+    davetGosterilsinMi({
+      yer: 'antrenman-sonuc',
+      girisYapildiMi,
+      turSayisi: oturumPuanSonrasi?.turSayisi ?? 0,
+      kapatildiMi: davetKapatildiMi('antrenman-sonuc'),
+    });
+
+  const gununDaveti =
+    mod === 'gunun' &&
+    davetGosterilsinMi({
+      yer: 'gunun-sonuc',
+      girisYapildiMi,
+      kapatildiMi: davetKapatildiMi('gunun-sonuc'),
+    });
+  void kapatmaSayaci; // yeniden çizim tetikleyicisi
+
   // Oturum satırı 2. turdan itibaren görünür (ilk turda tur puanıyla aynı).
   const oturumGoster =
     mod === 'antrenman' && oturumPuanSonrasi != null && oturumPuanSonrasi.turSayisi > 1;
@@ -358,7 +388,7 @@ export default function Sonuc({
 
           {sonuc.jokerler.length > 0 && (
             <div className="mt-2 text-xs text-amber-300" data-alan="kullanilan-jokerler">
-              Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
+              Joker: {jokerOzeti(sonuc.jokerler)}
             </div>
           )}
         </div>
@@ -399,16 +429,38 @@ export default function Sonuc({
             {oturumPuanSonrasi!.turSayisi}. tur
           </div>
         )}
-        {/* 5) Üyelik daveti yalnızca oturum satırıyla birlikte çıkar;
-            ilk turda ikisi birden fazla geliyordu. */}
-        {oturumGoster && !girisYapildiMi && (
-          <button
-            onClick={onGirisAc}
-            className="mt-2 w-full text-center text-[11px] text-slate-600 hover:text-cyan-400 transition-colors"
-            data-alan="uyelik-notu"
-          >
-            Üye olursan puanların kalıcı olur ve lige işler →
-          </button>
+        {/* 5) Üyelik daveti — gri bir metin satırı yerine kart, ve
+            içinde oyuncunun kendi sayısı. Her turda değil: 3. turdan
+            itibaren iki turda bir, "Şimdi değil" denince o oturumda hiç. */}
+        {antrenmanDaveti && oturumPuanSonrasi && (
+          <UyelikDaveti
+            data-alan="uyelik-daveti"
+            baslik={`${oturumPuanSonrasi.toplamPuan} puanın kaydedilmedi`}
+            aciklama="Üye ol, oturum puanların XP'ye işlesin ve sıralamalarda yerini al."
+            eylemMetni="Üye ol"
+            onEylem={onGirisAc}
+            onKapat={() => davetiKapat('antrenman-sonuc')}
+          />
+        )}
+
+        {/* Günün Turu daveti — dönüşüm için EN KRİTİK yer.
+            Misafir günün turunu oynadığında lige hiç yazılmıyor ve
+            bunu bilmiyordu. Günde tek hak olduğu için bu tek seferlik
+            bir fırsat: seyrekleştirilmez, vurgulu gösterilir.
+
+            KONUM: puanın hemen altında, çözümden ve paylaşım kartından
+            ÖNCE. Önce sayfanın en altındaydı — paylaşım kartı uzun
+            olduğu için oyuncuların çoğu oraya hiç ulaşmıyordu. */}
+        {gununDaveti && (
+          <UyelikDaveti
+            data-alan="uyelik-daveti"
+            vurgulu
+            baslik={`${sonuc.puan} puan aldın ama lige işlemedi`}
+            aciklama="Bugünkü turun sıralamaya girsin mi? Giriş yaptığında bu tur sunucuya gönderilir."
+            eylemMetni="Giriş yap ve kaydet"
+            onEylem={onGirisAc}
+            onKapat={() => davetiKapat('gunun-sonuc')}
+          />
         )}
 
         {/* Çözümün tahtaya el yazısıyla yazılması */}
@@ -470,16 +522,6 @@ export default function Sonuc({
           </div>
         )}
 
-        {/* Misafir: "Bu turu lige işlemek için giriş yap" — ana eylem
-            düğmesinden daha az baskın olmalı, dikkat çalmadan bilgi vermeli. */}
-        {mod === 'gunun' && !girisYapildiMi && (
-          <button
-            onClick={onGirisAc}
-            className="mt-6 w-full text-center text-[11px] text-slate-500 hover:text-cyan-400 transition-colors"
-          >
-            Giriş yaparsan puanın lige işler →
-          </button>
-        )}
 
         {mod === 'gunun' ? (
           <>

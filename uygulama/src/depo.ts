@@ -514,3 +514,55 @@ export function resinDegilMi(): boolean {
   const yas = yasiHesapla();
   return yas != null && yas < 18;
 }
+
+/* ------------------------------------------------------------------ */
+/* Misafirken oynanan Günün Turu — girişten sonra gönderilmek üzere    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * NEDEN KALICI SAKLANIYOR
+ * Bu tur önceden yalnızca React state'inde duruyordu. Ama girişin iki
+ * gerçek yolu da sayfayı baştan yüklüyor: e-postadaki sihirli bağlantı
+ * ve Google ile giriş. Sayfa yeniden yüklenince state siliniyordu ve
+ * "Giriş yap ve kaydet" sözü sessizce boşa çıkıyordu — oyuncu giriş
+ * yapıyor, turu yine lige işlemiyordu.
+ *
+ * Tur içeriği DEĞİL, tohum ve adımlar saklanır (kural 3).
+ */
+
+const BEKLEYEN_TUR_ANAHTAR = 'zihinturu.bekleyen-tur';
+
+export interface BekleyenTur {
+  oyun: string;
+  mod: string;
+  seviye: string;
+  tarih: string;
+  tohum: number;
+  adimlar: { a: number; b: number; islem: string; sonuc: number }[];
+  sure_sn: number;
+  jokerler: string[];
+}
+
+export function bekleyenTurYaz(t: BekleyenTur): void {
+  try {
+    genelYaz(BEKLEYEN_TUR_ANAHTAR, JSON.stringify(t));
+  } catch {
+    /* seri hale getirilemedi — tur kaybolur, oyun akışı bozulmaz */
+  }
+}
+
+export function bekleyenTurOku(): BekleyenTur | null {
+  const ham = genelOku(BEKLEYEN_TUR_ANAHTAR);
+  if (!ham) return null;
+  try {
+    const t = JSON.parse(ham) as BekleyenTur;
+    if (!t || typeof t.tohum !== 'number' || !Array.isArray(t.adimlar)) return null;
+    return t;
+  } catch {
+    return null;
+  }
+}
+
+export function bekleyenTurSil(): void {
+  genelYaz(BEKLEYEN_TUR_ANAHTAR, '');
+}

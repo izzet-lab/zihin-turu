@@ -6,6 +6,7 @@ import {
   turdanUretim,
   kullanilmayanTasIndeksleri,
   JOKER_HAK_SAYISI,
+  ODULLU_EK_JOKER,
   JOKER_MALIYET,
   type Islem,
   type SayiVeri,
@@ -168,7 +169,10 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     try {
       const kazandi = await odulluReklamGoster();
       if (kazandi) {
-        setJokerHakki((h) => h + 1); // 1 ek joker hakkı
+        // Ek hak sayısı oyun paketinde tanımlı (ODULLU_EK_JOKER).
+        // Sunucu doğrulaması da aynı sabite bakıyor; burada elle "1"
+        // yazılsaydı ikisi ayrışabilir ve meşru gönderim reddedilirdi.
+        setJokerHakki((h) => h + ODULLU_EK_JOKER);
         setReklamIzlendi(true); // Tur başına en fazla 1 kez
       }
     } finally {

@@ -359,6 +359,20 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
                 />
               ))}
             </div>
+            {/* Misafirin serisi ve XP'si yok — kayıp burada, sayacın
+                yanında söylenir. Genel bir vaat değil, oyuncunun kendi
+                serisi. */}
+            {!kullanici && (
+              <button
+                onClick={() => onGirisAc?.()}
+                data-alan="seri-misafir-notu"
+                className="zt-dokunma-alani mt-3 block w-full text-left text-[11px] text-amber-300/80 hover:text-amber-200"
+              >
+                {seri > 0
+                  ? `${seri} günlük serin kaydedilmiyor — üye ol.`
+                  : 'Serin kaydedilmiyor — üye ol.'}
+              </button>
+            )}
           </div>
         )}
 

@@ -13,7 +13,7 @@
  * doldurur, eksik bildirilen joker bedeli kaçırır.
  */
 
-import { SEVIYELER, ANTRENMAN_SURE_CARPANI, JOKER_HAK_SAYISI, type JokerTip } from './mantik.ts';
+import { SEVIYELER, ANTRENMAN_SURE_CARPANI, jokerUstSiniri, type JokerTip } from './mantik.ts';
 
 /** Denetim sonucu: geçerliyse hata yok. */
 export type GonderimHata = string | null;
@@ -110,7 +110,11 @@ export function gonderimDogrula(g: GonderimGirdi): GonderimHata {
 
   // --- Jokerler ---
   if (!Array.isArray(g.jokerler)) return 'Geçersiz joker listesi.';
-  if (g.jokerler.length > JOKER_HAK_SAYISI) return 'Joker hakkı aşıldı.';
+  // Üst sınır moda göre değişir: Antrenman'da ödüllü reklamla bir ek
+  // hak kazanılabilir, Günün Turu'nda kazanılamaz.
+  if (g.jokerler.length > jokerUstSiniri(g.mod === 'gunun' ? 'gunun' : 'antrenman')) {
+    return 'Joker hakkı aşıldı.';
+  }
   for (const j of g.jokerler) {
     if (typeof j !== 'string' || !JOKER_TURLERI.includes(j)) return 'Bilinmeyen joker.';
   }

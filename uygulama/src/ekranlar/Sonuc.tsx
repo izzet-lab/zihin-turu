@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Tur } from '@zihinturu/cekirdek';
-import { sayiTuru, type SayiVeri } from '@zihinturu/oyun-sayi';
+import {
+  sayiTuru,
+  SEVIYELER,
+  SEVIYE_LISTESI,
+  ANTRENMAN_SURE_CARPANI,
+  antrenmanCarpani,
+  seviyeCarpani,
+  nihaiPuanHesap,
+  type SayiVeri,
+  type JokerTip,
+} from '@zihinturu/oyun-sayi';
 import { kartMetni, kartDataUrl, JOKER_ETIKETLERI, type Kayit } from '../kart';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
@@ -8,9 +18,93 @@ import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 import SayanSayi from '../bilesenler/SayanSayi';
 
-/** Çarpanı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
-function carpanGoster(c: number): string {
+/** Sayıyı kısa gösterir: 8 → "8", 3.75 → "3.75", 1.20 → "1.2". */
+function sayiGoster(c: number): string {
   return String(Number(c.toFixed(2)));
+}
+
+/**
+ * Sonucu insan diliyle söyler. Rakam ("3 fark") kimseye bir şey
+ * anlatmıyordu; "yakın mı uzak mı" sorusunun cevabı seviyeye göre
+ * değişir, o yüzden eşikler seviyenin kendi toleransından okunur
+ * (kural 1: eşik burada yeniden tanımlanmaz).
+ */
+function hukumMetni(seviye: string, fark: number): string {
+  if (fark === 0) return 'Tam isabet 🎯';
+  const tolerans = SEVIYELER[seviye]?.tolerans;
+  if (tolerans) {
+    if (fark <= tolerans[0]!) return 'Çok yaklaştın';
+    if (fark <= tolerans[1]!) return 'Yaklaştın';
+  }
+  return 'Bu sefer olmadı';
+}
+
+/**
+ * Çarpanı sayı olarak göstermek ("×0.5") kimseye bir şey anlatmıyordu.
+ * Bunun yerine tek cümle kurulur:
+ *
+ * - Çarpan 1'in üstündeyse övgü: "Kısa süre seçtin, puanın 2.5 katına
+ *   çıktı."
+ * - Değilse üst seviyeye davet: "Zor seviyede aynı sonuç 12 puan
+ *   ederdi." Alternatif puan tahmin edilmez, aynı girdilerle oyun
+ *   paketine yeniden hesaplatılır — çarpan tablosunun kopyası burada
+ *   yaşamaz.
+ */
+function carpanCumlesi(g: {
+  seviye: string;
+  secilenSure: number;
+  fark: number;
+  kalan: number;
+  toplamSure: number;
+  jokerler: JokerTip[];
+  puan: number;
+  carpan: number;
+}): string | null {
+  if (g.puan <= 0) return null;
+
+  const sCarpan = seviyeCarpani(g.seviye);
+  const zCarpan = antrenmanCarpani(g.secilenSure);
+
+  if (g.carpan > 1) {
+    const kat = `puanın ${sayiGoster(g.carpan)} katına çıktı`;
+    if (zCarpan > 1 && sCarpan > 1) {
+      return `Zor bir seviyede kısa süre seçtin, ${kat}.`;
+    }
+    if (zCarpan > 1) return `Kısa süre seçtin, ${kat}.`;
+    return `Üst seviyede oynadın, ${kat}.`;
+  }
+
+  // Aynı sonucun başka koşullarda kaç puan edeceğini oyun paketine sor.
+  const yenidenHesapla = (seviye: string, secilenSure: number): number =>
+    nihaiPuanHesap({
+      seviye,
+      fark: g.fark,
+      kalanSaniye: g.kalan,
+      toplamSaniye: g.toplamSure,
+      mod: 'antrenman',
+      secilenSure,
+      kullanilanJokerler: g.jokerler,
+    }).nihai;
+
+  // Önce bir üst seviye.
+  const sira = SEVIYE_LISTESI.findIndex((sv) => sv.anahtar === g.seviye);
+  const ustSeviye = sira >= 0 ? SEVIYE_LISTESI[sira + 1] : undefined;
+  if (ustSeviye) {
+    const alt = yenidenHesapla(ustSeviye.anahtar, g.secilenSure);
+    if (alt > g.puan) return `${ustSeviye.etiket} seviyede aynı sonuç ${alt} puan ederdi.`;
+  }
+
+  // Seviye yükseltilemiyorsa daha kısa süre öner.
+  const sureler = Object.keys(ANTRENMAN_SURE_CARPANI)
+    .map(Number)
+    .sort((a, b) => b - a);
+  const kisaSure = sureler.find((sn) => (g.secilenSure > 0 ? sn < g.secilenSure : true));
+  if (kisaSure) {
+    const alt = yenidenHesapla(g.seviye, kisaSure);
+    if (alt > g.puan) return `${kisaSure} saniyede aynı sonuç ${alt} puan ederdi.`;
+  }
+
+  return null;
 }
 
 /**
@@ -77,6 +171,8 @@ function motivasyonSecimi(hedef: number, fark: number, adimSayisi: number, kalan
 
 interface Props {
   tur: Tur;
+  /** Seviye anahtarı (cocuk/normal/zor/usta) — çarpan cümlesi için gerekli. */
+  seviye: string;
   seviyeEtiket: string;
   mod: Mod;
   sure: number;
@@ -107,6 +203,7 @@ interface Props {
 
 export default function Sonuc({
   tur,
+  seviye,
   seviyeEtiket,
   mod,
   sure,
@@ -161,6 +258,24 @@ export default function Sonuc({
     }
   }
 
+  // Oturum satırı 2. turdan itibaren görünür (ilk turda tur puanıyla aynı).
+  const oturumGoster =
+    mod === 'antrenman' && oturumPuanSonrasi != null && oturumPuanSonrasi.turSayisi > 1;
+
+  const carpanNotu =
+    mod === 'antrenman' && sonuc.carpan != null
+      ? carpanCumlesi({
+          seviye,
+          secilenSure: sure,
+          fark: sonuc.fark,
+          kalan: sonuc.kalan,
+          toplamSure: sonuc.toplamSure,
+          jokerler: sonuc.jokerler,
+          puan: sonuc.puan,
+          carpan: sonuc.carpan,
+        })
+      : null;
+
   // Çözüm ancak tur bittikten SONRA açılır (CLAUDE.md 6).
   const cozum = useMemo(() => sayiTuru.cozumBul(tur), [tur]);
 
@@ -203,7 +318,8 @@ export default function Sonuc({
           </div>
         )}
 
-        {/* Puan / durum */}
+        {/* 1) Sonuç — insan diliyle. Rakam ("3 fark") başlıkta değil,
+            altında küçük gri açıklamada durur. */}
         <div className="text-center">
           <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
             {mod === 'gunun' ? 'Günün Turu' : 'Antrenman'} · {seviyeEtiket}
@@ -212,29 +328,37 @@ export default function Sonuc({
             data-alan="hukum"
             className={`mt-2 text-4xl font-black ${tam ? 'text-cyan-300' : 'text-slate-200'}`}
           >
-            {tam ? 'Tam isabet 🎯' : `${sonuc.fark} fark`}
+            {hukumMetni(seviye, sonuc.fark)}
           </div>
-          <div className="mt-1 text-lg text-slate-400">
-            <SayanSayi
-              deger={sonuc.puan}
-              className="zt-rakam font-black text-white"
-              data-alan="puan"
-            />{' '}
-            puan
-          </div>
-          {mod === 'antrenman' && sonuc.carpan != null && (
-            <div className="mt-1 text-xs text-slate-500" data-alan="carpan-etiket">
-              {seviyeEtiket} · {sure > 0 ? `${sure}sn` : 'süresiz'} · ×{carpanGoster(sonuc.carpan)}
-            </div>
-          )}
-          {sonuc.jokerler.length > 0 && (
-            <div className="mt-1 text-xs text-amber-300" data-alan="kullanilan-jokerler">
-              Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
+          {!tam && (
+            <div className="mt-1 text-sm text-slate-500" data-alan="fark-notu">
+              hedefe {sonuc.fark} kaldı
             </div>
           )}
           {!tam && (
             <div className="mt-3 text-sm text-slate-400" data-alan="motivasyon">
               {motivasyonSecimi(veri.hedef, sonuc.fark, sonuc.adimlar.length, sonuc.kalan, sure)}
+            </div>
+          )}
+
+          {/* 2) Puan — TEK YER. Tur puanı ekranda başka hiçbir yerde
+              tekrar edilmez. */}
+          <div className="mt-6 text-5xl font-black text-white">
+            +
+            <SayanSayi deger={sonuc.puan} className="zt-rakam font-black text-white" data-alan="puan" />{' '}
+            <span className="text-2xl text-slate-400">puan</span>
+          </div>
+
+          {/* 3) Çarpan, sayı olarak değil cümle olarak. */}
+          {mod === 'antrenman' && sonuc.carpan != null && carpanNotu && (
+            <div className="mt-2 text-sm text-slate-400" data-alan="carpan-cumle">
+              {carpanNotu}
+            </div>
+          )}
+
+          {sonuc.jokerler.length > 0 && (
+            <div className="mt-2 text-xs text-amber-300" data-alan="kullanilan-jokerler">
+              Joker: {sonuc.jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ')}
             </div>
           )}
         </div>
@@ -266,26 +390,18 @@ export default function Sonuc({
           </div>
         )}
 
-        {/* Oturum toplamı — Antrenman'ın "bir tane daha" motivasyon kartı.
-            Sönük bir yan bilgi olarak kalmasın diye görsel olarak vurgulu:
-            büyük, kalın sayı; hafif cyan çerçeve/dolgu. */}
-        {mod === 'antrenman' && oturumPuanSonrasi && (
-          <div
-            data-alan="oturum-ozet"
-            className="mt-5 rounded-2xl border border-cyan-300/40 bg-cyan-300/10 px-5 py-4 text-center"
-          >
-            <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-200/80">
-              Oturum toplamı:
-            </div>
-            <div className="mt-1 text-4xl font-black tabular-nums text-cyan-100">
-              {oturumPuanSonrasi.toplamPuan} <span className="text-lg font-bold text-cyan-200/70">puan</span>
-            </div>
-            <div className="mt-2 text-xs text-cyan-200/70">
-              {oturumPuanSonrasi.turSayisi}. tur · Bu tur: {sonuc.puan} puan
-            </div>
+        {/* 4) Oturum toplamı — kart değil, tek satır. İlk turda hiç
+            gösterilmez: o an oturum toplamı tur puanının aynısı olur ve
+            aynı sayıyı ikinci kez göstermek ekranı kalabalıklaştırır. */}
+        {oturumGoster && (
+          <div className="mt-5 text-center text-sm text-cyan-200/80" data-alan="oturum-ozet">
+            Bu oturum: <span className="font-bold tabular-nums">{oturumPuanSonrasi!.toplamPuan} puan</span> ·{' '}
+            {oturumPuanSonrasi!.turSayisi}. tur
           </div>
         )}
-        {mod === 'antrenman' && oturumPuanSonrasi && !girisYapildiMi && (
+        {/* 5) Üyelik daveti yalnızca oturum satırıyla birlikte çıkar;
+            ilk turda ikisi birden fazla geliyordu. */}
+        {oturumGoster && !girisYapildiMi && (
           <button
             onClick={onGirisAc}
             className="mt-2 w-full text-center text-[11px] text-slate-600 hover:text-cyan-400 transition-colors"
@@ -396,9 +512,9 @@ export default function Sonuc({
                 data-alan="reklam-tekrar"
                 onClick={reklamIzleTekrarOyna}
                 disabled={reklamYukleniyor}
-                className="mt-3 min-h-[44px] w-full rounded-xl border border-amber-400/30 bg-amber-400/10 text-sm font-bold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
+                className="mt-3 min-h-[44px] w-full rounded-xl border border-slate-800 text-sm font-medium text-slate-400 hover:text-slate-200 disabled:opacity-50"
               >
-                {reklamYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, tekrar oyna'}
+                {reklamYukleniyor ? 'Yükleniyor…' : 'Reklam izle, tekrar oyna'}
               </button>
             )}
             <button

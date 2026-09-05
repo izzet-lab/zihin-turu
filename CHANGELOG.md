@@ -3,6 +3,49 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-05 - Antrenman sonuç ekranı sadeleşti, üstteki beyaz şerit gitti
+
+### Sonuç ekranı
+
+Aynı tur puanı üç ayrı yerde tekrar ediyordu: başlıkta, oturum kartında
+ve "bu tur" satırında. İlk turda oturum toplamı zaten tur puanına eşit
+olduğu için büyük kart boş yere yer kaplıyordu. Ekran yukarıdan aşağı
+yeniden dizildi:
+
+- Sonuç artık insan diliyle söyleniyor. "3 fark" yerine seviyenin kendi
+  toleransına göre "Tam isabet", "Çok yaklaştın", "Yaklaştın" veya
+  "Bu sefer olmadı"; farkın kendisi altta küçük gri yazıda
+  ("hedefe 3 kaldı"). Motivasyon cümlesi sonucun hemen altına alındı.
+- Puan tek yerde, büyük: "+8 puan". Başka hiçbir yerde tekrar etmiyor.
+- Çarpan artık sayı olarak gösterilmiyor. "Isınma · 90sn · ×0.5" yerine
+  tek cümle: çarpan 1'in altındaysa davet ("Normal seviyede aynı sonuç
+  15 puan ederdi"), üstündeyse övgü ("Kısa süre seçtin, puanın 2.5
+  katına çıktı"). Alternatif puan tahmin edilmiyor, aynı girdilerle
+  oyun paketine yeniden hesaplatılıyor — çarpan tablosunun kopyası
+  arayüze taşınmadı (kural 1).
+- Oturum toplamı kart değil tek satır ve **2. turdan itibaren**
+  görünüyor. Üyelik daveti de yalnızca o satırla birlikte çıkıyor.
+- "Reklam izle, tekrar oyna" sarı çerçevesinden çıkarıldı, soluk
+  ikincil düğmeye indi. Baskın düğme yalnızca "Yeni tur".
+
+### Üstteki beyaz şerit
+
+Android 15'ten itibaren (targetSdk 35+) uygulama pencereyi baştan sona
+kaplıyor; `StatusBar.setOverlaysWebView(false)` artık yok sayılıyor.
+Durum çubuğunun arkasında kalan yüzey uygulamanın kendi penceresi ve
+Capacitor o yüzeyin rengini **temadan** okuyor. Tema açık (Light)
+olduğu için okunan renk beyazdı — telefonda görülen şerit buydu.
+E komutunda yalnızca CSS tarafı düzeltilmişti, kaynak burasıydı.
+
+Üç yerde birden çözüldü: Android teması koyuya alınıp pencere arka
+planı `#0A0E1A`'ya sabitlendi, `html`/`body` zemini boyandı, durum
+çubuğu modülü de artık yeni Android'de çalışmayan çağrılara
+güvenmiyor (yalnızca simge rengini ayarlıyor, eskiler için overlay
+ayarı yedekte duruyor).
+
+> Android tarafı değiştiği için bu değişikliğin telefonda görülmesi
+> yeni bir paket derlemesi gerektirir; web dağıtımı tek başına yetmez.
+
 ## 2026-08-31 - Yayin oncesi guvenlik ve QA denetimi
 
 Canliya cikmadan once sistem bastan sona denetlendi. Alti bulgu cikti,

@@ -50,19 +50,23 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
 
   await expect(page.locator('[data-alan="hukum"]')).toBeVisible({ timeout: 10_000 });
 
-  // Toplam çarpan (seviye × süre) sonuç ekranında görünür.
-  const carpanEtiket = page.locator('[data-alan="carpan-etiket"]');
-  await expect(carpanEtiket).toBeVisible();
-  await expect(carpanEtiket).toContainText('×3.75');
+  // Çarpan artık sayı olarak değil cümle olarak anlatılır. Zor seviye
+  // (×1.5) ve 30 sn (×2.5) seçildiği için toplam çarpan 1'in üstünde:
+  // övgü cümlesi ve kat sayısı görünür.
+  const carpanCumle = page.locator('[data-alan="carpan-cumle"]');
+  await expect(carpanCumle).toBeVisible();
+  await expect(carpanCumle).toContainText('3.75 katına');
 
-  // Oturum puanı: ilk turda "Bu tur: N puan → Oturum toplamı: N puan" (eşit,
-  // henüz tek tur oynandı).
-  const oturumOzet1 = page.locator('[data-alan="oturum-ozet"]');
-  await expect(oturumOzet1).toBeVisible();
-  const ozet1Metin = (await oturumOzet1.textContent()) ?? '';
-  const buTur1 = Number(ozet1Metin.match(/Bu tur:\s*(\d+)/)?.[1]);
-  const toplam1 = Number(ozet1Metin.match(/Oturum toplamı:\s*(\d+)/)?.[1]);
-  expect(buTur1).toBe(toplam1);
+  // Tur puanı ekranda TEK yerde durur.
+  // Gerçek değer data-deger'de durur (görünen sayı animasyonla sayıyor).
+  const puan1 = Number(await page.locator('[data-alan="puan"]').getAttribute('data-deger'));
+  expect(puan1).toBeGreaterThan(0);
+
+  // İlk turda oturum satırı ve üyelik daveti gösterilmez — oturum
+  // toplamı tur puanının aynısı olurdu, aynı sayı iki kez görünmesin.
+  await expect(page.locator('[data-alan="oturum-ozet"]')).toHaveCount(0);
+  await expect(page.locator('[data-alan="uyelik-notu"]')).toHaveCount(0);
+  const toplam1 = puan1;
 
   // --- 1) "Yeni tur" — kurulum ekranı görünmeden doğrudan oyun ekranına döner ---
   await page.locator('[data-alan="yeni-tur"]').click();
@@ -83,11 +87,14 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   await zinciriBulVeOyna(page);
   await expect(page.locator('[data-alan="hukum"]')).toBeVisible({ timeout: 10_000 });
 
-  // İkinci turdan sonra oturum toplamı birikmeli (iki turun toplamı).
-  const ozet2Metin = (await page.locator('[data-alan="oturum-ozet"]').textContent()) ?? '';
-  const buTur2 = Number(ozet2Metin.match(/Bu tur:\s*(\d+)/)?.[1]);
-  const toplam2 = Number(ozet2Metin.match(/Oturum toplamı:\s*(\d+)/)?.[1]);
+  // İkinci turdan itibaren oturum satırı görünür ve toplam birikir.
+  const buTur2 = Number(await page.locator('[data-alan="puan"]').getAttribute('data-deger'));
+  const ozet2 = page.locator('[data-alan="oturum-ozet"]');
+  await expect(ozet2).toBeVisible();
+  const ozet2Metin = (await ozet2.textContent()) ?? '';
+  const toplam2 = Number(ozet2Metin.match(/Bu oturum:\s*(\d+)/)?.[1]);
   expect(toplam2).toBe(toplam1 + buTur2);
+  expect(ozet2Metin).toContain('2. tur');
 
   // --- 2) "Seviye değiştir" — kurulum ekranına döner, MOD SIÇRAMAZ ---
   // Antrenman'dan gelindiği için Kurulum Antrenman sekmesiyle açılmalı

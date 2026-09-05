@@ -472,6 +472,7 @@ export default function Uygulama() {
     ekranBileseni = (
       <Sonuc
         tur={oturum.tur}
+        seviye={oturum.seviye}
         seviyeEtiket={oturum.seviyeEtiket}
         mod={oturum.mod}
         sure={oturum.sure}

@@ -28,6 +28,13 @@ export interface OyunSonuc {
   /** Antrenman'da uygulanan toplam çarpan (süre × seviye); Günün Turu'nda null. */
   carpan: number | null;
   /**
+   * Turun gerçekte oynanan toplam süresi (süre jokeri dahil). Sonuç
+   * ekranı "aynı sonuç başka seviyede kaç puan ederdi" cümlesini
+   * kurarken puanı aynı girdilerle yeniden hesaplar; süre bunun
+   * parçası.
+   */
+  toplamSure: number;
+  /**
    * Oyuncunun yaptığı adım zinciri — sunucuya doğrulama için gönderilir.
    * Sunucu bu zinciri tohumdan yeniden üreteceği tura karşı doğrular ve
    * puanı kendisi hesaplar. İstemcinin bildirdiği `puan` yalnızca anlık
@@ -228,6 +235,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
       ulasilan: t.deger,
       jokerler: kullanilanJokerler,
       carpan: p.carpan,
+      toplamSure,
       adimlar: t.yol,
     });
   }

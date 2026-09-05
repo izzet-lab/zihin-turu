@@ -23,14 +23,29 @@
 
 /* Tarayıcı arası tutarlılık için birkaç temel kural. */
 html { -webkit-text-size-adjust: 100%; }
+html, body {
+  /*
+   * Zemin rengi html ve body'ye de verilir. Ekranlar kendi arka
+   * planını `main` üzerinde taşıyor; güvenli alan boşluğu ise body'nin
+   * kendi dolgusunda kalıyordu. Zemin boyanmadığında bu dolgu, altta
+   * kalan pencere rengini (Android'de beyaz) gösteriyor ve ekranın
+   * üstünde beyaz bir şerit oluşuyordu.
+   */
+  background-color: #0A0E1A;
+}
 body {
   margin: 0;
   font-family: var(--zt-yazi-metin);
-  /* Güvenli alan: üstte durum çubuğu, altta gezinme çubuğuyla çakışmasın.
-     Üst: StatusBar.setOverlaysWebView(false) birincil çözümdür — webview
-     zaten durum çubuğunun altından başlar. padding-top ek güvenlik
-     katmanıdır (overlay:false çalıştığında inset-top sıfır döner,
-     çalışmazsa CSS telafi eder). */
+  /*
+   * Güvenli alan: üstte durum çubuğu, altta gezinme çubuğuyla
+   * çakışmasın.
+   *
+   * Android 15'ten itibaren (targetSdk 35+) uygulama pencereyi baştan
+   * sona kaplar; "webview durum çubuğunun altına girmesin" ayarı artık
+   * yok sayılıyor. Yani boşluğu bırakmak CSS'in işi ve `env()` burada
+   * birincil çözüm. Capacitor, kendisi boşluk bıraktığı durumlarda
+   * env() değerlerini sıfırlıyor, o yüzden çift boşluk oluşmaz.
+   */
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

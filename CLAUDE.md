@@ -116,8 +116,19 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 | # | Katman | Nasıl güncellenir |
 |---|---|---|
 | 1 | **Veritabanı** (tablolar, tetikleyiciler) | Supabase SQL editörü / migration |
-| 2 | **Edge Functions** (puan doğrulama) | `npx supabase functions deploy` |
+| 2 | **Edge Functions** (puan doğrulama) | aşağıdaki komut — **`--import-map` şart** |
 | 3 | **Web + Android** (arayüz) | `git push` → Cloudflare otomatik |
+
+**Edge Function dağıtım komutu:**
+
+```bash
+npx supabase functions deploy tur-gonder --project-ref ruoyofzujzmhwvumquzu --import-map sunucu/fonksiyonlar/import_map.json
+```
+
+`--import-map` olmadan dağıtım **başarısız olur**: fonksiyon oyun
+paketini `@zihinturu/oyun-sayi` diye çağırıyor, harita verilmezse Deno
+bunu çözemez ve paketleme 400 döner. Harita ayrıca paket kaynaklarının
+da yüklenmesini sağlar — onsuz yalnızca fonksiyon dosyası gider.
 
 Yeni arayüz kodu olmayan sütunları arayacağı için **önce veritabanı,
 sonra fonksiyon, en son push.**

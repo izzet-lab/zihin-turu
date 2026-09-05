@@ -3,6 +3,60 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-05 - Üyelik daveti baştan tasarlandı; iki sessiz hata düzeldi
+
+### Davet: soyut vaat yerine somut kayıp
+
+Eski davet gri bir metin satırıydı: "Üye olursan puanların kalıcı olur."
+Soyut, ve tam da o anda ekranda duran gerçek kaybı söylemiyordu. Artık
+kart ve içinde **oyuncunun kendi sayısı** geçiyor.
+
+- **Antrenman sonucu:** "114 puanın kaydedilmedi". 3. turdan itibaren ve
+  iki turda bir çıkar; ilk iki turda hiç çıkmaz. "Şimdi değil" denince o
+  oturumda susar — bıktırmak hiç göstermemekten kötü.
+- **Günün Turu sonucu:** "150 puan aldın ama lige işlemedi". Günde tek
+  hak olduğu için tek seferlik fırsat: her seferinde ve vurgulu çıkar.
+  Konumu puanın hemen altı — önce sayfanın en dibindeydi, paylaşım kartı
+  uzun olduğu için oyuncuların çoğu oraya hiç ulaşmıyordu.
+- **Lig:** "Sen bu listede yoksun". Liste boş olsa da gösterilir.
+- **Kurulum:** seri sayacının yanında "3 günlük serin kaydedilmiyor".
+
+Hiçbiri açılır pencere değil; akışı kesmez, kapatılabilir, kapatılınca o
+oturumda tekrar çıkmaz. Karar mantığı `uyelik-daveti.ts` içinde saf ve
+test edilebilir.
+
+### Hata 1: "Giriş yap ve kaydet" sözü boşa çıkıyordu
+
+Misafirin oynadığı Günün Turu yalnızca React state'inde tutuluyordu. Ama
+girişin iki gerçek yolu da sayfayı baştan yüklüyor: e-postadaki sihirli
+bağlantı ve Google ile giriş. Sayfa yeniden yüklenince tur siliniyor,
+oyuncu giriş yapıyor ve turu yine lige işlemiyordu.
+
+Ayrıca gönderim yalnızca profili HAZIR olan kullanıcı için yapılıyordu.
+Yeni üye olan — yani asıl dönüşüm hedefi — kullanıcı adı ekranına
+gidiyor ve turu sessizce kayboluyordu.
+
+Tur artık kalıcı depoda saklanıyor (yine tohum ve adımlar, tur içeriği
+değil — kural 3) ve kullanıcı adı seçildikten sonra da gönderiliyor.
+
+### Hata 2: reklamı izleyen oyuncu turunu kaybediyordu
+
+İstemci, ödüllü reklam izleyene dördüncü joker hakkını veriyordu. Ama
+sunucu doğrulaması üçten fazlasını reddediyordu: "Joker hakkı aşıldı."
+Yani reklamı izleyip dört joker kullanan **meşru** oyuncunun turu
+sunucuda reddediliyor, puanı hiç işlenmiyordu.
+
+Üst sınır artık tek kaynakta ve moda bağlı: Antrenman'da 3 + 1 ödüllü
+hak, Günün Turu'nda 3 (orada joker reklamı zaten yok — lig adaleti).
+
+> **Edge Function dağıtıldı — sürüm 11.** Canlıdaki kodun yeni joker
+> sınırını içerdiği doğrulandı. Dağıtım komutu `--import-map` bayrağı
+> olmadan başarısız oluyor; CLAUDE.md'deki komut buna göre düzeltildi.
+
+### Joker satırı okunurluğu
+
+"Süre ekle, Süre ekle, Süre ekle, Süre ekle" yerine "Süre ekle ×4".
+
 ## 2026-09-05 - Play Store paketi: reklam kimliği geri kondu, imzalı AAB üretildi
 
 ### Çelişki: reklam kimliği izni kaldırılmıştı

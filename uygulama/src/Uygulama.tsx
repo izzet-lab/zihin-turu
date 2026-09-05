@@ -30,6 +30,9 @@ import {
   tamamlananTurSayisi,
   seriKorumaHakkiVarMi,
   seriKorumaHakkiKullan,
+  bekleyenTurYaz,
+  bekleyenTurOku,
+  bekleyenTurSil,
 } from './depo';
 import {
   bildirimIzniIste,
@@ -38,6 +41,26 @@ import {
 } from './bildirim';
 
 type Ekran = 'kurulum' | 'oyun' | 'sonuc' | 'giris' | 'kullanici-adi';
+
+/**
+ * Misafirken oynanmış turu, giriş tamamlanınca sunucuya gönderir.
+ *
+ * İki yerden çağrılır: oturum açıldığında (profili olan kullanıcı) ve
+ * kullanıcı adı seçildikten sonra (yeni üye). İkincisi eksikti — yeni
+ * üye olan, yani asıl dönüşüm hedefimiz olan kullanıcının turu hiç
+ * gönderilmiyordu.
+ *
+ * Hız primi verilmez (kalan_sn: 0): aradan geçen sürede oyuncunun
+ * gerçekten hızlı olduğu doğrulanamaz.
+ */
+function bekleyenTuruGonder(): void {
+  const bt = bekleyenTurOku();
+  if (!bt) return;
+  bekleyenTurSil();
+  turGonder({ ...bt, kalan_sn: 0 }).catch((e) =>
+    console.warn('[Uygulama] bekleyen tur gönderilemedi:', e),
+  );
+}
 
 interface Oturum {
   mod: Mod;
@@ -108,12 +131,14 @@ export default function Uygulama() {
   // Giriş ekranı, tur bitince veya "üye ol" notuna tıklanınca açılır.
   // Açılmadan önceki ekrana dönmek için önceki ekran saklanır.
   const [girisOncesiEkran, setGirisOncesiEkran] = useState<Ekran>('kurulum');
-  // Misafirken oynanan Günün Turu'nun verisi — giriş yapılınca sunucuya gönderilir.
-  const [/* bekleyenTur */, setBekleyenTur] = useState<{
-    oyun: string; mod: string; seviye: string; tarih: string;
-    tohum: number; adimlar: { a: number; b: number; islem: string; sonuc: number }[];
-    sure_sn: number; jokerler: string[];
-  } | null>(null);
+  /*
+   * Misafirken oynanan Günün Turu, giriş yapılınca sunucuya gönderilir.
+   *
+   * Bu veri React state'inde DEĞİL, kalıcı depoda tutulur. Girişin iki
+   * gerçek yolu da (e-postadaki sihirli bağlantı, Google ile giriş)
+   * sayfayı baştan yüklüyor; state o anda siliniyordu ve "Giriş yap ve
+   * kaydet" sözü sessizce boşa çıkıyordu.
+   */
 
   // Ses bağlamının kilidini ilk dokunuşta aç (mobil autoplay kuralı).
   useEffect(() => {
@@ -208,14 +233,8 @@ export default function Uygulama() {
             setEkran((mevcut) =>
               mevcut === 'giris' ? girisOncesiEkran : mevcut,
             );
-            // Bekleyen misafir turu varsa gönder (hız primi sıfır)
-            setBekleyenTur((bt) => {
-              if (bt) {
-                turGonder({ ...bt, kalan_sn: 0 })
-                  .catch((e) => console.warn('[Uygulama] bekleyen tur başarısız:', e));
-              }
-              return null;
-            });
+            // Bekleyen misafir turu varsa gönder.
+            bekleyenTuruGonder();
           }
         });
       } else {
@@ -294,8 +313,10 @@ export default function Uygulama() {
         }).catch((e) => console.warn('[Uygulama] turGonder başarısız:', e));
       } else {
         // Misafir: turu sakla, giriş yaparsa gönderilebilsin.
-        // Hız primi sıfırlanır (kalan_sn: 0) çünkü süre doğrulanamaz.
-        setBekleyenTur({
+        // Hız primi gönderim anında sıfırlanır (kalan_sn: 0), çünkü
+        // aradan geçen sürede oyuncunun gerçekten hızlı olduğu
+        // doğrulanamaz.
+        bekleyenTurYaz({
           oyun: oturum.tur.oyun,
           mod: oturum.mod,
           seviye: oturum.seviye,
@@ -448,6 +469,11 @@ export default function Uygulama() {
         oyuncuId={kullanici.id}
         onTamamlandi={() => {
           profilOku(kullanici.id).then(setProfil);
+          // Yeni üyenin misafirken oynadığı tur da gönderilmeli.
+          // Eskiden yalnızca profili HAZIR olan kullanıcı için
+          // gönderiliyordu; yeni üye kullanıcı adı ekranına gidiyor ve
+          // turu sessizce kayboluyordu.
+          bekleyenTuruGonder();
           setEkran(girisOncesiEkran === 'giris' ? 'kurulum' : girisOncesiEkran);
         }}
       />

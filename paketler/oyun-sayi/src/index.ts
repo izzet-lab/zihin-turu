@@ -96,6 +96,8 @@ export {
   kullanilmayanTasIndeksleri,
   JOKER_MALIYET,
   JOKER_HAK_SAYISI,
+  ODULLU_EK_JOKER,
+  jokerUstSiniri,
   antrenmanCarpani,
   ANTRENMAN_SURE_CARPANI,
   seviyeCarpani,

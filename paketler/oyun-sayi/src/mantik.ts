@@ -581,6 +581,28 @@ export const JOKER_MALIYET: Record<JokerTip, number> = {
 export const JOKER_HAK_SAYISI = 3;
 
 /**
+ * Ödüllü reklam izleyerek kazanılabilen EK joker hakkı — tur başına
+ * en fazla bir kez.
+ *
+ * Yalnızca Antrenman'da geçerlidir. Günün Turu'nda joker reklamı yoktur
+ * (lig adaleti: reklam izleyebilen oyuncu daha çok hak alamaz).
+ */
+export const ODULLU_EK_JOKER = 1;
+
+/**
+ * Bir turda kullanılabilecek EN FAZLA joker sayısı.
+ *
+ * Bu, istemci ve sunucu arasındaki tek kaynaktır. Sunucu doğrulaması
+ * bir süre yalnızca JOKER_HAK_SAYISI'na (3) bakıyordu; oysa istemci
+ * ödüllü reklamla dördüncü hakkı verebiliyordu. Sonuç: reklamı izleyip
+ * dört joker kullanan MEŞRU oyuncunun gönderimi "Joker hakkı aşıldı"
+ * diye reddediliyordu — yani reklamı izleyen oyuncu turunu kaybediyordu.
+ */
+export function jokerUstSiniri(mod: 'gunun' | 'antrenman'): number {
+  return mod === 'antrenman' ? JOKER_HAK_SAYISI + ODULLU_EK_JOKER : JOKER_HAK_SAYISI;
+}
+
+/**
  * Çözümün hiçbir adımında kullanılmayan orijinal taşların indeksleri
  * (`uretim.sayilar` içindeki konum — aynı zamanda raftaki taşın
  * kimliğidir, bkz. `motor.ts` `baslat()`). Aynı değerden birden fazla

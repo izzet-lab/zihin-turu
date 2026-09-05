@@ -21,6 +21,8 @@ import {
 } from '../lig-sorgu';
 import { bugun } from '../depo';
 import { bannerGoster, bannerKaldir } from '../reklam';
+import UyelikDaveti from '../bilesenler/UyelikDaveti';
+import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
 type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'antrenman';
 
@@ -30,6 +32,15 @@ interface Props {
 
 export default function Lig({ oyuncuId }: Props) {
   const gecis = useNavigate();
+
+  // Misafir daveti — kapatılırsa bu oturumda bir daha çıkmaz.
+  const [davetGoster, setDavetGoster] = useState(() =>
+    davetGosterilsinMi({
+      yer: 'lig',
+      girisYapildiMi: !!oyuncuId,
+      kapatildiMi: davetKapatildiMi('lig'),
+    }),
+  );
 
   // Sıralama ekranı kaydırılarak okunuyor; altta düğme yığını yok,
   // banner için uygun bir yer. Sayfadan çıkınca kaldırılır.
@@ -202,12 +213,6 @@ export default function Lig({ oyuncuId }: Props) {
               </>
             )}
 
-            {/* Misafir notu */}
-            {!oyuncuId && (
-              <p className="text-center text-xs text-slate-600 py-4">
-                Sıralamaya girmek için giriş yap →
-              </p>
-            )}
           </div>
         )}
 
@@ -216,6 +221,28 @@ export default function Lig({ oyuncuId }: Props) {
           <div className="text-center text-slate-500 py-12">
             <p className="text-sm">Henüz kimse bu seviyede oynamadı.</p>
           </div>
+        )}
+
+        {/*
+          Misafir daveti — listenin altında.
+
+          Liste BOŞ olsa da gösterilir: misafirin bu listede olmaması,
+          listenin dolu olup olmamasından bağımsız bir eksiklik. Önce
+          yalnızca dolu listenin içine konmuştu ve yeni bir seviyede
+          davet hiç görünmüyordu.
+        */}
+        {!oyuncuId && !yukleniyor && davetGoster && (
+          <UyelikDaveti
+            data-alan="uyelik-daveti"
+            baslik="Sen bu listede yoksun"
+            aciklama="Üye ol, günün turunu oyna, yerini al."
+            eylemMetni="Üye ol"
+            onEylem={() => gecis('/?giris=1')}
+            onKapat={() => {
+              davetKapat('lig');
+              setDavetGoster(false);
+            }}
+          />
         )}
       </div>
     </main>

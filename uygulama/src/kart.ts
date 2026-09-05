@@ -40,9 +40,23 @@ function tarihGoster(iso: string): string {
   return `${g}.${a}.${y}`;
 }
 
-function jokerOzeti(jokerler: JokerTip[] | undefined): string | null {
+/**
+ * Kullanılan jokerleri okunur biçimde özetler.
+ *
+ * Aynı joker birden çok kez kullanılabildiği için düz liste
+ * "Süre ekle, Süre ekle, Süre ekle, Süre ekle" gibi okunmaz bir satır
+ * üretiyordu. Aynı türler sayılır: "Süre ekle ×4". Tek kullanımda
+ * sayı yazılmaz.
+ *
+ * Sıra, ilk kullanım sırasıdır — oyuncunun turu nasıl yaşadığına yakın.
+ */
+export function jokerOzeti(jokerler: readonly JokerTip[] | undefined): string | null {
   if (!jokerler || jokerler.length === 0) return null;
-  return jokerler.map((j) => JOKER_ETIKETLERI[j]).join(', ');
+  const sayac = new Map<JokerTip, number>();
+  for (const j of jokerler) sayac.set(j, (sayac.get(j) ?? 0) + 1);
+  return [...sayac.entries()]
+    .map(([tip, adet]) => (adet > 1 ? `${JOKER_ETIKETLERI[tip]} ×${adet}` : JOKER_ETIKETLERI[tip]))
+    .join(', ');
 }
 
 /** Paylaşılabilir düz metin. Adım/işlem/ara sonuç içermez. */

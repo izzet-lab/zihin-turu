@@ -152,3 +152,6 @@ export function oyunAl(ad: string): TurSaglayici {
 export function oyunlar(): TurSaglayici[] {
   return [...kayitlar.values()];
 }
+
+/* Düello: eşleştirme, maç akışı ve sonuç (oyundan bağımsız). */
+export * from './duello.ts';

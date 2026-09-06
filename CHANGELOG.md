@@ -3,6 +3,73 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4 başladı: düellonun beyni ve veritabanı şeması
+
+Faz 4 tek oturumda bitecek bir iş değil; katman katman kuruluyor. Bu
+ilk katman, ağ ve arayüz olmadan test edilebilen çekirdek.
+
+### Düello çekirdeği (`paketler/cekirdek/duello.ts`)
+
+Maç akışı oyundan bağımsız: "beş tur oynanır, tam isabeti ilk bulan turu
+kapatır, kimse bulamazsa en yakın kazanır" cümlesinde ne sayı ne harf
+geçer. Bu yüzden çekirdekte yaşıyor ve oyuna özgü hiçbir kelime
+kullanmıyor — yalnızca "uzaklık 0 ise tam isabet" kuralını uyguluyor
+(kural 1). Saf olduğu için aynı akış hem tarayıcıda hem Edge Function'da
+çalışacak.
+
+- **ELO:** kazanma beklentisi, derece güncelleme, eşleştirme aralığı.
+  Toplam korunuyor — biri ne kazanırsa diğeri onu kaybediyor, havuza
+  puan basılmıyor ve sıralama zamanla şişmiyor.
+- **Eşleştirme:** aralık beklendikçe genişliyor (±100'den başlayıp
+  ±600'e kadar). Küçük oyuncu tabanında sabit dar aralık, kimseyi
+  kimseyle eşleştirememek demek. Sekiz saniyede bota düşülüyor.
+- **Maç akışı:** saf bir durum makinesi. Tam isabet turu anında
+  kapatıyor; süre dolarsa en yakın alıyor; eşitlikte tur berabere;
+  beşinci turdan sonra skoru yüksek olan maçı kazanıyor; bağlantısı
+  kopup dönmeyen kaybediyor. Kapanmış tura ya da bitmiş maça gelen geç
+  olaylar durumu değiştirmiyor.
+
+**Çözüm sızmazlığı tip düzeyinde kuruldu (kural 8):** maç olaylarında
+adım, zincir ya da taş alanı yok — sonradan yanlışlıkla eklenemesin
+diye. Rakibe giden tek bilgi uzaklık, yani bir sayı. Bir test bunu
+durumun tamamını tarayarak doğruluyor.
+
+Ayrıca bildirilen uzaklık geriye gitmiyor: oyuncu hedeften uzaklaşsa da
+en iyi değeri kalıyor. Yoksa rakibin gördüğü gösterge zıplar ve tur sonu
+kararı oyuncunun son hamlesine bağlı kalırdı.
+
+25 test yazıldı, hepsi yeşil.
+
+### Veritabanı şeması (`sunucu/gocler/006_duello.sql`)
+
+Beş tablo/yapı: derece, eşleştirme kuyruğu, maç, maçın turları ve canlı
+yayın. Tasarım kararları:
+
+- **Tur içeriği saklanmıyor, tohum saklanıyor** (kural 3). Beş turun
+  tamamı tek tohumdan yeniden üretiliyor; rövanş ve maç tekrarı bedava.
+- **Adımlar hiçbir tabloda yok.** Sunucu zinciri doğruluyor, sonucu
+  yazıyor, zinciri atıyor.
+- **Maçı yalnızca tarafları görebiliyor.** Herkese açık olsaydı rakibin
+  maçı dışarıdan izlenip tohumdan çözüm hazırlanabilirdi.
+- **Kuyruğa giriş istemciden yapılamıyor:** derece alanı istemciden
+  gelseydi oyuncu kendi derecesini uydurup zayıf rakip seçerdi.
+- Sekmesini kapatanın kuyrukta kalan satırı için temizlik fonksiyonu.
+
+> **Göç canlıda uygulandı (6 Eylül 2026).** Uygulamadan sonraki güvenlik
+> denetimi bir açık yakaladı: kuyruk temizleme fonksiyonu dışarıdan
+> çağrılabiliyordu. Postgres yeni fonksiyona çalıştırma hakkını herkese
+> otomatik veriyor; yalnızca kullanıcı rollerinden geri almak bunu
+> kaldırmıyor. Yani herhangi bir kullanıcı eşleştirme kuyruğunu
+> boşaltabilirdi. İkinci bir göçle kapatıldı ve denetim temiz döndü.
+
+### Sırada
+
+Eşleştirme ve maç Edge Function'ları, Realtime bağlantısı, düello
+arayüzü, bot entegrasyonu (bot altyapısı Faz 1'den hazır ve zaten
+çözümü hazır almıyor), bağlantı kopması toleransı, rövanş ve özel oda,
+iki tarayıcıyla gerçek maç oynatan e2e testi.
+
+
 ## 2026-09-05 - Üyelik daveti baştan tasarlandı; iki sessiz hata düzeldi
 
 ### Davet: soyut vaat yerine somut kayıp

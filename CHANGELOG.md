@@ -3,6 +3,55 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4: ilk gerçek düello oynandı, bir yarış hatası çıktı
+
+Buraya kadar düello parça parça doğrulanmıştı ama uçtan uca bir maç hiç
+oynanmamıştı. Test hesapları kuruldu ve iki tarayıcıyla gerçek maç
+oynatıldı. **İlk denemede kritik bir hata çıktı.**
+
+### Hata: aynı ikili için iki ayrı maç kuruluyordu
+
+İki oyuncu aynı anda "düello ara" dediğinde her ikisi de rakibinin
+kuyruk satırını siliyor ve ikisi de başarılı oluyordu — farklı satırları
+sildikleri için. Sonuç: aynı iki oyuncu için **beş milisaniye arayla iki
+ayrı maç**. Bir oyuncu bir maçta oynuyor, diğeri ötekinde bekliyordu;
+skorlar hiç buluşmuyordu.
+
+Katman 2'de bu yarışı düşündüğümü sanıyordum ama koyduğum koruma yalnızca
+"benim seçtiğim rakibi başkası kaptı mı?" sorusunu çözüyordu; simetrik
+durumu değil.
+
+Çözüm simetriyi kırmak: maçı **kimliği küçük olan** kurar. Diğeri hiç
+kurmaz, bir sonraki yoklamada aynı maça "süren maç" olarak düşer. Kural
+baştan belli olunca yarış da kalmıyor. Ayrıca maç kurmadan önce rakibin
+başka bir maça girip girmediği de kontrol ediliyor.
+
+### İyi huylu çakışmalar artık hata ekranı açmıyor
+
+Rakip tam isabet yapıp turu kapattığında, o sırada cevap gönderen
+oyuncuya "bu tur şu an oynanmıyor" dönüyordu ve ekran hata ekranına
+düşüyordu. Bu bir arıza değil, oyunun normal akışı; artık sessizce
+yutuluyor ve bir sonraki durum yoklaması ekranı güncelliyor.
+
+### Test hesapları
+
+İki test hesabı kuruldu; kimlik bilgileri `.env.test` dosyasında ve o
+dosya repoya girmiyor. **Uygulamanın giriş akışına test kapısı
+açılmadı** — hesaplara yalnızca test için parola tanımlandı, oturum
+doğrudan tarayıcı deposuna yazılıyor. Dosya yoksa maç testleri sessizce
+atlanıyor.
+
+### Ne kanıtlandı
+
+- İki oyuncu gerçekten eşleşiyor (bota düşmeden)
+- Maç oynanıyor, turlar ilerliyor, maç bitiyor
+- Sonuç iki tarafta da aynı; skorlar birbirinin aynası
+- ELO işliyor ve toplam korunuyor (1216 / 1184)
+- **Rakibin adımı hiçbir yerden sızmıyor:** ağdan geçen tüm yanıt
+  gövdeleri tarandı, adım listesi yok (kural 8)
+
+281 birim + 14 e2e testi yeşil.
+
 ## 2026-09-06 - Faz 4 katman 4: düello arayüzü
 
 Düellonun görünen yüzü. Artık oynanabilir bir ekran var.

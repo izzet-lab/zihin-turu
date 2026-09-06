@@ -146,7 +146,15 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
           );
           if (sonuc.aktifTur !== m.aktifTur) setRakipUzaklik(null);
         })
-        .catch((e) => setHata((e as Error).message));
+        .catch((e) => {
+          // İyi huylu çakışmalar hata ekranına düşürmez: tur bu arada
+          // kapanmış ya da maç bitmiş olabilir (rakip tam isabet yaptı).
+          // Bu bir arıza değil, oyunun normal akışı; bir sonraki durum
+          // yoklaması ekranı zaten güncelleyecek.
+          const mesaj = (e as Error).message;
+          if (mesaj.includes('oynanmıyor') || mesaj.includes('bitti')) return;
+          setHata(mesaj);
+        });
     },
     [],
   );

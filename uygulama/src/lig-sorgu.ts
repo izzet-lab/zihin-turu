@@ -64,6 +64,12 @@ export interface LigSatiri {
   puan: number;
   gunSayisi?: number; // dönem sıralamalarında var
   benimMi: boolean;
+  /** Oyuncunun XP'si — satırda seviye rozeti göstermek için. */
+  xp?: number;
+  /* Düello sıralamasına özgü alanlar */
+  galibiyet?: number;
+  maglubiyet?: number;
+  kazanmaYuzdesi?: number;
 }
 
 export interface KendiDurumu {
@@ -84,7 +90,7 @@ export async function gunlukLig(
 ): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
   const { data, error } = await supabase
     .from('lig_gunluk')
-    .select('en_iyi_puan, oyuncu:oyuncu_id(kullanici_adi)')
+    .select('oyuncu_id, en_iyi_puan, oyuncu:oyuncu_id(kullanici_adi, xp)')
     .eq('tarih', tarih)
     .eq('oyun', oyun)
     .eq('seviye', seviye)
@@ -94,12 +100,19 @@ export async function gunlukLig(
   if (error || !data) return { satirlar: [] };
 
   // Supabase join tipi [{ en_iyi_puan, oyuncu: {kullanici_adi} }]
-  const liste = data as unknown as { en_iyi_puan: number; oyuncu: { kullanici_adi: string } | null }[];
+  const liste = data as unknown as {
+    oyuncu_id: string;
+    en_iyi_puan: number;
+    oyuncu: { kullanici_adi: string; xp: number } | null;
+  }[];
+  // `benimMi` önce hep false kalıyordu (oyuncu_id çekilmiyordu), bu yüzden
+  // kendi satırın listede vurgulanmıyordu. Artık kimlik de geliyor.
   const satirlar: LigSatiri[] = liste.map((r, i) => ({
     sira: i + 1,
     kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
     puan: r.en_iyi_puan,
-    benimMi: false, // oyuncu_id join yok; aşağıda isitten belirlenir
+    xp: r.oyuncu?.xp ?? 0,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
   }));
 
   // Kendi kaydını bul
@@ -140,7 +153,7 @@ export async function donemLig(
 ): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
   const { data, error } = await supabase
     .from('lig_donem')
-    .select('toplam_puan, gun_sayisi, oyuncu:oyuncu_id(kullanici_adi)')
+    .select('oyuncu_id, toplam_puan, gun_sayisi, oyuncu:oyuncu_id(kullanici_adi, xp)')
     .eq('donem_tipi', donemTipi)
     .eq('donem_anahtar', donemAnahtar)
     .eq('oyun', oyun)
@@ -150,13 +163,19 @@ export async function donemLig(
 
   if (error || !data) return { satirlar: [] };
 
-  const liste = data as unknown as { toplam_puan: number; gun_sayisi: number; oyuncu: { kullanici_adi: string } | null }[];
+  const liste = data as unknown as {
+    oyuncu_id: string;
+    toplam_puan: number;
+    gun_sayisi: number;
+    oyuncu: { kullanici_adi: string; xp: number } | null;
+  }[];
   const satirlar: LigSatiri[] = liste.map((r, i) => ({
     sira: i + 1,
     kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
     puan: r.toplam_puan,
     gunSayisi: r.gun_sayisi,
-    benimMi: false,
+    xp: r.oyuncu?.xp ?? 0,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
   }));
 
   let kendi: KendiDurumu | undefined;
@@ -201,7 +220,7 @@ export async function antrenmanLig(
 ): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
   const { data, error } = await supabase
     .from('lig_antrenman_hafta')
-    .select('toplam_puan, tur_sayisi, oyuncu:oyuncu_id(kullanici_adi)')
+    .select('oyuncu_id, toplam_puan, tur_sayisi, oyuncu:oyuncu_id(kullanici_adi, xp)')
     .eq('hafta_anahtar', hafta)
     .eq('oyun', oyun)
     .eq('seviye', seviye)
@@ -210,13 +229,19 @@ export async function antrenmanLig(
 
   if (error || !data) return { satirlar: [] };
 
-  const liste = data as unknown as { toplam_puan: number; tur_sayisi: number; oyuncu: { kullanici_adi: string } | null }[];
+  const liste = data as unknown as {
+    oyuncu_id: string;
+    toplam_puan: number;
+    tur_sayisi: number;
+    oyuncu: { kullanici_adi: string; xp: number } | null;
+  }[];
   const satirlar: LigSatiri[] = liste.map((r, i) => ({
     sira: i + 1,
     kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
     puan: r.toplam_puan,
     gunSayisi: r.tur_sayisi,
-    benimMi: false,
+    xp: r.oyuncu?.xp ?? 0,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
   }));
 
   let kendi: KendiDurumu | undefined;
@@ -331,4 +356,75 @@ export async function profilIstatistikOku(kullaniciAdi: string): Promise<ProfilI
     toplamTurSayisi: toplamTurSayisi ?? 0,
     son28Gun,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Düello sıralaması
+// ---------------------------------------------------------------------------
+
+/**
+ * Düello sıralaması — ELO derecesine göre.
+ *
+ * SEVİYEYE GÖRE AYRILMAZ: düello derecesi tek bir sayı; oyuncu hangi
+ * seviyede oynarsa oynasın aynı dereceyi taşır. Diğer tablolar seviye
+ * başına ayrıdır, bu değil.
+ *
+ * BOTA KARŞI MAÇLAR SAYILMAZ. Bunun için ayrı bir süzgeç gerekmiyor:
+ * derece yalnızca iki gerçek oyuncu arasındaki maç bitince yazılıyor
+ * (bkz. `dereceleriGuncelle`). Sonuç ekranında "derecen değişmedi"
+ * diyorsak tablo da bunu yansıtıyor.
+ *
+ * Hiç düello oynamamış oyuncular listeye girmez.
+ */
+export async function duelloLig(
+  oyuncuId?: string,
+): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
+  const { data, error } = await supabase
+    .from('duello_derece')
+    .select('oyuncu_id, elo, mac_sayisi, galibiyet, maglubiyet, oyuncu:oyuncu_id(kullanici_adi, xp)')
+    .gt('mac_sayisi', 0)
+    .order('elo', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return { satirlar: [] };
+
+  const liste = data as unknown as {
+    oyuncu_id: string;
+    elo: number;
+    mac_sayisi: number;
+    galibiyet: number;
+    maglubiyet: number;
+    oyuncu: { kullanici_adi: string; xp: number } | null;
+  }[];
+
+  const satirlar: LigSatiri[] = liste.map((r, i) => ({
+    sira: i + 1,
+    kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
+    puan: r.elo,
+    xp: r.oyuncu?.xp ?? 0,
+    galibiyet: r.galibiyet,
+    maglubiyet: r.maglubiyet,
+    kazanmaYuzdesi: r.mac_sayisi > 0 ? Math.round((r.galibiyet / r.mac_sayisi) * 100) : 0,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
+  }));
+
+  let kendi: KendiDurumu | undefined;
+  if (oyuncuId) {
+    const { data: kData } = await supabase
+      .from('duello_derece')
+      .select('elo, mac_sayisi')
+      .eq('oyuncu_id', oyuncuId)
+      .maybeSingle();
+
+    if (kData && kData.mac_sayisi > 0) {
+      const { count } = await supabase
+        .from('duello_derece')
+        .select('*', { count: 'exact', head: true })
+        .gt('mac_sayisi', 0)
+        .gt('elo', kData.elo);
+      kendi = { sira: (count ?? 0) + 1, puan: kData.elo };
+    }
+  }
+
+  return { satirlar, kendi };
 }

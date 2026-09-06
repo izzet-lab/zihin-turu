@@ -122,7 +122,14 @@ export default function Uygulama() {
   // Kurulum ekranı hangi modla açılacak: "Ana sayfaya dön" hep Günün
   // Turu'nu gösterir, Antrenman'daki "Seviye değiştir" ise Antrenman
   // sekmesinde kalmalı (bkz. ayarlaraDon).
-  const [kurulumMod, setKurulumMod] = useState<Mod>('gunun');
+  // Başlangıç modu adres satırından okunur (?mod=antrenman).
+  // Efekt içinde ayarlansaydı Kurulum bir kez yanlış modla çizilir ve
+  // seçim değişmezdi — sıralamalardaki "Antrenman yap" düğmesi
+  // Günün Turu'nu açıyordu.
+  const [kurulumMod, setKurulumMod] = useState<Mod>(() => {
+    const m = new URLSearchParams(window.location.search).get('mod');
+    return m === 'antrenman' ? 'antrenman' : 'gunun';
+  });
   // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
   const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
 
@@ -160,7 +167,14 @@ export default function Uygulama() {
     if (params.get('yardim') === '1') {
       setYardimAcik(true);
     }
-    if (params.has('giris') || params.has('yardim')) {
+    // Sıralamalar ekranındaki boş durum düğmeleri buraya yönlendiriyor:
+    // "Günün Turunu oyna" / "Antrenman yap" doğrudan o modda açsın.
+    const istenenMod = params.get('mod');
+    if (istenenMod === 'gunun' || istenenMod === 'antrenman') {
+      setKurulumMod(istenenMod);
+      setEkran('kurulum');
+    }
+    if (params.has('giris') || params.has('yardim') || params.has('mod')) {
       window.history.replaceState({}, '', window.location.pathname);
     }
 

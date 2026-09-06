@@ -12,6 +12,9 @@ import {
   eslesmeAraligi,
   kazanmaBeklentisi,
   macKazananiBul,
+  duelloTekrarOynat,
+  turSuresiDoldu,
+  duelloTurTohumu,
   type DuelloDurum,
   type DuelloOlay,
 } from '@zihinturu/cekirdek';
@@ -241,5 +244,69 @@ describe('çözüm sızmaz (kural 8)', () => {
     // Uzaklık düz sayıdır; adım, zincir ya da taş taşımaz.
     expect(typeof d.uzaklik.a).toBe('number');
     expect(JSON.stringify(d)).not.toMatch(/adim|zincir|tas|hedef/i);
+  });
+});
+
+describe('maçı kayıtlardan yeniden kurma', () => {
+  it('boş kayıt maçın başlangıcını verir', () => {
+    expect(duelloTekrarOynat([])).toEqual(duelloBaslat());
+  });
+
+  it('tek turluk kayıt doğru okunur', () => {
+    const d = duelloTekrarOynat([
+      { bildirimler: [{ taraf: 'a', uzaklik: 5 }, { taraf: 'b', uzaklik: 0 }], sureDoldu: false },
+    ]);
+    expect(d.skor).toEqual({ a: 0, b: 1 });
+    expect(d.turAcik).toBe(false);
+  });
+
+  it('beş turluk maç sonuca kadar kurulur', () => {
+    const d = duelloTekrarOynat([
+      { bildirimler: [{ taraf: 'a', uzaklik: 0 }], sureDoldu: false },
+      { bildirimler: [{ taraf: 'b', uzaklik: 0 }], sureDoldu: false },
+      { bildirimler: [{ taraf: 'a', uzaklik: 3 }, { taraf: 'b', uzaklik: 9 }], sureDoldu: true },
+      { bildirimler: [{ taraf: 'b', uzaklik: 0 }], sureDoldu: false },
+      { bildirimler: [{ taraf: 'b', uzaklik: 0 }], sureDoldu: false },
+    ]);
+    expect(d.bitti).toBe(true);
+    expect(d.skor).toEqual({ a: 2, b: 3 });
+    expect(d.macKazanani).toBe('b');
+  });
+
+  it('aynı kayıtlar hep aynı sonucu verir — sunucu her istekte sıfırdan kurabilir', () => {
+    const kayit = [
+      { bildirimler: [{ taraf: 'a' as const, uzaklik: 4 }], sureDoldu: true },
+      { bildirimler: [{ taraf: 'b' as const, uzaklik: 0 }], sureDoldu: false },
+    ];
+    expect(duelloTekrarOynat(kayit)).toEqual(duelloTekrarOynat(kayit));
+  });
+
+  it('tam isabeti ÖNCE bildiren turu alır — sıra kayıtta saklı', () => {
+    const once = duelloTekrarOynat([
+      { bildirimler: [{ taraf: 'b', uzaklik: 0 }, { taraf: 'a', uzaklik: 0 }], sureDoldu: false },
+    ]);
+    expect(once.turKazanani).toBe('b');
+  });
+});
+
+describe('tur saati ve tohum', () => {
+  it('süre dolmadan tur kapanmaz', () => {
+    const baslangic = 1_000_000;
+    expect(turSuresiDoldu(baslangic, baslangic + 59_000, 60)).toBe(false);
+    expect(turSuresiDoldu(baslangic, baslangic + 60_000, 60)).toBe(true);
+    expect(turSuresiDoldu(baslangic, baslangic + 90_000, 60)).toBe(true);
+  });
+
+  it('her tur farklı bulmaca üretir', () => {
+    const tohumlar = [1, 2, 3, 4, 5].map((n) => duelloTurTohumu(123456, n));
+    expect(new Set(tohumlar).size).toBe(5);
+  });
+
+  it('aynı maç ve tur hep aynı tohumu verir — rövanş ve tekrar bedava', () => {
+    expect(duelloTurTohumu(999, 3)).toBe(duelloTurTohumu(999, 3));
+  });
+
+  it('farklı maçlar aynı turda farklı bulmaca görür', () => {
+    expect(duelloTurTohumu(100, 1)).not.toBe(duelloTurTohumu(200, 1));
   });
 });

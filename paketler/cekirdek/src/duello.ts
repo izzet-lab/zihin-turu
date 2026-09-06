@@ -246,3 +246,70 @@ export function duelloIndirge(d: DuelloDurum, olay: DuelloOlay): DuelloDurum {
   // olay.t === 'sureDoldu'
   return turuKapat(d, enYakin(d.uzaklik));
 }
+
+/* ------------------------------------------------------------------ */
+/* Maçı kayıtlardan yeniden kurma                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Bir turun kaydı: kim ne bildirdi ve tur süre dolduğu için kapandı mı.
+ *
+ * `bildirimler` ZAMAN SIRASINDA olmalıdır; "tam isabeti ilk bulan turu
+ * alır" kuralı bu sıraya dayanır.
+ */
+export interface TurKaydi {
+  bildirimler: { taraf: Taraf; uzaklik: number }[];
+  /** Tur, süresi dolduğu için kapandı mı? */
+  sureDoldu: boolean;
+}
+
+/**
+ * Maçın durumunu kayıtlardan sıfırdan kurar.
+ *
+ * NEDEN HER SEFERİNDE SIFIRDAN
+ * Sunucu maç durumunu bellekte tutmaz; her istekte kayıtlardan yeniden
+ * hesaplar. Böylece iki oyuncunun istekleri hangi sırayla gelirse
+ * gelsin, hangi sunucu örneğine düşerse düşsün sonuç aynı olur ve
+ * "yarım kalmış durum" diye bir şey oluşmaz.
+ *
+ * Kayıtlar veritabanından geldiği için bu fonksiyon tek doğru kaynaktır:
+ * skoru da, kazananı da buradan okur.
+ */
+export function duelloTekrarOynat(turlar: readonly TurKaydi[]): DuelloDurum {
+  let d = duelloBaslat();
+
+  for (let i = 0; i < turlar.length; i++) {
+    if (d.bitti) break;
+    // İlk tur zaten açık; sonrakiler açılmalı.
+    if (i > 0) d = duelloIndirge(d, { t: 'turBasla' });
+
+    const kayit = turlar[i]!;
+    for (const b of kayit.bildirimler) {
+      d = duelloIndirge(d, { t: 'uzaklik', taraf: b.taraf, uzaklik: b.uzaklik });
+    }
+    if (kayit.sureDoldu) d = duelloIndirge(d, { t: 'sureDoldu' });
+  }
+
+  return d;
+}
+
+/** Turun süresi doldu mu? Karar sunucunun saatiyle verilir, istemciyle değil. */
+export function turSuresiDoldu(
+  turBasladiMs: number,
+  simdiMs: number,
+  sureSn: number,
+): boolean {
+  return simdiMs - turBasladiMs >= sureSn * 1000;
+}
+
+/**
+ * Bir düello turunun tohumu.
+ *
+ * Maçın tek tohumundan beş turun tamamı türer (kural 3: içerik değil
+ * tohum saklanır). Tur numarası tohuma karıştırılır ki turlar aynı
+ * bulmacayı tekrarlamasın.
+ */
+export function duelloTurTohumu(macTohumu: number, turNo: number): number {
+  // Çarpan asal seçildi; ardışık maç tohumlarında turların çakışmaması için.
+  return (macTohumu + turNo * 7919) >>> 0;
+}

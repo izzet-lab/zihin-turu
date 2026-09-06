@@ -3,6 +3,55 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4 katman 4: düello arayüzü
+
+Düellonun görünen yüzü. Artık oynanabilir bir ekran var.
+
+### Tahta yeniden yazılmadı
+
+Oyun ekranı düello kipini destekliyor. Tahta, taş animasyonları, işlem
+seçimi ve süre çubuğu aynı kod; ikinci bir kopya çıkarılsaydı bir
+düzeltme birinde yapılıp diğerinde unutulurdu. Düello kipinde üstte tur
+ve skor duruyor, altında rakip göstergesi.
+
+**Rakip göstergesinde tek bilgi var: uzaklık.** "hedefe 12 kaldı" ya da
+"tam isabet yaptı". Hangi taşı kullandığı, kaç adım attığı hiç
+gelmiyor — sunucu da zaten göndermiyor (kural 8).
+
+**Düelloda joker yok.** Reklam izleyebilen ya da hak biriktiren oyuncu
+rakibine karşı avantaj kazanmamalı.
+
+### İlerleme rakibe nasıl gidiyor
+
+Oyuncu hedefe yaklaştıkça sunucuya bildiriliyor, sunucu doğrulayıp
+yazıyor, rakip canlı yayından görüyor. Bildirim yalnızca en iyi değer
+**iyileştiğinde** gidiyor; her hamlede gitseydi hedeften uzaklaşan
+hamleler rakibin göstergesini zıplatırdı.
+
+### Ayrı rota
+
+Düello, Kurulum'un mod seçicisine üçüncü bir kutu olarak değil ayrı bir
+rota olarak eklendi. Düello tek kişilik akışın parçası değil: rakip,
+derece ve canlı bağlantı gerektiriyor; mod seçicisine eklemek tek
+kişilik akışı da karmaşıklaştırırdı. Kurulum'un altındaki düğme seçili
+seviyeyle düelloya götürüyor.
+
+Misafir düelloya giremiyor — rakip ve derece hesaba bağlı.
+
+### Testler
+
+3 e2e senaryosu: düello düğmesinin seçili seviyeyle doğru yere
+götürmesi, misafirin durdurulması, vazgeçince ana sayfaya dönülmesi.
+Toplam 281 birim + 12 e2e testi yeşil.
+
+### Henüz yapılmadı
+
+- **Gerçek maç testi.** İki kimlikli oyuncu ve canlı bağlantı gerektiren
+  test, hesap altyapısı kurulunca yazılacak. Şu ana kadar sunucu
+  mantığı veritabanı taklidiyle, arayüz de kimliksiz kısmıyla
+  doğrulandı — ama uçtan uca bir maç henüz oynanmadı.
+- Rövanş, özel oda ve bağlantı kopmasında geri dönme akışının arayüzü.
+
 ## 2026-09-06 - Faz 4 katman 3: bot oynuyor, maç kendi kendine yürüyor
 
 Katman 2'de "bot maçı kuruluyor ama bot oynamıyor" ve "kimse

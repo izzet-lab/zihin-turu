@@ -35,6 +35,8 @@ interface Props {
   kullanici?: { ad: string; id?: string } | null;
   /** Giriş ekranını açar. */
   onGirisAc?: () => void;
+  /** Düello ekranına geçer (seçili seviyeyle). */
+  onDuello?: (seviye: string) => void;
   /** Çıkış yapar. */
   onCikisYap?: () => void;
 }
@@ -42,7 +44,7 @@ interface Props {
 // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
 const SURE_SECENEK = [90, 60, 30, 15];
 
-export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc }: Props) {
+export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc, onDuello }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [kilitAciklama, setKilitAciklama] = useState<string | null>(null);
 
@@ -459,6 +461,22 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
             </button>
           )}
         </div>
+
+        {/* Düello girişi — ayrı bir rota, mod seçicisine üçüncü bir
+            kutu eklemek yerine. Düello tek kişilik akışın parçası değil:
+            rakip, derece ve canlı bağlantı gerektiriyor. */}
+        {onDuello && (
+          <button
+            data-alan="duello-git"
+            onClick={() => onDuello(seviye)}
+            className="mt-3 min-h-[52px] w-full rounded-xl border-2 border-slate-700 bg-slate-800/50 px-4 text-left transition hover:border-slate-600 hover:bg-slate-800/80"
+          >
+            <span className="block text-sm font-black text-slate-200">⚔️ Düello</span>
+            <span className="block text-[11px] text-slate-500">
+              Rakiple 5 tur — tam isabeti ilk bulan turu alır
+            </span>
+          </button>
+        )}
 
         {!kaliciMi() && (
           <p className="mt-4 text-center text-xs text-amber-400/80">

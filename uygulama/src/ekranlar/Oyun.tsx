@@ -53,6 +53,26 @@ interface Props {
   oturumPuan: { toplamPuan: number; turSayisi: number } | null;
   onBitti: (s: OyunSonuc) => void;
   onYardim?: () => void;
+  /**
+   * Düello bilgisi. Doluysa ekran düello kipine geçer:
+   * üstte tur ve skor, rakibin uzaklığı; joker yok.
+   *
+   * NEDEN AYRI EKRAN DEĞİL
+   * Tahta, taş animasyonları, işlem seçimi ve süre çubuğu aynı. İkinci
+   * bir kopya çıkarılsaydı bir düzeltme birinde yapılıp diğerinde
+   * unutulurdu.
+   */
+  duello?: {
+    turNo: number;
+    toplamTur: number;
+    skorBen: number;
+    skorRakip: number;
+    rakipAd: string;
+    /** Rakibin hedefe uzaklığı; bilinmiyorsa null (kural 8: tek bilgi bu). */
+    rakipUzaklik: number | null;
+    /** Oyuncu hedefe yaklaştıkça çağrılır; sunucuya bildirim buradan gider. */
+    onIlerleme: (adimlar: { a: number; b: number; islem: string; sonuc: number }[]) => void;
+  } | null;
 }
 
 const ISLEMLER: { op: Islem; ad: string }[] = [
@@ -68,7 +88,7 @@ const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
   { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
 ];
 
-export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYardim }: Props) {
+export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYardim, duello = null }: Props) {
   const veri = tur.veri as SayiVeri;
   const hedef = veri.hedef;
 
@@ -102,7 +122,11 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   // Günün Turu'nda gösterilmez — lig adaleti.
   const [reklamYukleniyor, setReklamYukleniyor] = useState(false);
   const [reklamIzlendi, setReklamIzlendi] = useState(false);
-  const reklamGosterilebilir = mod !== 'gunun' && jokerHakki <= 0 && !reklamIzlendi && nativeMi();
+  // Düelloda joker YOK: reklam izleyebilen ya da hak biriktiren oyuncu
+  // rakibine karşı avantaj kazanamamalı (kural 9'un rekabet karşılığı).
+  const jokerVarMi = duello == null;
+  const reklamGosterilebilir =
+    jokerVarMi && mod !== 'gunun' && jokerHakki <= 0 && !reklamIzlendi && nativeMi();
 
   // Joker hakkı bittiğinde ödüllü reklamı arka planda hazırla
   /*
@@ -244,6 +268,20 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     });
   }
 
+  // Düelloda ilerleme sunucuya bildirilir: rakip yalnızca bu uzaklığı
+  // görüyor. En iyi değer İYİLEŞTİĞİNDE gönderilir — her hamlede değil,
+  // çünkü hedeften uzaklaşan hamleler rakibin göstergesini zıplatırdı.
+  const enIyiBildirilen = useRef<number | null>(null);
+  useEffect(() => {
+    if (!duello || bittiRef.current) return;
+    if (durum.gecmis.length === 0) return;
+    const onceki = enIyiBildirilen.current;
+    if (onceki != null && yakinFark >= onceki) return;
+    enIyiBildirilen.current = yakinFark;
+    duello.onIlerleme(yakinTas.yol);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yakinFark, durum.gecmis.length]);
+
   // Süre sayacı (yalnızca süreli modda)
   useEffect(() => {
     if (sure <= 0) return;
@@ -309,7 +347,14 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
       {konfetiGoster && <Konfeti />}
       <div className="mx-auto flex w-full max-w-md flex-col">
         <div className="flex items-center justify-between">
-          {mod === 'antrenman' && oturumPuan ? (
+          {duello ? (
+            <div className="text-xs font-bold text-slate-400" data-alan="duello-gostergesi">
+              Tur {duello.turNo}/{duello.toplamTur} ·{' '}
+              <span className="text-cyan-300">{duello.skorBen}</span>
+              <span className="text-slate-600"> — </span>
+              <span className="text-slate-300">{duello.skorRakip}</span>
+            </div>
+          ) : mod === 'antrenman' && oturumPuan ? (
             <div className="text-xs font-bold text-slate-500" data-alan="oturum-gostergesi">
               Oturum: <span className="text-slate-300">{oturumPuan.toplamPuan} puan</span> ·{' '}
               {oturumPuan.turSayisi + 1}. tur
@@ -318,6 +363,26 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
             <span />
           )}
         </div>
+
+        {/* Rakip — canlı yayınlanan TEK bilgi uzaklık (kural 8).
+            Hangi taşı kullandığı, kaç adım attığı asla gelmez. */}
+        {duello && (
+          <div
+            className="mt-2 flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2"
+            data-alan="rakip-durumu"
+          >
+            <span className="text-xs text-slate-400">{duello.rakipAd}</span>
+            <span className="text-xs font-bold" data-alan="rakip-uzaklik">
+              {duello.rakipUzaklik == null ? (
+                <span className="text-slate-600">henüz bir şey yok</span>
+              ) : duello.rakipUzaklik === 0 ? (
+                <span className="text-amber-300">tam isabet yaptı 🎯</span>
+              ) : (
+                <span className="text-slate-300">hedefe {duello.rakipUzaklik} kaldı</span>
+              )}
+            </span>
+          </div>
+        )}
 
         {/* Hedef + en yakın */}
         <div className="mt-1 flex items-end justify-between">
@@ -417,7 +482,8 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           {durum.hata ?? ''}
         </div>
 
-        {/* Joker */}
+        {/* Joker — düelloda yok (rekabet adaleti) */}
+        {jokerVarMi && (
         <div className="mt-1 rounded-xl border border-slate-800 bg-slate-900/30 p-3" data-alan="jokerler">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Joker</span>
@@ -487,6 +553,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
             </button>
           )}
         </div>
+        )}
 
         {/* İşlem geçmişi */}
         <div className="mt-1 min-h-[64px] rounded-xl border border-slate-800 bg-slate-900/30 p-3" data-alan="gecmis">

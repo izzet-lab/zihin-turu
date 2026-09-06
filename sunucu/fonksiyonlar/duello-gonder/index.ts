@@ -6,46 +6,25 @@
  *   2. Turu tohumdan yeniden üretir (istemciden tur içeriği ALINMAZ).
  *   3. Adım zincirini sıfırdan doğrular ve uzaklığı KENDİ hesaplar.
  *   4. Sonucu yazar; aynı turda yalnızca daha iyi (küçük) uzaklık geçer.
- *   5. Maçın durumunu kayıtlardan sıfırdan kurar, gerekiyorsa turu
- *      kapatır, maç bittiyse ELO'yu günceller.
+ *   5. Maçı olması gereken noktaya taşır (`macIlerlet`): botun sırası
+ *      geldiyse oynatır, tur kapandıysa sonrakini açar, maç bittiyse
+ *      dereceleri günceller.
  *
- * NEDEN DURUM HER İSTEKTE SIFIRDAN KURULUR
- * İki oyuncunun istekleri hangi sırayla gelirse gelsin sonuç aynı
- * olmalı. Sunucu maç durumunu bellekte tutmuyor; kayıtlardan
- * `duelloTekrarOynat` ile yeniden hesaplıyor. Tek doğru kaynak orası.
+ * İlerletme mantığı `duello-ortak.ts` içinde, çünkü `duello-durum` da
+ * aynı işi yapıyor; iki yerde ayrı yazılsaydı biri düzeltilip diğeri
+ * unutulurdu.
  *
  * ÇÖZÜM SIZMAZ (kural 8)
- * Dönüşte rakibin adımları yok. Rakibe giden tek bilgi uzaklık; o da
- * duello_tur tablosuna yazıldığı için canlı yayınla gidiyor.
+ * Dönüşte rakibin adımları yok. Rakibe giden tek bilgi uzaklık.
  *
- * Gelen istek (JSON):
- *   mac_id    maçın kimliği
- *   tur_no    kaçıncı tur (1-5)
- *   adimlar   oyuncunun yaptığı adımlar
- *
- * Dönüş (JSON):
- *   uzaklik, skorA, skorB, aktifTur, durum, kazanan
- *
+ * Gelen istek (JSON): { mac_id, tur_no, adimlar }
  * Deploy: supabase functions deploy duello-gonder --import-map ../import_map.json
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import {
-  DUELLO_TUR_SAYISI,
-  duelloTekrarOynat,
-  duelloTurTohumu,
-  eloGuncelle,
-  turSuresiDoldu,
-  type TurKaydi,
-  type Taraf,
-} from '@zihinturu/cekirdek';
-import {
-  uretimYap,
-  varsayilanBuyukAdet,
-  dogrulaZinciri,
-  SEVIYE_LISTESI,
-  type Adim,
-} from '@zihinturu/oyun-sayi';
+import { DUELLO_TUR_SAYISI, type Taraf } from '@zihinturu/cekirdek';
+import { macIlerlet, uzaklikHesapla, type Mac } from '../duello-ortak.ts';
+import type { Adim } from '@zihinturu/oyun-sayi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -102,24 +81,9 @@ Deno.serve(async (req: Request) => {
     // sırayı atlamak olurdu.
     if (tur_no !== mac.aktif_tur) return hata('Bu tur şu an oynanmıyor.', 409);
 
-    const seviyeObj = SEVIYE_LISTESI.find((s) => s.anahtar === mac.seviye);
-    if (!seviyeObj) return hata('Bilinmeyen seviye.', 400);
-
-    // --- Turu tohumdan yeniden üret ---
-    // Üretim ayarı istemciden ALINMAZ: iki oyuncu aynı bulmacayı
-    // görmeli, yoksa düello anlamsız olur.
-    const turTohumu = duelloTurTohumu(Number(mac.tohum), tur_no);
-    const uretim = uretimYap(mac.seviye, turTohumu, varsayilanBuyukAdet(mac.seviye));
-
     // --- Zinciri doğrula, uzaklığı sunucu hesapla ---
-    let uzaklik: number;
-    if (adimlar.length === 0) {
-      uzaklik = uretim.hedef; // hiç işlem yapılmadı
-    } else {
-      const dogr = dogrulaZinciri(uretim.sayilar, adimlar, uretim.hedef);
-      if (!dogr.gecerli) return hata('Geçersiz adım zinciri: ' + dogr.hata, 400);
-      uzaklik = dogr.uzaklik;
-    }
+    const uzaklik = uzaklikHesapla(mac as Mac, tur_no, adimlar);
+    if (uzaklik == null) return hata('Geçersiz adım zinciri.', 400);
 
     // --- Sonucu yaz: yalnızca DAHA İYİ uzaklık geçer ---
     // Oyuncu hedeften uzaklaşabilir; bildirilen en iyi değer geriye
@@ -146,125 +110,31 @@ Deno.serve(async (req: Request) => {
       { onConflict: 'mac_id,tur_no,taraf' },
     );
 
-    // --- Maçın durumunu kayıtlardan sıfırdan kur ---
-    const { data: satirlar } = await supabase
-      .from('duello_tur')
-      .select('tur_no, taraf, uzaklik, bildirildi')
-      .eq('mac_id', mac_id)
-      .order('bildirildi', { ascending: true });
+    // --- Maçı olması gereken noktaya taşı ---
+    const durum = await macIlerlet(supabase, mac as Mac);
 
-    const sureDolduMu = turSuresiDoldu(
-      Date.parse(mac.tur_basladi),
-      Date.now(),
-      seviyeObj.sure,
-    );
-
-    const turlar: TurKaydi[] = [];
-    for (let n = 1; n <= tur_no; n++) {
-      const bildirimler = (satirlar ?? [])
-        .filter((s) => s.tur_no === n && s.uzaklik != null)
-        .map((s) => ({ taraf: s.taraf as Taraf, uzaklik: s.uzaklik as number }));
-      // Geçmiş turlar kapanmış demektir; aktif tur yalnızca süresi
-      // dolduysa kapanır (tam isabet zaten akışın kendisinde kapatıyor).
-      turlar.push({ bildirimler, sureDoldu: n < tur_no ? true : sureDolduMu });
-    }
-
-    const durum = duelloTekrarOynat(turlar);
-
-    // --- Maçı güncelle ---
-    const guncelleme: Record<string, unknown> = {
-      skor_a: durum.skor.a,
-      skor_b: durum.skor.b,
-    };
-
-    if (durum.bitti) {
-      guncelleme.durum = 'bitti';
-      guncelleme.kazanan = durum.macKazanani;
-      guncelleme.bitti = new Date().toISOString();
-    } else if (!durum.turAcik) {
-      // Tur kapandı, sıradaki tur açılıyor. Saat burada yeniden başlar.
-      guncelleme.aktif_tur = Math.min(tur_no + 1, DUELLO_TUR_SAYISI);
-      guncelleme.tur_basladi = new Date().toISOString();
-    }
-
-    await supabase.from('duello_mac').update(guncelleme).eq('id', mac_id);
-
-    if (durum.bitti) {
-      await dereceleriGuncelle(supabase, mac, durum.macKazanani);
-    }
+    const { data: son } = await supabase
+      .from('duello_mac')
+      .select('aktif_tur, durum, kazanan, skor_a, skor_b, tur_basladi')
+      .eq('id', mac_id)
+      .single();
 
     return ok({
       uzaklik: yeniUzaklik,
       skorA: durum.skor.a,
       skorB: durum.skor.b,
-      aktifTur: durum.bitti ? tur_no : (guncelleme.aktif_tur ?? tur_no),
+      aktifTur: son.aktif_tur,
+      turBasladi: son.tur_basladi,
       turAcik: durum.turAcik,
       turKazanani: durum.turKazanani,
-      durum: durum.bitti ? 'bitti' : 'basladi',
-      kazanan: durum.macKazanani,
+      durum: son.durum,
+      kazanan: son.kazanan,
     });
   } catch (e) {
     console.error('duello-gonder hatası:', e);
     return hata('Sunucu hatası.', 500);
   }
 });
-
-/**
- * Maç bitince dereceleri günceller.
- *
- * Bota karşı oynanan maç dereceyi DEĞİŞTİRMEZ: bot gerçek bir rakip
- * değil, kuyruk boşken oyuncuyu ekranda tutan bir dolgu. Bota karşı
- * derece kazanılabilseydi sıralamanın anlamı kalmazdı.
- */
-async function dereceleriGuncelle(
-  supabase: ReturnType<typeof createClient>,
-  mac: Record<string, unknown>,
-  kazanan: string | null,
-) {
-  const aId = mac.oyuncu_a as string;
-  const bId = mac.oyuncu_b as string | null;
-  if (!bId) return; // bot maçı
-
-  const { data: dereceler } = await supabase
-    .from('duello_derece')
-    .select('oyuncu_id, elo, mac_sayisi, galibiyet, maglubiyet, beraberlik')
-    .in('oyuncu_id', [aId, bId]);
-
-  const bul = (id: string) =>
-    (dereceler ?? []).find((d) => d.oyuncu_id === id) ?? {
-      oyuncu_id: id,
-      elo: 1200,
-      mac_sayisi: 0,
-      galibiyet: 0,
-      maglubiyet: 0,
-      beraberlik: 0,
-    };
-
-  const a = bul(aId);
-  const b = bul(bId);
-  const sonuc = kazanan === 'a' ? 'kazandi' : kazanan === 'b' ? 'kaybetti' : 'berabere';
-  const yeni = eloGuncelle(a.elo, b.elo, sonuc);
-
-  const satir = (
-    d: typeof a,
-    elo: number,
-    kazandiMi: boolean,
-    kaybettiMi: boolean,
-  ) => ({
-    oyuncu_id: d.oyuncu_id,
-    elo,
-    mac_sayisi: d.mac_sayisi + 1,
-    galibiyet: d.galibiyet + (kazandiMi ? 1 : 0),
-    maglubiyet: d.maglubiyet + (kaybettiMi ? 1 : 0),
-    beraberlik: d.beraberlik + (!kazandiMi && !kaybettiMi ? 1 : 0),
-    guncellendi: new Date().toISOString(),
-  });
-
-  await supabase.from('duello_derece').upsert([
-    satir(a, yeni.a, kazanan === 'a', kazanan === 'b'),
-    satir(b, yeni.b, kazanan === 'b', kazanan === 'a'),
-  ]);
-}
 
 function ok(veri: unknown): Response {
   return new Response(JSON.stringify(veri), {

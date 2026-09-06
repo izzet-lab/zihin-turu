@@ -9,7 +9,7 @@
  * olasılığı düşer — böylece zayıf bot gerçekten zayıf.
  */
 
-import type { Tur } from '@zihinturu/cekirdek';
+import { rastgele, type Tur } from '@zihinturu/cekirdek';
 import { cozZinciri, type Adim, type SayiVeri } from './mantik.ts';
 
 export type ProfilAd = 'acemi' | 'orta' | 'usta';
@@ -53,11 +53,16 @@ export interface BotPlani {
   adimlar: Adim[] | null;
 }
 
-/** Botun bu tur ne yapacağına karar verir. */
-export function botPlani(bot: Bot, tur: Tur): BotPlani {
+/**
+ * Botun bu tur ne yapacağına karar verir.
+ *
+ * `zar` verilmezse gerçek rastgelelik kullanılır. Düelloda TOHUMLU zar
+ * verilir — sebebi aşağıda, `botPlaniTohumlu`.
+ */
+export function botPlani(bot: Bot, tur: Tur, zar: () => number = Math.random): BotPlani {
   const veri = tur.veri as SayiVeri;
   const p = PROFILLER[bot.profil];
-  const gecikme = (p.minGecikme + Math.random() * (p.maxGecikme - p.minGecikme)) * 1000;
+  const gecikme = (p.minGecikme + zar() * (p.maxGecikme - p.minGecikme)) * 1000;
 
   // Bot kendi çözücüsünü kısıtlı süreyle çalıştırır.
   const bulunan = cozZinciri(veri.sayilar, veri.hedef, p.aramaMs);
@@ -68,9 +73,29 @@ export function botPlani(bot: Bot, tur: Tur): BotPlani {
       : { gecikmeMs: gecikme, adimlar: null };
   }
   // Tam çözümü bulsa bile profil isabetine göre bazen kaçırır.
-  if (Math.random() > p.isabet) {
+  if (zar() > p.isabet) {
     const kisa = bulunan.adimlar.slice(0, Math.max(1, bulunan.adimlar.length - 1));
     return { gecikmeMs: gecikme, adimlar: kisa }; // yarım kalmış zincir
   }
   return { gecikmeMs: gecikme, adimlar: bulunan.adimlar };
+}
+
+/**
+ * Düellodaki botun planı — TOHUMLU, yani her hesaplandığında aynı.
+ *
+ * NEDEN DETERMİNİST OLMAK ZORUNDA
+ * Sunucu maç durumunu bellekte tutmuyor; her istekte kayıtlardan
+ * yeniden kuruyor. Botun hamlesi de bu yeniden kurmanın parçası: "bot
+ * şu ana kadar oynadı mı?" sorusu her istekte yeniden soruluyor. Plan
+ * gerçek rastgelelikle üretilseydi her istekte başka bir cevap çıkar,
+ * bot bir turda hem oynamış hem oynamamış görünürdü.
+ *
+ * Tohumlu olunca bot, maçın tohumundan ve tur numarasından türeyen tek
+ * bir plana sahip oluyor — kim ne zaman sorarsa sorsun aynı cevap.
+ *
+ * Bot yine çözümü HAZIR ALMIYOR: kendi çözücüsünü profiline göre
+ * sınırlı süreyle çalıştırıyor (kural: bot hile yapmaz).
+ */
+export function botPlaniTohumlu(bot: Bot, tur: Tur, tohum: number): BotPlani {
+  return botPlani(bot, tur, rastgele(tohum));
 }

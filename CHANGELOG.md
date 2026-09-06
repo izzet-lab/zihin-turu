@@ -55,8 +55,12 @@ yayın. Tasarım kararları:
   gelseydi oyuncu kendi derecesini uydurup zayıf rakip seçerdi.
 - Sekmesini kapatanın kuyrukta kalan satırı için temizlik fonksiyonu.
 
-> **Bu göç henüz canlıda çalıştırılmadı.** Dosyanın depoda olması
-> veritabanında çalıştırıldığı anlamına gelmez.
+> **Göç canlıda uygulandı (6 Eylül 2026).** Uygulamadan sonraki güvenlik
+> denetimi bir açık yakaladı: kuyruk temizleme fonksiyonu dışarıdan
+> çağrılabiliyordu. Postgres yeni fonksiyona çalıştırma hakkını herkese
+> otomatik veriyor; yalnızca kullanıcı rollerinden geri almak bunu
+> kaldırmıyor. Yani herhangi bir kullanıcı eşleştirme kuyruğunu
+> boşaltabilirdi. İkinci bir göçle kapatıldı ve denetim temiz döndü.
 
 ### Sırada
 

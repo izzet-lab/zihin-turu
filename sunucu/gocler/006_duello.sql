@@ -1,8 +1,7 @@
 -- 006 - Faz 4: Duello
 --
--- ÖNEMLİ: Bu dosya HENÜZ CANLIDA ÇALIŞTIRILMADI.
--- "Dosya repodadır" ≠ "Veritabanında çalıştırıldı".
--- Supabase SQL editöründe çalıştırıldıktan sonra bu satır güncellenmeli.
+-- CANLIDA UYGULANDI (6 Eylül 2026): duello_faz4_semasi
+-- Ardından güvenlik yaması: duello_kuyruk_temizle_public_revoke (aşağıya bak).
 --
 -- Dağıtım sırası (CLAUDE.md): önce bu göç, sonra Edge Function, en son push.
 
@@ -199,4 +198,10 @@ BEGIN
 END;
 $$;
 
+-- DİKKAT: Postgres yeni fonksiyona EXECUTE hakkını PUBLIC rolüne otomatik
+-- verir. Yalnızca anon ve authenticated'dan REVOKE etmek bunu KALDIRMAZ;
+-- hak PUBLIC üzerinden miras kalır ve fonksiyon REST'ten çağrılabilir olur.
+-- İlk yazımda bu atlandı; denetim yakaladı (herhangi bir kullanıcı
+-- eşleştirme kuyruğunu boşaltabilirdi). Önce PUBLIC'ten alınmalı.
+REVOKE EXECUTE ON FUNCTION duello_kuyruk_temizle() FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION duello_kuyruk_temizle() FROM anon, authenticated;

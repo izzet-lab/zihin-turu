@@ -3,6 +3,69 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4 katman 2: eşleştirme ve maç sunucusu
+
+Düellonun sunucu tarafı kuruldu. İki Edge Function canlıda.
+
+### Şemada bir eksik kapandı (göç 007)
+
+Maçın hangi turda olduğu ve turun ne zaman başladığı şemada yoktu. O
+bilgi olmadan "süre doldu" kararını yalnızca istemci verebilirdi — yani
+oyuncu turu istediği kadar uzatabilir ya da rakibi lehine erken
+kapatabilirdi. İki sütun eklendi; karar artık sunucunun saatinde.
+
+### `duello-ara` — eşleştirme
+
+Oyuncunun derecesini okur (yoksa 1200 ile açar), kuyruktaki ölü
+satırları temizler, uygun rakip arar, bulursa maçı kurar, bulamazsa
+kuyruğa yazar ve sekiz saniye sonra bot verir.
+
+- **Derece istemciden gelmiyor.** Gelseydi oyuncu kendini düşük
+  gösterip hep zayıf rakiple eşleşirdi. Kuyruğa yazma hakkı da yalnızca
+  bu fonksiyonda.
+- **Maçın tohumu sunucuda üretiliyor.** İstemciden gelseydi oyuncu
+  kendine kolay bulmaca seçerdi.
+- **Yarış durumu düşünüldü:** iki oyuncu aynı anda birbirini seçebilir.
+  Rakibin kuyruk satırı önce siliniyor ve silmenin gerçekten bize düşüp
+  düşmediğine bakılıyor; düşmediyse sıradaki adaya geçiliyor. Böylece
+  aynı oyuncu iki maça birden düşmüyor.
+- **Süren maç varsa yeni maç kurulmuyor**, mevcut maç dönüyor. Sekmesini
+  yenileyen oyuncu maçına geri dönebiliyor — bağlantı toleransının ilk
+  parçası.
+
+### `duello-gonder` — turun doğrulanması
+
+Turu tohumdan yeniden üretiyor, zinciri sıfırdan doğruluyor, uzaklığı
+kendisi hesaplıyor ve maçı ilerletiyor.
+
+- **Maç durumu her istekte kayıtlardan sıfırdan kuruluyor.** Sunucu
+  bellekte durum tutmuyor; iki oyuncunun istekleri hangi sırayla gelirse
+  gelsin sonuç aynı oluyor ve "yarım kalmış durum" oluşmuyor.
+- Oyuncu yalnızca **aktif** turu gönderebiliyor: geçmiş turu yeniden
+  göndermek skoru değiştirmeye çalışmak, ileri turu göndermek sırayı
+  atlamak olurdu.
+- Aynı turda yalnızca **daha iyi** uzaklık geçiyor.
+- Üretim ayarı istemciden alınmıyor — iki oyuncu aynı bulmacayı görmeli.
+- Maç bitince ELO güncelleniyor. **Bota karşı derece değişmiyor:** bot
+  gerçek rakip değil, kuyruk boşken oyuncuyu ekranda tutan bir dolgu.
+  Bota karşı derece kazanılabilseydi sıralamanın anlamı kalmazdı.
+
+Dönüşte rakibin adımları yok; giden tek bilgi uzaklık (kural 8).
+
+### Çekirdeğe eklenenler
+
+Maçı kayıtlardan yeniden kuran saf fonksiyon, tur saati kontrolü ve
+maç tohumundan tur tohumu türetme. 9 yeni test (toplam 34).
+
+### Henüz yapılmadı — bilinçli olarak
+
+- **Bot henüz oynamıyor.** Bot maçı kuruluyor ama bot hamle yapmıyor;
+  bot sürücüsü sıradaki katmanda.
+- **Kimse göndermezse tur ilerlemiyor.** Süre dolduğunda turu kapatacak
+  bir süpürücü yok; şu an turu ancak bir gönderim ilerletiyor.
+- Arayüz, canlı yayın bağlantısı, rövanş, özel oda ve iki tarayıcılı
+  e2e testi sıradaki katmanlarda.
+
 ## 2026-09-06 - Faz 4 başladı: düellonun beyni ve veritabanı şeması
 
 Faz 4 tek oturumda bitecek bir iş değil; katman katman kuruluyor. Bu

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import type { Tur } from '@zihinturu/cekirdek';
 import { sayiTuru, gununTuru, turKur, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
@@ -124,6 +125,9 @@ export default function Uygulama() {
   const [kurulumMod, setKurulumMod] = useState<Mod>('gunun');
   // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
   const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
+
+  // Gezinme router üzerinden (kural 12: <a href> Android'de 404 verir).
+  const gecis = useNavigate();
 
   // --- Kimlik durumu ---
   const [kullanici, setKullanici] = useState<User | null>(null);
@@ -532,6 +536,7 @@ export default function Uygulama() {
         baslangicMod={kurulumMod}
         kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu', id: kullanici.id } : null}
         onGirisAc={girisAc}
+        onDuello={(sv) => gecis(`/duello?seviye=${sv}`)}
         onCikisYap={async () => {
           await supabase.auth.signOut();
           setKullanici(null);

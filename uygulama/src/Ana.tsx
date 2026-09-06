@@ -10,10 +10,11 @@
  */
 
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
+import Duello from './ekranlar/Duello';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
 import YasalIndeks from './ekranlar/YasalIndeks';
@@ -49,6 +50,7 @@ export default function Ana() {
         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
         <Route path="/" element={<Uygulama />} />
         <Route path="/lig" element={<Lig oyuncuId={kullanici?.id} />} />
+        <Route path="/duello" element={<DuelloRota girisYapildiMi={!!kullanici} />} />
 
         {/* Herkese açık profil sayfası */}
         <Route path="/o/:kullaniciAdi" element={<ProfilSayfasi />} />
@@ -66,6 +68,27 @@ export default function Ana() {
         <Route path="*" element={<Div404 />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+/**
+ * Düello rotası — seviye adres satırından gelir.
+ *
+ * Ayrı rota olmasının sebebi: düello tek kişilik akışın parçası değil.
+ * Rakip, derece ve canlı bağlantı gerektiriyor; Kurulum'un mod
+ * seçicisine üçüncü bir kutu eklemek tek kişilik akışı da karmaşıklaştırırdı.
+ */
+function DuelloRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
+  const gecis = useNavigate();
+  const [parametreler] = useSearchParams();
+  const seviye = parametreler.get('seviye') ?? 'normal';
+  return (
+    <Duello
+      seviye={seviye}
+      girisYapildiMi={girisYapildiMi}
+      onCik={() => gecis('/')}
+      onGirisAc={() => gecis('/?giris=1')}
+    />
   );
 }
 

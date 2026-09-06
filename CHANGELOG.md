@@ -3,6 +3,76 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Düello: bot dengelendi, iki çökme hatası, ekranlar yeniden
+
+Canlı kullanımdan gelen beş sorun. İkisi çökme, biri denge, ikisi tasarım.
+
+### 1. Bot yeni oyuncuyu kaçırıyordu
+
+Isınma seviyesinde ilk düello 1-4 kaybediliyordu. İlk düellosunu
+kaybeden oyuncu bir daha düello açmıyor — bu, jokerlerden önceki
+"hiçbir şey yapamadan bitti" sorununun düello hâli.
+
+Yeni ve bilerek çok zayıf bir profil eklendi (`cirak`): nadiren tam
+isabet yapar, geç cevap verir, yaklaşık cevabı da uzaktır. Kurallar:
+
+- **İlk üç düelloda her zaman en zayıf bot** — oyuncu ne kadar iyi
+  olursa olsun. Amaç ilk maçın kazanılması.
+- Dördüncüden itibaren dereceye göre kademe.
+- **Üst üste iki kayıptan sonra bir kademe düşülür.** Kaybetmeye
+  başlayan oyuncuyu daha da zorlamak, oyundan koparmanın en hızlı yolu.
+
+Oyuncuya hiçbiri söylenmiyor. Karar mantığı oyun paketinde ve test
+ediliyor (10 test).
+
+### 2. Çökme: düello ekranı bomboş açılıyordu
+
+Sonuç ekranı için eklenen hesaplamalar koşullu dönüşlerin ARDINA
+konmuştu. React'te kancalar her çizimde aynı sırayla çalışmak zorunda;
+sıra değişince bileşen komple çöküyor ve ekran bembeyaz kalıyordu.
+Kancalar en üste alındı.
+
+### 3. "Failed to fetch" — kök neden bulundu
+
+Bot maçlarında botun çözücüsü **her durum yoklamasında yeniden
+çalışıyordu** — iki saniyede bir. Güçlü profillerde çözücü 600 ms'ye
+kadar işlemci harcıyor; Edge Function'ın istek başına işlemci bütçesi
+bunu kaldırmıyor ve fonksiyon zaman zaman öldürülüyordu. Tarayıcıya
+yanıt hiç dönmediği için ekranda İngilizce "Failed to fetch" çıkıyordu.
+
+Artık botun planı **tur başına bir kez** hesaplanıp yazılıyor; cevabı
+yine gecikmesi dolunca görünür oluyor (satır ileri tarihli yazılıyor ve
+zamanı gelene kadar yok sayılıyor).
+
+Ayrıca istemci tarafı sertleştirildi: **hiçbir hata mesajı İngilizce
+değil**, ağ hatası tek bir Türkçe cümleye çevriliyor ("Bağlantı
+kurulamadı. Tekrar dene.") ve ekranda "Tekrar dene" düğmesi çıkıyor.
+Geçici hatalarda kullanıcıya hiç gösterilmeden bir kez yeniden deneniyor
+ve isteklerin zaman aşımı var.
+
+### 4. Düello ana sayfada görünmüyordu
+
+En ilgi çekici özellik sayfanın en altındaydı. Artık mod seçicinin
+hemen altında, kaydırmadan görünen belirgin bir kart.
+
+### 5. Ekranlar
+
+- **Rakip kartı yeniden tasarlandı:** baş harf dairesi, okunur ad ve
+  rakibin gücü ("1240 puan · 8 galibiyet"). Durum satırı kesilmiyor;
+  hamburger menü artık üstüne binmiyor.
+  *Bot için galibiyet sayısı gösterilmiyor* — bot hiç maç oynamadı,
+  uydurma bir sicil göstermek oyuncuyu kandırmak olurdu. Botun
+  "derecesi" ise uydurma değil, gücünün karşılığı.
+- **Oyun ekranındaki boşluk kapandı:** düelloda taşlar ve işlemler
+  büyüdü, geçmiş kutusu kalan yeri dolduruyor. "Maçtan çık" artık
+  sayfanın kendi akışında, kesik değil.
+- **Sonuç ekranına tur tur özet:** her turun hedefi, iki tarafın ne
+  kadar yaklaştığı ve turu kimin aldığı. Hedefler sunucudan gelmiyor,
+  tohumdan yeniden üretiliyor (kural 3).
+- **Kaybedince yapıcı bir satır:** "3. turda 2 fark kalmıştı."
+
+291 birim + 17 e2e testi yeşil.
+
 ## 2026-09-06 - Faz 4 tamam: rövanş, özel oda, maçtan çıkış
 
 Faz 4'ün kalan parçaları. Düello artık baştan sona oynanabiliyor.

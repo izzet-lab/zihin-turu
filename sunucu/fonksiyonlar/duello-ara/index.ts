@@ -29,7 +29,7 @@ import {
   botaDusulsunMu,
   eslesirMi,
 } from '@zihinturu/cekirdek';
-import { SEVIYE_LISTESI, botUret } from '@zihinturu/oyun-sayi';
+import { SEVIYE_LISTESI, botUret, botProfilSec } from '@zihinturu/oyun-sayi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -91,7 +91,7 @@ Deno.serve(async (req: Request) => {
     // --- 2. Derece (yoksa oluştur) ---
     const { data: derece } = await supabase
       .from('duello_derece')
-      .select('elo')
+      .select('elo, mac_sayisi')
       .eq('oyuncu_id', benId)
       .maybeSingle();
 
@@ -188,7 +188,17 @@ Deno.serve(async (req: Request) => {
     // --- 6. Rakip yok: yeterince beklediyse bot ---
     if (botaDusulsunMu(benimBekleyenSn)) {
       await supabase.from('duello_kuyruk').delete().eq('oyuncu_id', benId);
-      const bot = botUret(benimElo);
+
+      // Botun gücü oyuncuya göre seçilir. Kural oyun paketinde
+      // (botProfilSec) ve test ediliyor; buraya satır arası yazılsaydı
+      // ne test edilebilir ne de gözden geçirilebilirdi.
+      const ustUsteKayip = await ustUsteKayipSayisi(supabase, benId);
+      const profil = botProfilSec({
+        macSayisi: derece?.mac_sayisi ?? 0,
+        ustUsteKayip,
+        elo: benimElo,
+      });
+      const bot = botUret(benimElo, profil);
       const mac = await macKur(supabase, {
         seviye,
         oyuncuA: benId,
@@ -206,6 +216,34 @@ Deno.serve(async (req: Request) => {
     return hata('Sunucu hatası.', 500);
   }
 });
+
+/**
+ * Oyuncu üst üste kaç maç kaybetti?
+ *
+ * Son maçlardan geriye doğru bakılır; ilk kaybedilmeyen maçta durulur.
+ * Bota karşı oynanan maçlar da sayılır: oyuncunun morali kime karşı
+ * kaybettiğine göre değişmiyor.
+ */
+async function ustUsteKayipSayisi(
+  supabase: ReturnType<typeof createClient>,
+  oyuncuId: string,
+): Promise<number> {
+  const { data: maclar } = await supabase
+    .from('duello_mac')
+    .select('oyuncu_a, oyuncu_b, kazanan, durum, bitti')
+    .neq('durum', 'basladi')
+    .or(`oyuncu_a.eq.${oyuncuId},oyuncu_b.eq.${oyuncuId}`)
+    .order('bitti', { ascending: false })
+    .limit(5);
+
+  let sayac = 0;
+  for (const m of maclar ?? []) {
+    const benim = m.oyuncu_a === oyuncuId ? 'a' : 'b';
+    if (m.kazanan && m.kazanan !== benim && m.kazanan !== 'berabere') sayac += 1;
+    else break;
+  }
+  return sayac;
+}
 
 async function macKur(
   supabase: ReturnType<typeof createClient>,

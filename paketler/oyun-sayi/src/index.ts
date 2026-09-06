@@ -204,7 +204,8 @@ export { gonderimDogrula, gunNumarasi, enFazlaAdim, TARIH_PAYI_GUN, SURE_JOKERI_
 export type { GonderimGirdi, GonderimHata } from './gonderim.ts';
 
 export { botUret, botPlani,
-  botPlaniTohumlu, PROFILLER } from './bot.ts';
+  botPlaniTohumlu, botProfilSec, PROFILLER, PROFIL_SIRASI,
+  KORUMALI_DUELLO_SAYISI } from './bot.ts';
 export type { Bot, BotPlani, ProfilAd } from './bot.ts';
 
 export default sayiTuru;

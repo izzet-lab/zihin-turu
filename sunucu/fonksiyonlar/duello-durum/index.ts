@@ -82,6 +82,42 @@ Deno.serve(async (req: Request) => {
       .eq('taraf', rakipTaraf)
       .maybeSingle();
 
+    // --- Rakibin kimliği ve gücü ---
+    // Oyuncu kiminle oynadığını bilmeli; "1240 puan · 8 galibiyet"
+    // hem beklenti kuruyor hem kazanınca kazancı anlamlı kılıyor.
+    const rakip = await rakipBilgisi(supabase, son, rakipTaraf);
+
+    // --- Tur tur özet: YALNIZCA maç bittikten sonra ---
+    // Maç sürerken geçmiş turların rakip uzaklıkları da gönderilseydi
+    // sorun olmazdı (turlar kapalı), ama gereksiz veri göndermemek
+    // sızıntı yüzeyini küçük tutuyor (kural 8).
+    let turOzeti: unknown[] | null = null;
+    if (son.durum !== 'basladi') {
+      const { data: tumTurlar } = await supabase
+        .from('duello_tur')
+        .select('tur_no, taraf, uzaklik')
+        .eq('mac_id', mac_id);
+      turOzeti = [];
+      for (let n = 1; n <= son.aktif_tur; n++) {
+        const benimki = (tumTurlar ?? []).find(
+          (t: { tur_no: number; taraf: string }) => t.tur_no === n && t.taraf === benTarafim,
+        );
+        const rakibinki = (tumTurlar ?? []).find(
+          (t: { tur_no: number; taraf: string }) => t.tur_no === n && t.taraf === rakipTaraf,
+        );
+        const benimUzaklik = benimki?.uzaklik ?? null;
+        const rakipUzaklik = rakibinki?.uzaklik ?? null;
+        let kazanan: 'ben' | 'rakip' | 'berabere' = 'berabere';
+        if (benimUzaklik != null || rakipUzaklik != null) {
+          if (rakipUzaklik == null) kazanan = 'ben';
+          else if (benimUzaklik == null) kazanan = 'rakip';
+          else if (benimUzaklik < rakipUzaklik) kazanan = 'ben';
+          else if (rakipUzaklik < benimUzaklik) kazanan = 'rakip';
+        }
+        turOzeti.push({ turNo: n, benimUzaklik, rakipUzaklik, kazanan });
+      }
+    }
+
     return ok({
       id: son.id,
       seviye: son.seviye,
@@ -96,6 +132,8 @@ Deno.serve(async (req: Request) => {
       kazanan: son.kazanan,
       botMu: son.oyuncu_b === null,
       botAd: son.bot_ad,
+      rakip,
+      turOzeti,
       // Rakip hakkında dönen TEK şey bu (kural 8).
       rakipUzaklik: rakipSatir?.uzaklik ?? null,
       turAcik: durum ? durum.turAcik : false,
@@ -105,6 +143,58 @@ Deno.serve(async (req: Request) => {
     return hata('Sunucu hatası.', 500);
   }
 });
+
+/**
+ * Rakibin adı ve gücü.
+ *
+ * Gerçek oyuncu için derecesi ve galibiyet sayısı gerçek verilerdir.
+ * BOT için galibiyet sayısı GÖNDERİLMEZ — bot hiç maç oynamadı,
+ * uydurma bir sicil göstermek oyuncuyu kandırmak olurdu. Botun
+ * "derecesi" ise uydurma değil: gücünün karşılığı olarak profilinden
+ * türetiliyor, yani oyuncunun gördüğü sayı gerçekten karşısındakinin
+ * ne kadar zorlu olduğunu söylüyor.
+ */
+async function rakipBilgisi(
+  supabase: ReturnType<typeof createClient>,
+  mac: Record<string, unknown>,
+  rakipTaraf: Taraf,
+) {
+  const BOT_DERECE: Record<string, number> = {
+    cirak: 900,
+    acemi: 1050,
+    orta: 1250,
+    usta: 1500,
+  };
+
+  if (mac.oyuncu_b === null) {
+    const profil = String(mac.bot_profil ?? 'orta');
+    return {
+      ad: (mac.bot_ad as string) ?? 'Rakip',
+      elo: BOT_DERECE[profil] ?? 1200,
+      galibiyet: null,
+      botMu: true,
+    };
+  }
+
+  const rakipId = rakipTaraf === 'a' ? mac.oyuncu_a : mac.oyuncu_b;
+  const { data: oyuncu } = await supabase
+    .from('oyuncu')
+    .select('kullanici_adi')
+    .eq('id', rakipId)
+    .maybeSingle();
+  const { data: derece } = await supabase
+    .from('duello_derece')
+    .select('elo, galibiyet')
+    .eq('oyuncu_id', rakipId)
+    .maybeSingle();
+
+  return {
+    ad: oyuncu?.kullanici_adi ?? 'Rakip',
+    elo: derece?.elo ?? 1200,
+    galibiyet: derece?.galibiyet ?? 0,
+    botMu: false,
+  };
+}
 
 function ok(veri: unknown): Response {
   return new Response(JSON.stringify(veri), {

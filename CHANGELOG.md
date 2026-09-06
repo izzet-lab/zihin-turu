@@ -3,6 +3,61 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4 katman 3: bot oynuyor, maç kendi kendine yürüyor
+
+Katman 2'de "bot maçı kuruluyor ama bot oynamıyor" ve "kimse
+göndermezse tur ilerlemiyor" diye bırakılan iki eksik kapandı. Düello
+artık kimse dokunmasa da doğru yere gidiyor.
+
+### Bot oynuyor
+
+Bot artık her turda gerçekten hamle yapıyor. Çözümü hazır almıyor:
+kendi çözücüsünü profiline göre sınırlı süreyle çalıştırıyor — Faz 1'den
+gelen davranış korundu. Botun zinciri de tıpkı insanınki gibi sunucuda
+doğrulanıyor; bot ayrıcalıklı değil, hatalı zincir üretirse turu
+kaybediyor.
+
+**Botun planı artık tohumlu.** Sunucu maç durumunu bellekte tutmuyor,
+her istekte kayıtlardan yeniden kuruyor; botun hamlesi de bu yeniden
+kurmanın parçası. Plan gerçek rastgelelikle üretilseydi her istekte
+başka bir cevap çıkar, bot bir turda hem oynamış hem oynamamış
+görünürdü. Tohumlu olunca kim ne zaman sorarsa sorsun aynı cevap
+geliyor.
+
+Bot gecikmesi dolmadan cevabı görünmüyor. Anında cevap veren bot makine
+gibi hissettirir; oyuncu yenildiğini değil kandırıldığını düşünür.
+
+### Turlar kendiliğinden ilerliyor
+
+Yeni `duello-durum` ucu maçın durumunu döndürürken maçı olması gereken
+yere de taşıyor: botun sırası geldiyse oynatıyor, süresi dolan turları
+kapatıyor, maç bittiyse dereceleri güncelliyor. İlerletme mantığı
+`duello-ortak.ts` içinde; `duello-gonder` de aynı yerden çağırıyor, iki
+kopya yok.
+
+**Turun saati gerçek zamandan yürüyor.** Tur tam isabetle erken
+kapandıysa sonraki tur şimdi başlıyor; süresi dolduğu için kapandıysa,
+sonraki tur o turun bittiği anda başlamış sayılıyor — yani geçmişte.
+İlk yazımda sonraki tur her durumda "şimdi" başlıyordu ve iki oyuncu da
+uzaklaşınca maç her çağrıda ancak bir tur ilerliyor, kimse dönmezse hiç
+bitmiyordu. Test bunu yakaladı.
+
+### Testler bir hata daha yakaladı
+
+Maç bitişi ile derece güncellemesi ayrı adımlardı; iki istek aynı anda
+maçı bitirmeye çalışırsa derece iki kez yazılabilirdi. Artık derece
+yalnızca maçı gerçekten bitiren istek tarafından yazılıyor.
+
+Sunucu mantığı için veritabanının yerine geçen bir taklitle 14 test
+yazıldı: botun oynaması, gecikmeden önce susması, süresi dolan turun
+kapanması, maçın beş turda bitmesi, bota karşı derecenin değişmemesi ve
+derecenin iki kez yazılmaması. Toplam 281 test yeşil.
+
+### Sırada
+
+Düello arayüzü, canlı yayın bağlantısı, bağlantı kopması toleransının
+kalan kısmı, rövanş, özel oda ve iki tarayıcılı e2e testi.
+
 ## 2026-09-06 - Faz 4 katman 2: eşleştirme ve maç sunucusu
 
 Düellonun sunucu tarafı kuruldu. İki Edge Function canlıda.

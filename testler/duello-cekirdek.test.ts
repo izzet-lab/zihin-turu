@@ -18,6 +18,7 @@ import {
   type DuelloDurum,
   type DuelloOlay,
 } from '@zihinturu/cekirdek';
+import { turKur, botPlaniTohumlu, PROFILLER } from '@zihinturu/oyun-sayi';
 
 /*
   Düellonun beyni: eşleştirme ve maç akışı.
@@ -308,5 +309,33 @@ describe('tur saati ve tohum', () => {
 
   it('farklı maçlar aynı turda farklı bulmaca görür', () => {
     expect(duelloTurTohumu(100, 1)).not.toBe(duelloTurTohumu(200, 1));
+  });
+});
+
+describe('düello botu', () => {
+  it('aynı tohumla hep aynı planı üretir — sunucu her istekte yeniden hesaplayabilir', () => {
+    const tur = turKur('normal', 4242);
+    const bot = { id: 'b', ad: 'Test', bot: true as const, profil: 'orta' as const };
+    const a = botPlaniTohumlu(bot, tur, 4242);
+    const b = botPlaniTohumlu(bot, tur, 4242);
+    expect(a.gecikmeMs).toBe(b.gecikmeMs);
+    expect(a.adimlar).toEqual(b.adimlar);
+  });
+
+  it('farklı tohum farklı plan verir — bot her turda aynı davranmaz', () => {
+    const bot = { id: 'b', ad: 'Test', bot: true as const, profil: 'orta' as const };
+    const gecikmeler = [1, 2, 3, 4, 5].map((n) =>
+      botPlaniTohumlu(bot, turKur('normal', 1000 + n), 1000 + n).gecikmeMs,
+    );
+    expect(new Set(gecikmeler).size).toBeGreaterThan(1);
+  });
+
+  it('bot anında cevap vermez — gecikme profilin alt sınırının altına inmez', () => {
+    const bot = { id: 'b', ad: 'Test', bot: true as const, profil: 'acemi' as const };
+    for (let n = 0; n < 20; n++) {
+      const plan = botPlaniTohumlu(bot, turKur('normal', 500 + n), 500 + n);
+      expect(plan.gecikmeMs).toBeGreaterThanOrEqual(PROFILLER.acemi.minGecikme * 1000);
+      expect(plan.gecikmeMs).toBeLessThanOrEqual(PROFILLER.acemi.maxGecikme * 1000);
+    }
   });
 });

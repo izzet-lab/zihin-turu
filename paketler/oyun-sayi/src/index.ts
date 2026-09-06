@@ -203,7 +203,8 @@ export function seviyeEtiketi(anahtar: string): string {
 export { gonderimDogrula, gunNumarasi, enFazlaAdim, TARIH_PAYI_GUN, SURE_JOKERI_SANIYE } from './gonderim.ts';
 export type { GonderimGirdi, GonderimHata } from './gonderim.ts';
 
-export { botUret, botPlani, PROFILLER } from './bot.ts';
+export { botUret, botPlani,
+  botPlaniTohumlu, PROFILLER } from './bot.ts';
 export type { Bot, BotPlani, ProfilAd } from './bot.ts';
 
 export default sayiTuru;

@@ -28,6 +28,21 @@ export interface DuelloMac {
   /** Rakip hakkında bilinen TEK şey (kural 8). */
   rakipUzaklik?: number | null;
   turAcik?: boolean;
+  /** Rakibin kimliği ve gücü. */
+  rakip?: {
+    ad: string;
+    elo: number;
+    /** Bot için null — bot hiç maç oynamadı, uydurma sicil gösterilmez. */
+    galibiyet: number | null;
+    botMu: boolean;
+  } | null;
+  /** Maç bittiğinde tur tur özet; sürerken null. */
+  turOzeti?: {
+    turNo: number;
+    benimUzaklik: number | null;
+    rakipUzaklik: number | null;
+    kazanan: 'ben' | 'rakip' | 'berabere';
+  }[] | null;
 }
 
 export interface AramaSonucu {
@@ -38,22 +53,68 @@ export interface AramaSonucu {
   macYok?: boolean;
 }
 
-async function cagir<T>(uc: string, govde: unknown): Promise<T> {
+/** Ağ hatasının kullanıcıya gösterilen Türkçe karşılığı. */
+export const BAGLANTI_HATASI = 'Bağlantı kurulamadı. Tekrar dene.';
+
+/** İstek bu süreden uzun sürerse koparılır (sunucu uyanırken takılmasın). */
+const ZAMAN_ASIMI_MS = 12_000;
+
+/**
+ * Edge Function çağrısı — tek kapı.
+ *
+ * HATA METİNLERİ TÜRKÇE
+ * `fetch` başarısız olduğunda tarayıcı "Failed to fetch" diye İngilizce
+ * bir hata fırlatıyordu ve bu doğrudan ekrana basılıyordu. Kullanıcıya
+ * hiçbir şey anlatmayan, üstelik Türkçe olmayan bir metin. Artık ağ
+ * kaynaklı her hata tek bir Türkçe cümleye çevriliyor ve ekran yanına
+ * "Tekrar dene" düğmesi koyuyor.
+ *
+ * GEÇİCİ HATADA BİR KEZ YENİDEN DENENİR
+ * Edge Function bir süre çağrılmadıysa uyanması saniyeler alabiliyor ve
+ * ilk istek düşebiliyor. Kullanıcıya hata göstermeden önce sessizce bir
+ * kez daha deniyoruz.
+ */
+async function cagir<T>(uc: string, govde: unknown, ikinciDeneme = false): Promise<T> {
   const { data: oturum } = await supabase.auth.getSession();
-  if (!oturum.session) throw new Error('Giriş yapılmamış.');
+  if (!oturum.session) throw new Error('Oturumun kapanmış. Yeniden giriş yap.');
 
   const url = import.meta.env.VITE_SUPABASE_URL as string;
-  const yanit = await fetch(`${url}/functions/v1/${uc}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${oturum.session.access_token}`,
-    },
-    body: JSON.stringify(govde),
-  });
+  const kesici = new AbortController();
+  const zamanlayici = setTimeout(() => kesici.abort(), ZAMAN_ASIMI_MS);
 
-  const veri = await yanit.json();
-  if (!yanit.ok) throw new Error(veri?.hata ?? 'Sunucu hatası.');
+  let yanit: Response;
+  try {
+    yanit = await fetch(`${url}/functions/v1/${uc}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${oturum.session.access_token}`,
+      },
+      body: JSON.stringify(govde),
+      signal: kesici.signal,
+    });
+  } catch {
+    // Ağ hatası ya da zaman aşımı: bir kez daha dene, sonra Türkçe söyle.
+    if (!ikinciDeneme) return cagir<T>(uc, govde, true);
+    throw new Error(BAGLANTI_HATASI);
+  } finally {
+    clearTimeout(zamanlayici);
+  }
+
+  // Sunucu 5xx döndüyse de bir kez daha denemeye değer.
+  if (yanit.status >= 500 && !ikinciDeneme) return cagir<T>(uc, govde, true);
+
+  let veri: { hata?: string } | null = null;
+  try {
+    veri = await yanit.json();
+  } catch {
+    veri = null;
+  }
+
+  if (!yanit.ok) {
+    // Sunucunun kendi mesajları zaten Türkçe; yoksa Türkçe bir karşılık.
+    throw new Error(veri?.hata ?? 'Sunucuya ulaşıldı ama işlem tamamlanamadı.');
+  }
   return veri as T;
 }
 

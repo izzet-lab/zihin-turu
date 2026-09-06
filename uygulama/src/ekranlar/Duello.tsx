@@ -166,6 +166,27 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
     };
   }, [mac?.id, mac?.durum, mac?.aktifTur]);
 
+  /* --- Maç bitti: özeti bir kez daha iste --- */
+  //
+  // Maçı bitiren şey çoğu zaman oyuncunun kendi gönderimi oluyor ve o
+  // yanıtta tur özeti yok. Durum yoklaması da maç bitince duruyor;
+  // sonuç ekranı özetsiz kalıyordu. Bittiğini görür görmez bir kez daha
+  // soruyoruz.
+  useEffect(() => {
+    if (!mac || mac.durum === 'basladi' || mac.turOzeti) return;
+    let durduruldu = false;
+    duelloDurumOku(mac.id)
+      .then((son) => {
+        if (!durduruldu) setMac(son);
+      })
+      .catch(() => {
+        /* özet gelmezse sonuç ekranı yine çalışır, sadece liste olmaz */
+      });
+    return () => {
+      durduruldu = true;
+    };
+  }, [mac?.id, mac?.durum, mac?.turOzeti]);
+
   /* --- Rakibin uzaklığını canlı dinle --- */
   useEffect(() => {
     if (!mac || mac.durum !== 'basladi') return;
@@ -217,6 +238,52 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
     },
     [],
   );
+
+  /* --- Sonuç ekranı için türetilenler ---
+      DİKKAT: Bu kancalar koşullu dönüşlerden ÖNCE durmak zorunda.
+      Önce sonuç ekranının yanına konmuşlardı; orası erken dönüşlerin
+      ardında olduğu için React "önceki render'dan fazla kanca" diyip
+      ekranı komple çökertiyordu — düello ekranı bomboş açılıyordu.
+      Kancalar her render'da aynı sırayla çalışmalı. */
+  //
+  // Hedefler sunucudan GELMİYOR: her turun bulmacası maçın tohumundan
+  // yeniden üretiliyor (kural 3). Sunucudan yalnızca uzaklıklar geliyor.
+  const turOzetSatirlari = useMemo(() => {
+    if (!mac?.turOzeti) return [];
+    return mac.turOzeti.map((t) => {
+      const turBulmaca = turKur(mac.seviye, duelloTurTohumu(Number(mac.tohum), t.turNo));
+      const veri = turBulmaca.veri as { hedef: number };
+      const anlat = (u: number | null) =>
+        u == null ? 'oynamadı' : u === 0 ? 'tam isabet' : `${u} fark`;
+      return {
+        turNo: t.turNo,
+        hedef: veri.hedef,
+        benimMetin: `Sen: ${anlat(t.benimUzaklik)}`,
+        rakipMetin: `Rakip: ${anlat(t.rakipUzaklik)}`,
+        kazanan: t.kazanan,
+      };
+    });
+  }, [mac?.turOzeti, mac?.tohum, mac?.seviye]);
+
+  /**
+   * Kaybeden oyuncuya en çok yaklaştığı anı hatırlatan cümle.
+   * Tam isabet yapıp da turu kaptırdığı bir tur varsa onu, yoksa en
+   * küçük farkı seçer.
+   */
+  const enYakinAn = useMemo(() => {
+    const adaylar = (mac?.turOzeti ?? []).filter(
+      (t) => t.benimUzaklik != null && t.kazanan !== 'ben',
+    );
+    if (adaylar.length === 0) return null;
+    const enIyi = adaylar.reduce((a, b) =>
+      (a.benimUzaklik ?? Infinity) <= (b.benimUzaklik ?? Infinity) ? a : b,
+    );
+    if (enIyi.benimUzaklik === 0) {
+      return `${enIyi.turNo}. turda sen de tam isabet yaptın, rakip bir adım öndeydi.`;
+    }
+    return `${enIyi.turNo}. turda ${enIyi.benimUzaklik} fark kalmıştı.`;
+  }, [mac?.turOzeti]);
+
 
   /* --- Rövanş ve oda eylemleri --- */
   const revansIste = useCallback(async () => {
@@ -293,10 +360,22 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
 
   if (hata) {
     return (
-      <Cerceve baslik="Düello">
+      <Cerceve baslik="Bir şey ters gitti">
         <p className="text-sm text-amber-300" data-alan="duello-hata">
           {hata}
         </p>
+        <button
+          onClick={() => {
+            // Hatayı temizle ve bulunduğun yerden devam et; süren maç
+            // varsa açılış kontrolü onu geri getirir.
+            setHata(null);
+            setAcilisKontrolu(false);
+          }}
+          data-alan="duello-tekrar-dene"
+          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+        >
+          Tekrar dene
+        </button>
         <GeriDugmesi onCik={onCik} />
       </Cerceve>
     );
@@ -399,10 +478,60 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
         <div className="mt-2 text-lg text-slate-400" data-alan="duello-skor">
           {benim === 'a' ? mac.skorA : mac.skorB} — {benim === 'a' ? mac.skorB : mac.skorA}
         </div>
+        {/* Kaybedince "Kaybettin" tek başına soğuk duruyor. Oyuncunun
+            en çok yaklaştığı anı hatırlatmak, maçı "hiç şansım yoktu"
+            değil "az kalmıştı" diye hatırlatıyor. */}
+        {!kazandim && enYakinAn && (
+          <p className="mt-2 text-sm text-slate-400" data-alan="duello-teselli">
+            {enYakinAn}
+          </p>
+        )}
+
         {mac.botMu && (
           <p className="mt-3 text-xs text-slate-600">
             Bu maç bir rakip atanarak oynandı; derecen değişmedi.
           </p>
+        )}
+
+        {/* TUR TUR ÖZET
+            Hem "nerede kaybettim" sorusunu cevaplıyor hem sonuç ekranının
+            boşluğunu dolduruyor. Hedefler tohumdan yeniden üretiliyor;
+            sunucudan yalnızca uzaklıklar geliyor. */}
+        {turOzetSatirlari.length > 0 && (
+          <div className="mt-6 text-left" data-alan="duello-tur-ozeti">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+              Turlar
+            </div>
+            <ul className="divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-900/40">
+              {/* İki satır: üstte tur ve kazanan, altta iki tarafın sonucu.
+                  Tek satıra sığdırılmaya çalışılınca 360px'te taşıyor ve
+                  kazanan sütunu ekran dışında kalıyordu (kural 10). */}
+              {turOzetSatirlari.map((t) => (
+                <li key={t.turNo} className="px-3 py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-400">
+                      {t.turNo}. tur
+                      <span className="ml-2 font-normal text-slate-600">Hedef {t.hedef}</span>
+                    </span>
+                    <span
+                      className={`shrink-0 text-xs font-bold ${
+                        t.kazanan === 'ben'
+                          ? 'text-cyan-300'
+                          : t.kazanan === 'rakip'
+                            ? 'text-slate-500'
+                            : 'text-slate-600'
+                      }`}
+                    >
+                      {t.kazanan === 'ben' ? 'Sen aldın' : t.kazanan === 'rakip' ? 'Rakip aldı' : 'Berabere'}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-slate-500">
+                    {t.benimMetin} · {t.rakipMetin}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         <button
           onClick={revansIste}
@@ -461,7 +590,6 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   }
 
   return (
-    <>
     <Oyun
       // Tur değişince tahta sıfırdan kurulur.
       key={`${mac.id}-${mac.aktifTur}`}
@@ -475,25 +603,17 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
         toplamTur: DUELLO_TUR_SAYISI,
         skorBen: benim === 'a' ? mac.skorA : mac.skorB,
         skorRakip: benim === 'a' ? mac.skorB : mac.skorA,
-        rakipAd: mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip',
+        rakipAd: mac.rakip?.ad ?? (mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip'),
+        rakipElo: mac.rakip?.elo ?? null,
+        rakipGalibiyet: mac.rakip?.galibiyet ?? null,
         rakipUzaklik,
         onIlerleme: ilerlemeGonder,
+        onCik: () => setCikisSoruluyor(true),
       }}
       // Tur bitince (tam isabet ya da süre) son zincir gönderilir.
       // Puanı sunucu veriyor; buradaki `puan` alanı düelloda kullanılmaz.
       onBitti={(s) => ilerlemeGonder(s.adimlar)}
     />
-    {/* Maçtan çıkış — oyun ekranının altında, dikkat çekmeden. */}
-    <div className="mx-auto -mt-2 w-full max-w-md px-5 pb-6">
-      <button
-        onClick={() => setCikisSoruluyor(true)}
-        data-alan="duello-terk"
-        className="min-h-[44px] w-full text-xs font-bold text-slate-600 hover:text-slate-400"
-      >
-        Maçtan çık
-      </button>
-    </div>
-    </>
   );
 }
 

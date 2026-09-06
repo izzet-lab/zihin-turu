@@ -207,9 +207,20 @@ describe('bot oynuyor mu', () => {
     db = kur(botMaci(0));
   });
 
-  it('gecikmesi dolmadan bot cevap vermez', async () => {
-    await macIlerlet(db, botMaci(0));
-    expect(db.tablolar.duello_tur).toHaveLength(0);
+  it('gecikmesi dolmadan botun cevabı sayılmaz', async () => {
+    // Botun planı tur başında BİR kez hesaplanıp yazılır (çözücü her
+    // yoklamada yeniden çalışmasın diye), ama `bildirildi` gelecekte
+    // olduğu için o an gelene kadar yok sayılır.
+    const mac = botMaci(0);
+    const durum = await macIlerlet(db, mac);
+
+    const botSatiri = db.tablolar.duello_tur!.find((s) => s.taraf === 'b');
+    if (botSatiri) {
+      expect(Date.parse(botSatiri.bildirildi as string)).toBeGreaterThan(Date.now());
+    }
+    // Önemli olan: tur hâlâ açık ve bot puan almamış.
+    expect(durum.turAcik).toBe(true);
+    expect(durum.skor.b).toBe(0);
   });
 
   it('gecikmesi dolunca bot cevabını yazar', async () => {

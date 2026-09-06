@@ -111,12 +111,6 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
   };
   const plan = botPlaniTohumlu(bot, tur, turTohumu);
 
-  // Botun cevabı gecikmesi dolmadan görünmez — anında cevap veren bot
-  // makine gibi hissettirir, oyuncu yenildiğini değil kandırıldığını
-  // düşünür.
-  const gecmisMs = simdiMs - Date.parse(mac.tur_basladi);
-  if (gecmisMs < plan.gecikmeMs) return;
-
   // Bot pas geçtiyse bir şey yazma; turu süre kapatır.
   if (!plan.adimlar || plan.adimlar.length === 0) return;
 
@@ -125,6 +119,18 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
   const uzaklik = uzaklikHesapla(mac, turNo, plan.adimlar as Adim[]);
   if (uzaklik == null) return;
 
+  // Satır HEMEN yazılır ama `bildirildi` GELECEKTE: botun cevabı ancak o
+  // an geldiğinde sayılır. Okuma tarafı ileri tarihli satırları yok
+  // sayıyor.
+  //
+  // NEDEN BÖYLE
+  // Önce plan her yoklamada yeniden hesaplanıyordu ve gecikme dolmadan
+  // hiçbir şey yazılmıyordu. Yani iki saniyede bir çözücü baştan
+  // çalışıyordu. Güçlü profillerde çözücü 600 ms'ye kadar CPU
+  // harcıyor; Edge Function'ın istek başına CPU bütçesi bunu
+  // kaldırmıyor ve fonksiyon zaman zaman öldürülüyordu — tarayıcıya
+  // yanıt hiç dönmediği için ekranda İngilizce "Failed to fetch"
+  // çıkıyordu. Artık çözücü tur başına BİR kez çalışıyor.
   await db.from('duello_tur').upsert(
     {
       mac_id: mac.id,
@@ -155,11 +161,19 @@ export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
     const simdiMs = Date.now();
     await botuOynat(db, guncelMac, guncelMac.aktif_tur, simdiMs);
 
-    const { data: satirlar } = await db
+    const { data: tumSatirlar } = await db
       .from('duello_tur')
       .select('tur_no, taraf, uzaklik, bildirildi')
       .eq('mac_id', guncelMac.id)
       .order('bildirildi', { ascending: true });
+
+    // Botun cevabı gecikmesi dolmadan görünmez — anında cevap veren bot
+    // makine gibi hissettirir, oyuncu yenildiğini değil kandırıldığını
+    // düşünür. Satır önceden yazılıyor, ama zamanı gelene kadar yok
+    // sayılıyor.
+    const satirlar = (tumSatirlar ?? []).filter(
+      (s: { bildirildi: string }) => Date.parse(s.bildirildi) <= simdiMs,
+    );
 
     const doldu = turSuresiDoldu(Date.parse(guncelMac.tur_basladi), simdiMs, sure);
 

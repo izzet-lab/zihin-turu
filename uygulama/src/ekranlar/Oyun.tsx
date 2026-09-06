@@ -68,8 +68,14 @@ interface Props {
     skorBen: number;
     skorRakip: number;
     rakipAd: string;
+    /** Rakibin derecesi — gücünü gösterir. */
+    rakipElo?: number | null;
+    /** Gerçek oyuncunun galibiyet sayısı; bot için null. */
+    rakipGalibiyet?: number | null;
     /** Rakibin hedefe uzaklığı; bilinmiyorsa null (kural 8: tek bilgi bu). */
     rakipUzaklik: number | null;
+    /** Maçtan çıkış — ekranın altına düzgün yerleşsin diye burada. */
+    onCik?: () => void;
     /** Oyuncu hedefe yaklaştıkça çağrılır; sunucuya bildirim buradan gider. */
     onIlerleme: (adimlar: { a: number; b: number; islem: string; sonuc: number }[]) => void;
   } | null;
@@ -345,8 +351,16 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
     // binmesin diye. Menü düğmesi artık başlığın üstünde duruyor.
     <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       {konfetiGoster && <Konfeti />}
-      <div className="mx-auto flex w-full max-w-md flex-col">
-        <div className="flex items-center justify-between">
+      {/* Düelloda joker paneli yok; boşalan yer taşlara ve işlemlere
+          dağıtılsın diye kapsayıcı ekran yüksekliğini dolduruyor. */}
+      <div
+        className={`mx-auto flex w-full max-w-md flex-col ${
+          duello ? 'min-h-[calc(100dvh-6rem)]' : ''
+        }`}
+      >
+        {/* pr-14: sabit hamburger menü sağ üstte duruyor; bu satır tam
+            genişlik olsaydı menü metnin üstüne biner ve yazıyı keserdi. */}
+        <div className="flex items-center justify-between pr-14">
           {duello ? (
             <div className="text-xs font-bold text-slate-400" data-alan="duello-gostergesi">
               Tur {duello.turNo}/{duello.toplamTur} ·{' '}
@@ -364,23 +378,46 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           )}
         </div>
 
-        {/* Rakip — canlı yayınlanan TEK bilgi uzaklık (kural 8).
-            Hangi taşı kullandığı, kaç adım attığı asla gelmez. */}
+        {/* RAKİP KARTI
+            Canlı yayınlanan TEK bilgi uzaklık (kural 8); hangi taşı
+            kullandığı, kaç adım attığı asla gelmez.
+
+            Önce tek satırdı ve hamburger menü metni kesiyordu. Artık
+            iki satırlı bir kart: üstte baş harf dairesi, ad ve güç;
+            altta durum — kesilmeden sığıyor. */}
         {duello && (
           <div
-            className="mt-2 flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2"
+            className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2.5"
             data-alan="rakip-durumu"
           >
-            <span className="text-xs text-slate-400">{duello.rakipAd}</span>
-            <span className="text-xs font-bold" data-alan="rakip-uzaklik">
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-black text-slate-200"
+              >
+                {duello.rakipAd.trim().charAt(0).toLocaleUpperCase('tr')}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold text-slate-200" data-alan="rakip-ad">
+                  {duello.rakipAd}
+                </div>
+                {duello.rakipElo != null && (
+                  <div className="text-[11px] text-slate-500" data-alan="rakip-guc">
+                    {duello.rakipElo} puan
+                    {duello.rakipGalibiyet != null && ` · ${duello.rakipGalibiyet} galibiyet`}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-1.5 text-xs font-bold" data-alan="rakip-uzaklik">
               {duello.rakipUzaklik == null ? (
-                <span className="text-slate-600">henüz bir şey yok</span>
+                <span className="text-slate-500">Henüz bir şey bulamadı</span>
               ) : duello.rakipUzaklik === 0 ? (
-                <span className="text-amber-300">tam isabet yaptı 🎯</span>
+                <span className="text-amber-300">Tam isabet yaptı 🎯</span>
               ) : (
-                <span className="text-slate-300">hedefe {duello.rakipUzaklik} kaldı</span>
+                <span className="text-slate-300">Hedefe {duello.rakipUzaklik} kaldı</span>
               )}
-            </span>
+            </div>
           </div>
         )}
 
@@ -430,7 +467,11 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         </div>
 
         {/* Taş rafı */}
-        <div ref={rafRef} className="mt-5 grid grid-cols-4 gap-2.5" data-alan="raf">
+        <div
+          ref={rafRef}
+          className={`grid grid-cols-4 gap-2.5 ${duello ? 'mt-7' : 'mt-5'}`}
+          data-alan="raf"
+        >
           {durum.taslar.map((t) => {
             const secili = durum.secimA === t.id;
             const uretilmis = t.yol.length > 0;
@@ -444,7 +485,9 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
                 data-tas={t.deger}
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
-                className={`min-h-[64px] rounded-xl border text-2xl font-black transition active:scale-95 ${
+                className={`rounded-xl border font-black transition active:scale-95 ${
+                  duello ? 'min-h-[76px] text-3xl' : 'min-h-[64px] text-2xl'
+                } ${
                   secili
                     ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
                     : uretilmis
@@ -459,14 +502,19 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         </div>
 
         {/* İşlem tuşları */}
-        <div className="mt-3 grid grid-cols-4 gap-2.5" data-alan="islemler">
+        <div
+          className={`grid grid-cols-4 gap-2.5 ${duello ? 'mt-4' : 'mt-3'}`}
+          data-alan="islemler"
+        >
           {ISLEMLER.map((i) => (
             <button
               key={i.op}
               data-islem={i.op}
               aria-label={i.ad}
               onClick={() => gonder({ t: 'islem', op: i.op })}
-              className={`min-h-[52px] rounded-xl border text-2xl font-black transition active:scale-95 ${
+              className={`rounded-xl border text-2xl font-black transition active:scale-95 ${
+                duello ? 'min-h-[64px]' : 'min-h-[52px]'
+              } ${
                 durum.islem === i.op
                   ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100'
                   : 'border-slate-700 bg-slate-900/60 text-slate-200'
@@ -556,7 +604,12 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         )}
 
         {/* İşlem geçmişi */}
-        <div className="mt-1 min-h-[64px] rounded-xl border border-slate-800 bg-slate-900/30 p-3" data-alan="gecmis">
+        <div
+          className={`mt-1 rounded-xl border border-slate-800 bg-slate-900/30 p-3 ${
+            duello ? 'flex-1 min-h-[84px]' : 'min-h-[64px]'
+          }`}
+          data-alan="gecmis"
+        >
           {durum.gecmis.length === 0 ? (
             <div className="text-center text-xs text-slate-600">İki taş ve bir işlem seç.</div>
           ) : (
@@ -569,6 +622,19 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
             </ul>
           )}
         </div>
+
+        {/* Maçtan çık — düelloda, alt eylemlerin hemen üstünde.
+            Önce Oyun'un DIŞINA konmuştu ve ekranın altında kesik
+            görünüyordu; artık sayfanın kendi akışında. */}
+        {duello?.onCik && (
+          <button
+            onClick={duello.onCik}
+            data-alan="duello-terk"
+            className="zt-dokunma-alani mt-3 self-center text-xs font-bold text-slate-600 hover:text-slate-400"
+          >
+            Maçtan çık
+          </button>
+        )}
 
         {/* Alt eylemler */}
         <div className="mt-4 grid grid-cols-3 gap-2.5">

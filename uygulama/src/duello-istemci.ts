@@ -34,6 +34,8 @@ export interface AramaSonucu {
   mac?: DuelloMac;
   bekliyor?: boolean;
   bekleyenSn?: number;
+  /** `surenMaciSor` için: süren maç yok. */
+  macYok?: boolean;
 }
 
 async function cagir<T>(uc: string, govde: unknown): Promise<T> {
@@ -58,6 +60,18 @@ async function cagir<T>(uc: string, govde: unknown): Promise<T> {
 /** Rakip arar. Bulunursa maç, bulunmazsa "bekliyor" döner. */
 export function duelloAra(seviye: string): Promise<AramaSonucu> {
   return cagir<AramaSonucu>('duello-ara', { seviye });
+}
+
+/**
+ * Süren bir maçım var mı? Kuyruğa YAZMAZ.
+ *
+ * Düello ekranı açılır açılmaz bunu soruyor: sekmesini yenileyen ya da
+ * uygulamayı kapatıp açan oyuncu maçına geri dönebilsin diye. Normal
+ * arama çağrısı kullanılsaydı ekrana bakmak bile oyuncuyu kuyruğa
+ * sokardı.
+ */
+export function surenMaciSor(seviye: string): Promise<AramaSonucu> {
+  return cagir<AramaSonucu>('duello-ara', { seviye, sadece_kontrol: true });
 }
 
 /**
@@ -134,4 +148,48 @@ export function rakibiDinle(
   return () => {
     supabase.removeChannel(kanal);
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Rövanş ve özel oda                                                  */
+/* ------------------------------------------------------------------ */
+
+/** Biten maçtan rövanş açar; rakip zaten açtıysa onun maçına katılır. */
+export function duelloRevans(macId: string): Promise<{ mac: DuelloMac }> {
+  return cagir<{ mac: DuelloMac }>('duello-davet', { eylem: 'revans', mac_id: macId });
+}
+
+/** Özel oda kurar; dönen kod arkadaşa verilir. */
+export function odaKur(seviye: string): Promise<{ kod: string; seviye: string }> {
+  return cagir<{ kod: string; seviye: string }>('duello-davet', {
+    eylem: 'oda-kur',
+    seviye,
+  });
+}
+
+/** Kodla odaya katılır ve maçı başlatır. */
+export function odayaKatil(kod: string): Promise<{ mac: DuelloMac }> {
+  return cagir<{ mac: DuelloMac }>('duello-davet', { eylem: 'oda-katil', kod });
+}
+
+/** Oda kuran taraf arkadaşını beklerken bunu sorar. */
+export function odaDurumu(kod: string): Promise<{ bekliyor?: boolean; mac?: DuelloMac }> {
+  return cagir<{ bekliyor?: boolean; mac?: DuelloMac }>('duello-davet', {
+    eylem: 'oda-durum',
+    kod,
+  });
+}
+
+/**
+ * Maçı terk eder — terk eden kaybeder, maç düzgün sonlanır.
+ *
+ * Bağlantı koptuğunda turlar zaten süreyle kapanıp maçı bitiriyor; bu
+ * ise oyuncunun bilerek çıkması. İkisi de aynı yere varıyor: yarım
+ * kalmış maç kalmıyor.
+ */
+export function duelloTerkEt(macId: string): Promise<{ terk?: boolean; zatenBitti?: boolean }> {
+  return cagir<{ terk?: boolean; zatenBitti?: boolean }>('duello-davet', {
+    eylem: 'terk',
+    mac_id: macId,
+  });
 }

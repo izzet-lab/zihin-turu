@@ -3,6 +3,67 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Faz 4 tamam: rövanş, özel oda, maçtan çıkış
+
+Faz 4'ün kalan parçaları. Düello artık baştan sona oynanabiliyor.
+
+### Rövanş
+
+Biten maçtan tek dokunuşla yeni maç. İki oyuncu da aynı anda "rövanş"
+derse iki maç kurulurdu — eşleştirmede yaşadığımız yarışın aynısı. Orada
+simetriyi kırarak çözmüştük; burada veritabanı kısıtı daha basit oldu:
+bir maçtan yalnızca bir rövanş açılabiliyor, ikinci istek reddedilip var
+olan maça katılıyor.
+
+Rövanşta **taraflar yer değiştiriyor**. Sebebi adalet: tam isabet
+eşitliğinde önce bildiren taraf turu aldığı için A tarafı bir miktar
+avantajlı; sırayla oynanınca dengeleniyor.
+
+### Özel oda
+
+Beş karakterlik kod üretiliyor, arkadaş kodu girip katılıyor. Kod
+alfabesinde karışabilen harf ve rakamlar yok (O/0, I/1) — telefonda
+sesli söylenebilmeli.
+
+Oda maçın kendisi değil, ayrı bir kayıt: maç ancak iki taraf belli
+olunca kuruluyor. Odayı yalnızca kuran görebiliyor; oda listesi herkese
+açık olsaydı kod deneyerek yabancı odalara girmenin yolu açılırdı.
+Bekleyen oda yarım saatte ölüyor.
+
+### Maçtan çıkış — testlerin ortaya çıkardığı eksik
+
+Maç sürerken çıkmanın **hiçbir yolu yoktu**; oyuncu maç bitene kadar
+kilitliydi. Testleri birbirinden bağımsız hale getirmeye çalışırken
+fark edildi.
+
+Artık "Maçtan çık" var, onay soruyor ve **terk eden kaybediyor** —
+çıkmak, kaybetmek üzere olan maçtan bedelsiz kurtulmanın yolu olmamalı.
+Çekirdekteki "ayrıldı" kuralının sunucu karşılığı.
+
+### Kopan bağlantıdan dönüş — bir regresyon yakalandı
+
+Düello ekranına kip seçimi (rakip bul / arkadaşınla oyna) eklenince,
+sekmesini yenileyen oyuncu maçına değil seçim ekranına düşmeye başladı.
+Test yakaladı.
+
+Artık ekran açılır açılmaz "süren maçım var mı?" diye soruluyor ve
+oyuncu maçına geri dönüyor. Bu sorunun kuyruğa **yazmayan** ayrı bir
+biçimi eklendi; normal arama çağrısı kullanılsaydı düello ekranına
+bakmak bile oyuncuyu sıraya sokardı.
+
+### Testler
+
+5 yeni e2e senaryosu: özel oda, rövanş, kopan bağlantıdan dönüş ve iki
+maç senaryosu. Testler artık kendi kendini temizliyor — kalan maç varsa
+terk ediliyor, böylece sıraya bağımlı olmuyorlar.
+
+281 birim + 17 e2e testi yeşil.
+
+### Faz 4'te geriye kalan
+
+FCM ile düello bildirimleri (rakip bulundu, sıra sende). Kapalı test
+başlayınca gerçek cihazlarda denenmeli.
+
 ## 2026-09-06 - Faz 4: ilk gerçek düello oynandı, bir yarış hatası çıktı
 
 Buraya kadar düello parça parça doğrulanmıştı ama uçtan uca bir maç hiç

@@ -6,6 +6,12 @@ import {
   duelloAra,
   duelloDurumOku,
   duelloGonder,
+  duelloRevans,
+  duelloTerkEt,
+  surenMaciSor,
+  odaDurumu,
+  odaKur,
+  odayaKatil,
   rakibiDinle,
   type DuelloMac,
 } from '../duello-istemci';
@@ -44,15 +50,43 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   const [bekleyenSn, setBekleyenSn] = useState(0);
   const [hata, setHata] = useState<string | null>(null);
   const [rakipUzaklik, setRakipUzaklik] = useState<number | null>(null);
+  // Özel oda: kod kurulunca burada durur, arkadaş katılana kadar beklenir.
+  const [odaKodu, setOdaKodu] = useState<string | null>(null);
+  const [katilKodu, setKatilKodu] = useState('');
+  // Kuyruğa girmeden önce oyuncu ne yapmak istediğini seçer.
+  const [kip, setKip] = useState<'secim' | 'rastgele' | 'oda'>('secim');
   const macRef = useRef<DuelloMac | null>(null);
   macRef.current = mac;
 
   const seviyeEtiket =
     SEVIYE_LISTESI.find((s) => s.anahtar === seviye)?.etiket ?? seviye;
 
+  /* --- Açılışta: süren maçım var mı? --- */
+  //
+  // Sekmesini yenileyen ya da uygulamayı kapatıp açan oyuncu maçına geri
+  // dönmeli ("kısa kopmada geri dönülebilsin"). Bu çağrı kuyruğa
+  // yazmıyor; yoksa düello ekranına bakmak bile oyuncuyu sıraya sokardı.
+  const [acilisKontrolu, setAcilisKontrolu] = useState(false);
+  useEffect(() => {
+    if (!girisYapildiMi || acilisKontrolu) return;
+    let durduruldu = false;
+    surenMaciSor(seviye)
+      .then((sonuc) => {
+        if (durduruldu) return;
+        if (sonuc.mac) setMac(sonuc.mac);
+        setAcilisKontrolu(true);
+      })
+      .catch(() => {
+        if (!durduruldu) setAcilisKontrolu(true);
+      });
+    return () => {
+      durduruldu = true;
+    };
+  }, [girisYapildiMi, seviye, acilisKontrolu]);
+
   /* --- Rakip arama --- */
   useEffect(() => {
-    if (!girisYapildiMi || mac) return;
+    if (!girisYapildiMi || mac || kip !== 'rastgele') return;
     let durduruldu = false;
 
     async function ara() {
@@ -76,7 +110,32 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
       durduruldu = true;
       clearInterval(z);
     };
-  }, [girisYapildiMi, seviye, mac]);
+  }, [girisYapildiMi, seviye, mac, kip]);
+
+  /* --- Özel oda: arkadaş katıldı mı? --- */
+  useEffect(() => {
+    if (!odaKodu || mac) return;
+    let durduruldu = false;
+
+    async function sor() {
+      try {
+        const sonuc = await odaDurumu(odaKodu!);
+        if (durduruldu) return;
+        if (sonuc.mac) {
+          setMac(sonuc.mac);
+          setOdaKodu(null);
+        }
+      } catch (e) {
+        if (!durduruldu) setHata((e as Error).message);
+      }
+    }
+
+    const z = setInterval(sor, YOKLAMA_MS);
+    return () => {
+      durduruldu = true;
+      clearInterval(z);
+    };
+  }, [odaKodu, mac]);
 
   /* --- Maç sürerken durumu yokla (bu çağrı maçı da ilerletiyor) --- */
   useEffect(() => {
@@ -159,6 +218,59 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
     [],
   );
 
+  /* --- Rövanş ve oda eylemleri --- */
+  const revansIste = useCallback(async () => {
+    const m = macRef.current;
+    if (!m) return;
+    try {
+      const sonuc = await duelloRevans(m.id);
+      setRakipUzaklik(null);
+      setMac(sonuc.mac);
+    } catch (e) {
+      setHata((e as Error).message);
+    }
+  }, []);
+
+  const odaAc = useCallback(async () => {
+    try {
+      const sonuc = await odaKur(seviye);
+      setOdaKodu(sonuc.kod);
+    } catch (e) {
+      setHata((e as Error).message);
+    }
+  }, [seviye]);
+
+  const odayaGir = useCallback(async () => {
+    try {
+      const sonuc = await odayaKatil(katilKodu);
+      setRakipUzaklik(null);
+      setMac(sonuc.mac);
+    } catch (e) {
+      setHata((e as Error).message);
+    }
+  }, [katilKodu]);
+
+  /**
+   * Maçtan çık.
+   *
+   * Terk eden kaybeder — bu bilerek böyle: çıkmak, kaybetmek üzere olan
+   * maçtan bedelsiz kurtulmanın yolu olmamalı. Onay soruluyor.
+   */
+  const [cikisSoruluyor, setCikisSoruluyor] = useState(false);
+  const maciTerkEt = useCallback(async () => {
+    const m = macRef.current;
+    if (!m) return;
+    try {
+      await duelloTerkEt(m.id);
+    } catch {
+      /* maç bu arada zaten bitmiş olabilir; sorun değil */
+    }
+    setCikisSoruluyor(false);
+    setRakipUzaklik(null);
+    setMac(null);
+    setKip('secim');
+  }, []);
+
   /* --- Ekranlar --- */
 
   if (!girisYapildiMi) {
@@ -185,6 +297,72 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
         <p className="text-sm text-amber-300" data-alan="duello-hata">
           {hata}
         </p>
+        <GeriDugmesi onCik={onCik} />
+      </Cerceve>
+    );
+  }
+
+  // Özel oda kuruldu, arkadaş bekleniyor.
+  if (!mac && odaKodu) {
+    return (
+      <Cerceve baslik="Arkadaşın bekleniyor">
+        <p className="text-sm text-slate-400">Bu kodu arkadaşına ver:</p>
+        <div
+          className="zt-rakam mt-3 rounded-xl border border-cyan-300/40 bg-cyan-300/10 py-4 text-4xl font-black tracking-[0.3em] text-cyan-200"
+          data-alan="oda-kodu"
+        >
+          {odaKodu}
+        </div>
+        <p className="mt-3 text-xs text-slate-600">
+          Arkadaşın kodu girer girmez maç başlar. {seviyeEtiket} seviyesi.
+        </p>
+        <GeriDugmesi onCik={onCik} />
+      </Cerceve>
+    );
+  }
+
+  // Ne tür düello? Kuyruğa girmeden önce sorulur.
+  if (!mac && kip === 'secim' && acilisKontrolu) {
+    return (
+      <Cerceve baslik="Düello">
+        <button
+          onClick={() => setKip('rastgele')}
+          data-alan="duello-rastgele"
+          className="min-h-[56px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+        >
+          Rakip bul
+        </button>
+        <p className="mt-2 text-xs text-slate-600">
+          {seviyeEtiket} seviyesinde, derecene yakın bir rakip aranır.
+        </p>
+
+        <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="text-sm font-bold text-slate-300">Arkadaşınla oyna</div>
+          <button
+            onClick={odaAc}
+            data-alan="oda-kur"
+            className="mt-3 min-h-[48px] w-full rounded-xl border border-slate-700 text-sm font-bold text-slate-200 hover:bg-slate-800/60"
+          >
+            Oda kur, kodu paylaş
+          </button>
+          <div className="mt-3 flex gap-2">
+            <input
+              value={katilKodu}
+              onChange={(e) => setKatilKodu(e.target.value.toUpperCase().slice(0, 5))}
+              placeholder="KOD"
+              data-alan="oda-kod-girdi"
+              className="zt-rakam min-h-[48px] w-full rounded-xl border border-slate-700 bg-slate-900/60 px-3 text-center text-lg font-black tracking-[0.2em] text-slate-100 placeholder:text-slate-600"
+            />
+            <button
+              onClick={odayaGir}
+              disabled={katilKodu.length !== 5}
+              data-alan="oda-katil"
+              className="min-h-[48px] shrink-0 rounded-xl border border-slate-700 px-4 text-sm font-bold text-slate-200 disabled:opacity-40"
+            >
+              Katıl
+            </button>
+          </div>
+        </div>
         <GeriDugmesi onCik={onCik} />
       </Cerceve>
     );
@@ -227,14 +405,25 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
           </p>
         )}
         <button
+          onClick={revansIste}
+          data-alan="duello-revans"
+          className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+        >
+          Rövanş
+        </button>
+        <p className="mt-1 text-[11px] text-slate-600">
+          Aynı rakiple yeniden — bu kez taraflar yer değiştirir.
+        </p>
+        <button
           onClick={() => {
             setMac(null);
             setRakipUzaklik(null);
+            setKip('secim');
           }}
           data-alan="duello-yeni"
-          className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-3 min-h-[48px] w-full rounded-xl border border-slate-700 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
         >
-          Yeni düello
+          Başka rakip
         </button>
         <GeriDugmesi onCik={onCik} />
       </Cerceve>
@@ -247,7 +436,32 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   const gecenSn = Math.max(0, (Date.now() - Date.parse(mac.turBasladi)) / 1000);
   const kalanSn = Math.max(1, Math.round((mac.turSuresiSn ?? 60) - gecenSn));
 
+  if (cikisSoruluyor) {
+    return (
+      <Cerceve baslik="Maçtan çıkılsın mı?">
+        <p className="text-sm text-slate-400">
+          Çıkarsan maçı kaybedersin ve derecen buna göre değişir.
+        </p>
+        <button
+          onClick={maciTerkEt}
+          data-alan="duello-terk-onay"
+          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold text-amber-300 hover:bg-amber-400/10"
+        >
+          Evet, çık
+        </button>
+        <button
+          onClick={() => setCikisSoruluyor(false)}
+          data-alan="duello-terk-vazgec"
+          className="mt-3 min-h-[48px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+        >
+          Maça dön
+        </button>
+      </Cerceve>
+    );
+  }
+
   return (
+    <>
     <Oyun
       // Tur değişince tahta sıfırdan kurulur.
       key={`${mac.id}-${mac.aktifTur}`}
@@ -269,6 +483,17 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
       // Puanı sunucu veriyor; buradaki `puan` alanı düelloda kullanılmaz.
       onBitti={(s) => ilerlemeGonder(s.adimlar)}
     />
+    {/* Maçtan çıkış — oyun ekranının altında, dikkat çekmeden. */}
+    <div className="mx-auto -mt-2 w-full max-w-md px-5 pb-6">
+      <button
+        onClick={() => setCikisSoruluyor(true)}
+        data-alan="duello-terk"
+        className="min-h-[44px] w-full text-xs font-bold text-slate-600 hover:text-slate-400"
+      >
+        Maçtan çık
+      </button>
+    </div>
+    </>
   );
 }
 

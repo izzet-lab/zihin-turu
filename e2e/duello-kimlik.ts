@@ -72,3 +72,49 @@ export async function girisYap(baglam: BrowserContext, eposta: string): Promise<
     [anahtar, oturum] as const,
   );
 }
+
+/**
+ * Sayfayı düello ekranında TEMİZ bir başlangıca getirir.
+ *
+ * Önceki testten kalan süren bir maç varsa oyuncu doğrudan o maça
+ * düşer (bu doğru davranış — kopan bağlantıdan dönüş böyle çalışıyor).
+ * Testlerin birbirinden bağımsız olması için kalan maç terk edilir.
+ */
+export async function duelloyuTemizle(
+  sayfa: import('@playwright/test').Page,
+  seviye = 'cocuk',
+): Promise<void> {
+  await sayfa.goto(`/duello?seviye=${seviye}`);
+
+  for (let deneme = 0; deneme < 3; deneme++) {
+    const secimGorunur = await sayfa
+      .locator('[data-alan="duello-rastgele"]')
+      .isVisible()
+      .catch(() => false);
+    if (secimGorunur) return;
+
+    const macta = await sayfa
+      .locator('[data-alan="duello-terk"]')
+      .isVisible()
+      .catch(() => false);
+    if (macta) {
+      await sayfa.locator('[data-alan="duello-terk"]').click();
+      await sayfa.locator('[data-alan="duello-terk-onay"]').click();
+      await sayfa.locator('[data-alan="duello-rastgele"]').waitFor({ timeout: 30_000 });
+      return;
+    }
+
+    // Biten maç ekranında kalmış olabilir.
+    const bitmis = await sayfa
+      .locator('[data-alan="duello-yeni"]')
+      .isVisible()
+      .catch(() => false);
+    if (bitmis) {
+      await sayfa.locator('[data-alan="duello-yeni"]').click();
+      continue;
+    }
+
+    await sayfa.waitForTimeout(1500);
+  }
+  await sayfa.locator('[data-alan="duello-rastgele"]').waitFor({ timeout: 30_000 });
+}

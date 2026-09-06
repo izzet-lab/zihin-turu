@@ -58,7 +58,17 @@ Deno.serve(async (req: Request) => {
     if (kimlikHata || !kullanici.user) return hata('Geçersiz oturum.', 401);
     const benId = kullanici.user.id;
 
-    const { seviye } = await req.json() as { seviye: string };
+    const { seviye, sadece_kontrol } = await req.json() as {
+      seviye: string;
+      /**
+       * Yalnızca "süren maçım var mı?" diye sorar; kuyruğa YAZMAZ.
+       *
+       * Düello ekranı açılır açılmaz bunu soruyor: sekmesini yenileyen
+       * oyuncu maçına geri dönebilsin diye. Bayrak olmasaydı ekrana
+       * bakmak bile oyuncuyu kuyruğa sokardı.
+       */
+      sadece_kontrol?: boolean;
+    };
     const seviyeObj = SEVIYE_LISTESI.find((s) => s.anahtar === seviye);
     if (!seviyeObj) return hata('Bilinmeyen seviye.', 400);
 
@@ -76,6 +86,7 @@ Deno.serve(async (req: Request) => {
       .limit(1)
       .maybeSingle();
     if (surenMac) return ok({ mac: macCevabi(surenMac, benId) });
+    if (sadece_kontrol) return ok({ macYok: true });
 
     // --- 2. Derece (yoksa oluştur) ---
     const { data: derece } = await supabase

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { zinciriBulVeOyna } from './oyun-yardimcilari';
-import { girisYap, testHesabiVarMi, TEST_EPOSTALAR } from './duello-kimlik';
+import { girisYap, testHesabiVarMi, duelloyuTemizle, TEST_EPOSTALAR } from './duello-kimlik';
 
 /*
   GERÇEK DÜELLO — iki tarayıcı, iki hesap, tek maç.
@@ -33,9 +33,12 @@ test.describe('düello maçı', () => {
 
     // İkisi de neredeyse aynı anda kuyruğa girmeli: sekiz saniye
     // içinde eşleşmezlerse birine bot atanır ve maç birbirleriyle olmaz.
+    // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
+    await duelloyuTemizle(sayfa1);
+    await duelloyuTemizle(sayfa2);
     await Promise.all([
-      sayfa1.goto('/duello?seviye=cocuk'),
-      sayfa2.goto('/duello?seviye=cocuk'),
+      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
+      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
     ]);
 
     // Eşleşme: iki tarafta da tahta açılmalı.
@@ -108,9 +111,12 @@ test.describe('düello maçı', () => {
       }
     });
 
+    // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
+    await duelloyuTemizle(sayfa1);
+    await duelloyuTemizle(sayfa2);
     await Promise.all([
-      sayfa1.goto('/duello?seviye=cocuk'),
-      sayfa2.goto('/duello?seviye=cocuk'),
+      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
+      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
     ]);
 
     await Promise.all([

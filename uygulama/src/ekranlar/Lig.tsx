@@ -16,15 +16,17 @@ import {
   gunlukLig,
   donemLig,
   antrenmanLig,
+  duelloLig,
   type LigSatiri,
   type KendiDurumu,
 } from '../lig-sorgu';
 import { bugun } from '../depo';
+import { xpSeviyeHesapla } from '../kimlik';
 import { bannerGoster, bannerKaldir } from '../reklam';
 import UyelikDaveti from '../bilesenler/UyelikDaveti';
 import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
-type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'antrenman';
+type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'antrenman';
 
 interface Props {
   oyuncuId?: string; // null = misafir; kendi sırası gösterilmez
@@ -57,8 +59,17 @@ export default function Lig({ oyuncuId }: Props) {
   const [kendi, setKendi] = useState<KendiDurumu | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
 
-  const kalanSn = useMemo(() => donemKalanSn(sekme === 'antrenman' ? 'haftalik' : sekme), [sekme]);
+  // Düellonun dönemi yok — derece birikerek gider; sayaç gösterilmez.
+  const kalanSn = useMemo(
+    () =>
+      donemKalanSn(
+        sekme === 'antrenman' ? 'haftalik' : sekme === 'duello' ? 'gunluk' : sekme,
+      ),
+    [sekme],
+  );
   const kalanMetin = kalanSureMetin(kalanSn);
+  /** Son 24 saat: aciliyet hissi bugün oynamayı tetikler. */
+  const sonGun = kalanSn > 0 && kalanSn <= 24 * 3600;
 
   async function sorguYap() {
     setYukleniyor(true);
@@ -72,6 +83,9 @@ export default function Lig({ oyuncuId }: Props) {
         result = await donemLig('hafta', haftalikAnahtar(), 'sayi', seviye, oyuncuId);
       } else if (sekme === 'aylik') {
         result = await donemLig('ay', aylikAnahtar(), 'sayi', seviye, oyuncuId);
+      } else if (sekme === 'duello') {
+        // Düello derecesi seviyeden bağımsız; tek bir tablo.
+        result = await duelloLig(oyuncuId);
       } else {
         result = await antrenmanLig(haftalikAnahtar(), 'sayi', seviye, oyuncuId);
       }
@@ -104,26 +118,35 @@ export default function Lig({ oyuncuId }: Props) {
             ← Geri
           </button>
           <h1 className="text-2xl font-black text-white mb-1">Sıralamalar</h1>
-          <p className="text-xs text-slate-500">
-            {sekme === 'gunluk' && 'Bugünkü en iyi puanlar'}
-            {sekme === 'haftalik' && 'Bu haftanın puanları'}
-            {sekme === 'aylik' && 'Bu ayın puanları'}
-            {sekme === 'antrenman' && 'Çalışkanlık tablosu. Beceri sıralaması için Günün Turu\'na bakın.'}
+          {/* Açıklama seçili sekmeye göre değişir. Antrenman'ın
+              "çalışkanlık tablosu" notu yalnızca o sekmede geçerli. */}
+          <p className="text-xs text-slate-500" data-alan="sekme-aciklama">
+            {sekme === 'gunluk' && 'Bugünün turunda alınan en iyi puanlar.'}
+            {sekme === 'haftalik' && 'Bu haftanın günlük en iyilerinin toplamı.'}
+            {sekme === 'aylik' && 'Bu ayın günlük en iyilerinin toplamı.'}
+            {sekme === 'duello' &&
+              'Düello derecesi. Yalnızca gerçek rakiplere karşı oynanan maçlar sayılır.'}
+            {sekme === 'antrenman' &&
+              'Çalışkanlık tablosu — ne kadar çalıştığını gösterir, ne kadar iyi olduğunu değil.'}
           </p>
         </header>
 
-        {/* Sekme seçimi — 4 sekme */}
-        <div className="mb-6 grid grid-cols-4 gap-2" role="tablist" aria-label="Dönem">
+        {/* Sekme seçimi — 5 sekme.
+            Üçlü ızgara: 360px'te beş sekme yan yana sığmıyor, "Haftalık"
+            kesiliyordu. İki satıra bölünüyor (kural 10). */}
+        <div className="mb-6 grid grid-cols-3 gap-2" role="tablist" aria-label="Sıralama türü">
           {(
             [
               { k: 'gunluk', ad: 'Günlük' },
               { k: 'haftalik', ad: 'Haftalık' },
               { k: 'aylik', ad: 'Aylık' },
+              { k: 'duello', ad: '⚔️ Düello' },
               { k: 'antrenman', ad: 'Antrenman' },
             ] as const
           ).map((s) => (
             <button
               key={s.k}
+              data-sekme={s.k}
               onClick={() => setSekme(s.k)}
               aria-pressed={sekme === s.k}
               className={`min-h-[48px] rounded-lg border px-2 py-2 text-sm font-bold transition ${
@@ -137,8 +160,9 @@ export default function Lig({ oyuncuId }: Props) {
           ))}
         </div>
 
-        {/* Seviye seçimi */}
-        <div className="mb-6">
+        {/* Seviye seçimi — düelloda yok: derece seviyeden bağımsız. */}
+        {sekme !== 'duello' && (
+        <div className="mb-6" data-alan="seviye-secici">
           <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</div>
           <div className="flex flex-wrap gap-2">
             {seviyeler.map((s) => (
@@ -157,14 +181,27 @@ export default function Lig({ oyuncuId }: Props) {
             ))}
           </div>
         </div>
+        )}
 
-        {/* Kalan süre */}
-        <div className="mb-6 text-center text-xs text-slate-500">
-          {sekme === 'gunluk' && `Sıralama saat başında güncellenir`}
-          {sekme === 'haftalik' && `Hafta pazartesi başlar — ${kalanMetin} kaldı`}
-          {sekme === 'aylik' && `Ay sonuna — ${kalanMetin} kaldı`}
-          {sekme === 'antrenman' && `Haftalık sıfırlanır — ${kalanMetin} kaldı`}
-        </div>
+        {/* Kalan süre — son 24 saatte vurgulu. */}
+        {sekme !== 'duello' && (
+          <div
+            data-alan="kalan-sure"
+            className={`mb-6 text-center text-xs ${
+              sonGun && sekme !== 'gunluk'
+                ? 'font-bold text-amber-300'
+                : 'text-slate-500'
+            }`}
+          >
+            {sekme === 'gunluk' && 'Sıralama saat başında güncellenir'}
+            {sekme === 'haftalik' &&
+              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Hafta pazartesi başlar — ${kalanMetin} kaldı`)}
+            {sekme === 'aylik' &&
+              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Ay sonuna — ${kalanMetin} kaldı`)}
+            {sekme === 'antrenman' &&
+              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Haftalık sıfırlanır — ${kalanMetin} kaldı`)}
+          </div>
+        )}
 
         {/* Yükleniyor */}
         {yukleniyor && (
@@ -177,25 +214,67 @@ export default function Lig({ oyuncuId }: Props) {
         {/* Sıralama tablosu */}
         {!yukleniyor && satirlar.length > 0 && (
           <div className="space-y-3">
-            {satirlar.map((s) => (
+            {satirlar.map((s) => {
+              const sv = xpSeviyeHesapla(s.xp ?? 0);
+              return (
               <div
                 key={`${s.sira}`}
-                className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3"
+                data-alan="lig-satir"
+                data-benim={s.benimMi ? '1' : undefined}
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
+                  s.benimMi
+                    ? 'border-cyan-300/50 bg-cyan-300/10 ring-1 ring-cyan-300/30'
+                    : 'border-slate-800 bg-slate-900/40'
+                }`}
               >
-                <div className="w-8 text-center font-bold text-slate-500 text-sm">
+                {/* İlk üçte madalya, sonrasında sıra numarası */}
+                <div className="w-7 shrink-0 text-center text-sm font-bold text-slate-500">
                   {s.sira <= 3 ? ['🥇', '🥈', '🥉'][s.sira - 1]! : `${s.sira}`}
                 </div>
-                <div className="flex-1">
-                  <div className="font-bold text-slate-200">{s.kullaniciAdi}</div>
-                  {s.gunSayisi !== undefined && (
-                    <div className="text-xs text-slate-500">
-                      {sekme === 'antrenman' ? `${s.gunSayisi} tur` : `${s.gunSayisi} gün oynadı`}
-                    </div>
+
+                {/* Baş harf dairesi — rakip kartındakiyle aynı biçim */}
+                <span
+                  aria-hidden="true"
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${
+                    s.benimMi ? 'bg-cyan-300/25 text-cyan-100' : 'bg-slate-700 text-slate-200'
+                  }`}
+                >
+                  {s.kullaniciAdi.trim().charAt(0).toLocaleUpperCase('tr')}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`truncate font-bold ${s.benimMi ? 'text-cyan-100' : 'text-slate-200'}`}
+                  >
+                    {s.kullaniciAdi}
+                    {s.benimMi && <span className="ml-1 text-xs text-cyan-300">(sen)</span>}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
+                    <span className="rounded bg-slate-800 px-1.5 py-0.5 font-bold text-slate-400">
+                      Lv.{sv.seviye} {sv.unvan}
+                    </span>
+                    {sekme === 'duello' && s.galibiyet !== undefined && (
+                      <span>
+                        {s.galibiyet}–{s.maglubiyet} · %{s.kazanmaYuzdesi} kazanma
+                      </span>
+                    )}
+                    {sekme !== 'duello' && s.gunSayisi !== undefined && (
+                      <span>
+                        {sekme === 'antrenman' ? `${s.gunSayisi} tur` : `${s.gunSayisi} gün oynadı`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <div className="font-bold text-cyan-300">{s.puan}</div>
+                  {sekme === 'duello' && (
+                    <div className="text-[10px] text-slate-600">derece</div>
                   )}
                 </div>
-                <div className="text-right font-bold text-cyan-300">{s.puan}</div>
               </div>
-            ))}
+              );
+            })}
 
             {/* Kendi sırası */}
             {oyuncuId && kendi && kendi.sira > satirlar.length && (
@@ -205,10 +284,20 @@ export default function Lig({ oyuncuId }: Props) {
                   <div className="w-8 text-center font-bold text-cyan-300 text-sm">
                     {kendi.sira}
                   </div>
+                  <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-300/25 text-sm font-black text-cyan-100"
+                  >
+                    S
+                  </span>
                   <div className="flex-1">
                     <div className="font-bold text-cyan-200">Sen</div>
+                    <div className="text-[11px] text-slate-500">listenin dışındasın</div>
                   </div>
-                  <div className="text-right font-bold text-cyan-300">{kendi.puan}</div>
+                  <div className="shrink-0 text-right">
+                    <div className="font-bold text-cyan-300">{kendi.puan}</div>
+                    {sekme === 'duello' && <div className="text-[10px] text-slate-600">derece</div>}
+                  </div>
                 </div>
               </>
             )}
@@ -216,10 +305,45 @@ export default function Lig({ oyuncuId }: Props) {
           </div>
         )}
 
-        {/* Boş */}
+        {/* BOŞ DURUM — çıkmaz sokak değil, başlangıç noktası.
+            Önce ekranın ortasında tek bir gri cümle vardı ve altı
+            kapkaraydı; kullanıcı burayı ölü sanıp bir daha bakmıyordu.
+            Artık her sekme kendi davetini ve o moda GÖTÜREN düğmesini
+            gösteriyor. */}
         {!yukleniyor && satirlar.length === 0 && (
-          <div className="text-center text-slate-500 py-12">
-            <p className="text-sm">Henüz kimse bu seviyede oynamadı.</p>
+          <div
+            className="rounded-2xl border border-slate-800 bg-slate-900/40 px-5 py-8 text-center"
+            data-alan="bos-durum"
+          >
+            <div className="text-3xl" aria-hidden="true">
+              {sekme === 'duello' ? '⚔️' : sekme === 'antrenman' ? '♾️' : '🏁'}
+            </div>
+            <p className="mt-3 text-sm font-bold text-slate-200">
+              {sekme === 'duello' && 'Henüz düello oynanmamış.'}
+              {sekme === 'antrenman' && 'Bu hafta bu seviyede kimse antrenman yapmadı.'}
+              {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
+                'Bu seviyede ilk sen ol.'}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {sekme === 'duello' && 'İlk maçı sen yap.'}
+              {sekme === 'antrenman' && 'İlk turu sen oyna, tablo seninle açılsın.'}
+              {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
+                'Bugünün turunu oyna, adın buraya yazılsın.'}
+            </p>
+            <button
+              data-alan="bos-durum-eylem"
+              onClick={() => {
+                if (sekme === 'duello') gecis(`/duello?seviye=${seviye}`);
+                else if (sekme === 'antrenman') gecis('/?mod=antrenman');
+                else gecis('/?mod=gunun');
+              }}
+              className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-sm font-black text-slate-900 hover:bg-cyan-200"
+            >
+              {sekme === 'duello' && 'Düello başlat'}
+              {sekme === 'antrenman' && 'Antrenman yap'}
+              {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
+                'Günün Turunu oyna'}
+            </button>
           </div>
         )}
 

@@ -3,6 +3,59 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-09-06 - Sıralamalar: düello tablosu, boş durum daveti, zengin satırlar
+
+### Düello sıralaması eklendi
+
+Düello canlıydı ama sonuçları hiçbir yere işlemiyordu. Beşinci sekme
+geldi ve Antrenman'ın önüne kondu.
+
+- Sıralama ELO derecesine göre; her satırda derece, galibiyet–mağlubiyet
+  ve kazanma yüzdesi var.
+- **Seviyeye göre ayrılmıyor**: düello derecesi tek bir sayı, oyuncu
+  hangi seviyede oynarsa oynasın aynı dereceyi taşıyor. Bu sekmede
+  seviye seçici gizleniyor.
+- **Bota karşı maçlar sayılmıyor.** Bunun için ayrı bir süzgeç
+  gerekmedi: derece zaten yalnızca iki gerçek oyuncu arasındaki maç
+  bitince yazılıyor. Sonuç ekranında "derecen değişmedi" diyorsak tablo
+  da bunu yansıtıyor.
+- Hiç düello oynamamış oyuncular listeye girmiyor.
+
+### Boş durum artık davet
+
+"Henüz kimse bu seviyede oynamadı" cümlesi ekranın ortasında tek başına
+duruyordu, altı kapkaraydı. Kullanıcı burayı ölü sanıp bir daha
+bakmıyordu.
+
+Artık her sekmenin kendi daveti ve **o moda götüren** düğmesi var:
+Günün Turu, Düello ve Antrenman. Düğme kullanıcıyı doğru modda açılmış
+kurulum ekranına bırakıyor.
+
+### Kendi satırın vurgulanmıyordu — düzeldi
+
+Sıralama sorguları oyuncu kimliğini hiç çekmiyordu, bu yüzden "bu satır
+benim" bilgisi her zaman yanlıştı ve kendi satırın listede
+vurgulanmıyordu. Şimdi vurgulu ve "(sen)" işaretli. İlk 100'ün dışında
+kalınca listenin altında ayrıca gösterilmesi zaten çalışıyordu.
+
+### Satırlar zenginleşti
+
+İlk üçte madalya, sonrasında sıra numarası; adın yanında baş harf
+dairesi (rakip kartındakiyle aynı biçim); XP seviyesi rozeti.
+
+### Kalan süre
+
+Son 24 saatte gri metin yerine vurgulu uyarı: "⏳ Son gün — 9 saat 29 dk
+kaldı".
+
+### Açıklama sekmeyle değişiyor
+
+"Çalışkanlık tablosu" notu yalnızca Antrenman'da geçerliydi ama diğer
+sekmelerde de duruyor izlenimi veriyordu. Her sekmenin kendi açıklaması
+yazıldı ve bir testle sabitlendi.
+
+291 birim + 23 e2e testi yeşil.
+
 ## 2026-09-06 - Düello: bot dengelendi, iki çökme hatası, ekranlar yeniden
 
 Canlı kullanımdan gelen beş sorun. İkisi çökme, biri denge, ikisi tasarım.

@@ -32,3 +32,8 @@ uygulama/android/capacitor-cordova-android-plugins/
 # Firebase — proje anahtarlari repoya girmez
 uygulama/android/app/google-services.json
 uygulama/ios/App/App/GoogleService-Info.plist
+
+# Test hesaplarinin kimlik bilgileri — asla repoya girmez.
+# e2e testleri bu dosyadan okur; yoksa duello testleri atlanir.
+.env.test
+.env.test.local

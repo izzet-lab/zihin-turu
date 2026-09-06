@@ -132,11 +132,30 @@ Deno.serve(async (req: Request) => {
       );
       if (!uyar) continue;
 
-      // YARIŞ DURUMU
-      // İki oyuncu aynı anda birbirini seçebilir. Rakibin satırını önce
-      // SİLİP silme gerçekten bize mi düştü diye bakıyoruz: satır
-      // dönmezse başkası kaptı, sıradaki adaya geçiyoruz. Böylece aynı
-      // oyuncu iki maça birden düşmüyor.
+      // YARIŞ DURUMU — MAÇI KİM KURAR
+      //
+      // İki oyuncu aynı anda birbirini seçebilir. İlk yazımda her iki
+      // taraf da rakibinin kuyruk satırını siliyor ve ikisi de başarılı
+      // oluyordu (farklı satırları siliyorlar); sonuçta AYNI İKİLİ İÇİN
+      // İKİ AYRI MAÇ kuruluyordu. Test bunu yakaladı: bir oyuncu bir
+      // maçta oynarken diğeri ötekinde bekliyordu.
+      //
+      // Çözüm: maçı kimin kuracağı baştan belli olsun. Kimliği küçük
+      // olan kurar; diğeri kurmaz, bir sonraki yoklamada "süren maç"
+      // olarak aynı maça düşer. Simetri kırılınca yarış da kalmıyor.
+      if (benId > aday.oyuncu_id) continue;
+
+      // Rakip bu arada başka bir maça girmiş olabilir.
+      const { data: rakibinMaci } = await supabase
+        .from('duello_mac')
+        .select('id')
+        .eq('durum', 'basladi')
+        .or(`oyuncu_a.eq.${aday.oyuncu_id},oyuncu_b.eq.${aday.oyuncu_id}`)
+        .limit(1)
+        .maybeSingle();
+      if (rakibinMaci) continue;
+
+      // Rakibi kuyruktan al; satır dönmezse başkası kaptı.
       const { data: kapilan } = await supabase
         .from('duello_kuyruk')
         .delete()
@@ -148,8 +167,8 @@ Deno.serve(async (req: Request) => {
 
       const mac = await macKur(supabase, {
         seviye,
-        oyuncuA: aday.oyuncu_id, // daha uzun bekleyen A tarafı olur
-        oyuncuB: benId,
+        oyuncuA: benId,
+        oyuncuB: aday.oyuncu_id,
       });
       if (!mac) return hata('Maç kurulamadı.', 500);
       return ok({ mac: macCevabi(mac, benId) });

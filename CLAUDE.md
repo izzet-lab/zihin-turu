@@ -138,6 +138,20 @@ sonra fonksiyon, en son push.**
 
 ---
 
+## Düello test hesapları
+
+Gerçek maç e2e testi iki kimlikli oyuncu ister. İki test hesabı canlı
+projede tanımlı (`test_duello_1`, `test_duello_2`) ve yalnızca test için
+parolaları var — uygulamanın giriş akışına test kapısı açılmadı.
+
+Kimlik bilgileri `.env.test` dosyasında ve o dosya `.gitignore`'da.
+**Dosya yoksa düello maç testleri sessizce atlanır**, kalan testler
+çalışır. Yeni bir makinede kurmak için Supabase yönetim API'siyle iki
+kullanıcı açıp `.env.test` dosyasına şu üç satırı yazmak yeterli:
+`DUELLO_TEST_EPOSTA_1`, `DUELLO_TEST_EPOSTA_2`, `DUELLO_TEST_PAROLA`.
+
+---
+
 ## Mimari
 
 ```

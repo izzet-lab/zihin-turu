@@ -3,6 +3,54 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Düello ve arena ekranları oyun gibi görünüyor
+
+Bekleme ve sonuç ekranları düz metin kutularıydı; bildirim ekranı gibi
+duruyordu. Oysa burası bir oyun.
+
+### Bekleme ekranı
+
+- **Sahne kartı:** kilitlenen cevap büyük rakamla, oyunun kendi yazı
+  tipiyle. Taşlara verdiğimiz derinliğin aynısı bu yüzeye de verildi:
+  üstten ışık, gövde eğimi, altta gölge.
+- **Uzaklık çubukları:** "72 fark" bir sayı; yan yana iki sayıyı
+  karşılaştırmak için okumak gerekiyor. Çubuk aynı bilgiyi bakışta
+  veriyor — kim hedefe yakın. Tam isabet altın renkte.
+- **Nabız:** "Rakip oynuyor…" yazısı hafifçe nefes alıyor; ekranın
+  çalıştığını söyleyen tek hareket.
+- **Senin yolun:** kendi adım zincirin tahtaya el yazısıyla yazılıyor,
+  sonuç ekranındaki gibi.
+- **Tur saati** rakam yerine çubukla.
+
+### Beklerken doğru çözüm gösteriliyor
+
+Cevabını kilitleyen oyuncu artık o turda hiçbir şey değiştiremiyor;
+beklerken doğru yolu görmesi oyunu öğretiyor. Çözüm **sunucudan
+gelmiyor**, tohumdan istemcide üretiliyor — tahtayı da zaten aynı
+tohumdan kuruyoruz.
+
+> Not: kural 8 "tur bitmeden çözüm gösterilmez" diyor. Burada tur
+> teknik olarak açık (rakip hâlâ oynuyor) ama gösterilen oyuncu
+> cevabını kilitlemiş durumda, yani kendi turunu bitirmiş sayılır ve
+> bu bilgiyle sonucunu değiştiremez. Proje sahibinin isteğiyle
+> eklendi; geri alınması tek satır.
+
+### Sonuç ekranları
+
+- **Düello:** sonuç bir cümle değil, bir skor tabelası — iki sayı
+  büyük ve yan yana. Tur özeti kart dizisine döndü; her turun solunda
+  turu kimin aldığını söyleyen madeni para işareti var.
+- **Arena:** gerçek bir podyum çizildi — birinci yüksekte durur. Altında
+  kendi sıran vurgulu kartta.
+
+### Küçük düzeltme
+
+Hiç işlem yapılmadan cevap kilitlenince uzaklık hedefin kendisine eşit
+çıkıyor ve ekran "665 fark · hedef 665" diyordu. Artık "hiç işlem
+yapmadın" yazıyor.
+
+360 birim + 32 e2e testi yeşil.
+
 ## 2026-10-07 - Faz 5 katman 3: arena arayüzü — Faz 5 oynanabilir
 
 Arenanın görünen yüzü. Artık baştan sona oynanıyor.

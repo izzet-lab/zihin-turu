@@ -50,6 +50,19 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   const [bekleyenSn, setBekleyenSn] = useState(0);
   const [hata, setHata] = useState<string | null>(null);
   const [rakipUzaklik, setRakipUzaklik] = useState<number | null>(null);
+  /**
+   * Oyuncunun cevabını kilitlediği tur numarası.
+   *
+   * Yaklaşık cevap turu tek başına kapatmaz; tur ya iki taraf da
+   * kilitleyince ya da süre dolunca biter. Kilitledikten sonra tahtaya
+   * bakmanın anlamı kalmadığı için bekleme ekranına geçiliyor — önce
+   * ekran hiç değişmiyordu ve oyuncu "Bitir çalışmıyor" sanıyordu.
+   */
+  const [kilitliTur, setKilitliTur] = useState<number | null>(null);
+  /** Kilitlenen cevabın hedefe uzaklığı — sunucunun hesapladığı değer. */
+  const [kilitliUzaklik, setKilitliUzaklik] = useState<number | null>(null);
+  /** Kilidin ait olduğu maç. Maç değişince kilit düşer (aşağıdaki etki). */
+  const [kilitliMac, setKilitliMac] = useState<string | null>(null);
   // Özel oda: kod kurulunca burada durur, arkadaş katılana kadar beklenir.
   const [odaKodu, setOdaKodu] = useState<string | null>(null);
   const [katilKodu, setKatilKodu] = useState('');
@@ -159,6 +172,11 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
       }
     }
 
+    // Beklemeden bir kez sor: maç yeni kurulduğunda rakibin adı ve
+    // derecesi hemen görünsün. Yalnızca aralığa bırakılsaydı ilk iki
+    // saniye rakip kartı eksik duruyordu.
+    yokla();
+
     const z = setInterval(yokla, YOKLAMA_MS);
     return () => {
       durduruldu = true;
@@ -206,11 +224,16 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
 
   /* --- Oyuncunun ilerlemesini sunucuya bildir --- */
   const ilerlemeGonder = useCallback(
-    (adimlar: { a: number; b: number; islem: string; sonuc: number }[]) => {
+    (adimlar: { a: number; b: number; islem: string; sonuc: number }[], kilit = false) => {
       const m = macRef.current;
       if (!m || m.durum !== 'basladi') return;
-      duelloGonder(m.id, m.aktifTur, adimlar)
+      if (kilit) {
+        setKilitliTur(m.aktifTur);
+        setKilitliMac(m.id);
+      }
+      duelloGonder(m.id, m.aktifTur, adimlar, kilit)
         .then((sonuc) => {
+          setKilitliUzaklik(sonuc.uzaklik);
           setMac((onceki) =>
             onceki
               ? {
@@ -589,6 +612,68 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
     );
   }
 
+  // CEVAP KİLİTLENDİ — turun kapanması bekleniyor.
+  //
+  // Tur, iki taraf da kilitleyince ya da süre dolunca biter. Bota karşı
+  // oynanıyorsa bot zaten kilitli yazıldığı için kapanma genelde anında
+  // olur. Önce bu ekran yoktu: "Bitir"e basan oyuncu değişmeyen tahtaya
+  // bakıp oyunu bozuk sanıyordu.
+  // Kilit hem maça hem tura bağlı. Yalnızca tura bakılsaydı, rövanşta
+  // ya da yeni bir maçta aynı numaralı turda bekleme ekranı yeniden
+  // açılır ve oyuncu hiç oynamadan kilitlenmiş görünürdü.
+  if (kilitliMac === mac.id && kilitliTur === mac.aktifTur) {
+    return (
+      <Cerceve baslik={`Tur ${mac.aktifTur} — cevabın gönderildi`}>
+        <p className="text-sm text-slate-400" data-alan="duello-kilit-bekleme">
+          Cevabın kaydedildi. Tur, rakibin de cevabını vermesiyle ya da süre
+          dolunca kapanacak.
+        </p>
+
+        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-slate-400">Sen</span>
+            <span className="font-bold text-cyan-300" data-alan="kilit-benim">
+              {kilitliUzaklik == null
+                ? 'gönderildi'
+                : kilitliUzaklik === 0
+                  ? 'tam isabet 🎯'
+                  : `${kilitliUzaklik} fark`}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between text-sm">
+            <span className="text-slate-400">
+              {mac.rakip?.ad ?? (mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip')}
+            </span>
+            <span className="font-bold text-slate-300">
+              {rakipUzaklik == null
+                ? 'henüz bir şey yok'
+                : rakipUzaklik === 0
+                  ? 'tam isabet 🎯'
+                  : `${rakipUzaklik} fark`}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 text-sm font-bold text-slate-300" data-alan="kilit-sayac">
+          {kalanSn > 0 ? `Tur süresi: ${kalanSn} sn` : 'Tur kapanıyor…'}
+        </div>
+        <div className="mt-1 text-xs text-slate-500">
+          Skor: {benim === 'a' ? mac.skorA : mac.skorB} — {benim === 'a' ? mac.skorB : mac.skorA}
+        </div>
+
+        {/* Bekleme ekranında da çıkış yolu olmalı: rakip hiç cevap
+            vermezse oyuncu burada kilitli kalmamalı. */}
+        <button
+          onClick={() => setCikisSoruluyor(true)}
+          data-alan="duello-terk"
+          className="zt-dokunma-alani mt-6 w-full text-xs font-bold text-slate-600 hover:text-slate-400"
+        >
+          Maçtan çık
+        </button>
+      </Cerceve>
+    );
+  }
+
   return (
     <Oyun
       // Tur değişince tahta sıfırdan kurulur.
@@ -612,14 +697,17 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
       }}
       // Tur bitince (tam isabet ya da süre) son zincir gönderilir.
       // Puanı sunucu veriyor; buradaki `puan` alanı düelloda kullanılmaz.
-      onBitti={(s) => ilerlemeGonder(s.adimlar)}
+      // Düelloda "Bitir" turu kapatmaz, cevabı KİLİTLER.
+      onBitti={(s) => ilerlemeGonder(s.adimlar, true)}
     />
   );
 }
 
 function Cerceve({ baslik, children }: { baslik: string; children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    // İçerik dikeyde ortalanır: bekleme ve sonuç ekranlarında az
+    // içerik vardı ve ekranın altı kapkara kalıyordu.
+    <main className="flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       <div className="mx-auto w-full max-w-md text-center">
         <h1 className="text-2xl font-black text-white">{baslik}</h1>
         <div className="mt-4">{children}</div>

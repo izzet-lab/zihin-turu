@@ -3,6 +3,61 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Düello: "Bitir" çalışmıyordu, uzun sayılar taşıyordu
+
+### "Bitir"e basınca hiçbir şey olmuyordu
+
+Tam isabet bulamayan oyuncu "Bitir"e bastığında ekran hiç değişmiyordu.
+Tur, süresi dolana kadar açık kalıyor; oyuncu bekliyor, bir şey olmuyor
+ve oyunu bozuk sanıyordu.
+
+Kural değişmedi — yaklaşık cevap turu tek başına kapatmaz, tam isabet
+kapatır. Değişenler:
+
+- **Düğme ne yaptığını söylüyor:** "Bitir" yerine "Cevabı kilitle".
+- **Kilitleyen oyuncu bekleme ekranına geçiyor.** Kendi farkı, rakibin
+  durumu, kalan süre ve skor orada; ekran artık cevap veriyor.
+- **İki taraf da kilitlediyse tur hemen bitiyor.** Beklenecek kimse
+  kalmıyor. Bota karşı oynanıyorsa bot kilitli yazıldığı için tur
+  genelde anında kapanıyor.
+- Bekleme ekranında da "Maçtan çık" var: rakip hiç cevap vermezse
+  oyuncu orada kilitli kalmıyor.
+
+### Uzun sayılar taştı
+
+Usta seviyesinde beş-altı haneli ara sonuçlar (26347 gibi) taşın
+dışına taşıyor, ekran bozuluyordu. Yazı boyu artık basamak sayısına
+göre küçülüyor: kısa sayı büyük ve okunaklı kalıyor, uzun sayı kutuya
+sığıyor. Aynı kural hedef ve "en yakın" göstergelerine de uygulandı.
+
+### Yol boyunca çıkan üç hata
+
+1. **Kilit yeni maça taşınıyordu.** Bir maçta cevabını kilitleyen
+   oyuncu, rövanşta ya da yeni bir maçta aynı numaralı turda hiç
+   oynamadan bekleme ekranında buluyordu kendini. Kilit artık hem maça
+   hem tura bağlı.
+2. **Sıralamada eski sorgu yenisini eziyordu.** Ekran açılırken oyuncu
+   kimliği henüz bilinmediği için ilk sorgu kimliksiz gidiyor, kimlik
+   gelince ikincisi atılıyordu. İki yanıt yarışa girdiğinde eski yanıt
+   kazanabiliyor ve kendi satırın sebepsiz yere vurgusuz kalıyordu.
+   Artık yalnızca en son sorgunun yanıtı ekrana yazılıyor.
+3. **Rakip kartı ilk iki saniye eksik duruyordu.** Maç kurulur
+   kurulmaz durum bir kez soruluyor; rakibin adı ve derecesi hemen
+   görünüyor.
+
+### Testler
+
+Boş durum testleri canlı veritabanına bağımlıydı ("hiç oynanmamış
+seviye" varsayımı) ve veritabanı dolunca kırmızıya döndü. Artık sorgu
+yanıtı testin içinde boşa sabitleniyor; test, veritabanının o anki
+hâlini değil boş durumun kendisini sınıyor.
+
+Düello test yardımcısı da sağlamlaştırıldı: oturum süreç boyunca bir
+kez alınıyor (çok sayıda giriş isteği Supabase tarafından düşürülüyordu)
+ve kalan maçlar temizlenirken ekranın her hâli ele alınıyor.
+
+291 birim + 26 e2e testi yeşil.
+
 ## 2026-09-06 - Sıralamalar: düello tablosu, boş durum daveti, zengin satırlar
 
 ### Düello sıralaması eklendi

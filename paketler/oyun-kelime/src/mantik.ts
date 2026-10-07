@@ -1,0 +1,252 @@
+/**
+ * mantik.ts — Kelime turunun kuralları.
+ *
+ * Harf havuzu üretimi, cevap doğrulama, puanlama ve en uzun kelimeyi
+ * bulma. Hepsi saf: aynı tohum her makinede aynı havuzu verir (kural 3).
+ *
+ * Platform bu dosyayı tanımaz; yalnızca `TurSaglayici` üzerinden konuşur.
+ */
+
+import { rastgele, type Puan } from '@zihinturu/cekirdek';
+import { turkceKucult, type Sozluk } from './sozluk.ts';
+
+/** Bir kelime turunun oyuncuya gösterilen verisi. */
+export interface KelimeVeri {
+  /** Karışık harfler. Her harf bir kez kullanılabilir. */
+  harfler: string[];
+  /** Bu havuzdan türetilebilen en uzun kelimenin uzunluğu. */
+  enUzunUzunluk: number;
+}
+
+export interface KelimeSeviyeAyar {
+  /** Havuzdaki harf sayısı. */
+  harf: number;
+  /**
+   * Havuz kurulurken seçilen "çekirdek kelime"nin uzunluğu.
+   * Havuzda en az bu uzunlukta bir kelime bulunacağının garantisi.
+   */
+  cekirdekUzunluk: number;
+  sure: number;
+}
+
+/**
+ * Seviyeler — sayı turuyla aynı dörtlü yapı.
+ * Zorluk harf sayısıyla değil, BULUNMASI GEREKEN kelimenin uzunluğuyla
+ * artıyor: havuz büyüdükçe seçenek de artar, asıl zorluk uzun kelimeyi
+ * görebilmek.
+ */
+export const KELIME_SEVIYELERI: Record<string, KelimeSeviyeAyar> = {
+  cocuk: { harf: 7, cekirdekUzunluk: 4, sure: 60 },
+  normal: { harf: 8, cekirdekUzunluk: 5, sure: 60 },
+  zor: { harf: 9, cekirdekUzunluk: 6, sure: 75 },
+  usta: { harf: 10, cekirdekUzunluk: 7, sure: 90 },
+};
+
+/**
+ * Türkçe harf sıklığı — havuzun dolgu harfleri buna göre seçilir.
+ *
+ * Eşit olasılıkla harf dağıtmak oynanamaz havuzlar üretiyor: Türkçe'de
+ * 'a' ile 'ğ' aynı sıklıkta değil. Ağırlıklar kabaca Türkçe metinlerdeki
+ * orana dayanıyor; amaç istatistiksel doğruluk değil, havuzun
+ * oynanabilir olması.
+ */
+export const HARF_AGIRLIK: Record<string, number> = {
+  a: 12, e: 9, i: 8, ı: 5, n: 7, r: 7, l: 6, k: 5, d: 5, t: 5,
+  m: 4, s: 4, u: 3, y: 3, b: 3, o: 3, ü: 2, ş: 2, z: 2, c: 2,
+  g: 1, ç: 1, h: 1, ö: 1, p: 1, v: 1, ğ: 1, f: 1, j: 1,
+};
+
+const AGIRLIKLI_HAVUZ: string[] = Object.entries(HARF_AGIRLIK).flatMap(
+  ([harf, agirlik]) => Array.from({ length: agirlik }, () => harf),
+);
+
+/** Harfleri sayar: "kalem" → {k:1, a:1, l:1, e:1, m:1} */
+export function harfSay(kelime: string): Map<string, number> {
+  const sayac = new Map<string, number>();
+  for (const h of turkceKucult(kelime)) {
+    sayac.set(h, (sayac.get(h) ?? 0) + 1);
+  }
+  return sayac;
+}
+
+/** Kelime bu havuzdan yazılabilir mi? (Her harf havuzda olduğu kadar.) */
+export function havuzdanYazilabilir(havuz: readonly string[], kelime: string): boolean {
+  const kalan = new Map<string, number>();
+  for (const h of havuz) {
+    const k = turkceKucult(h);
+    kalan.set(k, (kalan.get(k) ?? 0) + 1);
+  }
+  for (const [harf, adet] of harfSay(kelime)) {
+    if ((kalan.get(harf) ?? 0) < adet) return false;
+  }
+  return true;
+}
+
+/**
+ * Havuzdan türetilebilen en uzun kelimeyi bulur.
+ *
+ * Sözlüğü uzun kelimeden kısaya doğru tarar ve ilk uyanı döndürür.
+ * `sinirMs` verilirse arama orada kesilir — bot sınırlı süreyle
+ * düşünsün diye (kural: bot çözümü hazır almaz).
+ */
+export function enUzunKelime(
+  havuz: readonly string[],
+  sozluk: Sozluk,
+  sinirMs?: number,
+): string | null {
+  const baslangic = Date.now();
+  for (let uzunluk = havuz.length; uzunluk >= 2; uzunluk--) {
+    for (const kelime of sozluk.uzunluktakiler(uzunluk)) {
+      if (sinirMs != null && Date.now() - baslangic > sinirMs) return null;
+      if (havuzdanYazilabilir(havuz, kelime)) return kelime;
+    }
+  }
+  return null;
+}
+
+/** Diziyi tohumlu karıştırır (Fisher–Yates). */
+function karistir<T>(dizi: T[], zar: () => number): T[] {
+  const c = [...dizi];
+  for (let i = c.length - 1; i > 0; i--) {
+    const j = Math.floor(zar() * (i + 1));
+    [c[i], c[j]] = [c[j]!, c[i]!];
+  }
+  return c;
+}
+
+/**
+ * Harf havuzunu üretir.
+ *
+ * NEDEN ÖNCE BİR KELİME SEÇİLİYOR
+ * Rastgele harf dağıtıp "umarım bir kelime çıkar" demek oynanamaz
+ * turlar üretir. Önce sözlükten bir çekirdek kelime seçiliyor, onun
+ * harfleri havuza konuyor, kalanı sıklığa göre dolduruluyor. Böylece
+ * havuzda EN AZ bir uzun kelimenin bulunduğu garanti — sayı turundaki
+ * "her tur tam çözümlü" güvencesinin kelime karşılığı.
+ */
+export function havuzUret(
+  seviye: string,
+  tohum: number,
+  sozluk: Sozluk,
+): KelimeVeri {
+  const ayar = KELIME_SEVIYELERI[seviye];
+  if (!ayar) throw new Error('Bilinmeyen seviye: ' + seviye);
+
+  const zar = rastgele(tohum);
+
+  // Çekirdek kelime: istenen uzunlukta yoksa bir kısaya düşülür.
+  let cekirdek: string | null = null;
+  for (let u = ayar.cekirdekUzunluk; u >= 3 && !cekirdek; u--) {
+    const adaylar = sozluk.uzunluktakiler(u);
+    if (adaylar.length > 0) cekirdek = adaylar[Math.floor(zar() * adaylar.length)]!;
+  }
+  if (!cekirdek) throw new Error('Sözlük bu seviye için yetersiz.');
+
+  const harfler = [...cekirdek];
+  while (harfler.length < ayar.harf) {
+    harfler.push(AGIRLIKLI_HAVUZ[Math.floor(zar() * AGIRLIKLI_HAVUZ.length)]!);
+  }
+
+  const karisik = karistir(harfler.slice(0, ayar.harf), zar);
+  const enUzun = enUzunKelime(karisik, sozluk);
+
+  return {
+    harfler: karisik,
+    enUzunUzunluk: enUzun ? enUzun.length : cekirdek.length,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Doğrulama                                                           */
+/* ------------------------------------------------------------------ */
+
+export interface KelimeDogrulama {
+  gecerli: boolean;
+  hata?: string;
+  /** En uzun kelimeye kaç harf kaldı. 0 = en uzunu buldu. */
+  uzaklik: number;
+  ozet: string;
+}
+
+/** En kısa kabul edilen kelime. Daha kısası oyunu anlamsızlaştırıyor. */
+export const EN_KISA_KELIME = 3;
+
+/**
+ * Oyuncunun yazdığı kelimeyi denetler.
+ *
+ * SUNUCUDA ÇALIŞIR (kural 2). İstemci "buldum" diyemez; kelime hem
+ * havuzdan yazılabilir olmalı hem sözlükte bulunmalı.
+ */
+export function dogrulaKelime(
+  veri: KelimeVeri,
+  ham: string,
+  sozluk: Sozluk,
+): KelimeDogrulama {
+  const kelime = turkceKucult((ham ?? '').trim());
+  const uzak = (u: number) => Math.max(0, veri.enUzunUzunluk - u);
+
+  if (!kelime) {
+    return { gecerli: true, uzaklik: uzak(0), ozet: 'Kelime yazılmadı' };
+  }
+  if (kelime.length < EN_KISA_KELIME) {
+    return {
+      gecerli: false,
+      hata: `En az ${EN_KISA_KELIME} harfli bir kelime yaz.`,
+      uzaklik: uzak(0),
+      ozet: 'Çok kısa',
+    };
+  }
+  if (!havuzdanYazilabilir(veri.harfler, kelime)) {
+    return {
+      gecerli: false,
+      hata: 'Bu kelime verilen harflerle yazılamıyor.',
+      uzaklik: uzak(0),
+      ozet: 'Harfler yetmiyor',
+    };
+  }
+  if (!sozluk.icerir(kelime)) {
+    return {
+      gecerli: false,
+      hata: 'Bu kelime sözlükte yok.',
+      uzaklik: uzak(0),
+      ozet: 'Sözlükte yok',
+    };
+  }
+
+  return {
+    gecerli: true,
+    uzaklik: uzak(kelime.length),
+    ozet: `${kelime.length} harf`,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Puanlama                                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Puan — sayı turuyla AYNI ölçekte.
+ *
+ * İki oyun aynı lig yapısını kullanıyor; ölçekler ayrışsaydı seviye
+ * başına tablolar kıyaslanamaz hâle gelirdi. Taban, "en uzunu buldun
+ * mu" sorusuna göre veriliyor; hız primi yalnızca tam isabette var,
+ * tıpkı sayı turundaki gibi.
+ */
+export function puanlaKelime(
+  d: { uzaklik: number },
+  kalanSaniye: number,
+  toplamSaniye: number,
+  ilkBulanMi: boolean,
+): Puan {
+  let taban = 0;
+  if (d.uzaklik === 0) taban = 10;
+  else if (d.uzaklik === 1) taban = 7;
+  else if (d.uzaklik === 2) taban = 5;
+
+  let hiz = 0;
+  if (taban === 10 && toplamSaniye > 0) {
+    hiz = Math.round((5 * Math.max(0, kalanSaniye)) / toplamSaniye);
+  }
+  const ilk = taban > 0 && ilkBulanMi ? 2 : 0;
+  return { taban, hiz, ilk, toplam: taban + hiz + ilk };
+}

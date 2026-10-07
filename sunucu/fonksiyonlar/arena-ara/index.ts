@@ -60,12 +60,15 @@ Deno.serve(async (req: Request) => {
     // okunup JavaScript'te elenmesi hem kesin hem ucuz.
     const { data: koltuklarim } = await supabase
       .from('arena_koltuk')
-      .select('mac_id, koltuk, arena_mac!inner(id, durum)')
+      .select('mac_id, koltuk, ayrildi, arena_mac!inner(id, durum)')
       .eq('oyuncu_id', benId)
       .limit(10);
 
     const surenKoltuk = (koltuklarim ?? []).find(
-      (k: { arena_mac?: { durum?: string } | { durum?: string }[] }) => {
+      (k: { ayrildi?: boolean; arena_mac?: { durum?: string } | { durum?: string }[] }) => {
+        // Yarıştan ÇIKMIŞ koltuk "süren arena" sayılmaz; yoksa oyuncu
+        // çıktığı arenaya geri yapışır ve yeni bir arenaya giremezdi.
+        if (k.ayrildi) return false;
         const m = Array.isArray(k.arena_mac) ? k.arena_mac[0] : k.arena_mac;
         return m?.durum === 'bekliyor' || m?.durum === 'basladi';
       },

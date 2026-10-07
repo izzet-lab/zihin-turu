@@ -282,12 +282,21 @@ export async function arenayiIlerlet(db: Db, mac: ArenaMac): Promise<ArenaSonuc>
     }
 
     if (durum.bitti) {
-      await db
+      const sira = podyum(durum);
+      // Arenayı YALNIZCA hâlâ süren bir arenaysa bitir. İki istek aynı
+      // anda bitirmeye çalışırsa yalnızca biri satırı değiştirir;
+      // madalyalar iki kez yazılmaz.
+      const { data: bitirilen } = await db
         .from('arena_mac')
         .update({ durum: 'bitti', bitti: new Date().toISOString() })
         .eq('id', guncel.id)
-        .eq('durum', 'basladi');
-      return { durum, koltuklar, podyum: podyum(durum) };
+        .eq('durum', 'basladi')
+        .select('id');
+
+      if (bitirilen && (bitirilen as unknown[]).length > 0) {
+        await derecelereIsle(db, koltuklar, sira);
+      }
+      return { durum, koltuklar, podyum: sira };
     }
 
     if (durum.turAcik) return { durum, koltuklar, podyum: null };
@@ -313,4 +322,53 @@ export async function arenayiIlerlet(db: Db, mac: ArenaMac): Promise<ArenaSonuc>
   }
 
   return { durum: arenaBaslat([]), koltuklar, podyum: null };
+}
+
+/**
+ * Arena sonucunu madalya tablosuna işler.
+ *
+ * BOTA KARŞI KAZANILAN PODYUM SAYILMAZ.
+ * Arena boş koltukları botla dolduruyor; tek başına katılan oyuncu her
+ * seferinde dört bota karşı yarışıp madalya toplardı ve tablo birkaç
+ * günde anlamsızlaşırdı. Sonuç yalnızca EN AZ İKİ gerçek oyuncu varsa
+ * işleniyor — düellodaki "bota karşı derece değişmez" kuralının arena
+ * karşılığı.
+ *
+ * Yarıştan çıkanlar da işlenir: puanları ve arena sayıları yazılır ama
+ * podyumda zaten en sonda oldukları için madalya almazlar.
+ */
+async function derecelereIsle(
+  db: Db,
+  koltuklar: ArenaKoltuk[],
+  sira: PodyumSatiri[],
+): Promise<void> {
+  const gercekler = koltuklar.filter((k) => k.oyuncu_id);
+  if (gercekler.length < 2) return;
+
+  const kimlikler = gercekler.map((k) => k.oyuncu_id as string);
+  const { data: mevcutlar } = await db
+    .from('arena_derece')
+    .select('oyuncu_id, arena_sayisi, altin, gumus, bronz, toplam_puan')
+    .in('oyuncu_id', kimlikler);
+
+  const satirlar = gercekler.map((k) => {
+    const once = (mevcutlar ?? []).find(
+      (d: { oyuncu_id: string }) => d.oyuncu_id === k.oyuncu_id,
+    ) ?? { arena_sayisi: 0, altin: 0, gumus: 0, bronz: 0, toplam_puan: 0 };
+
+    const benimSira = sira.find((p) => Number(p.koltuk) === k.koltuk);
+    const madalya = benimSira?.madalya ?? null;
+
+    return {
+      oyuncu_id: k.oyuncu_id,
+      arena_sayisi: once.arena_sayisi + 1,
+      altin: once.altin + (madalya === 'altin' ? 1 : 0),
+      gumus: once.gumus + (madalya === 'gumus' ? 1 : 0),
+      bronz: once.bronz + (madalya === 'bronz' ? 1 : 0),
+      toplam_puan: once.toplam_puan + k.puan,
+      guncellendi: new Date().toISOString(),
+    };
+  });
+
+  await db.from('arena_derece').upsert(satirlar, { onConflict: 'oyuncu_id' });
 }

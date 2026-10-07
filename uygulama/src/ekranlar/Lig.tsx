@@ -17,6 +17,7 @@ import {
   donemLig,
   antrenmanLig,
   duelloLig,
+  arenaLig,
   type LigSatiri,
   type KendiDurumu,
 } from '../lig-sorgu';
@@ -26,7 +27,7 @@ import { bannerGoster, bannerKaldir } from '../reklam';
 import UyelikDaveti from '../bilesenler/UyelikDaveti';
 import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
-type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'antrenman';
+type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'arena' | 'antrenman';
 
 interface Props {
   oyuncuId?: string; // null = misafir; kendi sırası gösterilmez
@@ -63,7 +64,13 @@ export default function Lig({ oyuncuId }: Props) {
   const kalanSn = useMemo(
     () =>
       donemKalanSn(
-        sekme === 'antrenman' ? 'haftalik' : sekme === 'duello' ? 'gunluk' : sekme,
+        sekme === 'antrenman'
+          ? 'haftalik'
+          : // Düello ve arenanın dönemi yok (derece ve madalya birikerek
+            // gider); sayaç gösterilmiyor, buradaki değer kullanılmıyor.
+            sekme === 'duello' || sekme === 'arena'
+            ? 'gunluk'
+            : sekme,
       ),
     [sekme],
   );
@@ -98,6 +105,9 @@ export default function Lig({ oyuncuId }: Props) {
         result = await donemLig('hafta', haftalikAnahtar(), 'sayi', seviye, oyuncuId);
       } else if (sekme === 'aylik') {
         result = await donemLig('ay', aylikAnahtar(), 'sayi', seviye, oyuncuId);
+      } else if (sekme === 'arena') {
+        // Arena madalyası seviyeden bağımsız; tek bir tablo.
+        result = await arenaLig(oyuncuId);
       } else if (sekme === 'duello') {
         // Düello derecesi seviyeden bağımsız; tek bir tablo.
         result = await duelloLig(oyuncuId);
@@ -143,6 +153,8 @@ export default function Lig({ oyuncuId }: Props) {
             {sekme === 'aylik' && 'Bu ayın günlük en iyilerinin toplamı.'}
             {sekme === 'duello' &&
               'Düello derecesi. Yalnızca gerçek rakiplere karşı oynanan maçlar sayılır.'}
+            {sekme === 'arena' &&
+              'Madalya tablosu. Yalnızca en az iki gerçek yarışçının olduğu arenalar sayılır.'}
             {sekme === 'antrenman' &&
               'Çalışkanlık tablosu — ne kadar çalıştığını gösterir, ne kadar iyi olduğunu değil.'}
           </p>
@@ -158,6 +170,7 @@ export default function Lig({ oyuncuId }: Props) {
               { k: 'haftalik', ad: 'Haftalık' },
               { k: 'aylik', ad: 'Aylık' },
               { k: 'duello', ad: '⚔️ Düello' },
+              { k: 'arena', ad: '⚡ Arena' },
               { k: 'antrenman', ad: 'Antrenman' },
             ] as const
           ).map((s) => (
@@ -178,7 +191,7 @@ export default function Lig({ oyuncuId }: Props) {
         </div>
 
         {/* Seviye seçimi — düelloda yok: derece seviyeden bağımsız. */}
-        {sekme !== 'duello' && (
+        {sekme !== 'duello' && sekme !== 'arena' && (
         <div className="mb-6" data-alan="seviye-secici">
           <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</div>
           <div className="flex flex-wrap gap-2">
@@ -201,7 +214,7 @@ export default function Lig({ oyuncuId }: Props) {
         )}
 
         {/* Kalan süre — son 24 saatte vurgulu. */}
-        {sekme !== 'duello' && (
+        {sekme !== 'duello' && sekme !== 'arena' && (
           <div
             data-alan="kalan-sure"
             className={`mb-6 text-center text-xs ${
@@ -275,7 +288,12 @@ export default function Lig({ oyuncuId }: Props) {
                         {s.galibiyet}–{s.maglubiyet} · %{s.kazanmaYuzdesi} kazanma
                       </span>
                     )}
-                    {sekme !== 'duello' && s.gunSayisi !== undefined && (
+                    {sekme === 'arena' && s.altin !== undefined && (
+                      <span className="tabular-nums">
+                        🥇{s.altin} 🥈{s.gumus} 🥉{s.bronz} · {s.arenaSayisi} arena
+                      </span>
+                    )}
+                    {sekme !== 'duello' && sekme !== 'arena' && s.gunSayisi !== undefined && (
                       <span>
                         {sekme === 'antrenman' ? `${s.gunSayisi} tur` : `${s.gunSayisi} gün oynadı`}
                       </span>
@@ -287,6 +305,9 @@ export default function Lig({ oyuncuId }: Props) {
                   <div className="font-bold text-cyan-300">{s.puan}</div>
                   {sekme === 'duello' && (
                     <div className="text-[10px] text-slate-600">derece</div>
+                  )}
+                  {sekme === 'arena' && (
+                    <div className="text-[10px] text-slate-600">puan</div>
                   )}
                 </div>
               </div>
@@ -333,16 +354,24 @@ export default function Lig({ oyuncuId }: Props) {
             data-alan="bos-durum"
           >
             <div className="text-3xl" aria-hidden="true">
-              {sekme === 'duello' ? '⚔️' : sekme === 'antrenman' ? '♾️' : '🏁'}
+              {sekme === 'duello'
+                ? '⚔️'
+                : sekme === 'arena'
+                  ? '🏆'
+                  : sekme === 'antrenman'
+                    ? '♾️'
+                    : '🏁'}
             </div>
             <p className="mt-3 text-sm font-bold text-slate-200">
               {sekme === 'duello' && 'Henüz düello oynanmamış.'}
+              {sekme === 'arena' && 'Henüz arena oynanmamış.'}
               {sekme === 'antrenman' && 'Bu hafta bu seviyede kimse antrenman yapmadı.'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Bu seviyede ilk sen ol.'}
             </p>
             <p className="mt-1 text-xs text-slate-500">
               {sekme === 'duello' && 'İlk maçı sen yap.'}
+              {sekme === 'arena' && 'İlk podyum senin olsun.'}
               {sekme === 'antrenman' && 'İlk turu sen oyna, tablo seninle açılsın.'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Bugünün turunu oyna, adın buraya yazılsın.'}
@@ -351,12 +380,14 @@ export default function Lig({ oyuncuId }: Props) {
               data-alan="bos-durum-eylem"
               onClick={() => {
                 if (sekme === 'duello') gecis(`/duello?seviye=${seviye}`);
+                else if (sekme === 'arena') gecis(`/arena?seviye=${seviye}`);
                 else if (sekme === 'antrenman') gecis('/?mod=antrenman');
                 else gecis('/?mod=gunun');
               }}
               className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-sm font-black text-slate-900 hover:bg-cyan-200"
             >
               {sekme === 'duello' && 'Düello başlat'}
+              {sekme === 'arena' && 'Arena başlat'}
               {sekme === 'antrenman' && 'Antrenman yap'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Günün Turunu oyna'}

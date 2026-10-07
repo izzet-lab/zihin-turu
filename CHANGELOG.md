@@ -3,6 +3,42 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Arena sıralaması (madalya tablosu)
+
+Arena oynanıyordu ama hiçbir yere yazılmıyordu; yarışın bir sicili yoktu.
+Sıralamalar ekranına altıncı sekme olarak **Arena** eklendi.
+
+### Neden ELO değil madalya tablosu
+
+Düelloda ELO var çünkü iki kişilik maçın sonucu "kim daha iyi" sorusunu
+doğrudan cevaplıyor. Arena beş kişilik bir yarış ve oradaki asıl ödül
+podyum. Bu yüzden arena tablosu bir madalya tablosu: önce altın, sonra
+gümüş, sonra bronz, en son toplam puan — olimpiyat tablosu gibi.
+Seviyeye göre ayrılmıyor; arena madalyası tek bir sicil.
+
+### Bota karşı kazanılan podyum sayılmaz
+
+Arena boş koltukları botla dolduruyor. Tek başına katılan oyuncu her
+seferinde dört bota karşı yarışır ve madalya toplardı; tablo birkaç
+günde anlamsızlaşırdı. Sonuç **yalnızca en az iki gerçek yarışçı varsa**
+işleniyor — düellodaki "bota karşı derece değişmez" kuralının arena
+karşılığı.
+
+### Veri
+
+Yeni tablo `arena_derece` (göç 011, canlıda uygulandı): oyuncu başına
+arena sayısı, altın, gümüş, bronz ve toplam puan. Okuma herkese açık
+(sıralama ekranı), yazma yalnızca Edge Function'da.
+
+Arena bitirme güncellemesi artık değiştirdiği satırı geri istiyor;
+iki istek aynı anda bitirmeye çalışsa bile madalyalar bir kez yazılıyor.
+
+### Yol boyunca bulunan hata
+
+Yarıştan çıkan oyuncu çıktığı arenaya geri yapışıyordu: "süren arena"
+araması ayrılmış koltuğu da sayıyordu, bu yüzden yeni arenaya
+giremiyordu. Canlı denemede ortaya çıktı ve düzeltildi.
+
 ## 2026-10-07 - Düello ve arena ekranları oyun gibi görünüyor
 
 Bekleme ve sonuç ekranları düz metin kutularıydı; bildirim ekranı gibi

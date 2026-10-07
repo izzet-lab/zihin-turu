@@ -70,6 +70,11 @@ export interface LigSatiri {
   galibiyet?: number;
   maglubiyet?: number;
   kazanmaYuzdesi?: number;
+  /* Arena sıralamasına özgü alanlar */
+  altin?: number;
+  gumus?: number;
+  bronz?: number;
+  arenaSayisi?: number;
 }
 
 export interface KendiDurumu {
@@ -423,6 +428,84 @@ export async function duelloLig(
         .gt('mac_sayisi', 0)
         .gt('elo', kData.elo);
       kendi = { sira: (count ?? 0) + 1, puan: kData.elo };
+    }
+  }
+
+  return { satirlar, kendi };
+}
+
+// ---------------------------------------------------------------------------
+// Arena sıralaması
+// ---------------------------------------------------------------------------
+
+/**
+ * Arena sıralaması — madalya tablosu.
+ *
+ * NEDEN PUAN DEĞİL MADALYA SIRASI
+ * Düelloda derece var çünkü iki kişilik maçın sonucu "kim daha iyi"
+ * sorusunu doğrudan cevaplıyor. Arena beş kişilik bir yarış; oradaki
+ * asıl ödül podyum. Önce altın, sonra gümüş, sonra bronz, en son
+ * toplam puan — olimpiyat tablosu gibi.
+ *
+ * BOTA KARŞI KAZANILAN PODYUM TABLOYA GİRMEZ: sonuç yalnızca en az iki
+ * gerçek oyuncu olduğunda işleniyor (bkz. `derecelereIsle`). Burada ayrı
+ * bir süzgeç gerekmiyor.
+ *
+ * Seviyeye göre ayrılmaz: arena madalyası seviyeden bağımsız tek bir
+ * sicil.
+ */
+export async function arenaLig(
+  oyuncuId?: string,
+): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
+  const { data, error } = await supabase
+    .from('arena_derece')
+    .select('oyuncu_id, arena_sayisi, altin, gumus, bronz, toplam_puan, oyuncu:oyuncu_id(kullanici_adi, xp)')
+    .gt('arena_sayisi', 0)
+    .order('altin', { ascending: false })
+    .order('gumus', { ascending: false })
+    .order('bronz', { ascending: false })
+    .order('toplam_puan', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return { satirlar: [] };
+
+  const liste = data as unknown as {
+    oyuncu_id: string;
+    arena_sayisi: number;
+    altin: number;
+    gumus: number;
+    bronz: number;
+    toplam_puan: number;
+    oyuncu: { kullanici_adi: string; xp: number } | null;
+  }[];
+
+  const satirlar: LigSatiri[] = liste.map((r, i) => ({
+    sira: i + 1,
+    kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
+    puan: r.toplam_puan,
+    xp: r.oyuncu?.xp ?? 0,
+    altin: r.altin,
+    gumus: r.gumus,
+    bronz: r.bronz,
+    arenaSayisi: r.arena_sayisi,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
+  }));
+
+  let kendi: KendiDurumu | undefined;
+  if (oyuncuId) {
+    const benim = satirlar.find((r) => r.benimMi);
+    if (!benim) {
+      const { data: kData } = await supabase
+        .from('arena_derece')
+        .select('toplam_puan, arena_sayisi')
+        .eq('oyuncu_id', oyuncuId)
+        .maybeSingle();
+      // Sıra numarası ancak ilk 100 dışındayken yaklaşık verilebilir;
+      // madalya sıralaması tek bir sütunla sayılamıyor. Oyuncuya "kaçıncı
+      // olduğun listede görünmüyor" demek yerine puanı gösteriliyor.
+      if (kData && kData.arena_sayisi > 0) {
+        kendi = { sira: satirlar.length + 1, puan: kData.toplam_puan };
+      }
     }
   }
 

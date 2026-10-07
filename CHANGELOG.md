@@ -3,6 +3,37 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Düello: önce seviye sonra rakip, bekleme ekranında kendi yolun
+
+Telefonda yapılan testten çıkan iki nokta.
+
+### Sıralama ters duruyordu
+
+Düello düğmesi seviye seçicinin ÜSTÜNDE duruyordu. Oyuncu daha
+seviyesini seçmeden düelloya giriyor, hangi seviyede oynadığını
+bilmiyordu — düğme o an Kurulum'da ne seçiliyse onu sessizce
+kullanıyordu.
+
+Seviye artık düellonun kendi ekranında ve "Rakip bul"dan önce
+geliyor: önce seviye, sonra rakip. Kurulum'daki kart yerinde kalıyor
+(kaydırmadan görünür olması gerekiyordu), ama artık "seviyeyi orada
+seçersin" diyor.
+
+**Kilitli seviyeler düelloda da kilitli.** Adres satırından kilitli bir
+seviye istenirse açık olan en üst seviyeye düşülüyor — düello, tek
+kişilik ilerlemeyi atlamanın yolu olmamalı.
+
+### Bekleme ekranı artık nasıl ulaştığını gösteriyor
+
+"1090 fark" tek başına soğuk bir sayıydı. Cevabını kilitleyen oyuncu
+artık kendi adım zincirini ve hedefi görüyor: hem bekleme boş geçmiyor
+hem nerede saptığı anlaşılıyor.
+
+Gösterilen yalnızca **kendi** zinciri. Rakibin adımları ne ekranda var
+ne sunucudan geliyor (kural 8).
+
+291 birim + 28 e2e testi yeşil.
+
 ## 2026-10-07 - Düello: "Bitir" çalışmıyordu, uzun sayılar taşıyordu
 
 ### "Bitir"e basınca hiçbir şey olmuyordu

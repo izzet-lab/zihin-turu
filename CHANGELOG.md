@@ -3,6 +3,25 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Arena turu oyuncuya vakit bırakıyor
+
+Arenada tur 60 saniyeydi ama pratikte 8–12 saniyede bitiyordu: boş
+koltuklara güçlü botlar oturuyordu ve **ilk tam isabet turu kapattığı**
+için dört bottan biri hemen hedefi bulup turu kapatıyordu. Oyuncu cevabı
+görse bile işlemleri yapmaya yetişemiyordu.
+
+İki değişiklik:
+
+- **Arena botları zayıfladı.** Dört bot koltuğunun en fazla biri güçlü;
+  gerisi çırak ve acemi. Düelloda tek rakip olduğu için güçlü bot sorun
+  değildi, arenada dört rakip var.
+- **Botun cevabı için taban süre.** Bir bot turu, tur süresinin yarısı
+  geçmeden kapatamıyor (60 sn'lik turda 30 sn). Bot hile yapmıyor,
+  yalnızca acele etmiyor.
+
+Ayrıca aynı arenada üç tane "İbrahim K." görünebiliyordu; bot adları
+artık tekrar etmiyor.
+
 ## 2026-10-07 - Arena sıralaması (madalya tablosu)
 
 Arena oynanıyordu ama hiçbir yere yazılmıyordu; yarışın bir sicili yoktu.

@@ -147,3 +147,53 @@ export function botPlani(bot: Bot, tur: Tur, zar: () => number = Math.random): B
 export function botPlaniTohumlu(bot: Bot, tur: Tur, tohum: number): BotPlani {
   return botPlani(bot, tur, rastgele(tohum));
 }
+
+// ---------------------------------------------------------------------------
+// Arena botları
+// ---------------------------------------------------------------------------
+
+/**
+ * Arenadaki bot koltuklarının güç sırası — zayıftan güçlüye.
+ *
+ * NEDEN DÜELLODAN FARKLI
+ * Düelloda tek rakip var; "usta" bot gelse bile oyuncu turun sonuna
+ * kadar oynayabiliyor. Arenada dört rakip var ve İLK tam isabet turu
+ * kapatıyor. Dört "usta" botun hepsi 5–11 saniyede cevap verince tur
+ * daha oyuncu ikinci işlemini yapmadan bitiyordu. Bu yüzden arenada
+ * en fazla bir güçlü bot var, gerisi zayıf.
+ */
+export const ARENA_BOT_KADEMELERI: readonly ProfilAd[] = [
+  'cirak',
+  'cirak',
+  'acemi',
+  'orta',
+];
+
+/**
+ * Arenanın boş koltukları için bot üretir.
+ *
+ * Adlar TEKRARLANMAZ: aynı arenada üç tane "İbrahim K." görünüyordu,
+ * yarış sahte duruyordu.
+ */
+export function arenaBotlari(sayi: number): Bot[] {
+  const havuz = [...ADLAR];
+  const botlar: Bot[] = [];
+  for (let i = 0; i < sayi; i++) {
+    const profil = ARENA_BOT_KADEMELERI[Math.min(i, ARENA_BOT_KADEMELERI.length - 1)]!;
+    const adIndeks = Math.floor(Math.random() * havuz.length);
+    const ad = havuz.splice(adIndeks, 1)[0] ?? 'Rakip';
+    botlar.push({ id: 'bot:' + Math.random().toString(36).slice(2, 9), ad, bot: true, profil });
+  }
+  return botlar;
+}
+
+/**
+ * Arenada bir botun en erken cevap verebileceği an (ms).
+ *
+ * Tur süresinin yarısı. Oyuncunun taşları okuyup birkaç işlem yapması
+ * için gereken en az süre bu; daha erken kapanan tur oynanmış sayılmaz.
+ * Bot yine hile yapmıyor — yalnızca acele etmiyor.
+ */
+export function arenaGecikmeTabaniMs(turSuresiSn: number): number {
+  return Math.round(turSuresiSn * 0.5 * 1000);
+}

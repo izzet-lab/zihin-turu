@@ -28,7 +28,8 @@ import {
   dogrulaZinciri,
   turKur,
   botPlaniTohumlu,
-  botUret,
+  arenaBotlari,
+  arenaGecikmeTabaniMs,
   SEVIYE_LISTESI,
   type Adim,
   type ProfilAd,
@@ -96,11 +97,17 @@ export async function arenayiBaslat(db: Db, mac: ArenaMac): Promise<void> {
   const dolu = new Set((koltuklar ?? []).map((k: { koltuk: number }) => k.koltuk));
   const yeniler: Record<string, unknown>[] = [];
 
+  const bosKoltuklar: number[] = [];
   for (let koltuk = 1; koltuk <= ARENA_KOLTUK; koltuk++) {
-    if (dolu.has(koltuk)) continue;
-    // Bot gücü koltuk numarasından türetiliyor: arena karışık seviyede
-    // bir yarış olmalı, beş aynı güçte bot sıkıcı olurdu.
-    const bot = botUret(900 + koltuk * 150);
+    if (!dolu.has(koltuk)) bosKoltuklar.push(koltuk);
+  }
+
+  // Botlar tek seferde üretiliyor: güç kademesi ve adları ARENA'ya göre
+  // seçiliyor (bkz. `arenaBotlari`) — adlar tekrar etmiyor, en fazla
+  // bir güçlü bot oluyor.
+  const botlar = arenaBotlari(bosKoltuklar.length);
+  bosKoltuklar.forEach((koltuk, i) => {
+    const bot = botlar[i]!;
     yeniler.push({
       mac_id: mac.id,
       koltuk,
@@ -108,7 +115,7 @@ export async function arenayiBaslat(db: Db, mac: ArenaMac): Promise<void> {
       bot_profil: bot.profil,
       bot_ad: bot.ad,
     });
-  }
+  });
 
   if (yeniler.length > 0) await db.from('arena_koltuk').insert(yeniler);
 
@@ -168,7 +175,10 @@ async function botlariOynat(
       botTohumu,
     );
 
-    if (simdiMs - turBasladiMs < plan.gecikmeMs) continue;
+    // Arenada dört rakip var ve ilk tam isabet turu kapatıyor. Taban
+    // olmadan tur, oyuncu ikinci işlemini yapmadan bitiyordu.
+    const gecikme = Math.max(plan.gecikmeMs, arenaGecikmeTabaniMs(turSuresi(mac.seviye)));
+    if (simdiMs - turBasladiMs < gecikme) continue;
     if (!plan.adimlar || plan.adimlar.length === 0) continue;
 
     // Botun zinciri de doğrulanır; bot ayrıcalıklı değil.
@@ -181,7 +191,7 @@ async function botlariOynat(
       koltuk: bot.koltuk,
       uzaklik,
       kilitli: true,
-      bildirildi: new Date(turBasladiMs + plan.gecikmeMs).toISOString(),
+      bildirildi: new Date(turBasladiMs + gecikme).toISOString(),
     });
   }
 

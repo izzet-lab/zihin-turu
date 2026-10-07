@@ -11,6 +11,7 @@ import {
   type ArenaDurum,
   type ArenaOlay,
 } from '@zihinturu/cekirdek';
+import { arenaBotlari, arenaGecikmeTabaniMs } from '@zihinturu/oyun-sayi';
 
 /*
   ARENA — 5 kişilik eşzamanlı yarış.
@@ -230,5 +231,37 @@ describe('çözüm sızmaz (kural 8)', () => {
       { t: 'uzaklik', koltuk: 'b2', uzaklik: 2 },
     ]);
     expect(JSON.stringify(d)).not.toMatch(/adim|zincir|harf|kelime|hedef/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Arena botları — güç kademesi ve cevap tabanı
+// ---------------------------------------------------------------------------
+
+describe('arena botları', () => {
+  it('adlar tekrar etmez', () => {
+    for (let deneme = 0; deneme < 50; deneme++) {
+      const botlar = arenaBotlari(4);
+      const adlar = new Set(botlar.map((b) => b.ad));
+      expect(adlar.size).toBe(4);
+    }
+  });
+
+  it('dört botun en fazla biri güçlü olur', () => {
+    const botlar = arenaBotlari(4);
+    const gucluler = botlar.filter((b) => b.profil === 'orta' || b.profil === 'usta');
+    expect(gucluler.length).toBeLessThanOrEqual(1);
+  });
+
+  it('istenen sayıda bot döner', () => {
+    expect(arenaBotlari(1)).toHaveLength(1);
+    expect(arenaBotlari(4)).toHaveLength(4);
+  });
+
+  it('bot cevap tabanı tur süresinin yarısı', () => {
+    // İlk tam isabet turu kapattığı için botun erken cevabı turu
+    // oyuncu daha oynamadan bitiriyordu.
+    expect(arenaGecikmeTabaniMs(60)).toBe(30_000);
+    expect(arenaGecikmeTabaniMs(90)).toBe(45_000);
   });
 });

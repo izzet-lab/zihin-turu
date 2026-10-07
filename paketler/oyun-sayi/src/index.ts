@@ -205,6 +205,7 @@ export type { GonderimGirdi, GonderimHata } from './gonderim.ts';
 
 export { botUret, botPlani,
   botPlaniTohumlu, botProfilSec, PROFILLER, PROFIL_SIRASI,
+  arenaBotlari, arenaGecikmeTabaniMs, ARENA_BOT_KADEMELERI,
   KORUMALI_DUELLO_SAYISI } from './bot.ts';
 export type { Bot, BotPlani, ProfilAd } from './bot.ts';
 

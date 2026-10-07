@@ -3,6 +3,60 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Faz 5 katman 2: arena sunucusu
+
+Arenanın sunucu tarafı kuruldu. Üç Edge Function canlıda, göç uygulandı.
+
+### Kuyruk tablosu yok — bekleyen arenanın kendisi kuyruk
+
+Düelloda ayrı bir kuyruk tablosu var, çünkü iki kişi eşleşene kadar
+ortada maç yoktu. Arenada ilk gelen arenayı "bekliyor" durumunda
+açıyor, sonrakiler ona katılıyor. Ayrı kuyruk tutmak aynı bilgiyi iki
+yerde saklamak olurdu.
+
+Beş koltuk dolunca ya da **on saniye** geçince arena botlarla
+tamamlanıp başlıyor. Oyuncu boş ekranda bekletilmiyor.
+
+### Botların gücü aynı değil
+
+Beş aynı güçte bot bir yarışı yapay gösterirdi. Koltuk numarasına göre
+farklı güçte botlar oturuyor; arena karışık seviyede bir yarış oluyor.
+Her botun kendi tohumu var, yoksa beşi aynı anda aynı cevabı verirdi.
+
+### Düellodan devralınanlar
+
+- Maç durumu her istekte kayıtlardan sıfırdan kuruluyor; sunucu bellekte
+  durum tutmuyor.
+- Tur, süre dolunca ya da yarışta kalan herkes cevabını kilitleyince
+  kapanıyor.
+- Tur erken kapanırsa sıradaki tur şimdi başlıyor; süre dolduğu için
+  kapandıysa zaman çizgisi korunuyor.
+- Bot hamleleri kilitli yazılıyor, zincirleri de doğrulanıyor — bot
+  ayrıcalıklı değil.
+- Yarışanlara giden tek bilgi uzaklık (kural 8).
+
+### Düellodan farkı
+
+**Yarıştan çıkan arenayı bitirmiyor.** Kalanlar yarışmaya devam ediyor;
+ayrılan podyumda en sonda ve madalyasız.
+
+### Doğrulama
+
+16 yeni test (veritabanı taklidiyle): koltukların botla dolması,
+botların gecikmeden önce susması, turun süre ya da kilitle kapanması,
+puanın sıraya göre dağılması, terk edilen arenanın sonuna kadar
+ilerlemesi ve podyum.
+
+Canlıda da denendi: iki test hesabı aynı arenaya katıldı, bekleme
+dolunca üç botla başladı, gönderim doğrulandı, uydurma zincir
+reddedildi, yarıştan çıkış çalıştı.
+
+360 birim testi yeşil.
+
+### Sırada
+
+Arena arayüzü: bekleme ekranı, beş yarışçının canlı uzaklığı, podyum.
+
 ## 2026-10-07 - Faz 5 ve Faz 6 başladı: arena ve kelime turu çekirdekleri
 
 İki fazın da beyni yazıldı. İkisi de saf ve test edilebilir; ağ, sunucu

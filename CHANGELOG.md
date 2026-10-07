@@ -3,6 +3,71 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Faz 5 ve Faz 6 başladı: arena ve kelime turu çekirdekleri
+
+İki fazın da beyni yazıldı. İkisi de saf ve test edilebilir; ağ, sunucu
+ve arayüz henüz yok.
+
+### Faz 6 — Kelime turu
+
+`paketler/oyun-kelime` kuruldu ve `TurSaglayici` arayüzünü uyguluyor:
+harf havuzu üretimi, cevap doğrulama, puanlama ve en uzun kelimeyi
+bulma.
+
+**Faz 6'nın asıl sınavı geçildi: platform koduna tek satır dokunulmadı.**
+Ne `uygulama/` ne `sunucu/` altında bir değişiklik var — yalnızca yeni
+paket ve onu tanıtan iki yol tanımı. Bu, arayüzün gerçekten oyundan
+bağımsız olduğunun kanıtı.
+
+Kararlar:
+
+- **Havuz önce bir kelime seçilerek kuruluyor.** Rastgele harf dağıtıp
+  "umarım kelime çıkar" demek oynanamaz turlar üretirdi. Sözlükten bir
+  çekirdek kelime seçiliyor, harfleri havuza konuyor, kalanı Türkçe harf
+  sıklığına göre dolduruluyor. Böylece her havuzda en az bir uzun
+  kelimenin bulunduğu garanti — sayı turundaki "her tur tam çözümlü"
+  güvencesinin karşılığı. Bir test bunu 240 tur üzerinde doğruluyor.
+- **Türkçe büyük/küçük harf ayrı ele alınıyor.** `toLowerCase()` tek
+  başına yanlış: 'I' İngilizce kurallarına göre 'i' olur, Türkçe'de 'ı'
+  olmalı. Sözlük araması her zaman Türkçe yerelle yapılıyor.
+- **Puan sayı turuyla aynı ölçekte.** İki oyun aynı lig yapısını
+  kullanıyor; ölçekler ayrışsaydı tablolar kıyaslanamazdı.
+
+> **Sözlük kaynağı henüz seçilmedi.** Pakette birkaç yüz kelimelik
+> GEÇİCİ bir liste var; testleri ve geliştirmeyi yürütüyor, gerçek
+> sözlüğün yerini tutmuyor. Sözlük dışarıdan veriliyor: kaynak
+> değiştiğinde oyun kuralları değişmeyecek. Bu bir lisans kararı —
+> TDK sözlüğü telifli.
+
+### Faz 5 — Arena
+
+`paketler/cekirdek/src/arena.ts`: 5 kişilik eşzamanlı yarışın akışı.
+Sıra yok, herkes aynı anda oynuyor; ilk tam isabet turu kapatıyor,
+kimse bulamazsa sıralama hedefe uzaklığa göre yapılıyor.
+
+Kararlar:
+
+- **Tur puanı sıraya göre azalarak dağılıyor** (5·3·2·1·0). Yalnızca
+  kazanana puan verilseydi 3. ile 5. arasında fark kalmaz, ortalarda
+  oynayanın çabası görünmezdi.
+- **Bir kişinin ayrılması yarışı bitirmiyor** — düellodan farkı bu.
+  Ayrılan podyumda en sonda ve madalyasız; yarışı bitirmeyen podyuma
+  çıkmaz.
+- **Beraberlik toplam uzaklıkla bozuluyor:** aynı puanı toplayan iki
+  oyuncudan hedefe daha çok yaklaşan önde. O da eşitse sıra sabit
+  kalıyor; aynı girdi her makinede aynı podyumu veriyor.
+- Rakibe giden tek bilgi yine uzaklık (kural 8); olay tiplerinde adım,
+  zincir ya da kelime alanı yok.
+
+### Testler
+
+53 yeni test (30 kelime, 23 arena). Toplam 344 birim testi yeşil.
+
+### Sırada
+
+Her iki faz da şu an yalnızca beyin: veritabanı şeması, Edge Function'lar
+ve arayüz yazılmadı. Kelime turu için ayrıca gerçek sözlük gerekiyor.
+
 ## 2026-10-07 - Düello: önce seviye sonra rakip, bekleme ekranında kendi yolun
 
 Telefonda yapılan testten çıkan iki nokta.

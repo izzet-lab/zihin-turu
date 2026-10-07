@@ -155,3 +155,6 @@ export function oyunlar(): TurSaglayici[] {
 
 /* Düello: eşleştirme, maç akışı ve sonuç (oyundan bağımsız). */
 export * from './duello.ts';
+
+/* Arena: 5 kişilik eşzamanlı yarış (oyundan bağımsız). */
+export * from './arena.ts';

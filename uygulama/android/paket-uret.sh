@@ -5,6 +5,9 @@
 #   ./paket-uret.sh                 # web derle + senkronla + AAB üret
 #   ./paket-uret.sh --sadece-gradle # yalnızca AAB üret (web zaten hazırsa)
 #   ./paket-uret.sh --apk           # AAB yerine imzalı APK (cihazda denemek için)
+#   ./paket-uret.sh --yuklemesiz    # Crashlytics eşleme yüklemesini atla
+#                                   # (ağ kapalıyken ya da TLS araya girdiğinde)
+#   ./paket-uret.sh --cevrimdisi    # bağımlılıkları ağdan sorma, önbelleği kullan
 #
 # NEDEN BU BETİK VAR
 # Gradle, Java 17 veya üstünü ister. Bu makinede sistem varsayılanı
@@ -17,13 +20,36 @@ cd "$(dirname "$0")"
 
 SADECE_GRADLE=0
 APK=0
+YUKLEMESIZ=0
+CEVRIMDISI=0
 for bayrak in "$@"; do
   case "$bayrak" in
     --sadece-gradle) SADECE_GRADLE=1 ;;
     --apk) APK=1 ;;
+    --yuklemesiz) YUKLEMESIZ=1 ;;
+    --cevrimdisi) CEVRIMDISI=1 ;;
     *) echo "Bilinmeyen seçenek: $bayrak"; exit 1 ;;
   esac
 done
+
+GRADLE_EK=""
+
+# AdMob eklentisi bağımlılığını "25.4.+" gibi DEĞİŞKEN bir sürümle
+# istiyor; Gradle bunu her derlemede ağdan sorup en yenisini bulmaya
+# çalışıyor. Ağ kapalıyken ya da TLS araya girdiğinde derleme daha
+# başlamadan düşüyor. --cevrimdisi önbellekteki sürümü kullandırır.
+if [ "$CEVRIMDISI" -eq 1 ]; then
+  GRADLE_EK="$GRADLE_EK --offline"
+  echo "📴 Çevrimdışı derleme: bağımlılıklar önbellekten alınacak."
+fi
+
+# Crashlytics eşleme yüklemesi ağa bağlı; kapalıysa derlemeyi düşürmesin.
+if [ "$YUKLEMESIZ" -eq 1 ]; then
+  GRADLE_EK="$GRADLE_EK -PkrashlyticsYuklemeKapali"
+  echo "⚠️  Crashlytics eşleme yüklemesi atlanıyor."
+  echo "    Çökme raporlarının okunur olması için eşleme dosyası"
+  echo "    sonradan elle yüklenmeli (yolu aşağıda yazılı)."
+fi
 
 # ── Java 17+ bul ──────────────────────────────────────────────────────
 java_surumu() {
@@ -70,11 +96,11 @@ fi
 # ── Paketi üret ──────────────────────────────────────────────────────
 if [ "$APK" -eq 1 ]; then
   echo "📦 İmzalı APK üretiliyor (R8 açık)…"
-  ./gradlew assembleRelease
+  ./gradlew assembleRelease $GRADLE_EK
   CIKTI="app/build/outputs/apk/release/app-release.apk"
 else
   echo "📦 İmzalı AAB üretiliyor (R8 açık)…"
-  ./gradlew bundleRelease
+  ./gradlew bundleRelease $GRADLE_EK
   CIKTI="app/build/outputs/bundle/release/app-release.aab"
 fi
 

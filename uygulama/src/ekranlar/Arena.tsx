@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ARENA_KOLTUK, duelloTurTohumu } from '@zihinturu/cekirdek';
-import { turKur, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { turKur, sayiTuru, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
 import Oyun from './Oyun';
 import { acikSeviyeler } from '../depo';
 import {
@@ -60,6 +60,10 @@ export default function Arena({
   const [acilisKontrolu, setAcilisKontrolu] = useState(false);
   const [cikisSoruluyor, setCikisSoruluyor] = useState(false);
   const [kilitliTur, setKilitliTur] = useState<number | null>(null);
+  /** Oyuncunun kendi adım zinciri — bekleme ekranında gösteriliyor. */
+  const [kilitliAdimlar, setKilitliAdimlar] = useState<
+    { a: number; b: number; islem: string; sonuc: number }[]
+  >([]);
   const macIdRef = useRef<string | null>(null);
   macIdRef.current = macId;
   const durumRef = useRef<ArenaDurumu | null>(null);
@@ -118,6 +122,34 @@ export default function Arena({
     return turKur(durum.seviye, duelloTurTohumu(Number(durum.tohum), durum.aktifTur));
   }, [durum?.tohum, durum?.aktifTur, durum?.seviye, durum?.durum]);
 
+  /** Bu turun hedefi — çubukların ortak cetveli. */
+  const arenaHedef = (tur?.veri as { hedef: number } | undefined)?.hedef ?? 0;
+  const benimUzaklik =
+    durum?.yarisanlar.find((y) => y.benMiyim)?.uzaklik ?? null;
+
+  /** Uzaklığı çubuk yüzdesine çevirir: hedefe yaklaştıkça dolu. */
+  const cubukYuzdesi = useCallback(
+    (u: number | null) => {
+      if (u == null) return 0;
+      const olcek = Math.max(arenaHedef, 1);
+      return Math.max(4, Math.round((1 - Math.min(u, olcek) / olcek) * 100));
+    },
+    [arenaHedef],
+  );
+
+  /**
+   * Bu turun bir çözümü — sunucudan GELMİYOR, tohumdan burada
+   * üretiliyor. Yalnızca cevabını kilitlemiş oyuncuya gösteriliyor.
+   */
+  const turCozumu = useMemo(() => {
+    if (!tur || kilitliTur !== durum?.aktifTur) return null;
+    try {
+      return sayiTuru.cozumBul(tur, 400);
+    } catch {
+      return null;
+    }
+  }, [tur, kilitliTur, durum?.aktifTur]);
+
   const katil = useCallback(async () => {
     try {
       const sonuc = await arenayaKatil(seviye);
@@ -132,7 +164,10 @@ export default function Arena({
       const id = macIdRef.current;
       const d = durumRef.current;
       if (!id || !d || d.durum !== 'basladi') return;
-      if (kilit) setKilitliTur(d.aktifTur);
+      if (kilit) {
+        setKilitliTur(d.aktifTur);
+        setKilitliAdimlar(adimlar);
+      }
       arenaGonder(id, d.aktifTur, adimlar, kilit).catch((e) => {
         // Tur bu arada kapanmış olabilir — arıza değil, oyunun akışı.
         const mesaj = (e as Error).message;
@@ -322,14 +357,64 @@ export default function Arena({
 
     return (
       <Cerceve baslik="Arena bitti">
-        {benimSira && (
-          <div className="text-4xl font-black text-cyan-300" data-alan="arena-sonuc">
-            {benimSira.sira}. sıra
+        {/* PODYUM — birinci yüksekte durur. Sıralamayı listeyle
+            anlatmak mümkün ama podyum bir oyunun görüntüsü. */}
+        {(durum.podyum?.length ?? 0) >= 3 && (
+          <div className="mb-6 flex items-end justify-center gap-2" aria-hidden="true">
+            {[1, 0, 2].map((i) => {
+              const p = durum.podyum![i];
+              if (!p) return null;
+              const y = adBul(p.koltuk);
+              const benim = Number(p.koltuk) === durum.benimKoltuk;
+              const yukseklik = ['h-24', 'h-16', 'h-12'][i]!;
+              return (
+                <div key={p.koltuk} className="flex w-1/4 flex-col items-center">
+                  <span className="text-2xl">{p.madalya ? nisan[p.madalya] : ''}</span>
+                  <span
+                    className={`mt-1 w-full truncate text-center text-[11px] font-bold ${
+                      benim ? 'text-cyan-200' : 'text-slate-400'
+                    }`}
+                  >
+                    {benim ? 'Sen' : (y?.ad ?? '—')}
+                  </span>
+                  <div
+                    className={`zt-basamak mt-1 w-full rounded-t-lg border-x border-t ${yukseklik} ${
+                      benim
+                        ? 'border-cyan-300/40 bg-cyan-300/15'
+                        : 'border-slate-700 bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="zt-rakam pt-1 text-center text-sm font-black text-slate-300">
+                      {p.sira}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
-        {benimSira?.madalya && (
-          <div className="mt-1 text-3xl" aria-hidden="true">
-            {nisan[benimSira.madalya]}
+
+        {benimSira && (
+          <div
+            className={`zt-sahne rounded-2xl border px-5 py-5 ${
+              benimSira.madalya
+                ? 'border-cyan-300/40 bg-cyan-300/10'
+                : 'border-slate-700 bg-slate-900/60'
+            }`}
+          >
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+              Senin sıran
+            </div>
+            <div
+              className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200"
+              data-alan="arena-sonuc"
+            >
+              {benimSira.sira}.
+            </div>
+            <div className="mt-1 text-xs text-slate-400">
+              {benimSira.puan} puan
+              {benimSira.madalya ? ` · ${nisan[benimSira.madalya]}` : ''}
+            </div>
           </div>
         )}
 
@@ -410,31 +495,104 @@ export default function Arena({
   /* --- Cevap kilitlendi, tur kapanması bekleniyor --- */
   if (kilitliTur === durum.aktifTur) {
     return (
-      <Cerceve baslik={`Tur ${durum.aktifTur} — cevabın gönderildi`}>
-        <p className="text-sm text-slate-400" data-alan="arena-kilit-bekleme">
-          Cevabın kaydedildi. Tur, herkes cevabını verince ya da süre dolunca kapanacak.
-        </p>
-        <ul className="mt-5 space-y-2 text-left">
-          {durum.yarisanlar.map((y) => (
-            <li
-              key={y.koltuk}
-              className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm"
-            >
-              <span className={y.benMiyim ? 'text-cyan-200' : 'text-slate-400'}>
-                {y.benMiyim ? 'Sen' : y.ad}
-              </span>
-              <span className="font-bold text-slate-300">
-                {y.ayrildi
-                  ? 'çıktı'
-                  : y.uzaklik == null
-                    ? 'henüz yok'
-                    : y.uzaklik === 0
-                      ? 'tam isabet 🎯'
-                      : `${y.uzaklik} fark`}
-              </span>
-            </li>
-          ))}
+      <Cerceve baslik={`Tur ${durum.aktifTur}/${durum.toplamTur}`}>
+        {/* SAHNE — kilitlenen cevap, oyunun diliyle. Önce bu ekran düz
+            metin satırlarıydı ve bildirim gibi duruyordu. */}
+        <div
+          className="zt-sahne rounded-2xl border border-cyan-300/30 bg-cyan-300/5 px-5 py-6"
+          data-alan="arena-kilit-bekleme"
+        >
+          <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-300/70">
+            Cevabın kilitlendi
+          </div>
+          <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200">
+            {benimUzaklik === 0 ? 'TAM' : (benimUzaklik ?? '—')}
+          </div>
+          <div className="mt-1 text-xs text-slate-400">
+            {benimUzaklik === 0
+              ? 'hedefi tam tutturdun 🎯'
+              : kilitliAdimlar.length === 0
+                ? 'hiç işlem yapmadın'
+                : `fark · hedef ${arenaHedef}`}
+          </div>
+          <div className="zt-nabiz mt-4 text-xs font-bold text-slate-400">
+            Diğerleri oynuyor…
+          </div>
+        </div>
+
+        {/* BEŞ ÇUBUK — kim hedefe yakın, bakışta görünsün. */}
+        <ul className="mt-4 space-y-2.5 text-left">
+          {[...durum.yarisanlar]
+            .sort((a, b) => {
+              if (a.ayrildi !== b.ayrildi) return a.ayrildi ? 1 : -1;
+              return (a.uzaklik ?? Infinity) - (b.uzaklik ?? Infinity);
+            })
+            .map((y) => (
+              <li key={y.koltuk} className={y.ayrildi ? 'opacity-40' : ''}>
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className={y.benMiyim ? 'font-bold text-cyan-200' : 'text-slate-400'}>
+                    {y.benMiyim ? 'Sen' : y.ad}
+                  </span>
+                  <span className="font-bold text-slate-300">
+                    {y.ayrildi
+                      ? 'çıktı'
+                      : y.uzaklik == null
+                        ? 'henüz yok'
+                        : y.uzaklik === 0
+                          ? 'tam isabet 🎯'
+                          : `${y.uzaklik} fark`}
+                  </span>
+                </div>
+                <div className="zt-cubuk mt-1 h-2 w-full">
+                  <div
+                    className={`zt-cubuk-dolgu ${
+                      y.uzaklik === 0 ? 'zt-tam' : y.benMiyim ? '' : 'zt-rakip'
+                    }`}
+                    style={{ width: `${cubukYuzdesi(y.uzaklik)}%` }}
+                  />
+                </div>
+              </li>
+            ))}
         </ul>
+
+        {/* SENİN YOLUN — tahtaya el yazısıyla. */}
+        {kilitliAdimlar.length > 0 && (
+          <div className="mt-5 text-left" data-alan="arena-kilit-zincir">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              Senin yolun
+            </div>
+            <div className="zt-sahne rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+              <ul className="elyazisi space-y-1.5 text-lg text-cyan-100">
+                {kilitliAdimlar.map((ad, i) => (
+                  <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
+                    {ad.a} {ad.islem} {ad.b} = {ad.sonuc}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* BU TURUN BİR ÇÖZÜMÜ — cevabını kilitleyen oyuncu artık bu
+            turda bir şey değiştiremez; beklerken doğru yolu görmesi
+            oyunu öğretiyor. Sunucudan gelmiyor, tohumdan üretiliyor. */}
+        {turCozumu && turCozumu.satirlar.length > 0 && (
+          <div className="mt-5 text-left" data-alan="arena-kilit-cozum">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              Bu turun bir çözümü
+            </div>
+            <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
+              <ul className="elyazisi space-y-1.5 text-lg text-amber-100">
+                {turCozumu.satirlar.map((satir, i) => (
+                  <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
+                    {satir}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="mt-1.5 text-[11px] text-slate-600">Tek yol değil.</p>
+          </div>
+        )}
         <button
           onClick={() => setCikisSoruluyor(true)}
           data-alan="arena-terk"

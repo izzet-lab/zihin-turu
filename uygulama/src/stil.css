@@ -302,3 +302,74 @@ button,
 @media (prefers-reduced-motion: reduce) {
   .zt-secim:active { transform: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* YARIŞ EKRANLARI — OYUN HİSSİ                                        */
+/*                                                                     */
+/* Düello ve arenanın bekleme/sonuç ekranları düz metin kutularıydı;   */
+/* bildirim ekranı gibi duruyordu, oysa burası bir oyun. Taşlara       */
+/* verdiğimiz derinliğin aynısı bu yüzeylere de veriliyor: üstten ışık,*/
+/* gövde eğimi, altta gölge. Hepsi boya işi — düzeni etkilemez.        */
+/* ------------------------------------------------------------------ */
+
+.zt-sahne {
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.06) 0%, rgb(255 255 255 / 0) 42%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 10px 24px -14px rgb(0 0 0 / 0.9);
+}
+
+/* Bekleme nabzı: ekranın "çalıştığını" söyleyen tek hareket. */
+.zt-nabiz {
+  animation: zt-nabiz 1.8s ease-in-out infinite;
+}
+
+@keyframes zt-nabiz {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.96); }
+}
+
+/*
+ * UZAKLIK ÇUBUĞU
+ *
+ * "72 fark" bir sayı; yan yana iki sayıyı karşılaştırmak için okumak
+ * gerekiyor. Çubuk aynı bilgiyi bakışta veriyor: kim hedefe yakın.
+ * Genişlik satır içi stille veriliyor (veriye bağlı), renk burada.
+ */
+.zt-cubuk {
+  background: rgb(148 163 184 / 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.zt-cubuk-dolgu {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 600ms ease-out;
+  background: linear-gradient(90deg, #7CEDFB, #38bdf8);
+}
+
+.zt-cubuk-dolgu.zt-tam {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.zt-cubuk-dolgu.zt-rakip {
+  background: linear-gradient(90deg, #64748b, #94a3b8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-nabiz { animation: none; }
+  .zt-cubuk-dolgu { transition: none; }
+}
+
+/*
+ * PODYUM BASAMAKLARI
+ *
+ * Sıralamayı listeyle anlatmak mümkün ama podyum bir oyunun görüntüsü:
+ * birinci yüksekte durur. Yükseklikler sabit, içerik kısa.
+ */
+.zt-basamak {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@zihinturu/cekirdek';
-import { turKur, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { turKur, sayiTuru, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
@@ -259,6 +259,23 @@ export default function Duello({
     if (!mac) return null;
     return turKur(mac.seviye, duelloTurTohumu(Number(mac.tohum), mac.aktifTur));
   }, [mac?.tohum, mac?.aktifTur, mac?.seviye]);
+
+  /**
+   * Bu turun bir çözümü.
+   *
+   * SUNUCUDAN GELMİYOR — tohumdan burada üretiliyor; zaten tahtayı da
+   * aynı tohumdan kuruyoruz. Yalnızca cevabını KİLİTLEYEN oyuncuya
+   * gösteriliyor: o oyuncu bu turda artık bir şey değiştiremez, ama
+   * beklerken doğru yolu görmesi oyunu öğretiyor.
+   */
+  const turCozumu = useMemo(() => {
+    if (!tur || kilitliTur !== mac?.aktifTur) return null;
+    try {
+      return sayiTuru.cozumBul(tur, 400);
+    } catch {
+      return null;
+    }
+  }, [tur, kilitliTur, mac?.aktifTur]);
 
   /* --- Oyuncunun ilerlemesini sunucuya bildir --- */
   const ilerlemeGonder = useCallback(
@@ -601,31 +618,56 @@ export default function Duello({
             <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
               Turlar
             </div>
-            <ul className="divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-900/40">
-              {/* İki satır: üstte tur ve kazanan, altta iki tarafın sonucu.
-                  Tek satıra sığdırılmaya çalışılınca 360px'te taşıyor ve
-                  kazanan sütunu ekran dışında kalıyordu (kural 10). */}
+            {/* Her tur bir kart: solda turu kimin aldığını söyleyen
+                madeni para, sağda iki tarafın sonucu. Düz liste
+                "tablo" gibi duruyordu; bu bir maç özeti. */}
+            <ul className="space-y-2">
               {turOzetSatirlari.map((t) => (
-                <li key={t.turNo} className="px-3 py-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-slate-400">
-                      {t.turNo}. tur
-                      <span className="ml-2 font-normal text-slate-600">Hedef {t.hedef}</span>
-                    </span>
-                    <span
-                      className={`shrink-0 text-xs font-bold ${
-                        t.kazanan === 'ben'
-                          ? 'text-cyan-300'
+                <li
+                  key={t.turNo}
+                  className={`zt-sahne flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
+                    t.kazanan === 'ben'
+                      ? 'border-cyan-300/30 bg-cyan-300/5'
+                      : 'border-slate-800 bg-slate-900/40'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`zt-rakam flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                      t.kazanan === 'ben'
+                        ? 'bg-cyan-300 text-slate-900'
+                        : t.kazanan === 'rakip'
+                          ? 'bg-slate-700 text-slate-300'
+                          : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    {t.turNo}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-300">
+                        Hedef <span className="zt-rakam">{t.hedef}</span>
+                      </span>
+                      <span
+                        className={`shrink-0 text-[11px] font-bold ${
+                          t.kazanan === 'ben'
+                            ? 'text-cyan-300'
+                            : t.kazanan === 'rakip'
+                              ? 'text-slate-500'
+                              : 'text-slate-600'
+                        }`}
+                      >
+                        {t.kazanan === 'ben'
+                          ? 'sen aldın'
                           : t.kazanan === 'rakip'
-                            ? 'text-slate-500'
-                            : 'text-slate-600'
-                      }`}
-                    >
-                      {t.kazanan === 'ben' ? 'Sen aldın' : t.kazanan === 'rakip' ? 'Rakip aldı' : 'Berabere'}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 text-[11px] text-slate-500">
-                    {t.benimMetin} · {t.rakipMetin}
+                            ? 'rakip aldı'
+                            : 'berabere'}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-slate-500">
+                      {t.benimMetin} · {t.rakipMetin}
+                    </div>
                   </div>
                 </li>
               ))}
@@ -698,67 +740,142 @@ export default function Duello({
   // ya da yeni bir maçta aynı numaralı turda bekleme ekranı yeniden
   // açılır ve oyuncu hiç oynamadan kilitlenmiş görünürdü.
   if (kilitliMac === mac.id && kilitliTur === mac.aktifTur) {
-    return (
-      <Cerceve baslik={`Tur ${mac.aktifTur} — cevabın gönderildi`}>
-        <p className="text-sm text-slate-400" data-alan="duello-kilit-bekleme">
-          Cevabın kaydedildi. Tur, rakibin de cevabını vermesiyle ya da süre
-          dolunca kapanacak.
-        </p>
+    const hedef = (tur?.veri as { hedef: number } | undefined)?.hedef ?? 0;
+    // Çubuk uzunluğu için ortak bir ölçek: iki taraf aynı cetvelle
+    // çizilsin ki bakışta karşılaştırılabilsin.
+    const olcek = Math.max(hedef, kilitliUzaklik ?? 0, rakipUzaklik ?? 0, 1);
+    const yuzde = (u: number | null) =>
+      u == null ? 0 : Math.max(4, Math.round((1 - u / olcek) * 100));
 
-        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-400">Sen</span>
-            <span className="font-bold text-cyan-300" data-alan="kilit-benim">
-              {kilitliUzaklik == null
-                ? 'gönderildi'
-                : kilitliUzaklik === 0
-                  ? 'tam isabet 🎯'
-                  : `${kilitliUzaklik} fark`}
-            </span>
+    return (
+      <Cerceve baslik={`Tur ${mac.aktifTur}/${DUELLO_TUR_SAYISI}`}>
+        {/* SAHNE — kilitlenen cevabın kendisi, oyunun diliyle:
+            büyük rakam, hedefin altında. Önce bu ekran düz metin
+            satırlarından oluşuyordu ve bildirim ekranı gibi duruyordu. */}
+        <div
+          className="zt-sahne rounded-2xl border border-cyan-300/30 bg-cyan-300/5 px-5 py-6"
+          data-alan="duello-kilit-bekleme"
+        >
+          <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-300/70">
+            Cevabın kilitlendi
           </div>
-          <div className="mt-2 flex items-center justify-between text-sm">
-            <span className="text-slate-400">
-              {mac.rakip?.ad ?? (mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip')}
-            </span>
-            <span className="font-bold text-slate-300">
-              {rakipUzaklik == null
-                ? 'henüz bir şey yok'
-                : rakipUzaklik === 0
-                  ? 'tam isabet 🎯'
-                  : `${rakipUzaklik} fark`}
-            </span>
+          <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200">
+            {kilitliUzaklik === 0 ? 'TAM' : (kilitliUzaklik ?? '—')}
+          </div>
+          <div className="mt-1 text-xs text-slate-400">
+            {kilitliUzaklik === 0
+              ? 'hedefi tam tutturdun 🎯'
+              : kilitliAdimlar.length === 0
+                ? // Hiç işlem yapılmadığında uzaklık hedefin kendisine
+                  // eşit çıkıyor; "665 fark · hedef 665" yanıltıcıydı.
+                  'hiç işlem yapmadın'
+                : `fark · hedef ${hedef}`}
+          </div>
+
+          <div className="zt-nabiz mt-4 text-xs font-bold text-slate-400">
+            Rakip oynuyor…
           </div>
         </div>
 
-        {/* Kendi zincirin — nasıl ulaştığını gösterir. */}
-        {kilitliAdimlar.length > 0 && (
-          <div
-            className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-left"
-            data-alan="kilit-zincir"
-          >
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-              Senin yolun · hedef {(tur?.veri as { hedef: number } | undefined)?.hedef}
+        {/* İKİ YARIŞÇI, İKİ ÇUBUK — kim hedefe yakın, bakışta görünsün. */}
+        <div className="mt-4 space-y-3 text-left">
+          {[
+            { ad: 'Sen', uzaklik: kilitliUzaklik, benim: true },
+            {
+              ad: mac.rakip?.ad ?? (mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip'),
+              uzaklik: rakipUzaklik,
+              benim: false,
+            },
+          ].map((y) => (
+            <div key={y.ad}>
+              <div className="flex items-baseline justify-between text-xs">
+                <span className={y.benim ? 'font-bold text-cyan-200' : 'text-slate-400'}>
+                  {y.ad}
+                </span>
+                <span
+                  className="font-bold text-slate-300"
+                  data-alan={y.benim ? 'kilit-benim' : 'kilit-rakip'}
+                >
+                  {y.uzaklik == null
+                    ? 'henüz bir şey yok'
+                    : y.uzaklik === 0
+                      ? 'tam isabet 🎯'
+                      : `${y.uzaklik} fark`}
+                </span>
+              </div>
+              <div className="zt-cubuk mt-1 h-2 w-full">
+                <div
+                  className={`zt-cubuk-dolgu ${
+                    y.uzaklik === 0 ? 'zt-tam' : y.benim ? '' : 'zt-rakip'
+                  }`}
+                  style={{ width: `${yuzde(y.uzaklik)}%` }}
+                />
+              </div>
             </div>
-            <ul className="space-y-1 text-sm tabular-nums text-slate-300">
-              {kilitliAdimlar.map((ad, i) => (
-                <li key={i}>
-                  {ad.a} {ad.islem} {ad.b} ={' '}
-                  <span className="font-bold text-slate-100">{ad.sonuc}</span>
-                </li>
-              ))}
-            </ul>
+          ))}
+        </div>
+
+        {/* SENİN YOLUN — tahtaya el yazısıyla, sonuç ekranındaki gibi. */}
+        {kilitliAdimlar.length > 0 && (
+          <div className="mt-5 text-left" data-alan="kilit-zincir">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              Senin yolun
+            </div>
+            <div className="zt-sahne rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+              <ul className="elyazisi space-y-1.5 text-lg text-cyan-100">
+                {kilitliAdimlar.map((ad, i) => (
+                  <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
+                    {ad.a} {ad.islem} {ad.b} = {ad.sonuc}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 
-        <div className="mt-5 text-sm font-bold text-slate-300" data-alan="kilit-sayac">
-          {kalanSn > 0 ? `Tur süresi: ${kalanSn} sn` : 'Tur kapanıyor…'}
-        </div>
-        <div className="mt-1 text-xs text-slate-500">
-          Skor: {benim === 'a' ? mac.skorA : mac.skorB} — {benim === 'a' ? mac.skorB : mac.skorA}
+        {/* BU TURUN BİR ÇÖZÜMÜ
+            Cevabını kilitleyen oyuncu artık bu turda bir şey
+            değiştiremez; beklerken doğru yolu görmek oyunu öğretiyor.
+            Çözüm sunucudan GELMİYOR — tohumdan burada üretiliyor. */}
+        {turCozumu && turCozumu.satirlar.length > 0 && (
+          <div className="mt-4 text-left" data-alan="kilit-cozum">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              Bu turun bir çözümü
+            </div>
+            <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
+              <ul className="elyazisi space-y-1.5 text-lg text-amber-100">
+                {turCozumu.satirlar.map((satir, i) => (
+                  <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
+                    {satir}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="mt-1.5 text-[11px] text-slate-600">Tek yol değil.</p>
+          </div>
+        )}
+
+        {/* Tur saati — çubukla, rakamla değil. */}
+        <div className="mt-5">
+          <div className="zt-cubuk h-2 w-full">
+            <div
+              className="zt-cubuk-dolgu"
+              style={{
+                width: `${Math.max(0, Math.min(100, Math.round((kalanSn / (mac.turSuresiSn ?? 60)) * 100)))}%`,
+              }}
+            />
+          </div>
+          <div
+            className="mt-1 flex items-center justify-between text-[11px] text-slate-500"
+            data-alan="kilit-sayac"
+          >
+            <span>
+              Skor {benim === 'a' ? mac.skorA : mac.skorB} — {benim === 'a' ? mac.skorB : mac.skorA}
+            </span>
+            <span>{kalanSn > 0 ? `${kalanSn} sn` : 'tur kapanıyor…'}</span>
+          </div>
         </div>
 
-        {/* Bekleme ekranında da çıkış yolu olmalı: rakip hiç cevap
-            vermezse oyuncu burada kilitli kalmamalı. */}
         <button
           onClick={() => setCikisSoruluyor(true)}
           data-alan="duello-terk"

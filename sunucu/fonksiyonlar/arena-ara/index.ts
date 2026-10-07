@@ -54,16 +54,25 @@ Deno.serve(async (req: Request) => {
 
     // --- 1. Zaten bir arenada mıyım? ---
     // Sekmesini yenileyen oyuncu arenasına geri dönmeli.
-    const { data: koltugum } = await supabase
+    // Durum süzgeci gömülü tabloda değil BURADA uygulanıyor: gömülü
+    // süzgeçlerin davranışına güvenip bitmiş bir arenayı "sürüyor" diye
+    // döndürürsek oyuncu podyum ekranında kilitli kalır. Birkaç satır
+    // okunup JavaScript'te elenmesi hem kesin hem ucuz.
+    const { data: koltuklarim } = await supabase
       .from('arena_koltuk')
       .select('mac_id, koltuk, arena_mac!inner(id, durum)')
       .eq('oyuncu_id', benId)
-      .neq('arena_mac.durum', 'bitti')
-      .limit(1)
-      .maybeSingle();
+      .limit(10);
 
-    if (koltugum) {
-      return ok({ macId: koltugum.mac_id, koltuk: koltugum.koltuk });
+    const surenKoltuk = (koltuklarim ?? []).find(
+      (k: { arena_mac?: { durum?: string } | { durum?: string }[] }) => {
+        const m = Array.isArray(k.arena_mac) ? k.arena_mac[0] : k.arena_mac;
+        return m?.durum === 'bekliyor' || m?.durum === 'basladi';
+      },
+    );
+
+    if (surenKoltuk) {
+      return ok({ macId: surenKoltuk.mac_id, koltuk: surenKoltuk.koltuk });
     }
     if (sadece_kontrol) return ok({ arenaYok: true });
 

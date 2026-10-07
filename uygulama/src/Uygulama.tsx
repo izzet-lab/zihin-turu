@@ -551,6 +551,7 @@ export default function Uygulama() {
         kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu', id: kullanici.id } : null}
         onGirisAc={girisAc}
         onDuello={(sv) => gecis(`/duello?seviye=${sv}`)}
+        onArena={(sv) => gecis(`/arena?seviye=${sv}`)}
         onCikisYap={async () => {
           await supabase.auth.signOut();
           setKullanici(null);

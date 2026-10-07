@@ -81,10 +81,10 @@ Deno.serve(async (req: Request) => {
       .eq('id', mac_id)
       .single();
 
-    const sonuc =
-      guncelMac.durum === 'basladi'
-        ? await arenayiIlerlet(supabase, guncelMac as ArenaMac)
-        : null;
+    // Arena sürüyorsa ilerletilir. BİTMİŞSE de ilerletilir: podyum
+    // oradan geliyor. Önce yalnızca süren arena ilerletiliyordu ve
+    // bitmiş bir arenayı yeniden açan oyuncu BOŞ bir podyum görüyordu.
+    const sonuc = await arenayiIlerlet(supabase, guncelMac as ArenaMac);
 
     const { data: son } = await supabase
       .from('arena_mac')

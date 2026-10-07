@@ -37,6 +37,8 @@ interface Props {
   onGirisAc?: () => void;
   /** Düello ekranına geçer (seçili seviyeyle). */
   onDuello?: (seviye: string) => void;
+  /** Arena ekranına geçer (seçili seviyeyle). */
+  onArena?: (seviye: string) => void;
   /** Çıkış yapar. */
   onCikisYap?: () => void;
 }
@@ -44,7 +46,7 @@ interface Props {
 // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
 const SURE_SECENEK = [90, 60, 30, 15];
 
-export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc, onDuello }: Props) {
+export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc, onDuello, onArena }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [kilitAciklama, setKilitAciklama] = useState<string | null>(null);
 
@@ -205,6 +207,26 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
               </span>
             </span>
             <span aria-hidden="true" className="text-cyan-300">→</span>
+          </button>
+        )}
+
+        {/* ARENA — düellonun hemen altında. Düello iki kişilik, arena
+            beş kişilik; ikisi aynı yerde dursun ki oyuncu rekabetin iki
+            biçimini bir arada görsün. */}
+        {onArena && (
+          <button
+            data-alan="arena-git"
+            onClick={() => onArena(seviye)}
+            className="zt-secim mt-2.5 flex min-h-[76px] w-full items-center gap-3 rounded-xl border-2 border-amber-300/40 bg-amber-300/10 px-4 py-3 text-left transition hover:border-amber-300 hover:bg-amber-300/15"
+          >
+            <span aria-hidden="true" className="text-2xl">⚡</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-black text-amber-200">Arena</span>
+              <span className="block text-[11px] leading-snug text-amber-200/70">
+                5 kişi aynı anda · seviyeyi orada seçersin
+              </span>
+            </span>
+            <span aria-hidden="true" className="text-amber-300">→</span>
           </button>
         )}
 

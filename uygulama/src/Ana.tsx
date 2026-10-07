@@ -15,6 +15,7 @@ import type { User } from '@supabase/supabase-js';
 import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
 import Duello from './ekranlar/Duello';
+import Arena from './ekranlar/Arena';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
 import YasalIndeks from './ekranlar/YasalIndeks';
@@ -51,6 +52,7 @@ export default function Ana() {
         <Route path="/" element={<Uygulama />} />
         <Route path="/lig" element={<Lig oyuncuId={kullanici?.id} />} />
         <Route path="/duello" element={<DuelloRota girisYapildiMi={!!kullanici} />} />
+        <Route path="/arena" element={<ArenaRota girisYapildiMi={!!kullanici} />} />
 
         {/* Herkese açık profil sayfası */}
         <Route path="/o/:kullaniciAdi" element={<ProfilSayfasi />} />
@@ -84,6 +86,26 @@ function DuelloRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
   const seviye = parametreler.get('seviye') ?? 'normal';
   return (
     <Duello
+      seviye={seviye}
+      girisYapildiMi={girisYapildiMi}
+      onCik={() => gecis('/')}
+      onGirisAc={() => gecis('/?giris=1')}
+    />
+  );
+}
+
+/**
+ * Arena rotası — seviye adres satırından gelir.
+ *
+ * Düello gibi ayrı rota: arena da tek kişilik akışın parçası değil,
+ * beş yarışçı ve canlı bağlantı gerektiriyor.
+ */
+function ArenaRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
+  const gecis = useNavigate();
+  const [parametreler] = useSearchParams();
+  const seviye = parametreler.get('seviye') ?? 'normal';
+  return (
+    <Arena
       seviye={seviye}
       girisYapildiMi={girisYapildiMi}
       onCik={() => gecis('/')}

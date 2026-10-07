@@ -16,16 +16,16 @@ import { girisYap, testHesabiVarMi, TEST_EPOSTALAR } from './duello-kimlik';
      kullanıcıyı yanıltıyordu.
 */
 
-const SEKMELER = ['gunluk', 'haftalik', 'aylik', 'duello', 'antrenman'] as const;
+const SEKMELER = ['gunluk', 'haftalik', 'aylik', 'duello', 'arena', 'antrenman'] as const;
 
-test('beş sekme var ve düello antrenmandan önce geliyor', async ({ page }) => {
+test('altı sekme var; düello ve arena antrenmandan önce geliyor', async ({ page }) => {
   await page.goto('/lig');
 
   for (const s of SEKMELER) {
     await expect(page.locator(`[data-sekme="${s}"]`), s).toBeVisible();
   }
 
-  // Sıra önemli: düello antrenmandan önce.
+  // Sıra önemli: düello ve arena antrenmandan önce.
   const sira = await page
     .locator('[data-sekme]')
     .evaluateAll((els) => els.map((e) => e.getAttribute('data-sekme')));
@@ -64,7 +64,7 @@ test('düello sekmesinde seviye seçici yok — derece seviyeden bağımsız', a
  * kendisini sınamak istiyoruz, veritabanının o anki hâlini değil.
  */
 async function bosListeTaklit(page: import('@playwright/test').Page) {
-  for (const tablo of ['lig_gunluk', 'lig_donem', 'lig_antrenman_hafta', 'duello_derece']) {
+  for (const tablo of ['lig_gunluk', 'lig_donem', 'lig_antrenman_hafta', 'duello_derece', 'arena_derece']) {
     await page.route(`**/rest/v1/${tablo}*`, (yol) =>
       yol.fulfill({
         status: 200,
@@ -140,4 +140,26 @@ test.describe('giriş yapmış oyuncu', () => {
 
     await baglam.close();
   });
+});
+
+test('arena sekmesinde madalya tablosu ve seviye seçici yok', async ({ page }) => {
+  await page.goto('/lig');
+  await page.locator('[data-sekme="arena"]').click();
+
+  await expect(page.locator('[data-alan="sekme-aciklama"]')).toContainText('Madalya tablosu');
+  // Arena madalyası seviyeden bağımsız: seçici gizli.
+  await expect(page.locator('[data-alan="seviye-secici"]')).toHaveCount(0);
+});
+
+test('arena boş durumu arenaya götürüyor', async ({ page }) => {
+  await bosListeTaklit(page);
+  await page.goto('/lig');
+  await page.locator('[data-sekme="arena"]').click();
+
+  const bos = page.locator('[data-alan="bos-durum"]');
+  await expect(bos).toBeVisible({ timeout: 15_000 });
+  await expect(bos).toContainText('İlk podyum senin olsun');
+
+  await page.locator('[data-alan="bos-durum-eylem"]').click();
+  await expect(page).toHaveURL(/\/arena/);
 });

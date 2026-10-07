@@ -25,6 +25,7 @@ class SahteDb {
     arena_mac: [],
     arena_koltuk: [],
     arena_tur: [],
+    arena_derece: [],
   };
   from(tablo: string) {
     return new Sorgu(this, tablo);
@@ -36,6 +37,7 @@ class Sorgu {
   private islem: 'select' | 'update' | 'upsert' | 'insert' | 'delete' = 'select';
   private veri: Satir | Satir[] | null = null;
   private siralamaAlani: string | null = null;
+  private icinde: [string, unknown[]] | null = null;
 
   constructor(private db: SahteDb, private tablo: string) {}
 
@@ -48,6 +50,10 @@ class Sorgu {
   }
   order(alan: string) {
     this.siralamaAlani = alan;
+    return this;
+  }
+  in(alan: string, degerler: unknown[]) {
+    this.icinde = [alan, degerler];
     return this;
   }
   update(veri: Satir) {
@@ -71,6 +77,10 @@ class Sorgu {
     for (const [alan, deger] of this.filtreler) {
       satirlar = satirlar.filter((s) => s[alan] === deger);
     }
+    if (this.icinde) {
+      const [alan, degerler] = this.icinde;
+      satirlar = satirlar.filter((s) => degerler.includes(s[alan]));
+    }
     if (this.siralamaAlani) {
       const alan = this.siralamaAlani;
       satirlar = [...satirlar].sort((a, b) =>
@@ -83,6 +93,7 @@ class Sorgu {
   private anahtarlar(): string[] {
     if (this.tablo === 'arena_tur') return ['mac_id', 'tur_no', 'koltuk'];
     if (this.tablo === 'arena_koltuk') return ['mac_id', 'koltuk'];
+    if (this.tablo === 'arena_derece') return ['oyuncu_id'];
     return ['id'];
   }
 
@@ -292,5 +303,56 @@ describe('bekleme süresi', () => {
   it('on saniye — oyuncuyu boş ekranda tutmayacak kadar kısa', () => {
     expect(ARENA_BEKLEME_SN).toBeGreaterThan(0);
     expect(ARENA_BEKLEME_SN).toBeLessThanOrEqual(15);
+  });
+});
+
+describe('madalya tablosu', () => {
+  it('iki gerçek oyuncu varsa derece işlenir', async () => {
+    const { db, mac } = arenaKur({ gercekOyuncu: 3, turBasladiOnceMs: 60_000 * 7 });
+    await arenayiIlerlet(db, mac);
+    expect(db.tablolar.arena_derece).toHaveLength(3);
+    for (const d of db.tablolar.arena_derece!) {
+      expect(d.arena_sayisi).toBe(1);
+    }
+  });
+
+  it('bota karşı kazanılan podyum tabloya girmez', async () => {
+    // Tek gerçek oyuncu + dört bot: madalya toplanamamalı, yoksa tablo
+    // birkaç günde anlamsızlaşır.
+    const { db, mac } = arenaKur({ gercekOyuncu: 1, durum: 'bekliyor' });
+    await arenayiBaslat(db, mac);
+    const eski = new Date(Date.now() - 60_000 * 7).toISOString();
+    db.tablolar.arena_mac![0]!.tur_basladi = eski;
+    await arenayiIlerlet(db, { ...mac, tur_basladi: eski, durum: 'basladi' });
+    expect(db.tablolar.arena_derece ?? []).toHaveLength(0);
+  });
+
+  it('podyumdaki ilk üçe madalya yazılır, dördüncüye yazılmaz', async () => {
+    const { db, mac } = arenaKur({ gercekOyuncu: 4, turBasladiOnceMs: 60_000 * 7 });
+    const simdi = new Date().toISOString();
+    // 1. koltuk en yakın, 4. koltuk en uzak.
+    db.tablolar.arena_tur = [1, 2, 3, 4].map((k) => ({
+      mac_id: mac.id,
+      tur_no: 1,
+      koltuk: k,
+      uzaklik: k * 5,
+      kilitli: false,
+      bildirildi: simdi,
+    }));
+    await arenayiIlerlet(db, mac);
+
+    const toplam = db.tablolar.arena_derece!.reduce(
+      (t, d) => t + Number(d.altin) + Number(d.gumus) + Number(d.bronz),
+      0,
+    );
+    expect(toplam).toBe(3);
+  });
+
+  it('arena iki kez bitirilse bile madalya bir kez yazılır', async () => {
+    const { db, mac } = arenaKur({ gercekOyuncu: 2, turBasladiOnceMs: 60_000 * 7 });
+    await arenayiIlerlet(db, mac);
+    const ilk = db.tablolar.arena_derece!.map((d) => d.arena_sayisi);
+    await arenayiIlerlet(db, mac);
+    expect(db.tablolar.arena_derece!.map((d) => d.arena_sayisi)).toEqual(ilk);
   });
 });

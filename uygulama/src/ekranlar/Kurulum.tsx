@@ -197,7 +197,11 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
             <span className="min-w-0 flex-1">
               <span className="block text-base font-black text-cyan-200">Düello</span>
               <span className="block text-[11px] leading-snug text-cyan-200/70">
-                Rakiple 5 tur — tam isabeti ilk bulan turu alır
+                {/* Seviye düellonun kendi ekranında seçiliyor. Burada
+                    "Normal seviyede düello" demek yanıltıcıydı: düğme
+                    seviye seçicinin üstünde duruyor, oyuncu henüz
+                    seviyeyi seçmemiş oluyordu. */}
+                Rakiple 5 tur · seviyeyi orada seçersin
               </span>
             </span>
             <span aria-hidden="true" className="text-cyan-300">→</span>

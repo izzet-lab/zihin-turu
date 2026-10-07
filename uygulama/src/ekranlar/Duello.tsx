@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@zihinturu/cekirdek';
 import { turKur, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
   duelloAra,
@@ -39,13 +40,37 @@ import {
 const YOKLAMA_MS = 2000;
 
 interface Props {
+  /** Kurulum'dan gelen başlangıç seviyesi; oyuncu burada değiştirebilir. */
   seviye: string;
   girisYapildiMi: boolean;
   onCik: () => void;
   onGirisAc: () => void;
 }
 
-export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Props) {
+export default function Duello({
+  seviye: baslangicSeviyesi,
+  girisYapildiMi,
+  onCik,
+  onGirisAc,
+}: Props) {
+  /*
+   * SEVİYE DÜELLONUN KENDİ SEÇİMİ
+   *
+   * Önce Kurulum ekranında seçili olan seviye sessizce kullanılıyordu.
+   * Ama düello düğmesi seviye seçicinin ÜSTÜNDE duruyor; oyuncu daha
+   * seviyeyi seçmeden düelloya giriyor ve hangi seviyede oynadığını
+   * bilmiyordu. Artık önce seviye, sonra rakip — sıralama da ekranda
+   * böyle.
+   */
+  const acikSeviyeListesi = useMemo(() => acikSeviyeler(), []);
+  const [seviye, setSeviye] = useState(() =>
+    // Adres satırından kilitli bir seviye gelebilir; düello, tek kişilik
+    // ilerlemeyi atlamanın yolu olmamalı. Kilitliyse açık olan en üst
+    // seviyeye düşülür.
+    acikSeviyeListesi.includes(baslangicSeviyesi)
+      ? baslangicSeviyesi
+      : (acikSeviyeListesi[acikSeviyeListesi.length - 1] ?? 'cocuk'),
+  );
   const [mac, setMac] = useState<DuelloMac | null>(null);
   const [bekleyenSn, setBekleyenSn] = useState(0);
   const [hata, setHata] = useState<string | null>(null);
@@ -63,6 +88,19 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   const [kilitliUzaklik, setKilitliUzaklik] = useState<number | null>(null);
   /** Kilidin ait olduğu maç. Maç değişince kilit düşer (aşağıdaki etki). */
   const [kilitliMac, setKilitliMac] = useState<string | null>(null);
+  /**
+   * Oyuncunun kendi adım zinciri.
+   *
+   * Bekleme ekranında gösteriliyor: "1090 fark" tek başına soğuk bir
+   * sayı; oyuncu neyi nasıl kurduğunu görünce hem bekleme boş geçmiyor
+   * hem nerede saptığını anlıyor.
+   *
+   * Yalnızca KENDİ adımları. Rakibinki ne burada var ne sunucudan
+   * geliyor (kural 8).
+   */
+  const [kilitliAdimlar, setKilitliAdimlar] = useState<
+    { a: number; b: number; islem: string; sonuc: number }[]
+  >([]);
   // Özel oda: kod kurulunca burada durur, arkadaş katılana kadar beklenir.
   const [odaKodu, setOdaKodu] = useState<string | null>(null);
   const [katilKodu, setKatilKodu] = useState('');
@@ -230,6 +268,7 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
       if (kilit) {
         setKilitliTur(m.aktifTur);
         setKilitliMac(m.id);
+        setKilitliAdimlar(adimlar);
       }
       duelloGonder(m.id, m.aktifTur, adimlar, kilit)
         .then((sonuc) => {
@@ -427,10 +466,47 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
   if (!mac && kip === 'secim' && acilisKontrolu) {
     return (
       <Cerceve baslik="Düello">
+        {/* ÖNCE SEVİYE, SONRA RAKİP.
+            Kilitli seviyeler burada da kilitli: düello, tek kişilik
+            ilerlemeyi atlamanın yolu olmamalı. */}
+        <div className="text-left">
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+            Seviye
+          </div>
+          <div className="grid grid-cols-2 gap-2.5" data-alan="duello-seviyeler">
+            {SEVIYE_LISTESI.map((sv) => {
+              const kilitli = !acikSeviyeListesi.includes(sv.anahtar);
+              const secili = seviye === sv.anahtar;
+              return (
+                <button
+                  key={sv.anahtar}
+                  data-seviye={sv.anahtar}
+                  disabled={kilitli}
+                  onClick={() => setSeviye(sv.anahtar)}
+                  aria-pressed={secili}
+                  className={`min-h-[56px] rounded-xl border-2 px-3 py-2 text-left transition ${
+                    kilitli
+                      ? 'border-slate-800 bg-slate-900/40 text-slate-600'
+                      : secili
+                        ? 'border-cyan-300 bg-cyan-300/15 text-cyan-100'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:border-slate-600'
+                  }`}
+                >
+                  <span className="block text-sm font-black">
+                    {kilitli && '🔒 '}
+                    {sv.etiket}
+                  </span>
+                  <span className="block text-[11px] opacity-70">{sv.altEtiket}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <button
           onClick={() => setKip('rastgele')}
           data-alan="duello-rastgele"
-          className="min-h-[56px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[56px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
         >
           Rakip bul
         </button>
@@ -653,6 +729,26 @@ export default function Duello({ seviye, girisYapildiMi, onCik, onGirisAc }: Pro
             </span>
           </div>
         </div>
+
+        {/* Kendi zincirin — nasıl ulaştığını gösterir. */}
+        {kilitliAdimlar.length > 0 && (
+          <div
+            className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-left"
+            data-alan="kilit-zincir"
+          >
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              Senin yolun · hedef {(tur?.veri as { hedef: number } | undefined)?.hedef}
+            </div>
+            <ul className="space-y-1 text-sm tabular-nums text-slate-300">
+              {kilitliAdimlar.map((ad, i) => (
+                <li key={i}>
+                  {ad.a} {ad.islem} {ad.b} ={' '}
+                  <span className="font-bold text-slate-100">{ad.sonuc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-5 text-sm font-bold text-slate-300" data-alan="kilit-sayac">
           {kalanSn > 0 ? `Tur süresi: ${kalanSn} sn` : 'Tur kapanıyor…'}

@@ -87,6 +87,20 @@ test.describe('cevabı kilitleme', () => {
 
     const baglam = await browser.newContext();
     await girisYap(baglam, TEST_EPOSTALAR[0]!);
+    // Usta kilitli gelirse düello ekranı açık bir seviyeye düşer ve
+    // uzun sayılar hiç görünmez; test anlamsızlaşır. Seviyeler açılıyor.
+    await baglam.addInitScript(() => {
+      window.localStorage.setItem(
+        'zihinturu.v2',
+        JSON.stringify({
+          surum: 2,
+          seri: { son: null, gun: 0, enUzun: 0 },
+          tam: 0,
+          gunluk: {},
+          acikSeviyeler: ['cocuk', 'normal', 'zor', 'usta'],
+        }),
+      );
+    });
     const sayfa = await baglam.newPage();
 
     // Usta seviyesi beş haneli hedefler ve altı haneye kadar ara
@@ -114,6 +128,68 @@ test.describe('cevabı kilitleme', () => {
       .locator('[data-alan="hedef"]')
       .evaluate((e) => e.scrollWidth > e.clientWidth + 1);
     expect(hedefTasiyor).toBe(false);
+
+    await baglam.close();
+  });
+});
+
+test.describe('düello seviye seçimi', () => {
+  test.skip(!testHesabiVarMi(), '.env.test yok — test hesapları tanımlı değil');
+
+  test('önce seviye, sonra rakip — kilitli seviye seçilemez', async ({ browser }) => {
+    test.setTimeout(120_000);
+
+    const baglam = await browser.newContext();
+    await girisYap(baglam, TEST_EPOSTALAR[0]!);
+    // Yeni oyuncu gibi: yalnızca Isınma açık.
+    await baglam.addInitScript(() => {
+      window.localStorage.setItem(
+        'zihinturu.v2',
+        JSON.stringify({
+          surum: 2,
+          seri: { son: null, gun: 0, enUzun: 0 },
+          tam: 0,
+          gunluk: {},
+          acikSeviyeler: ['cocuk'],
+        }),
+      );
+    });
+    const sayfa = await baglam.newPage();
+
+    await duelloyuTemizle(sayfa);
+
+    // Seviye seçici "Rakip bul"dan ÖNCE geliyor.
+    const seviyeler = sayfa.locator('[data-alan="duello-seviyeler"]');
+    await expect(seviyeler).toBeVisible();
+    await expect(seviyeler.locator('[data-seviye="cocuk"]')).toBeEnabled();
+    await expect(seviyeler.locator('[data-seviye="usta"]')).toBeDisabled();
+
+    await baglam.close();
+  });
+
+  test('adres satırından kilitli seviye zorlanamaz', async ({ browser }) => {
+    test.setTimeout(120_000);
+
+    const baglam = await browser.newContext();
+    await girisYap(baglam, TEST_EPOSTALAR[0]!);
+    await baglam.addInitScript(() => {
+      window.localStorage.setItem(
+        'zihinturu.v2',
+        JSON.stringify({
+          surum: 2,
+          seri: { son: null, gun: 0, enUzun: 0 },
+          tam: 0,
+          gunluk: {},
+          acikSeviyeler: ['cocuk'],
+        }),
+      );
+    });
+    const sayfa = await baglam.newPage();
+
+    // Kilitli seviye adresten isteniyor; açık olana düşmeli.
+    await duelloyuTemizle(sayfa, 'usta');
+    const secili = sayfa.locator('[data-alan="duello-seviyeler"] [aria-pressed="true"]');
+    await expect(secili).toContainText('Isınma');
 
     await baglam.close();
   });

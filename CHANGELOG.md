@@ -3,6 +3,54 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Faz 5 katman 3: arena arayüzü — Faz 5 oynanabilir
+
+Arenanın görünen yüzü. Artık baştan sona oynanıyor.
+
+### Tahta üçüncü kez yazılmadı
+
+Oyun ekranı artık düello ve arena kiplerinin ikisini de destekliyor.
+Taşlar, animasyonlar, işlem seçimi, süre çubuğu ve taşma düzeltmesi tek
+kod. Üçüncü bir kopya çıkarılsaydı bir düzeltmenin üç yerden birinde
+unutulması kesindi.
+
+Arena kipinde üstte **beş yarışçının canlı listesi** var: baş harf
+dairesi, ad, puan ve hedefe uzaklık. Liste anlık uzaklığa göre
+sıralanıyor — kim önde, bir bakışta görünüyor. Yayınlanan tek bilgi yine
+uzaklık (kural 8).
+
+### Ekranın dört hâli
+
+Seviye seçimi (önce seviye, sonra yarış), koltukların dolmasını bekleme,
+yarış ve podyum. Podyumda ilk üçe madalya, kendi satırın vurgulu;
+yarıştan çıkan en sonda ve madalyasız.
+
+### Canlı yayın yerine yoklama
+
+Düelloda rakibin uzaklığı için Realtime aboneliği var. Arenada durum
+çağrısı zaten iki saniyede bir yapılmak **zorunda** — yarışı ilerleten
+de o çağrı. Aynı veriyi bir de ayrı kanaldan dinlemek ikinci bir
+doğruluk kaynağı yaratmaktan başka işe yaramazdı.
+
+### Testlerin bulduğu iki hata
+
+1. **Bitmiş arena yeniden açılınca podyum boş geliyordu.** Podyum
+   yalnızca arenayı o an bitiren istekte hesaplanıyordu; sonradan açan
+   oyuncu boş bir liste görüyordu.
+2. **Bitmiş arena "sürüyor" sayılabiliyordu** ve oyuncu podyum
+   ekranında kilitli kalıyordu. Durum süzgeci artık gömülü sorguya
+   bırakılmıyor, açıkça uygulanıyor.
+
+### Testler
+
+4 yeni e2e senaryosu: iki oyuncunun katılması ve boş koltukların botla
+dolması, cevabın kilitlenmesi, misafir kapısı, kurulumdaki arena
+düğmesi. 360 birim + 32 e2e testi yeşil.
+
+### Faz 5'te kalan
+
+Arena sıralaması (lig tablosu), kupa ve rozetler, FCM bildirimleri.
+
 ## 2026-10-07 - Faz 5 katman 2: arena sunucusu
 
 Arenanın sunucu tarafı kuruldu. Üç Edge Function canlıda, göç uygulandı.

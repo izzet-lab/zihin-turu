@@ -79,6 +79,29 @@ interface Props {
     /** Oyuncu hedefe yaklaştıkça çağrılır; sunucuya bildirim buradan gider. */
     onIlerleme: (adimlar: { a: number; b: number; islem: string; sonuc: number }[]) => void;
   } | null;
+  /**
+   * Arena bilgisi. Doluysa ekran arena kipine geçer: üstte tur ve beş
+   * yarışçının canlı durumu; joker yok.
+   *
+   * Düelloyla aynı tahtayı paylaşıyor — tahtayı üçüncü kez yazmak bir
+   * düzeltmenin üç yerden birinde unutulması demek olurdu.
+   */
+  arena?: {
+    turNo: number;
+    toplamTur: number;
+    yarisanlar: {
+      koltuk: number;
+      ad: string;
+      botMu: boolean;
+      benMiyim: boolean;
+      puan: number;
+      ayrildi: boolean;
+      /** Hedefe uzaklığı; bilinmiyorsa null (kural 8: tek bilgi bu). */
+      uzaklik: number | null;
+    }[];
+    onIlerleme: (adimlar: { a: number; b: number; islem: string; sonuc: number }[]) => void;
+    onCik?: () => void;
+  } | null;
 }
 
 /*
@@ -120,7 +143,20 @@ const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
   { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
 ];
 
-export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYardim, duello = null }: Props) {
+export default function Oyun({
+  tur,
+  seviye,
+  sure,
+  mod,
+  oturumPuan,
+  onBitti,
+  onYardim,
+  duello = null,
+  arena = null,
+}: Props) {
+  // Düello ve arena aynı yarış davranışını paylaşıyor: joker yok,
+  // ilerleme sunucuya bildiriliyor, ekran dikeyde yayılıyor.
+  const yaris = duello ?? arena;
   const veri = tur.veri as SayiVeri;
   const hedef = veri.hedef;
 
@@ -156,7 +192,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   const [reklamIzlendi, setReklamIzlendi] = useState(false);
   // Düelloda joker YOK: reklam izleyebilen ya da hak biriktiren oyuncu
   // rakibine karşı avantaj kazanamamalı (kural 9'un rekabet karşılığı).
-  const jokerVarMi = duello == null;
+  const jokerVarMi = yaris == null;
   const reklamGosterilebilir =
     jokerVarMi && mod !== 'gunun' && jokerHakki <= 0 && !reklamIzlendi && nativeMi();
 
@@ -305,12 +341,12 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
   // çünkü hedeften uzaklaşan hamleler rakibin göstergesini zıplatırdı.
   const enIyiBildirilen = useRef<number | null>(null);
   useEffect(() => {
-    if (!duello || bittiRef.current) return;
+    if (!yaris || bittiRef.current) return;
     if (durum.gecmis.length === 0) return;
     const onceki = enIyiBildirilen.current;
     if (onceki != null && yakinFark >= onceki) return;
     enIyiBildirilen.current = yakinFark;
-    duello.onIlerleme(yakinTas.yol);
+    yaris.onIlerleme(yakinTas.yol);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yakinFark, durum.gecmis.length]);
 
@@ -381,13 +417,17 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           dağıtılsın diye kapsayıcı ekran yüksekliğini dolduruyor. */}
       <div
         className={`mx-auto flex w-full max-w-md flex-col ${
-          duello ? 'min-h-[calc(100dvh-6rem)]' : ''
+          yaris ? 'min-h-[calc(100dvh-6rem)]' : ''
         }`}
       >
         {/* pr-14: sabit hamburger menü sağ üstte duruyor; bu satır tam
             genişlik olsaydı menü metnin üstüne biner ve yazıyı keserdi. */}
         <div className="flex items-center justify-between pr-14">
-          {duello ? (
+          {arena ? (
+            <div className="text-xs font-bold text-slate-400" data-alan="arena-gostergesi">
+              ⚡ Arena · Tur {arena.turNo}/{arena.toplamTur}
+            </div>
+          ) : duello ? (
             <div className="text-xs font-bold text-slate-400" data-alan="duello-gostergesi">
               Tur {duello.turNo}/{duello.toplamTur} ·{' '}
               <span className="text-cyan-300">{duello.skorBen}</span>
@@ -447,6 +487,66 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           </div>
         )}
 
+        {/* ARENA — beş yarışçının canlı durumu.
+            Yayınlanan tek bilgi uzaklık (kural 8); kimin hangi taşı
+            kullandığı asla gelmez. Sıralama anlık uzaklığa göre: kim
+            önde, bir bakışta görünsün. */}
+        {arena && (
+          <div
+            className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"
+            data-alan="arena-yarisanlar"
+          >
+            <ul className="space-y-1.5">
+              {[...arena.yarisanlar]
+                .sort((a, b) => {
+                  if (a.ayrildi !== b.ayrildi) return a.ayrildi ? 1 : -1;
+                  const ua = a.uzaklik ?? Infinity;
+                  const ub = b.uzaklik ?? Infinity;
+                  if (ua !== ub) return ua - ub;
+                  return a.koltuk - b.koltuk;
+                })
+                .map((y) => (
+                  <li
+                    key={y.koltuk}
+                    data-alan="arena-yarisci"
+                    data-ben={y.benMiyim ? '1' : undefined}
+                    className={`flex items-center gap-2 text-xs ${
+                      y.ayrildi ? 'opacity-40' : ''
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
+                        y.benMiyim ? 'bg-cyan-300/25 text-cyan-100' : 'bg-slate-700 text-slate-200'
+                      }`}
+                    >
+                      {y.ad.trim().charAt(0).toLocaleUpperCase('tr')}
+                    </span>
+                    <span
+                      className={`min-w-0 flex-1 truncate font-bold ${
+                        y.benMiyim ? 'text-cyan-200' : 'text-slate-300'
+                      }`}
+                    >
+                      {y.benMiyim ? 'Sen' : y.ad}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-slate-500">{y.puan} puan</span>
+                    <span className="w-24 shrink-0 text-right font-bold">
+                      {y.ayrildi ? (
+                        <span className="text-slate-600">çıktı</span>
+                      ) : y.uzaklik == null ? (
+                        <span className="text-slate-600">—</span>
+                      ) : y.uzaklik === 0 ? (
+                        <span className="text-amber-300">tam isabet</span>
+                      ) : (
+                        <span className="text-slate-300">{y.uzaklik} fark</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+
         {/* Hedef + en yakın — ikisi de uzun olabildiği için min-w-0 ve
             gap: yan yana sıkışıp üst üste binmesinler. */}
         <div className="mt-1 flex items-end justify-between gap-3">
@@ -501,7 +601,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         {/* Taş rafı */}
         <div
           ref={rafRef}
-          className={`grid grid-cols-4 gap-2.5 ${duello ? 'mt-7' : 'mt-5'}`}
+          className={`grid grid-cols-4 gap-2.5 ${yaris ? 'mt-7' : 'mt-5'}`}
           data-alan="raf"
         >
           {durum.taslar.map((t) => {
@@ -518,8 +618,8 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
                 className={`overflow-hidden rounded-xl border px-1 font-black tabular-nums leading-none transition active:scale-95 ${
-                  duello ? 'min-h-[76px]' : 'min-h-[64px]'
-                } ${rakamBoyu(t.deger, !!duello)} ${
+                  yaris ? 'min-h-[76px]' : 'min-h-[64px]'
+                } ${rakamBoyu(t.deger, !!yaris)} ${
                   secili
                     ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
                     : uretilmis
@@ -658,13 +758,15 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
         {/* Maçtan çık — düelloda, alt eylemlerin hemen üstünde.
             Önce Oyun'un DIŞINA konmuştu ve ekranın altında kesik
             görünüyordu; artık sayfanın kendi akışında. */}
-        {duello?.onCik && (
+        {yaris?.onCik && (
           <button
-            onClick={duello.onCik}
-            data-alan="duello-terk"
+            onClick={yaris.onCik}
+            // Kip adını taşır: testler ve ekran okuyucular hangi
+            // yarıştan çıkıldığını ayırt edebilsin.
+            data-alan={arena ? 'arena-terk' : 'duello-terk'}
             className="zt-dokunma-alani mt-3 self-center text-xs font-bold text-slate-600 hover:text-slate-400"
           >
-            Maçtan çık
+            {arena ? 'Yarıştan çık' : 'Maçtan çık'}
           </button>
         )}
 
@@ -691,7 +793,7 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
             {/* Düelloda "Bitir" yanıltıcıydı: tur senin bitirmenle
                 kapanmıyor, iki taraf da cevabını verince ya da süre
                 dolunca kapanıyor. Düğme artık ne yaptığını söylüyor. */}
-            {duello ? 'Cevabı kilitle' : 'Bitir'}
+            {yaris ? 'Cevabı kilitle' : 'Bitir'}
           </button>
         </div>
       </div>

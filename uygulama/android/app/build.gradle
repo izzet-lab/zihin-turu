@@ -70,6 +70,30 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+/*
+ * R8 EŞLEME DOSYASININ CRASHLYTICS'E YÜKLENMESİ
+ *
+ * VARSAYILAN AÇIK: yüklenmezse çökme raporları okunamaz hâle gelir
+ * (satır numaraları karışık harflere döner).
+ *
+ * Ama bu adım AĞA bağlı ve ağ kapalıyken ya da TLS araya girdiğinde
+ * derlemenin TAMAMINI düşürüyordu — paket derlenmiş olduğu hâlde elde
+ * hiçbir şey kalmıyordu. Artık kapatılabilir:
+ *
+ *   ./paket-uret.sh --yuklemesiz
+ *
+ * Kapatılınca eşleme dosyası yine diske yazılır ve sonradan elle
+ * yüklenebilir; betik yolunu ekrana basıyor.
+ *
+ * Görev adıyla kapatılıyor çünkü Crashlytics eklentisi bu dosyanın
+ * SONUNDA uygulanıyor; `android { }` değerlendirilirken eklentinin
+ * ayar bloğu henüz tanımlı değil.
+ */
+if (project.hasProperty('krashlyticsYuklemeKapali')) {
+    tasks.matching { it.name.startsWith('uploadCrashlyticsMappingFile') }
+         .configureEach { it.enabled = false }
+}
+
 // google-services.json varsa Firebase eklentileri devreye girer.
 // Dosya yoksa uygulama yine derlenir; Firebase özellikleri sessizce kapalı kalır.
 // Dosya Firebase konsolundan indirilip android/app/ içine konur (repoya girmez).

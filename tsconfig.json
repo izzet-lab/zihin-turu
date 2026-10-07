@@ -18,7 +18,8 @@
     "paths": {
       "@zihinturu/cekirdek": ["paketler/cekirdek/src/index.ts"],
       "@zihinturu/oyun-sayi": ["paketler/oyun-sayi/src/index.ts"],
-      "@zihinturu/oyun-kelime": ["paketler/oyun-kelime/src/index.ts"]
+      "@zihinturu/oyun-kelime": ["paketler/oyun-kelime/src/index.ts"],
+      "@zihinturu/oyun-kelime/sozluk-verisi": ["paketler/oyun-kelime/veri/kelimeler.ts"]
     }
   },
   "include": ["paketler/*/src/**/*", "uygulama/src/**/*", "testler/**/*"]

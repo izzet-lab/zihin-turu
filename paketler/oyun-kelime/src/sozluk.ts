@@ -9,11 +9,14 @@
  * cevaplayan küçük bir arayüz var; listeyi kim verirse versin oyun aynı
  * çalışır.
  *
- * ⚠️ SÖZLÜK KAYNAĞI HENÜZ SEÇİLMEDİ
- * Aşağıdaki liste GEÇİCİ: testlerin ve geliştirmenin yürümesi için
- * konmuş birkaç yüz kelime. Yayına çıkacak liste bir lisans kararı
- * gerektiriyor (TDK sözlüğü telifli). Karar verilince yalnızca bu
- * dosyanın verisi değişecek, oyun mantığı değişmeyecek.
+ * SÖZLÜK KAYNAĞI: ZEMBEREK (Apache License 2.0)
+ * TDK sözlüğü telifli olduğu için kullanılamadı. Zemberek'in Türkçe
+ * kök sözlüğü açık lisanslı ve ticari kullanıma uygun; tek şartı
+ * kaynağı belirtmek. Lisans metni `veri/ZEMBEREK-LISANS.txt` içinde.
+ *
+ * Liste `araclar/kelime-listesi-uret.mjs` ile üretiliyor: özel adlar,
+ * kısaltmalar, ünlemler ve çok kelimeli maddeler ayıklanıyor, düzenli
+ * çoğullar ünlü uyumuna göre ekleniyor. Yaklaşık 50 bin kelime.
  */
 
 /** Oyunun sözlükten istediği tek şey. */
@@ -69,7 +72,7 @@ export function kumeSozluk(kelimeler: Iterable<string>): Sozluk {
 }
 
 /**
- * GEÇİCİ başlangıç listesi.
+ * Küçük yedek liste — sözlük yüklenemezse oyun yine de açılsın diye.
  *
  * Amacı oyunu çalıştırmak ve testleri beslemek; gerçek sözlüğün yerini
  * tutmaz. Uzunluk dağılımı bilerek geniş: harf havuzu kurulurken her
@@ -103,5 +106,17 @@ export const BASLANGIC_KELIMELER: readonly string[] = [
   'aydınlık', 'sessizlik', 'gürültü', 'kalabalık', 'yalnızlık',
 ];
 
-/** Geçici başlangıç sözlüğü. Yayın öncesi gerçek listeyle değişecek. */
+/** Yedek sözlük — yalnızca tam liste yüklenemediğinde kullanılır. */
 export const baslangicSozlugu: Sozluk = kumeSozluk(BASLANGIC_KELIMELER);
+
+/**
+ * Tam Türkçe sözlük — satır satır metinden kurulur.
+ *
+ * NEDEN AYRI MODULDEN GELİYOR
+ * Liste yarım megabayt; sayı turunu oynayan birinin bunu indirmesi
+ * gereksiz. Ayrı modülde durunca paketleyici onu ayrı bir parçaya
+ * koyabiliyor ve yalnızca kelime turu açıldığında yükleniyor.
+ */
+export function tamSozlukKur(metin: string): Sozluk {
+  return kumeSozluk(metin.split('\n'));
+}

@@ -137,6 +137,10 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
       tur_no: turNo,
       taraf: 'b',
       uzaklik,
+      // Bot KİLİTLİ yazılır: hamlesi tek seferlik, sonradan
+      // iyileştirmiyor. Böylece insan oyuncu cevabını kilitlediğinde
+      // beklenecek kimse kalmıyor ve tur hemen kapanıyor.
+      kilitli: true,
       bildirildi: new Date(Date.parse(mac.tur_basladi) + plan.gecikmeMs).toISOString(),
     },
     { onConflict: 'mac_id,tur_no,taraf' },
@@ -163,7 +167,7 @@ export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
 
     const { data: tumSatirlar } = await db
       .from('duello_tur')
-      .select('tur_no, taraf, uzaklik, bildirildi')
+      .select('tur_no, taraf, uzaklik, kilitli, bildirildi')
       .eq('mac_id', guncelMac.id)
       .order('bildirildi', { ascending: true });
 
@@ -177,6 +181,18 @@ export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
 
     const doldu = turSuresiDoldu(Date.parse(guncelMac.tur_basladi), simdiMs, sure);
 
+    // İKİ TARAF DA KİLİTLEDİYSE TUR BİTER.
+    //
+    // Kural değişmiyor: yaklaşık cevap turu tek başına kapatmaz, tam
+    // isabet kapatır. Ama iki taraf da "cevabım bu" dediyse beklenecek
+    // kimse kalmıyor. Önce böyle değildi: "Bitir"e basan oyuncu, süre
+    // dolana kadar değişmeyen bir ekrana bakıp oyunu bozuk sanıyordu.
+    const ikisiDeKilitli =
+      satirlar.filter(
+        (t: { tur_no: number; kilitli?: boolean }) =>
+          t.tur_no === guncelMac.aktif_tur && t.kilitli === true,
+      ).length >= 2;
+
     const turlar: TurKaydi[] = [];
     for (let n = 1; n <= guncelMac.aktif_tur; n++) {
       const bildirimler = (satirlar ?? [])
@@ -187,8 +203,9 @@ export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
         }));
       turlar.push({
         bildirimler,
-        // Geçmiş turlar kapanmıştır; aktif tur yalnızca süresi dolduysa.
-        sureDoldu: n < guncelMac.aktif_tur ? true : doldu,
+        // Geçmiş turlar kapanmıştır; aktif tur ya süresi dolduğu için
+        // ya da iki taraf da cevabını kilitlediği için kapanır.
+        sureDoldu: n < guncelMac.aktif_tur ? true : doldu || ikisiDeKilitli,
       });
     }
 
@@ -239,9 +256,14 @@ export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
     const sonrakiTur = guncelMac.aktif_tur + 1;
     const oncekiBaslangicMs = Date.parse(guncelMac.tur_basladi);
     const simdiIso = new Date().toISOString();
-    const yeniBaslangic = turSuresiDoldu(oncekiBaslangicMs, Date.now(), sure)
-      ? new Date(oncekiBaslangicMs + sure * 1000).toISOString()
-      : simdiIso;
+    // Süre dolduğu için kapandıysa zaman çizgisi korunur (sıradaki tur
+    // geçmişte başlamış sayılır). Tam isabetle ya da kilitle erken
+    // kapandıysa sıradaki tur ŞİMDİ başlar — iki oyuncu da ekranda,
+    // beklemeleri için bir sebep yok.
+    const yeniBaslangic =
+      turSuresiDoldu(oncekiBaslangicMs, Date.now(), sure) && !ikisiDeKilitli
+        ? new Date(oncekiBaslangicMs + sure * 1000).toISOString()
+        : simdiIso;
     await db
       .from('duello_mac')
       .update({

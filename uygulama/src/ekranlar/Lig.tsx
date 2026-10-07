@@ -5,7 +5,7 @@
  * İlk 100 + kendi sıra hep görünür
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@zihinturu/oyun-sayi';
 import {
@@ -71,7 +71,22 @@ export default function Lig({ oyuncuId }: Props) {
   /** Son 24 saat: aciliyet hissi bugün oynamayı tetikler. */
   const sonGun = kalanSn > 0 && kalanSn <= 24 * 3600;
 
+  /*
+   * SORGU YARIŞI
+   *
+   * Ekran açılırken oyuncu kimliği henüz bilinmiyor (oturum asenkron
+   * çözülüyor), bu yüzden ilk sorgu kimliksiz gidiyor; kimlik gelince
+   * ikinci sorgu atılıyor. İki yanıt yarışa girdiğinde eski yanıt
+   * yenisini ezebiliyordu — sonuç: kendi satırın vurgulanmıyor,
+   * sebepsiz yere.
+   *
+   * Her sorguya bir sıra numarası veriliyor; yalnızca EN SON sorgunun
+   * yanıtı ekrana yazılıyor.
+   */
+  const sonSorguRef = useRef(0);
+
   async function sorguYap() {
+    const sira = ++sonSorguRef.current;
     setYukleniyor(true);
     try {
       const tarih = bugun();
@@ -90,10 +105,12 @@ export default function Lig({ oyuncuId }: Props) {
         result = await antrenmanLig(haftalikAnahtar(), 'sayi', seviye, oyuncuId);
       }
 
+      // Bu yanıt geldiğinde daha yeni bir sorgu başlamışsa yok sayılır.
+      if (sira !== sonSorguRef.current) return;
       setSatirlar(result.satirlar);
       setKendi(result.kendi ?? null);
     } finally {
-      setYukleniyor(false);
+      if (sira === sonSorguRef.current) setYukleniyor(false);
     }
   }
 

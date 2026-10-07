@@ -54,8 +54,16 @@ Deno.serve(async (req: Request) => {
       mac_id: string;
       tur_no: number;
       adimlar: Adim[];
+      /**
+       * Oyuncu "cevabım bu" dedi mi?
+       *
+       * Yaklaşık cevap turu tek başına kapatmaz (kural değişmedi), ama
+       * iki taraf da kilitlediyse beklenecek kimse kalmaz ve tur biter.
+       * Kilit geri alınmaz: bir kez kilitlenen tur açılmaz.
+       */
+      kilit?: boolean;
     };
-    const { mac_id, tur_no, adimlar } = body;
+    const { mac_id, tur_no, adimlar, kilit } = body;
 
     if (!mac_id || typeof mac_id !== 'string') return hata('Maç kimliği gerekli.', 400);
     if (!Number.isInteger(tur_no) || tur_no < 1 || tur_no > DUELLO_TUR_SAYISI) {
@@ -90,7 +98,7 @@ Deno.serve(async (req: Request) => {
     // gitmemeli (çekirdekteki kuralın veritabanı karşılığı).
     const { data: mevcut } = await supabase
       .from('duello_tur')
-      .select('uzaklik')
+      .select('uzaklik, kilitli')
       .eq('mac_id', mac_id)
       .eq('tur_no', tur_no)
       .eq('taraf', taraf)
@@ -105,6 +113,9 @@ Deno.serve(async (req: Request) => {
         tur_no,
         taraf,
         uzaklik: yeniUzaklik,
+        // Kilit yalnızca açılır, kapanmaz: oyuncu cevabını kilitledikten
+        // sonra gelen bir ilerleme bildirimi kilidi geri alamaz.
+        kilitli: mevcut?.kilitli === true || kilit === true,
         bildirildi: new Date().toISOString(),
       },
       { onConflict: 'mac_id,tur_no,taraf' },

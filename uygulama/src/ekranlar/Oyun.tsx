@@ -81,6 +81,32 @@ interface Props {
   } | null;
 }
 
+/*
+ * SAYI TAŞMASI
+ *
+ * Yazı boyu sabit olduğu için Usta seviyesinde beş-altı haneli ara
+ * sonuçlar taşın dışına taşıyor, ekran bozuluyordu (26347 gibi). Boyut
+ * artık basamak sayısına göre küçülüyor: kısa sayı büyük ve okunaklı
+ * kalıyor, uzun sayı kutuya sığıyor.
+ */
+function rakamBoyu(deger: number | string, buyuk: boolean): string {
+  const hane = String(deger).length;
+  if (hane <= 2) return buyuk ? 'text-3xl' : 'text-2xl';
+  if (hane === 3) return buyuk ? 'text-2xl' : 'text-xl';
+  if (hane === 4) return buyuk ? 'text-xl' : 'text-lg';
+  if (hane === 5) return 'text-base';
+  return 'text-sm';
+}
+
+/** Hedef ve "en yakın" gösterimleri için aynı mantık, daha büyük ölçekte. */
+function basligBoyu(deger: number | string): string {
+  const hane = String(deger).length;
+  if (hane <= 3) return 'text-5xl';
+  if (hane === 4) return 'text-4xl';
+  if (hane === 5) return 'text-3xl';
+  return 'text-2xl';
+}
+
 const ISLEMLER: { op: Islem; ad: string }[] = [
   { op: '+', ad: 'topla' },
   { op: '−', ad: 'çıkar' },
@@ -421,15 +447,19 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
           </div>
         )}
 
-        {/* Hedef + en yakın */}
-        <div className="mt-1 flex items-end justify-between">
-          <div>
+        {/* Hedef + en yakın — ikisi de uzun olabildiği için min-w-0 ve
+            gap: yan yana sıkışıp üst üste binmesinler. */}
+        <div className="mt-1 flex items-end justify-between gap-3">
+          <div className="min-w-0">
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Hedef</div>
-            <div className="text-5xl font-black leading-none text-white" data-alan="hedef">
+            <div
+              className={`font-black leading-none tabular-nums text-white ${basligBoyu(hedef)}`}
+              data-alan="hedef"
+            >
               {hedef}
             </div>
           </div>
-          <div className="text-right">
+          <div className="min-w-0 text-right">
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">En yakın</div>
             {durum.gecmis.length === 0 ? (
               <>
@@ -440,7 +470,9 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
               <>
                 <div
                   data-alan="en-yakin"
-                  className={`text-3xl font-black leading-none ${tamIsabet ? 'text-cyan-300' : 'text-slate-300'}`}
+                  className={`font-black leading-none tabular-nums ${
+                    tamIsabet ? 'text-3xl text-cyan-300' : `${rakamBoyu(yakinTas.deger, true)} text-slate-300`
+                  }`}
                 >
                   {tamIsabet ? 'Tam!' : yakinTas.deger}
                 </div>
@@ -485,9 +517,9 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
                 data-tas={t.deger}
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
-                className={`rounded-xl border font-black transition active:scale-95 ${
-                  duello ? 'min-h-[76px] text-3xl' : 'min-h-[64px] text-2xl'
-                } ${
+                className={`overflow-hidden rounded-xl border px-1 font-black tabular-nums leading-none transition active:scale-95 ${
+                  duello ? 'min-h-[76px]' : 'min-h-[64px]'
+                } ${rakamBoyu(t.deger, !!duello)} ${
                   secili
                     ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
                     : uretilmis
@@ -656,7 +688,10 @@ export default function Oyun({ tur, seviye, sure, mod, oturumPuan, onBitti, onYa
             onClick={bitir}
             className="min-h-[52px] rounded-xl bg-cyan-300 text-sm font-black text-slate-900 hover:bg-cyan-200"
           >
-            Bitir
+            {/* Düelloda "Bitir" yanıltıcıydı: tur senin bitirmenle
+                kapanmıyor, iki taraf da cevabını verince ya da süre
+                dolunca kapanıyor. Düğme artık ne yaptığını söylüyor. */}
+            {duello ? 'Cevabı kilitle' : 'Bitir'}
           </button>
         </div>
       </div>

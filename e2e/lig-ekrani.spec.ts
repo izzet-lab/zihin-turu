@@ -56,12 +56,29 @@ test('düello sekmesinde seviye seçici yok — derece seviyeden bağımsız', a
   await expect(page.locator('[data-alan="seviye-secici"]')).toHaveCount(0);
 });
 
-test('boş liste davete dönüşüyor ve düğme doğru moda götürüyor', async ({ page }) => {
-  await page.goto('/lig');
+/**
+ * Sıralama sorgularını boş döndürür.
+ *
+ * Testler önce "hiç oynanmamış bir seviye" seçiyordu; canlı veritabanı
+ * dolduğu için o varsayım bozuldu ve test kırmızıya döndü. Boş durumun
+ * kendisini sınamak istiyoruz, veritabanının o anki hâlini değil.
+ */
+async function bosListeTaklit(page: import('@playwright/test').Page) {
+  for (const tablo of ['lig_gunluk', 'lig_donem', 'lig_antrenman_hafta', 'duello_derece']) {
+    await page.route(`**/rest/v1/${tablo}*`, (yol) =>
+      yol.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '[]',
+      }),
+    );
+  }
+}
 
-  // Hiç oynanmamış bir seviye seç: boş durum çıkmalı.
+test('boş liste davete dönüşüyor ve düğme doğru moda götürüyor', async ({ page }) => {
+  await bosListeTaklit(page);
+  await page.goto('/lig');
   await page.locator('[data-sekme="gunluk"]').click();
-  await page.locator('text=Usta').first().click();
 
   const bos = page.locator('[data-alan="bos-durum"]');
   await expect(bos).toBeVisible({ timeout: 15_000 });
@@ -77,9 +94,9 @@ test('boş liste davete dönüşüyor ve düğme doğru moda götürüyor', asyn
 });
 
 test('antrenman boş durumu antrenman moduna götürüyor', async ({ page }) => {
+  await bosListeTaklit(page);
   await page.goto('/lig');
   await page.locator('[data-sekme="antrenman"]').click();
-  await page.locator('text=Usta').first().click();
 
   const dugme = page.locator('[data-alan="bos-durum-eylem"]');
   await expect(dugme).toBeVisible({ timeout: 15_000 });
@@ -87,6 +104,19 @@ test('antrenman boş durumu antrenman moduna götürüyor', async ({ page }) => 
   await dugme.click();
 
   await expect(page.locator('[data-mod="antrenman"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('düello boş durumu düelloya götürüyor', async ({ page }) => {
+  await bosListeTaklit(page);
+  await page.goto('/lig');
+  await page.locator('[data-sekme="duello"]').click();
+
+  const bos = page.locator('[data-alan="bos-durum"]');
+  await expect(bos).toBeVisible({ timeout: 15_000 });
+  await expect(bos).toContainText('İlk maçı sen yap');
+
+  await page.locator('[data-alan="bos-durum-eylem"]').click();
+  await expect(page).toHaveURL(/\/duello/);
 });
 
 test.describe('giriş yapmış oyuncu', () => {

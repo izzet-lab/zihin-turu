@@ -136,9 +136,19 @@ test.describe('rövanş, özel oda ve geri dönüş', () => {
     await expect(sayfa2.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 });
 
     // Aynı maçta olduklarının kanıtı: iki tarafta da aynı hedef görünür.
-    const hedef1 = await sayfa1.locator('[data-alan="hedef"]').textContent();
-    const hedef2 = await sayfa2.locator('[data-alan="hedef"]').textContent();
-    expect(hedef1).toBe(hedef2);
+    //
+    // İkinci oyuncu maça biraz sonra katıldığı için ekranlar bir an
+    // farklı olabilir; yoklama aralığı kadar beklenip karşılaştırılır.
+    await expect
+      .poll(
+        async () => {
+          const h1 = (await sayfa1.locator('[data-alan="hedef"]').textContent()) ?? '';
+          const h2 = (await sayfa2.locator('[data-alan="hedef"]').textContent()) ?? '';
+          return h1 !== '' && h1 === h2;
+        },
+        { timeout: 30_000 },
+      )
+      .toBe(true);
 
     await baglam1.close();
     await baglam2.close();

@@ -52,17 +52,46 @@ function depoAnahtari(): string {
   return `sb-${ref}-auth-token`;
 }
 
+/*
+ * OTURUM ÖNBELLEĞİ
+ *
+ * Her test her hesap için yeniden giriş yapıyordu. Düello testleri
+ * çoğalınca kısa sürede onlarca giriş isteği gidiyor ve Supabase bir
+ * noktada isteği düşürüyordu ("fetch failed") — ürün değil, test
+ * altyapısı kaynaklı kırmızı. Oturum artık süreç boyunca bir kez
+ * alınıp yeniden kullanılıyor.
+ */
+const oturumOnbellek = new Map<string, Record<string, unknown>>();
+
+async function oturumAl(eposta: string): Promise<Record<string, unknown>> {
+  const onbellekli = oturumOnbellek.get(eposta);
+  if (onbellekli) return onbellekli;
+
+  let sonHata = '';
+  for (let deneme = 0; deneme < 3; deneme++) {
+    try {
+      const yanit = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { apikey: ANON, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: eposta, password: test.DUELLO_TEST_PAROLA }),
+      });
+      const oturum = await yanit.json();
+      if (oturum?.access_token) {
+        oturumOnbellek.set(eposta, oturum);
+        return oturum;
+      }
+      sonHata = JSON.stringify(oturum).slice(0, 200);
+    } catch (e) {
+      sonHata = String(e);
+    }
+    await new Promise((r) => setTimeout(r, 1500 * (deneme + 1)));
+  }
+  throw new Error(`Test hesabıyla giriş başarısız: ${sonHata}`);
+}
+
 /** Test hesabıyla oturum açar ve oturumu tarayıcı deposuna yazar. */
 export async function girisYap(baglam: BrowserContext, eposta: string): Promise<void> {
-  const yanit = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: { apikey: ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: eposta, password: test.DUELLO_TEST_PAROLA }),
-  });
-  const oturum = await yanit.json();
-  if (!oturum.access_token) {
-    throw new Error(`Test hesabıyla giriş başarısız: ${JSON.stringify(oturum).slice(0, 200)}`);
-  }
+  const oturum = await oturumAl(eposta);
 
   const anahtar = depoAnahtari();
   await baglam.addInitScript(
@@ -84,37 +113,53 @@ export async function duelloyuTemizle(
   sayfa: import('@playwright/test').Page,
   seviye = 'cocuk',
 ): Promise<void> {
-  await sayfa.goto(`/duello?seviye=${seviye}`);
+  // Önceki testten kalan durum ne olursa olsun seçim ekranına dönülür:
+  // süren maç terk edilir, biten maç ekranı kapatılır, hata ekranı
+  // yeniden denenir.
+  //
+  // Dışarıdan bakınca abartılı görünebilir ama gerek var: iki test
+  // hesabı bütün düello testlerinde paylaşılıyor ve bir hesabın birden
+  // fazla yarım maçı kalabiliyor. Seçim ekranına ulaşmak tek başına
+  // yetmiyor; sayfa yeniden yüklendiğinde başka bir maç ortaya
+  // çıkabiliyor. Bu yüzden temiz sayılmak için ÜST ÜSTE İKİ KEZ seçim
+  // ekranı görülmesi isteniyor.
+  let temizSayim = 0;
 
-  for (let deneme = 0; deneme < 3; deneme++) {
-    const secimGorunur = await sayfa
-      .locator('[data-alan="duello-rastgele"]')
-      .isVisible()
-      .catch(() => false);
-    if (secimGorunur) return;
+  for (let deneme = 0; deneme < 14; deneme++) {
+    await sayfa.goto(`/duello?seviye=${seviye}`);
+    await sayfa.waitForTimeout(1200);
 
-    const macta = await sayfa
-      .locator('[data-alan="duello-terk"]')
-      .isVisible()
-      .catch(() => false);
-    if (macta) {
+    const gorunur = async (alan: string) =>
+      sayfa.locator(`[data-alan="${alan}"]`).isVisible().catch(() => false);
+
+    if (await gorunur('duello-rastgele')) {
+      temizSayim += 1;
+      if (temizSayim >= 2) return;
+      continue;
+    }
+    temizSayim = 0;
+
+    if (await gorunur('duello-terk')) {
       await sayfa.locator('[data-alan="duello-terk"]').click();
       await sayfa.locator('[data-alan="duello-terk-onay"]').click();
-      await sayfa.locator('[data-alan="duello-rastgele"]').waitFor({ timeout: 30_000 });
-      return;
+      await sayfa.waitForTimeout(1000);
+      continue;
     }
 
-    // Biten maç ekranında kalmış olabilir.
-    const bitmis = await sayfa
-      .locator('[data-alan="duello-yeni"]')
-      .isVisible()
-      .catch(() => false);
-    if (bitmis) {
+    if (await gorunur('duello-yeni')) {
       await sayfa.locator('[data-alan="duello-yeni"]').click();
+      await sayfa.waitForTimeout(1000);
+      continue;
+    }
+
+    if (await gorunur('duello-tekrar-dene')) {
+      await sayfa.locator('[data-alan="duello-tekrar-dene"]').click();
+      await sayfa.waitForTimeout(1000);
       continue;
     }
 
     await sayfa.waitForTimeout(1500);
   }
+
   await sayfa.locator('[data-alan="duello-rastgele"]').waitFor({ timeout: 30_000 });
 }

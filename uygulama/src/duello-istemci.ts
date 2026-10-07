@@ -163,11 +163,19 @@ export function duelloGonder(
   macId: string,
   turNo: number,
   adimlar: { a: number; b: number; islem: string; sonuc: number }[],
+  /**
+   * Oyuncu "cevabım bu" dedi mi?
+   *
+   * Yaklaşık cevap turu tek başına kapatmaz, ama iki taraf da
+   * kilitlediyse beklenecek kimse kalmaz ve tur biter.
+   */
+  kilit = false,
 ): Promise<GonderimSonucu> {
   return cagir<GonderimSonucu>('duello-gonder', {
     mac_id: macId,
     tur_no: turNo,
     adimlar,
+    kilit,
   });
 }
 

@@ -2,11 +2,13 @@
 
 Deponun kökünde durur, her oturumda okunur.
 
-> **Sürüm notu:** Bu dosya 20 Ağustos 2026'da yeniden yazıldı. Önceki
-> sürümde "reklam yok" kuralı vardı; bu karar değişti ve projede artık
-> AdMob var. Kural 5'e bak. Bu dosya ile projenin gerçek durumu
-> arasında çelişki görürsen **çalışmayı durdur ve sor** — geçen sefer
-> bunu doğru yaptın.
+> **Sürüm notu:** Son güncelleme 8 Ekim 2026. O tarihte Faz 4 (düello),
+> Faz 5 (arena) ve Faz 6 (kelime turu) tamamlanmış durumdaydı; bu dosya
+> hâlâ "Faz 6 henüz yok" diyordu ve gerçekle arası açılmıştı.
+>
+> Ağustos 2026'da "reklam yok" kuralı değişti; projede artık AdMob var
+> (kural 5). Bu dosya ile projenin gerçek durumu arasında çelişki
+> görürsen **çalışmayı durdur ve sor.**
 
 ---
 
@@ -15,7 +17,7 @@ Deponun kökünde durur, her oturumda okunur.
 Türkçe zihin oyunu platformu. İki oyun, tek altyapı:
 
 - **Sayı Turu** — 6 rakam verilir, dört işlemle hedef sayıya ulaşılır
-- **Kelime Turu** — 8 harf verilir, en uzun kelime türetilir *(Faz 6, henüz yok)*
+- **Kelime Turu** — 8 harf verilir, en uzun kelime türetilir
 
 Platform oyunu bilmez. Oyunlar `TurSaglayici` arayüzüyle takılır.
 
@@ -125,6 +127,11 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 npx supabase functions deploy tur-gonder --project-ref ruoyofzujzmhwvumquzu --import-map sunucu/fonksiyonlar/import_map.json
 ```
 
+Her fonksiyonun `supabase/functions/<ad>/index.ts` altında tek satırlık
+bir köprü dosyası olmak zorunda; CLI yalnızca oraya bakıyor, gerçek kod
+`sunucu/fonksiyonlar/` içinde. Köprü yoksa dağıtım "Entrypoint path
+does not exist" der.
+
 `--import-map` olmadan dağıtım **başarısız olur**: fonksiyon oyun
 paketini `@zihinturu/oyun-sayi` diye çağırıyor, harita verilmezse Deno
 bunu çözemez ve paketleme 400 döner. Harita ayrıca paket kaynaklarının
@@ -199,20 +206,43 @@ kuralını uygular.
 süre çarpanı (90/60/30/15 sn → ×1/1.5/2.5/4) ve seviye çarpanı
 (Isınma ×0.5 … Usta ×2) çarpılır. Antrenman puanı XP'ye gider.
 
-**Lig:** Seviye başına ayrı tablo. Günlük tabloya o günün **en iyi**
-maçı yazılır, toplamı değil. Haftalık ve aylık, günlük en iyilerin
-toplamı. Antrenman ayrı "çalışkanlık" tablosunda, haftalık sıfırlanır.
+**Lig:** Oyun ve seviye başına ayrı tablo — lig tabloları `oyun`
+sütunuyla yazıldığı için ikinci oyun göç gerektirmedi. Günlük tabloya o
+günün **en iyi** maçı yazılır, toplamı değil. Haftalık ve aylık, günlük
+en iyilerin toplamı. Antrenman ayrı "çalışkanlık" tablosunda, haftalık
+sıfırlanır. Düello derecesi ve arena madalyası seviyeden bağımsız.
+
+Günlük seri oyuna göre ayrılmaz: hangi oyun oynanırsa oynansın "bugün
+oynadı" sayılır. Seri alışkanlığı ölçüyor, beceriyi değil.
 
 **XP:** Lv.1 Çaylak (0), Lv.2 Hesapçı (500), Lv.3 Zihin İşçisi (2.000),
 Lv.4 Rakam Ustası (5.000), Lv.5 Zihin Turu Ustası (12.000).
 Seri ödülleri: her gün +10, 3 gün +25, 7 gün +75, 30 gün +300,
 100 gün +1.000. **Puan oynamadan verilmez.** Ayda bir seri koruma hakkı.
 
+**Kelime turu:** Dört seviye (Isınma 7 harf, Normal 8, Zor 9, Usta 10).
+Sözlük Zemberek kök listesinden üretiliyor (Apache 2.0, ~50 bin kelime:
+kökler + düzenli çoğullar). Liste `araclar/kelime-listesi-uret.mjs` ile
+üretilir, elle düzenlenmez. Günün Kelime Turu lige işler, Antrenman
+işlemez. Doğrulama `kelime-gonder` Edge Function'ında.
+
+Kelime turu **tek kişilik**: düelloya ve arenaya girmiyor.
+
+**Düello:** 1v1, 5 tur, ELO derecesi, rakip yoksa 8 saniyede bot.
+Rakibin yalnızca hedefe uzaklığı yayınlanır. Rövanş ve özel oda var.
+
+**Arena:** 5 kişilik eşzamanlı yarış, 5 tur, ilk tam isabet turu
+kapatır. Boş koltuklar botla dolar; en fazla biri güçlü ve bir bot
+turu, tur süresinin yarısı geçmeden kapatamaz. Madalya tablosu
+(altın > gümüş > bronz > toplam puan); **yalnızca en az iki gerçek
+yarışçının olduğu arenalar sayılır.**
+
 **Tamamlanan:** Faz 0–3C (çekirdek, tek kişilik oyun, PWA, üyelik,
 misafir geçişi, sunucu doğrulama, lig, XP, seri, gerçek oyuncu
-sayaçları, yasal metinler, hesap silme), Capacitor Android paketi,
-Firebase (Analytics/Crashlytics/Remote Config), AdMob banner,
-yaş 13 + UMP onay akışı.
+sayaçları, yasal metinler, hesap silme), Faz 4 (düello), Faz 5 (arena),
+Faz 6 (kelime turu), Capacitor Android paketi, Firebase
+(Analytics/Crashlytics/Remote Config), AdMob banner, yaş 13 + UMP onay
+akışı.
 
 **Yığın:** TypeScript · React + Vite · Tailwind · Supabase (Frankfurt) ·
 Cloudflare Pages · Capacitor · Vitest + Playwright
@@ -256,11 +286,25 @@ yasağı `npa` bayrağıyla aynen sürüyor. Ayrıntı `CHANGELOG.md`'de.
 2. Yasal metinler avukat onayından geçmeli — reklam kimliği ifadeleri
    değişti.
 
-### Faz 4 — Düello
-Kapalı testin 14 günü işlerken yazılacak. Eşleştirme kuyruğu (ELO),
-gerçek zamanlı tur akışı, **rakibin yalnızca uzaklığı yayınlanır**,
-sunucu doğrulaması, rakip yoksa bot (çözümü hazır almaz), bağlantı
-kopması, rövanş, özel oda. FCM burada devreye girer.
+### ~~Faz 4 — Düello~~ — bitti (Eylül 2026)
+### ~~Faz 5 — Arena~~ — bitti (7 Ekim 2026)
+### ~~Faz 6 — Kelime turu~~ — bitti (8 Ekim 2026)
+
+Ayrıntılar `CHANGELOG.md`'de.
+
+### Sıradakiler
+
+1. **Kelime turunda çekimli biçimler.** Sözlükte kökler ve düzenli
+   çoğullar var; "kitabı", "evde" gibi hâl ekleri yok. Oyuncu bildiği
+   bir kelimenin reddedildiğini görürse canı sıkılıyor. Ünsüz
+   yumuşaması doğru yapılmadan üretilen liste uydurma kelimelerle
+   dolacağı için bu iş dikkat istiyor.
+2. **Kupa ve rozetler** (Faz 5'ten kalan), **FCM bildirimleri.**
+3. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
+   test kullanıcısı, 14 günlük kapalı test. Proje sahibinin işi.
+4. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
+5. **Crashlytics eşleme dosyası** 1.8.0'dan beri yüklenmiyor (yerel
+   TLS sorunu). Dosya derlemede üretiliyor, elle yüklenebilir.
 
 ---
 
@@ -276,4 +320,5 @@ kopması, rövanş, özel oda. FCM burada devreye girer.
 - Oyun mantığını değiştirip Edge Function'ı dağıtmamak — her tur reddedilir
 - Veritabanı göçünden önce push etmek — canlı site hata verir
 - `<a href>` ile gezinmek — Android'de 404
+- Kelime listesini elle düzenlemek — betikle üretiliyor, elle değişiklik ilk üretimde kaybolur
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

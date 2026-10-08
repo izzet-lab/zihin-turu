@@ -3,6 +3,51 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Antrenman turları yedi haftadır kaydedilmiyormuş
+
+Kelime turunu lige bağlarken ortaya çıktı: **18 Ağustos 2026'dan beri
+hiçbir antrenman turu veritabanına işlenmemiş.** Günün Turu çalışıyordu,
+antrenman çalışmıyordu.
+
+Sebebi, lig tetikleyicisinde bir değişken adının tablo sütun adıyla
+aynı olması. Postgres hangisinin kastedildiğini bilemeyip hata
+veriyor, satır geri alınıyordu. Günün Turu'nun etkilenmemesi, orada
+aynı adda bir değişkenin bulunmamasındandı.
+
+Oyuncuya hiçbir şey görünmüyordu: istemci sunucu hatasını sessizce
+yutup oyuna devam ediyordu. Sonuç olarak yedi haftadır **çalışkanlık
+tablosu ve antrenman XP'si hiç güncellenmemiş.** Kaybedilen kayıtlar
+geri getirilemiyor; tur içeriği saklanmadığı için yeniden
+hesaplanamazlar.
+
+Göç 012 ile düzeltildi, canlıda doğrulandı: dört seviyede antrenman
+turu gönderildi, hepsi çalışkanlık tablosuna düştü.
+
+Ayrıca kayıt hatası yanıtına Postgres hata **kodu** eklendi. Kodsuz
+"sunucu hatası" yanıtı canlıda hiçbir şey anlatmıyordu; bu hatayı
+bulmak da ancak kod görünür olunca mümkün oldu.
+
+## 2026-10-08 - Kelime turunda çekimli biçimler kabul ediliyor
+
+Sözlük Zemberek'in kök listesinden üretiliyor: "kitap" vardı, "kitabı"
+yoktu. Oyuncunun bildiği bir kelimenin reddedilmesi kelime oyununda en
+can sıkıcı an.
+
+Bütün çekimleri listeye eklemek listeyi üç yüz binin üzerine çıkarır ve
+pakete birkaç megabayt bindirirdi. Oysa çekim bir **kural**: artık
+kelimenin sonundan tanınan ek soyulup kalan gövde sözlükte aranıyor,
+gerekirse üç kez. "kitabında" → "kitabın" → "kitab" → ünsüz yumuşaması
+geri alınır → "kitap".
+
+Yöntem bilerek cömert: bazen olmayan bir çekimi de kabul edebilir. Bir
+kelime oyununda fazladan kabul etmenin bedeli, haklı bir cevabı
+reddetmenin bedelinden çok küçük.
+
+**Yan bulgu:** sözlük üretilirken iki harfli kökler eleniyordu ("ev",
+"su", "el"). En kısa CEVAP üç harf ama sözlük cevapları değil kökleri
+tutuyor; "evde" ancak "ev" listedeyse doğrulanabiliyor. İki harfliler
+listeye alındı, çözücünün alt sınırı ayrıca üç harfte tutuldu.
+
 ## 2026-10-08 - Kelime turu lige bağlandı
 
 Kelime turu artık puan kazandırıyor: Sıralamalar ekranında kendi

@@ -126,7 +126,11 @@ Deno.serve(async (req: Request) => {
     if (yazmaHata) {
       if (yazmaHata.code === '23505') return hata('Bu tur zaten gönderildi.', 409);
       console.error('Yazma hatası:', yazmaHata);
-      return hata('Kayıt sırasında hata oluştu.', 500);
+      // Postgres hata KODU yanıta konuyor. Mesaj değil kod: kod hiçbir
+      // kullanıcı verisi taşımıyor ama bir sorunun nedenini kazmadan
+      // söylüyor. Kodsuz bir "sunucu hatası" yanıtı, canlıda tek
+      // başına hiçbir şey anlatmıyordu.
+      return hata(`Kayıt sırasında hata oluştu. (${yazmaHata.code ?? '?'})`, 500);
     }
 
     return ok({ puan: p.toplam, uzaklik: dogr.uzaklik ?? 0 });

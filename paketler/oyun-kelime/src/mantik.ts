@@ -9,6 +9,7 @@
 
 import { rastgele, type Puan } from '@zihinturu/cekirdek';
 import { turkceKucult, type Sozluk } from './sozluk.ts';
+import { sozluktePayVar } from './cekim.ts';
 
 /** Bir kelime turunun oyuncuya gösterilen verisi. */
 export interface KelimeVeri {
@@ -109,7 +110,11 @@ export function enUzunKelime(
   // aramanın kendisinden pahalıya geliyordu.
   let sayac = 0;
 
-  for (let uzunluk = havuz.length; uzunluk >= 2; uzunluk--) {
+  // Alt sınır EN_KISA_KELIME: sözlükte iki harfli kökler de var (çekim
+  // tanıma onlara ihtiyaç duyuyor) ama iki harfli bir kelime cevap
+  // olarak kabul edilmiyor; "en uzun kelime" olarak gösterilmesi de
+  // yanıltıcı olurdu.
+  for (let uzunluk = havuz.length; uzunluk >= EN_KISA_KELIME; uzunluk--) {
     for (const kelime of sozluk.uzunluktakiler(uzunluk)) {
       if (sinirMs != null && (sayac++ & 511) === 0 && Date.now() - baslangic > sinirMs) {
         return null;
@@ -243,7 +248,8 @@ export function dogrulaKelime(
       ozet: 'Harfler yetmiyor',
     };
   }
-  if (!sozluk.icerir(kelime)) {
+  // Sözlük kök listesi; çekimli biçimler kuralla tanınıyor (bkz. cekim.ts).
+  if (!sozluktePayVar(kelime, sozluk)) {
     return {
       gecerli: false,
       hata: 'Bu kelime sözlükte yok.',

@@ -14,6 +14,8 @@
 export interface Tercihler {
   analytics: boolean;
   crashlytics: boolean;
+  /** Dokunsal geri bildirim (titreşim). Varsayılan açık. */
+  titresim: boolean;
 }
 
 export const GIZLILIK_ANAHTAR = 'tamisabet.gizlilik.v1';
@@ -29,7 +31,15 @@ export const GIZLILIK_ANAHTAR = 'tamisabet.gizlilik.v1';
  * değil, uygulamanın ayakta kalması için gereken teşhis. Kapatma yolu
  * yine tek dokunuş uzaklıkta.
  */
-export const GIZLILIK_VARSAYILAN: Tercihler = { analytics: false, crashlytics: true };
+/*
+ * Titreşim varsayılan AÇIK: ölçüm değil, oyunun kendi geri bildirimi.
+ * Rahatsız edeni tek dokunuşla kapatıyor.
+ */
+export const GIZLILIK_VARSAYILAN: Tercihler = {
+  analytics: false,
+  crashlytics: true,
+  titresim: true,
+};
 
 export function tercihleriOku(): Tercihler {
   try {

@@ -19,6 +19,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
+import { titret } from '../titresim';
+import SayanSayi from '../bilesenler/SayanSayi';
 import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
 import SeriVeXp from '../bilesenler/SeriVeXp';
@@ -168,6 +170,8 @@ export default function KelimeTuru({
       enUzun: cozum.satirlar[0] ?? '',
     });
     setOturum((o) => ({ turSayisi: o.turSayisi + 1, puan: o.puan + p.toplam }));
+    // En uzun kelime bulunduysa tam isabet: çift titreşim.
+    titret((d.uzaklik ?? 0) === 0 ? 'basari' : 'orta');
     setAsama('sonuc');
 
     if (mod === 'gunun') {
@@ -218,6 +222,7 @@ export default function KelimeTuru({
 
   const harfTikla = (id: number) => {
     setUyari(null);
+    titret('hafif');
     setSecilenler((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   };
 
@@ -392,8 +397,9 @@ export default function KelimeTuru({
 
           <div className="zt-sahne mt-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Puan</div>
+            {/* Puan sayarak çıkar: sonuca VARIŞ tatmin ediyor. */}
             <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-300">
-              +{sonuc.puan}
+              +<SayanSayi deger={sonuc.puan} />
             </div>
           </div>
 
@@ -499,17 +505,20 @@ export default function KelimeTuru({
 
       {/* Harf rafı */}
       <div className="mt-6 grid grid-cols-4 gap-2.5" data-alan="kelime-raf">
-        {taslar.map((t) => {
+        {taslar.map((t, sira) => {
+          // Kelimeye giren harf tükenmiştir: soluklaşıp geri çekilir.
           const secili = secilenler.includes(t.id);
           return (
             <button
               key={t.id}
               data-harf={t.harf}
+              data-kullanilmis={secili ? '1' : undefined}
               aria-pressed={secili}
               onClick={() => harfTikla(t.id)}
-              className={`min-h-[64px] rounded-xl border text-2xl font-black uppercase leading-none transition active:scale-95 ${
+              style={{ ['--zt-sira' as string]: String(sira) }}
+              className={`zt-dusen min-h-[64px] rounded-xl border text-2xl font-black uppercase leading-none ${
                 secili
-                  ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
+                  ? 'border-cyan-300/60 bg-cyan-300/10 text-cyan-100'
                   : 'border-slate-700 bg-slate-800/50 text-slate-100'
               }`}
             >
@@ -559,7 +568,7 @@ export default function KelimeTuru({
  */
 function Cerceve({ children, onCik }: { children: React.ReactNode; onCik: () => void }) {
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-8 text-slate-200">
+    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-8 text-slate-200">
       <div className="mx-auto w-full max-w-md">
         <button
           onClick={onCik}

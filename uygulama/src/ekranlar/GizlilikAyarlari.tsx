@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { titret } from '../titresim';
 import SayfaSablonu from './SayfaSablonu';
 import { nativeMi } from '../platform';
 import {
@@ -54,6 +55,8 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
     tercihleriYaz(yeni);
     if (alan === 'analytics') analyticsAyarla(deger);
     if (alan === 'crashlytics') crashlyticsAyarla(deger);
+    // Titreşimi açan kişi hemen ne açtığını hissetsin.
+    if (alan === 'titresim' && deger) titret('orta');
   }
 
   async function bildirimDegistir(deger: boolean) {
@@ -141,6 +144,13 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
             aciklama="Uygulama çökerse hata izi, cihaz modeli ve Android sürümü gönderilir. Kim olduğun gönderilmez. Hataları bulmamıza yardım eder."
             acik={tercih.crashlytics}
             onDegis={(d) => degistir('crashlytics', d)}
+          />
+
+          <Anahtar
+            baslik="Titreşim"
+            aciklama="Taşa basınca, işlem tamamlanınca ve tam isabette telefon kısa süre titrer. Hiçbir veri gönderilmez; sadece oyunun geri bildirimi."
+            acik={tercih.titresim}
+            onDegis={(d) => degistir('titresim', d)}
           />
 
           <Anahtar

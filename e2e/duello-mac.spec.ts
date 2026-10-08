@@ -77,12 +77,24 @@ test.describe('düello maçı', () => {
     expect(sonuc2).toContain('Kaybettin');
 
     // Skorlar birbirinin aynası olmalı.
-    const skor1 = (await sayfa1.locator('[data-alan="duello-skor"]').textContent()) ?? '';
-    const skor2 = (await sayfa2.locator('[data-alan="duello-skor"]').textContent()) ?? '';
-    const [a1, b1] = skor1.split('—').map((n) => Number(n.trim()));
-    const [a2, b2] = skor2.split('—').map((n) => Number(n.trim()));
-    expect(a1).toBe(b2);
-    expect(b1).toBe(a2);
+    //
+    // Skor artık 0'dan sayarak çıkıyor; okuma sayma bitmeden yapılırsa
+    // iki ekran farklı ara değerde yakalanıyor. Değer oturana kadar
+    // beklenip karşılaştırılıyor.
+    const skorOku = async (sayfa: Page) => {
+      const metin = (await sayfa.locator('[data-alan="duello-skor"]').textContent()) ?? '';
+      return metin.split('—').map((n) => Number(n.trim()));
+    };
+    await expect
+      .poll(
+        async () => {
+          const [a1, b1] = await skorOku(sayfa1);
+          const [a2, b2] = await skorOku(sayfa2);
+          return a1 === b2 && b1 === a2;
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
 
     // MAÇ BİTTİ: turların doğru cevapları görünür.
     // Maç sürerken çözüm istemciye gitmiyor (kural 8); bittikten sonra

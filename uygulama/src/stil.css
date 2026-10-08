@@ -206,42 +206,6 @@ button,
 }
 
 /*
- * TAŞLARA DERİNLİK
- *
- * Taşlar düz dikdörtgendi; kâğıt gibi duruyordu. Oysa markanın kendi
- * hikâyesi "iki taş birleşir" — taşın tutulabilir bir nesne gibi
- * hissettirmesi gerekiyor.
- *
- * Üç katman: üstten gelen ışık (üst kenarda ince aydınlık çizgi),
- * gövde eğimi (hafif degrade) ve altta oturduğu zemin gölgesi.
- * Hepsi boya işi — düzeni (layout) hiç etkilemez, ucuz telefonda da
- * bedava sayılır.
- */
-[data-tas] {
-  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.07) 0%, rgb(255 255 255 / 0) 45%);
-  box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 0.10),
-    0 1px 0 0 rgb(0 0 0 / 0.35),
-    0 4px 10px -4px rgb(0 0 0 / 0.55);
-}
-
-/* Seçili taş: ışık kaynağı gibi davransın, yalnızca çerçeve değişmesin. */
-[data-tas][aria-pressed='true'] {
-  box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 0.18),
-    0 0 0 1px rgb(124 237 251 / 0.35),
-    0 0 18px -2px rgb(124 237 251 / 0.45),
-    0 4px 12px -4px rgb(0 0 0 / 0.6);
-}
-
-/* İşlem tuşları taşlardan bir kademe geride dursun. */
-[data-islem] {
-  box-shadow:
-    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
-    0 2px 6px -3px rgb(0 0 0 / 0.5);
-}
-
-/*
  * BİRLEŞME KOPYASI
  *
  * Birleşen taşların ekranda süzülen görüntü kopyası. Gerçek taş değil;
@@ -393,4 +357,290 @@ button,
 .zt-basamak {
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0) 60%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+/* ================================================================== */
+/* HAREKET KATMANI                                                     */
+/*                                                                     */
+/* "Oyun değil, kontrol paneli gibi duruyor" teşhisinin en büyük       */
+/* maddesi: hiçbir şey hareket etmiyordu. Durağan ekran uygulamadır;   */
+/* hareketli ekran oyundur.                                            */
+/*                                                                     */
+/* KURAL: her animasyon yalnızca `transform` ve `opacity` kullanır.    */
+/* Bu ikisi telefonun ekran işlemcisinde çalışır, sayfa yeniden        */
+/* hesaplanmaz; orta sınıf Android'de de 60 kare/sn korunur.           */
+/*                                                                     */
+/* Cihazda "hareketi azalt" açıksa hepsi en altta topluca kapanıyor.   */
+/* ================================================================== */
+
+:root {
+  /* Yay eğrisi: bırakınca hafifçe aşıp yerine oturur. */
+  --zt-yay: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/*
+ * TAŞA BASMA
+ *
+ * Tailwind'in `active:scale-95` kısayolu doğrusal bir geçişle
+ * çalışıyordu: basmak da bırakmak da aynı hızdaydı, yani plastik
+ * hissi yoktu. Basış hızlı ve sert, bırakış yaylı olmalı.
+ */
+[data-tas], [data-harf], [data-islem] {
+  transition: transform 220ms var(--zt-yay), box-shadow 180ms ease-out, opacity 220ms ease-out;
+  will-change: transform;
+}
+
+[data-tas]:active, [data-harf]:active, [data-islem]:active {
+  transform: scale(0.94);
+  transition-duration: 70ms;
+  transition-timing-function: ease-out;
+}
+
+/*
+ * YENİ TUR: TAŞLAR SIRAYLA DÜŞER
+ *
+ * Hepsi birden belirince tahta "yüklendi"; sırayla düşünce "dağıtıldı"
+ * hissi veriyor. Gecikme satır içi `--zt-sira` değişkeniyle veriliyor,
+ * her taş için ayrı sınıf yazmaya gerek kalmıyor.
+ */
+.zt-dusen {
+  animation: zt-dus 320ms var(--zt-yay) backwards;
+  animation-delay: calc(var(--zt-sira, 0) * 60ms);
+}
+
+@keyframes zt-dus {
+  from { opacity: 0; transform: translateY(-14px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
+/*
+ * EKRAN GEÇİŞİ
+ *
+ * Ekranlar aniden değişiyordu. Kısa bir kayma, "bir yerden bir yere
+ * gittim" duygusunu bedavaya veriyor.
+ */
+.zt-ekran {
+  animation: zt-ekran-gir 260ms ease-out backwards;
+}
+
+@keyframes zt-ekran-gir {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/*
+ * TAM İSABET SARSINTISI
+ *
+ * Çok kısa ve çok küçük. Fark edilmeli, rahatsız etmemeli; büyük
+ * genlik ucuz his verir.
+ */
+.zt-sarsinti {
+  animation: zt-sarsinti 320ms ease-in-out;
+}
+
+@keyframes zt-sarsinti {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-5px); }
+  30% { transform: translateX(4px); }
+  45% { transform: translateX(-3px); }
+  60% { transform: translateX(2px); }
+  80% { transform: translateX(-1px); }
+}
+
+/*
+ * SÜRE NABZI
+ *
+ * Son on saniyede çubuk nefes alıyor. Sayıyı okumadan "acele et"
+ * diyen tek işaret.
+ */
+.zt-sure-kritik {
+  animation: zt-sure-nabiz 800ms ease-in-out infinite;
+  transform-origin: left center;
+}
+
+@keyframes zt-sure-nabiz {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.6; transform: scaleY(1.7); }
+}
+
+/*
+ * PODYUM
+ *
+ * Basamaklar aşağıdan yukarı büyür (kaide oturuyormuş gibi),
+ * madalyalar yukarıdan düşer. Kutlama anı kutlama gibi görünsün.
+ */
+.zt-basamak-cik {
+  animation: zt-basamak-cik 480ms var(--zt-yay) backwards;
+  animation-delay: calc(var(--zt-sira, 0) * 120ms);
+  transform-origin: bottom center;
+}
+
+@keyframes zt-basamak-cik {
+  from { transform: scaleY(0.05); opacity: 0.2; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.zt-madalya-dus {
+  animation: zt-madalya-dus 520ms var(--zt-yay) backwards;
+  animation-delay: calc(360ms + var(--zt-sira, 0) * 120ms);
+}
+
+@keyframes zt-madalya-dus {
+  from { transform: translateY(-26px) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/*
+ * LİSTE SATIRLARI
+ *
+ * Sıralama ve podyum listesi tek blok hâlinde beliriyordu. Satırların
+ * sırayla gelmesi, listeyi "sayılıyormuş" gibi gösteriyor.
+ */
+.zt-satir-gir {
+  animation: zt-satir-gir 260ms ease-out backwards;
+  animation-delay: calc(var(--zt-sira, 0) * 55ms);
+}
+
+@keyframes zt-satir-gir {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ================================================================== */
+/* TAŞLAR NESNE OLSUN                                                  */
+/*                                                                     */
+/* Taş bu oyunun kahramanı; düz çerçeveli bir kare olarak duruyordu.   */
+/* Dört katman: üstten gelen ışık, gövde eğimi, ALT KENARDA KOYU       */
+/* ÇİZGİ (kalınlık hissi — bir nesnenin yan yüzü) ve zemin gölgesi.    */
+/*                                                                     */
+/* Yarışma taşlarının keskin bizotu taklit edilmedi: bu yüzeyler daha  */
+/* yumuşak ve daha az parlak, ama artık dikdörtgen değil nesne.        */
+/* ================================================================== */
+
+[data-tas], [data-harf] {
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.09) 0%, rgb(255 255 255 / 0) 52%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.12),
+    inset 0 -3px 0 0 rgb(0 0 0 / 0.30),
+    0 3px 0 0 rgb(0 0 0 / 0.30),
+    0 6px 12px -6px rgb(0 0 0 / 0.65);
+}
+
+/* Seçili taş yukarı kalkar; gölgesi uzar, çünkü zeminden ayrıldı. */
+[data-tas][aria-pressed="true"],
+[data-harf][aria-pressed="true"] {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.20),
+    inset 0 -3px 0 0 rgb(0 0 0 / 0.30),
+    0 0 0 1px rgb(124 237 251 / 0.35),
+    0 0 20px -2px rgb(124 237 251 / 0.45),
+    0 10px 18px -8px rgb(0 0 0 / 0.8);
+}
+
+[data-tas][aria-pressed="true"]:active,
+[data-harf][aria-pressed="true"]:active {
+  transform: translateY(-4px) scale(0.94);
+}
+
+/*
+ * KULLANILMIŞ TAŞ
+ *
+ * Zincire girmiş taş oyundan çıkmıştır. Soluklaşıp hafifçe geri
+ * çekiliyor: elenmiş ama hâlâ tahtada olduğu görülüyor.
+ */
+[data-tas][data-kullanilmis="1"],
+[data-harf][data-kullanilmis="1"] {
+  opacity: 0.38;
+  transform: scale(0.94);
+  box-shadow: inset 0 -2px 0 0 rgb(0 0 0 / 0.25);
+}
+
+/* İşlem tuşları taşlardan bir kademe geride: daha ince kalınlık. */
+[data-islem] {
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.07),
+    inset 0 -2px 0 0 rgb(0 0 0 / 0.22),
+    0 2px 6px -3px rgb(0 0 0 / 0.5);
+}
+
+/* ================================================================== */
+/* MADALYA METALLERİ                                                   */
+/*                                                                     */
+/* Podyum gri kutulardan oluşuyordu; kutlama anı çubuk grafiğe         */
+/* benziyordu. Altın-gümüş-bronz gerçek metal tonlarında, parlaklık    */
+/* degradesiyle.                                                       */
+/*                                                                     */
+/* ÖDÜL ALTINI UYARI SARISINDAN AYRI. Uyarı ve reklam yüzeylerinde     */
+/* amber (#fbbf24) kullanılıyor; ödül altını ondan daha sıcak ve daha  */
+/* derin (#F7D774 - #B07D1A) ki iki anlam karışmasın.                  */
+/* ================================================================== */
+
+.zt-metal-altin {
+  background-image: linear-gradient(160deg, #FFF0B8 0%, #F7D774 28%, #D9A42B 62%, #B07D1A 100%);
+  color: #3B2A05;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 6px 18px -8px rgb(217 164 43 / 0.75);
+}
+
+.zt-metal-gumus {
+  background-image: linear-gradient(160deg, #FFFFFF 0%, #DCE3EC 30%, #A9B4C2 64%, #78838F 100%);
+  color: #2A3139;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 6px 18px -8px rgb(169 180 194 / 0.6);
+}
+
+.zt-metal-bronz {
+  background-image: linear-gradient(160deg, #F2C9A0 0%, #D59A63 30%, #A96A33 66%, #7E4A1E 100%);
+  color: #351F0C;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 6px 18px -8px rgb(169 106 51 / 0.6);
+}
+
+/*
+ * Podyum basamağı madalyanın rengini alır.
+ *
+ * Önce yalnızca saydam bir tül katılmıştı ve altındaki lacivert
+ * karışınca altın zeytin yeşiline kaçıyordu. Artık basamağın kendi
+ * koyu zemini var; tül onun üstüne biniyor ve renk temiz çıkıyor.
+ */
+.zt-basamak.zt-altin {
+  background-image: linear-gradient(180deg, #E3BE49 0%, #A8801F 45%, #5E440E 100%);
+  box-shadow: inset 0 1px 0 rgb(255 245 205 / 0.55);
+}
+
+.zt-basamak.zt-gumus {
+  background-image: linear-gradient(180deg, #C6CFDA 0%, #8A95A3 45%, #464E58 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
+}
+
+.zt-basamak.zt-bronz {
+  background-image: linear-gradient(180deg, #C98A55 0%, #945E2E 45%, #4D2D14 100%);
+  box-shadow: inset 0 1px 0 rgb(246 210 175 / 0.5);
+}
+
+/*
+ * HAREKETİ AZALT
+ *
+ * Tek yerden kapanıyor. Hareket süs değil bilgi taşıdığı yerlerde
+ * (süre çubuğunun dolması gibi) öğe yerinde kalır, yalnızca animasyon
+ * durur.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-tas], [data-harf], [data-islem] { transition: none; }
+  [data-tas]:active, [data-harf]:active, [data-islem]:active { transform: none; }
+  [data-tas][aria-pressed="true"], [data-harf][aria-pressed="true"] { transform: none; }
+  .zt-dusen,
+  .zt-ekran,
+  .zt-sarsinti,
+  .zt-sure-kritik,
+  .zt-basamak-cik,
+  .zt-madalya-dus,
+  .zt-satir-gir {
+    animation: none;
+  }
 }

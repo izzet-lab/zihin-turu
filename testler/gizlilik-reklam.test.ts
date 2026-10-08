@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { tercihleriOku } from '../uygulama/src/gizlilik-tercih';
+import { tercihleriOku, tercihleriYaz } from '../uygulama/src/gizlilik-tercih';
+import { titresimAcikMi } from '../uygulama/src/titresim';
 import { npaKarari } from '../uygulama/src/reklam-karar';
 import { dogumYiliYaz, resinDegilMi } from '../uygulama/src/depo';
 
@@ -21,6 +22,30 @@ describe('kural 7 — Analytics varsayılan KAPALI', () => {
 
   it('Crashlytics varsayılan açık — çökme teşhisi davranış ölçümü değil', () => {
     expect(tercihleriOku().crashlytics).toBe(true);
+  });
+});
+
+describe('titreşim tercihi', () => {
+  it('varsayılan açık — veri toplamıyor, oyunun kendi geri bildirimi', () => {
+    expect(tercihleriOku().titresim).toBe(true);
+  });
+
+  it('kapatılınca gerçekten kapanır (kural 7)', () => {
+    // Testler Node'da koşuyor; tarayıcı deposu yok. Tercihin gerçekten
+    // okunup yazıldığını görmek için küçük bir depo taklidi kuruluyor.
+    const kutu = new Map<string, string>();
+    (globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => kutu.get(k) ?? null,
+      setItem: (k: string, d: string) => void kutu.set(k, d),
+      removeItem: (k: string) => void kutu.delete(k),
+    };
+    try {
+      tercihleriYaz({ ...tercihleriOku(), titresim: false });
+      expect(tercihleriOku().titresim).toBe(false);
+      expect(titresimAcikMi(), 'Kapalıyken titreşim çağrısı yapılmamalı').toBe(false);
+    } finally {
+      delete (globalThis as { localStorage?: unknown }).localStorage;
+    }
   });
 });
 

@@ -3,7 +3,9 @@ import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@tamisabet/cekirdek';
 import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import KelimeTahtasi from './KelimeTahtasi';
+import SayanSayi from '../bilesenler/SayanSayi';
 import { useTurCevaplari } from '../tur-cevaplari';
+import { titret } from '../titresim';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
@@ -371,6 +373,13 @@ export default function Duello({
    * Turların cevapları — yalnızca maç BİTTİĞİNDE hesaplanıyor.
    * Kural 8: çözüm, tur bitmeden istemciye gitmez.
    */
+  const bittiMi = mac?.durum === 'bitti';
+  const kazandimMi = bittiMi && mac?.kazanan === mac?.benTarafim;
+  useEffect(() => {
+    if (!bittiMi) return;
+    titret(kazandimMi ? 'basari' : 'kayip');
+  }, [bittiMi, kazandimMi]);
+
   const turCevaplari = useTurCevaplari(
     mac?.durum === 'bitti' ? saglayici : null,
     mac?.seviye,
@@ -625,8 +634,10 @@ export default function Duello({
         >
           {berabere ? 'Berabere' : kazandim ? 'Kazandın 🏆' : 'Kaybettin'}
         </div>
-        <div className="mt-2 text-lg text-slate-400" data-alan="duello-skor">
-          {benim === 'a' ? mac.skorA : mac.skorB} — {benim === 'a' ? mac.skorB : mac.skorA}
+        {/* Skor sayarak çıkar: sonucun kendisi değil, sonuca varış tatmin ediyor. */}
+        <div className="zt-rakam mt-2 text-2xl font-black text-slate-300" data-alan="duello-skor">
+          <SayanSayi deger={benim === 'a' ? mac.skorA : mac.skorB} className="text-cyan-300" /> —{' '}
+          <SayanSayi deger={benim === 'a' ? mac.skorB : mac.skorA} />
         </div>
         {/* Kaybedince "Kaybettin" tek başına soğuk duruyor. Oyuncunun
             en çok yaklaştığı anı hatırlatmak, maçı "hiç şansım yoktu"
@@ -1000,7 +1011,7 @@ function Cerceve({ baslik, children }: { baslik: string; children: React.ReactNo
   return (
     // İçerik dikeyde ortalanır: bekleme ve sonuç ekranlarında az
     // içerik vardı ve ekranın altı kapkara kalıyordu.
-    <main className="flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       <div className="mx-auto w-full max-w-md text-center">
         <h1 className="text-2xl font-black text-white">{baslik}</h1>
         <div className="mt-4">{children}</div>

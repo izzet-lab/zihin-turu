@@ -347,7 +347,7 @@ export default function Sonuc({
   }
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-md">
         {/* Yeni seviye açıldı */}
         {yeniAcilanSeviyeEtiket && (

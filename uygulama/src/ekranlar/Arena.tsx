@@ -3,6 +3,7 @@ import { ARENA_KOLTUK, duelloTurTohumu } from '@tamisabet/cekirdek';
 import Oyun from './Oyun';
 import KelimeTahtasi from './KelimeTahtasi';
 import TurCevaplari from '../bilesenler/TurCevaplari';
+import SayanSayi from '../bilesenler/SayanSayi';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import { acikSeviyeler } from '../depo';
@@ -394,7 +395,19 @@ export default function Arena({
     );
     const adBul = (koltuk: string) =>
       durum.yarisanlar.find((y) => y.koltuk === Number(koltuk));
-    const nisan = { altin: '🥇', gumus: '🥈', bronz: '🥉' } as const;
+    /*
+     * MADALYALAR ARTIK EMOJİ DEĞİL.
+     *
+     * 🥇🥈🥉 her telefonda başka çiziliyor, boyutu kontrol edilemiyor
+     * ve markanın parçası olmuyordu. Yerine gerçek metal tonlarında
+     * madeni para: altın uyarı sarısından ayrı bir ton (ödül ile
+     * uyarı karışmasın).
+     */
+    const metalSinif = {
+      altin: 'zt-metal-altin',
+      gumus: 'zt-metal-gumus',
+      bronz: 'zt-metal-bronz',
+    } as const;
 
     return (
       <Cerceve baslik="Arena bitti">
@@ -402,15 +415,27 @@ export default function Arena({
             anlatmak mümkün ama podyum bir oyunun görüntüsü. */}
         {(durum.podyum?.length ?? 0) >= 3 && (
           <div className="mb-6 flex items-end justify-center gap-2" aria-hidden="true">
-            {[1, 0, 2].map((i) => {
+            {[1, 0, 2].map((i, gorunenSira) => {
               const p = durum.podyum![i];
               if (!p) return null;
               const y = adBul(p.koltuk);
               const benim = Number(p.koltuk) === durum.benimKoltuk;
               const yukseklik = ['h-24', 'h-16', 'h-12'][i]!;
+              const basamakRengi = p.madalya
+                ? ({ altin: 'zt-altin', gumus: 'zt-gumus', bronz: 'zt-bronz' } as const)[p.madalya]
+                : '';
               return (
                 <div key={p.koltuk} className="flex w-1/4 flex-col items-center">
-                  <span className="text-2xl">{p.madalya ? nisan[p.madalya] : ''}</span>
+                  {/* Madalya yukarıdan düşerek gelir; basamak aşağıdan
+                      yukarı büyür. Sıra numarası gecikmeyi veriyor. */}
+                  <span
+                    className={`zt-madalya-dus flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${
+                      p.madalya ? metalSinif[p.madalya] : 'bg-slate-800 text-slate-500'
+                    }`}
+                    style={{ ['--zt-sira' as string]: String(gorunenSira) }}
+                  >
+                    {p.sira}
+                  </span>
                   <span
                     className={`mt-1 w-full truncate text-center text-[11px] font-bold ${
                       benim ? 'text-cyan-200' : 'text-slate-400'
@@ -419,16 +444,11 @@ export default function Arena({
                     {benim ? 'Sen' : (y?.ad ?? '—')}
                   </span>
                   <div
-                    className={`zt-basamak mt-1 w-full rounded-t-lg border-x border-t ${yukseklik} ${
-                      benim
-                        ? 'border-cyan-300/40 bg-cyan-300/15'
-                        : 'border-slate-700 bg-slate-800/60'
+                    className={`zt-basamak zt-basamak-cik mt-1 w-full rounded-t-lg border-x border-t ${yukseklik} ${basamakRengi} ${
+                      benim ? 'border-cyan-300/40' : 'border-slate-700'
                     }`}
-                  >
-                    <div className="zt-rakam pt-1 text-center text-sm font-black text-slate-300">
-                      {p.sira}
-                    </div>
-                  </div>
+                    style={{ ['--zt-sira' as string]: String(gorunenSira) }}
+                  />
                 </div>
               );
             })}
@@ -447,14 +467,16 @@ export default function Arena({
               Senin sıran
             </div>
             <div
-              className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200"
+              className={`zt-rakam mt-1 inline-flex min-w-[4.5rem] items-center justify-center rounded-2xl px-4 py-2 text-5xl font-black leading-none ${
+                benimSira.madalya ? metalSinif[benimSira.madalya] : 'text-cyan-200'
+              }`}
               data-alan="arena-sonuc"
             >
               {benimSira.sira}.
             </div>
             <div className="mt-1 text-xs text-slate-400">
-              {benimSira.puan} puan
-              {benimSira.madalya ? ` · ${nisan[benimSira.madalya]}` : ''}
+              <SayanSayi deger={benimSira.puan} className="zt-rakam font-black text-slate-200" />{' '}
+              puan
             </div>
           </div>
         )}
@@ -463,18 +485,24 @@ export default function Arena({
           className="mt-6 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-900/40 text-left"
           data-alan="arena-podyum"
         >
-          {(durum.podyum ?? []).map((p) => {
+          {(durum.podyum ?? []).map((p, satirSira) => {
             const y = adBul(p.koltuk);
             const benim = Number(p.koltuk) === durum.benimKoltuk;
             return (
               <li
                 key={p.koltuk}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm ${
+                // Satırlar sırayla belirir: liste "sayılıyormuş" gibi gelsin.
+                style={{ ['--zt-sira' as string]: String(satirSira) }}
+                className={`zt-satir-gir flex items-center gap-3 px-3 py-2.5 text-sm ${
                   benim ? 'bg-cyan-300/10' : ''
                 }`}
               >
-                <span className="w-7 shrink-0 text-center font-bold text-slate-500">
-                  {p.madalya ? nisan[p.madalya] : p.sira}
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    p.madalya ? metalSinif[p.madalya] : 'text-slate-500'
+                  }`}
+                >
+                  {p.sira}
                 </span>
                 <span
                   className={`min-w-0 flex-1 truncate font-bold ${
@@ -714,7 +742,7 @@ export default function Arena({
 
 function Cerceve({ baslik, children }: { baslik: string; children: React.ReactNode }) {
   return (
-    <main className="flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       <div className="mx-auto w-full max-w-md text-center">
         <h1 className="text-2xl font-black text-white">{baslik}</h1>
         <div className="mt-4">{children}</div>

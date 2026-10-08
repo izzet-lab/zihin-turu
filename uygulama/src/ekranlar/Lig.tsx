@@ -138,7 +138,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
   }, [sekme, seviye, oyun, oyuncuId]);
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
         <header className="mb-8 pr-12">
@@ -297,22 +297,34 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         {/* Sıralama tablosu */}
         {!yukleniyor && satirlar.length > 0 && (
           <div className="space-y-3">
-            {satirlar.map((s) => {
+            {satirlar.map((s, satirSira) => {
               const sv = xpSeviyeHesapla(s.xp ?? 0);
               return (
               <div
                 key={`${s.sira}`}
                 data-alan="lig-satir"
                 data-benim={s.benimMi ? '1' : undefined}
-                className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
+                // Satırlar sırayla belirir; ilk on satırdan sonra
+                // gecikme büyümüyor, yoksa liste yavaş doluyor.
+                style={{ ['--zt-sira' as string]: String(Math.min(satirSira, 10)) }}
+                className={`zt-satir-gir flex items-center gap-3 rounded-lg border px-4 py-3 ${
                   s.benimMi
                     ? 'border-cyan-300/50 bg-cyan-300/10 ring-1 ring-cyan-300/30'
                     : 'border-slate-800 bg-slate-900/40'
                 }`}
               >
                 {/* İlk üçte madalya, sonrasında sıra numarası */}
-                <div className="w-7 shrink-0 text-center text-sm font-bold text-slate-500">
-                  {s.sira <= 3 ? ['🥇', '🥈', '🥉'][s.sira - 1]! : `${s.sira}`}
+                {/* İlk üç gerçek metal tonunda madeni para; emoji her
+                    telefonda başka çiziliyordu ve markanın parçası
+                    olmuyordu. */}
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    s.sira <= 3
+                      ? ['zt-metal-altin', 'zt-metal-gumus', 'zt-metal-bronz'][s.sira - 1]!
+                      : 'text-sm font-bold text-slate-500'
+                  }`}
+                >
+                  {s.sira}
                 </div>
 
                 {/* Baş harf dairesi — rakip kartındakiyle aynı biçim */}

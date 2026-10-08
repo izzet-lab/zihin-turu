@@ -34,11 +34,18 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
 
   return (
     <>
-      <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4" data-alan="seri">
+      {/* SERİ ALTIN RENGİNDE: kesintisiz oynamak bir ödül, bir eylem
+          değil. Marka cyan'ı düğmelere ve vurguya ayrıldı. */}
+      <div
+        className={`mt-6 rounded-xl border p-4 ${
+          seri > 0 ? 'zt-odul-yuzey' : 'border-slate-800 bg-slate-900/40'
+        }`}
+        data-alan="seri"
+      >
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-400">
             Kesintisiz seri:{' '}
-            <span className="font-bold text-cyan-300" data-alan="seri-gun">
+            <span className="zt-odul-yazi font-bold" data-alan="seri-gun">
               {seri}
             </span>{' '}
             gün
@@ -52,9 +59,9 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
               title={g.tarih}
               className={`h-3.5 rounded-sm ${
                 g.durum === 'tam'
-                  ? 'bg-cyan-300'
+                  ? 'zt-odul-kare'
                   : g.durum === 'yakin'
-                    ? 'bg-cyan-300/40'
+                    ? 'zt-odul-kare-soluk'
                     : g.durum === 'uzak'
                       ? 'bg-slate-600'
                       : 'bg-slate-800'
@@ -75,14 +82,16 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
         )}
       </div>
 
+      {/* XP SEVİYESİ MOR: nadir olanın rengi. Seri (altın) ile XP (mor)
+          artık bakışta ayrılıyor; ikisi de cyan'ken aynı şey sanılıyordu. */}
       {kullanici?.id && ilerleme && (
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 p-4" data-alan="xp">
+        <div className="zt-nadir-yuzey mt-4 rounded-xl border p-4" data-alan="xp">
           {(() => {
             const sv = xpSeviyeHesapla(ilerleme.xp);
             return (
               <>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-300">
+                  <span className="zt-nadir-yazi text-sm font-bold">
                     Lv.{sv.seviye} {sv.unvan}
                   </span>
                   <span className="text-xs text-slate-500">{ilerleme.xp} XP</span>
@@ -90,7 +99,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                 {sv.sonrakiXp && (
                   <div className="h-2 overflow-hidden rounded-full bg-slate-800">
                     <div
-                      className="h-full rounded-full bg-cyan-300 transition-all"
+                      className="zt-nadir-dolgu h-full rounded-full transition-all"
                       style={{ width: `${sv.ilerlemeYuzdesi}%` }}
                     />
                   </div>
@@ -101,7 +110,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                   </div>
                 )}
                 {ilerleme.seriGun > 0 && (
-                  <div className="mt-2 text-xs text-slate-400">🔥 {ilerleme.seriGun} gün seri</div>
+                  <div className="zt-odul-yazi mt-2 text-xs">{ilerleme.seriGun} gün seri</div>
                 )}
               </>
             );

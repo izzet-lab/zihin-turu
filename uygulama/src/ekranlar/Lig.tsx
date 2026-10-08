@@ -354,8 +354,20 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                       </span>
                     )}
                     {sekme === 'arena' && s.altin !== undefined && (
-                      <span className="tabular-nums">
-                        🥇{s.altin} 🥈{s.gumus} 🥉{s.bronz} · {s.arenaSayisi} arena
+                      <span className="flex items-center gap-2 tabular-nums">
+                        {(
+                          [
+                            ['zt-metal-altin', s.altin],
+                            ['zt-metal-gumus', s.gumus],
+                            ['zt-metal-bronz', s.bronz],
+                          ] as const
+                        ).map(([sinif, adet]) => (
+                          <span key={sinif} className="flex items-center gap-1">
+                            <span className={`${sinif} h-2.5 w-2.5 rounded-full`} aria-hidden="true" />
+                            {adet}
+                          </span>
+                        ))}
+                        <span>· {s.arenaSayisi} arena</span>
                       </span>
                     )}
                     {sekme !== 'duello' && sekme !== 'arena' && s.gunSayisi !== undefined && (

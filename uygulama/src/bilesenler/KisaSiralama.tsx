@@ -94,16 +94,26 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
         </p>
       ) : (
         <ol className="space-y-1">
-          {satirlar.map((s) => (
+          {satirlar.map((s, satirSira) => (
             <li
               key={`${s.sira}-${s.kullaniciAdi}`}
               data-alan="kisa-satir"
               data-ben={s.benimMi ? '1' : undefined}
-              className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs ${
+              style={{ ['--zt-sira' as string]: String(satirSira) }}
+              className={`zt-satir-gir flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs ${
                 s.benimMi ? 'bg-cyan-300/10' : ''
               }`}
             >
-              <span className="w-5 shrink-0 text-right tabular-nums text-slate-500">{s.sira}</span>
+              {/* İlk üç metal madeni para; gerisi sade numara. */}
+              <span
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black tabular-nums ${
+                  s.sira <= 3
+                    ? ['zt-metal-altin', 'zt-metal-gumus', 'zt-metal-bronz'][s.sira - 1]!
+                    : 'text-slate-500'
+                }`}
+              >
+                {s.sira}
+              </span>
               <span
                 className={`min-w-0 flex-1 truncate font-bold ${
                   s.benimMi ? 'text-cyan-200' : 'text-slate-300'
@@ -114,8 +124,25 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
               <span className="shrink-0 tabular-nums text-slate-400">
                 {sekme === 'duello'
                   ? `${s.puan} derece`
-                  : `🥇${s.altin ?? 0} 🥈${s.gumus ?? 0} 🥉${s.bronz ?? 0}`}
+                  : null}
               </span>
+              {/* Madalya sayıları emoji değil, renkli noktalarla. */}
+              {sekme !== 'duello' && (
+                <span className="flex shrink-0 items-center gap-1.5 tabular-nums">
+                  {(
+                    [
+                      ['zt-metal-altin', s.altin ?? 0],
+                      ['zt-metal-gumus', s.gumus ?? 0],
+                      ['zt-metal-bronz', s.bronz ?? 0],
+                    ] as const
+                  ).map(([sinif, adet]) => (
+                    <span key={sinif} className="flex items-center gap-0.5">
+                      <span className={`${sinif} h-2.5 w-2.5 rounded-full`} aria-hidden="true" />
+                      <span className="text-slate-400">{adet}</span>
+                    </span>
+                  ))}
+                </span>
+              )}
             </li>
           ))}
         </ol>

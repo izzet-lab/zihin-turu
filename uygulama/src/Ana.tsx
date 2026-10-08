@@ -54,7 +54,7 @@ export default function Ana() {
         <Route path="/lig" element={<Lig oyuncuId={kullanici?.id} />} />
         <Route path="/duello" element={<DuelloRota girisYapildiMi={!!kullanici} />} />
         <Route path="/arena" element={<ArenaRota girisYapildiMi={!!kullanici} />} />
-        <Route path="/kelime" element={<KelimeRota />} />
+        <Route path="/kelime" element={<KelimeRota kullanici={kullanici} />} />
 
         {/* Herkese açık profil sayfası */}
         <Route path="/o/:kullaniciAdi" element={<ProfilSayfasi />} />
@@ -121,11 +121,18 @@ function ArenaRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
  *
  * Ekran kendi sozlugunu sonradan yukluyor; burada bir sey beklemiyoruz.
  */
-function KelimeRota() {
+function KelimeRota({ kullanici }: { kullanici: User | null }) {
   const gecis = useNavigate();
   const [parametreler] = useSearchParams();
   const seviye = parametreler.get('seviye') ?? undefined;
-  return <KelimeTuru baslangicSeviye={seviye} onCik={() => gecis('/')} />;
+  return (
+    <KelimeTuru
+      baslangicSeviye={seviye}
+      kullanici={kullanici ? { ad: kullanici.email ?? '', id: kullanici.id } : null}
+      onGirisAc={() => gecis('/?giris=1')}
+      onCik={() => gecis('/')}
+    />
+  );
 }
 
 function Div404() {

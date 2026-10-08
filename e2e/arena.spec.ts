@@ -131,7 +131,7 @@ test.describe('arena', () => {
     const yardim = page.locator('[data-alan="yardim-anladim"]');
     if (await yardim.isVisible().catch(() => false)) await yardim.click();
 
-    const dugme = page.locator('[data-alan="arena-git"]');
+    const dugme = page.locator('[data-mod="arena"]');
     await expect(dugme).toBeVisible();
     await expect(dugme).toContainText('Arena');
     await dugme.click();

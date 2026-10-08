@@ -617,7 +617,7 @@ export default function Oyun({
                 data-tas={t.deger}
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
-                className={`overflow-hidden rounded-xl border px-1 font-black tabular-nums leading-none transition active:scale-95 ${
+                className={`overflow-hidden rounded-xl border px-2 font-black tabular-nums leading-none transition active:scale-95 ${
                   yaris ? 'min-h-[76px]' : 'min-h-[64px]'
                 } ${rakamBoyu(t.deger, !!yaris)} ${
                   secili

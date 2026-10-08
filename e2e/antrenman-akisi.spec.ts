@@ -100,8 +100,8 @@ test('antrenman: yeni tur kurulum ekranına uğramadan aynı ayarlarla devam ede
   // Antrenman'dan gelindiği için Kurulum Antrenman sekmesiyle açılmalı
   // (Günün Turu'na sıçrarsa bu bir regresyon olur).
   await page.locator('[data-alan="ayarlar"]').click();
-  const antrenmanSekmesi = page.locator('[data-mod="antrenman"]');
-  await expect(antrenmanSekmesi).toHaveAttribute('aria-pressed', 'true');
+  // Antrenman EKRANI açılmalı (ana ekrana düşerse bu bir regresyon).
+  await expect(page.locator('[data-alan="antrenman-ayar"]')).toBeVisible();
   const zorCip = page.locator('[data-seviye="zor"]');
   await expect(zorCip).toHaveAttribute('aria-pressed', 'true');
   const sure30 = page.locator('[data-sure="30"]');

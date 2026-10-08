@@ -26,13 +26,17 @@ async function hazirla(page: import('@playwright/test').Page) {
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
 }
 
-test('kurulumdaki düello düğmesi seçili seviyeyle düelloya götürür', async ({ page }) => {
+test('ana ekrandaki düello kartı hatırlanan seviyeyle düelloya götürür', async ({ page }) => {
   await hazirla(page);
 
+  // Zorluk ana ekrandan kalktı; her mod kendi ekranında seçiyor.
+  // Düello kartı en son kullanılan seviyeyi taşır — oyuncu zorluğu
+  // düellonun kendi ekranında da değiştirebiliyor.
   await page.locator('[data-mod="antrenman"]').click();
   await page.locator('[data-seviye="zor"]').click();
+  await page.locator('[data-alan="geri"]').click();
 
-  const dugme = page.locator('[data-alan="duello-git"]');
+  const dugme = page.locator('[data-mod="duello"]');
   await expect(dugme).toBeVisible();
   await expect(dugme).toContainText('Düello');
   await dugme.click();
@@ -57,5 +61,7 @@ test('düellodan vazgeçince ana sayfaya dönülür', async ({ page }) => {
   await page.goto('/duello?seviye=normal');
   await page.locator('[data-alan="duello-cik"]').click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator('[data-alan="basla"]')).toBeVisible();
+  // Ana ekranın baskın eylemi Günün Turu kartı; "Başla" artık modun
+  // kendi ekranında.
+  await expect(page.locator('[data-alan="gunun-git"]')).toBeVisible();
 });

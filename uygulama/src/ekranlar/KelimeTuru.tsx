@@ -20,6 +20,8 @@ import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
 import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
+import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
+import SeriVeXp from '../bilesenler/SeriVeXp';
 import {
   KELIME_SEVIYE_LISTESI,
   kelimeTuruKur,
@@ -45,10 +47,13 @@ interface Tas {
 interface Props {
   /** Başlangıç seviyesi; verilmezse oyuncu seçer. */
   baslangicSeviye?: string;
+  /** Giriş yapmış kullanıcı; seri ve XP kartı için. */
+  kullanici?: { ad: string; id?: string } | null;
+  onGirisAc?: () => void;
   onCik: () => void;
 }
 
-export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
+export default function KelimeTuru({ baslangicSeviye, kullanici, onGirisAc, onCik }: Props) {
   const [asama, setAsama] = useState<Asama>('yukleniyor');
   const [saglayici, setSaglayici] = useState<TurSaglayici | null>(null);
   const [yuklemeHatasi, setYuklemeHatasi] = useState(false);
@@ -258,32 +263,48 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   if (asama === 'seviye') {
     return (
       <Cerceve onCik={onCik}>
-        <h1 className="mt-2 text-2xl font-black text-white">Kelime Turu</h1>
+        <h1 className="text-2xl font-black leading-none text-white">Kelime Turu</h1>
         <p className="mt-1 text-sm text-slate-400">
           Verilen harflerden en uzun kelimeyi türet. Her harf bir kez kullanılır.
         </p>
 
-        {/* MOD — Günün Turu lige işler, Antrenman işlemez (kural 4). */}
-        <div className="mt-5 grid grid-cols-2 gap-2" data-alan="kelime-mod-secici">
+        {/* MOD — Günün Turu lige işler, Antrenman işlemez (kural 4).
+            Alt yazılar ana ekrandaki dille aynı: "Herkese aynı
+            bulmaca" / "İstediğin kadar oyna". İki ekranda iki ayrı
+            cümle kullanmak aynı şeyi iki farklı şey gibi gösteriyordu. */}
+        <div className="mt-5 grid grid-cols-2 gap-2.5" data-alan="kelime-mod-secici">
           {([
-            { k: 'gunun' as Mod, ad: 'Günün Turu', alt: 'lige işler' },
-            { k: 'antrenman' as Mod, ad: 'Antrenman', alt: 'serbest' },
+            { k: 'gunun' as Mod, ad: 'Günün Turu', alt: 'Herkese aynı bulmaca · lige işler', simge: '📅' },
+            { k: 'antrenman' as Mod, ad: 'Antrenman', alt: 'İstediğin kadar oyna', simge: '♾️' },
           ]).map((m) => (
             <button
               key={m.k}
               data-mod={m.k}
               aria-pressed={mod === m.k}
               onClick={() => setMod(m.k)}
-              className={`min-h-[56px] rounded-xl border-2 px-3 text-left transition ${
+              className={`zt-secim min-h-[92px] rounded-xl border-2 px-3 py-3 text-left transition ${
                 mod === m.k
-                  ? 'border-cyan-300 bg-cyan-300/10'
-                  : 'border-slate-700 bg-slate-800/40'
+                  ? 'zt-secim-acik border-cyan-300 bg-cyan-300/15'
+                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
               }`}
             >
-              <span className={`block text-sm font-black ${mod === m.k ? 'text-cyan-200' : 'text-slate-200'}`}>
+              <span className="block text-xl leading-none" aria-hidden="true">
+                {m.simge}
+              </span>
+              <span
+                className={`mt-2 block font-black leading-tight ${
+                  mod === m.k ? 'text-cyan-100' : 'text-slate-100'
+                }`}
+              >
                 {m.ad}
               </span>
-              <span className="block text-[11px] text-slate-500">{m.alt}</span>
+              <span
+                className={`mt-0.5 block text-[11px] leading-snug ${
+                  mod === m.k ? 'text-cyan-200/70' : 'text-slate-400'
+                }`}
+              >
+                {m.alt}
+              </span>
             </button>
           ))}
         </div>
@@ -298,26 +319,31 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
           </div>
         )}
 
-        <div className="mt-5 space-y-2.5" data-alan="kelime-seviye-secici">
-          {KELIME_SEVIYE_LISTESI.map((s) => (
-            <button
-              key={s.anahtar}
-              data-seviye={s.anahtar}
-              disabled={mod === 'gunun' && gunlukKilit}
-              onClick={() => {
-                setSeviye(s.anahtar);
-                turBaslat(s.anahtar, mod);
-              }}
-              className="flex min-h-[64px] w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 px-4 text-left transition active:scale-[0.99] disabled:opacity-40"
-            >
-              <div>
-                <div className="text-base font-black text-white">{s.etiket}</div>
-                <div className="text-xs text-slate-400">{s.altEtiket}</div>
-              </div>
-              <div className="text-xs font-bold text-slate-500">{s.sure} sn</div>
-            </button>
-          ))}
+        {/* Seviye ızgarası ana ekranla AYNI bileşen: iki ekranda iki
+            farklı düzen, oyuncuya iki farklı uygulama gibi geliyordu.
+            Kelime turunda seviye kilidi yok — hepsi açık. */}
+        <div
+          data-alan="kelime-seviye-secici"
+          className={`mt-6 ${mod === 'gunun' && gunlukKilit ? 'pointer-events-none opacity-40' : ''}`}
+        >
+          <SeviyeIzgara
+            seviyeler={KELIME_SEVIYE_LISTESI}
+            acik={KELIME_SEVIYE_LISTESI.map((s) => s.anahtar)}
+            secili={seviye}
+            onSec={setSeviye}
+          />
         </div>
+
+        <button
+          data-alan="kelime-basla"
+          disabled={mod === 'gunun' && gunlukKilit}
+          onClick={() => turBaslat(seviye, mod)}
+          className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition hover:bg-cyan-200 active:scale-[.99] disabled:opacity-40"
+        >
+          {mod === 'gunun' ? 'Günün Kelime Turunu Oyna' : 'Başla'}
+        </button>
+
+        <SeriVeXp kullanici={kullanici} onGirisAc={onGirisAc} />
       </Cerceve>
     );
   }
@@ -513,18 +539,24 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   );
 }
 
-/** Ortak dış kabuk — arka plan, güvenli alan ve çıkış düğmesi. */
+/**
+ * Ortak dış kabuk.
+ *
+ * ÇIKIŞ DÜĞMESİ SAĞ ÜSTTEN SOL ÜSTE ALINDI.
+ * Sağ üstte zaten sabit hamburger menü duruyor; yuvarlak "✕" onun
+ * üstüne biniyordu ve iki düğme birbirini yiyordu. Çıkış artık
+ * uygulamanın her yerindeki gibi sol üstte "← Geri".
+ */
 function Cerceve({ children, onCik }: { children: React.ReactNode; onCik: () => void }) {
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-8 text-slate-200">
       <div className="mx-auto w-full max-w-md">
         <button
           onClick={onCik}
-          aria-label="Kelime turundan çık"
-          className="absolute right-5 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 text-slate-300"
           data-alan="kelime-cik"
+          className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
         >
-          ✕
+          ← Geri
         </button>
         {children}
       </div>

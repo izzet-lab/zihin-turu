@@ -113,7 +113,7 @@ export default function Kurulum({ seviyeler, onBasla, onYardim, baslangicMod, ku
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
       <div className="mx-auto w-full max-w-md">
         <header className="relative flex items-center gap-3 pr-12">
-          <img src="/logo.svg" alt="" className="h-9 w-9" />
+          <img src="/ikon/ikon-192.png" alt="" className="h-9 w-9 rounded-lg" />
           <div className="flex-1">
             <h1 className="text-2xl font-black leading-none text-white">Tam İsabet</h1>
             <p className="text-xs text-slate-500">Sayı Turu — rakamlar, dört işlem, bir hedef.</p>

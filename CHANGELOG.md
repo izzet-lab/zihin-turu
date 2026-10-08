@@ -3,6 +3,91 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Ana ekran yeniden kuruldu, kelime turu dengelendi
+
+### Ana ekran bir menüye dönüşmüştü
+
+Beş mod kartı, zorluk, süre, büyük sayı, seri ve XP aynı sayfada alt
+alta duruyordu. En kötüsü şuydu: "Zorluk" yalnızca Günün Turu ile
+Antrenman'ı ilgilendirdiği hâlde Düello ve Arena kartlarının ALTINDA
+duruyordu. Oyuncu hangi ayarın neye ait olduğunu anlayamıyordu.
+
+Yeni yapı:
+- **Günün Turu** tek baskın kart — günlük ritüel, ana eylem.
+- Altında **2×2 ızgara**: Antrenman, Düello, Arena, Kelime Turu. Hepsi
+  aynı boyda, aynı görsel ağırlıkta ve **tek vurgu renginde**. Üç ayrı
+  renk kullanılmıyor; sarı bu uygulamada uyarı ve reklam rengi, mod
+  kartında kullanmak o anlamı bozuyor.
+- **Zorluk ve süre ana ekrandan kalktı.** Her mod kendi seviyesini
+  kendi ekranında seçiyor; Düello ve Arena zaten öyle yapıyordu, artık
+  Günün Turu ve Antrenman da öyle yapıyor.
+- En altta seri şeridi ve XP kartı.
+
+Başlıktaki işaret yeni ikon oldu; eski "birleşen taşlar" görseli
+(`logo.svg`) projeden tamamen kaldırıldı. Alt başlık platformu
+anlatıyor: "Türkçe zihin oyunları — sayılar ve kelimeler." Önceki
+satır yalnızca sayı turunu anlatıyordu, oysa artık kelime oyunu da var.
+
+### Kelime Turu ekranı ana ekranla tutarlı
+
+Sağ üstteki yuvarlak "✕" sabit hamburger menünün üstüne biniyordu;
+çıkış artık uygulamanın her yerindeki gibi sol üstte "← Geri". Seviye
+kartları ana ekranla **aynı bileşeni** kullanıyor. Mod kartlarının alt
+yazıları ana ekrandaki dille aynı. Seri ve XP bu ekranda da görünüyor.
+
+### Büyük rakamların solu kırpılıyordu
+
+Sebep yazı tipiydi: Space Grotesk 300–700 arası geliyor, **900
+ağırlığı yok**. Arayüzde `font-black` kullanılan her yerde tarayıcı
+700'ü alıp kendisi şişiriyordu ("sahte kalın"). Sahte kalın, harfin
+mürekkebini kutusunun dışına taşırıyor; punto büyüdükçe taşma da
+büyüyor ve `overflow: hidden` olan yüzeylerde ilk rakamın solu
+tıraşlanıyordu. Ölçüldü: taşta 1px sola taşma vardı. Sentez kapatıldı
+(gerçek 700 yüzü kullanılıyor), taşların yan boşluğu 4px'ten 8px'e
+çıktı.
+
+### Marka değişikliğinde kaybolan ilerleme
+
+Paket adı ve alan adı değişince tarayıcı deposu yeni bir kaynak
+altında açılıyor ve eski ilerleme okunamıyor. Bu bir hata değil,
+tarayıcının güvenlik kuralı — ama oyuncu serisinin neden sıfırlandığını
+bilmiyor.
+
+- **Üyede çözüldü:** giriş yapılmışsa ilerleme sunucudan geri
+  yükleniyor — seri, açılmış seviyeler ve son günlerin Günün Turu
+  geçmişi. Yalnızca EKLER, hiçbir şeyi silmez; yerelde daha ileri bir
+  ilerleme varsa korunur.
+- **Misafirde çözülemiyor.** Veri hiçbir yerde yok. Ana ekranda bunu
+  açıkça söyleyen bir not var ve giriş yapmaya çağırıyor.
+
+### Kelime turu zorluk ölçümü ve dengeleme
+
+Sayı turundaki ölçümün karşılığı yazıldı
+(`testler/kelime-zorluk-olcum.ts`). Seviye başına 200 tur:
+
+| Seviye | Harf | En uzun (ort) | Havuzdaki kelime | Puan getiren |
+|---|---|---|---|---|
+| Isınma | 7 | 4,85 | 22 | %87 |
+| Normal | 8 | 5,74 | 40 | %66 |
+| Zor | 9 | 6,50 | 67 | %43 |
+| Usta | 10 | 7,51 | 105 | **%24** |
+
+Önce bir yanlış anlamayı giderdi: Usta'da 10 harften 10 harflik kelime
+bulmak **gerekmiyor**; o havuzlardan çıkan en uzun kelime ortalama 7,5
+harf.
+
+Asıl sorun puanlamaydı. Puan "en uzundan kaç harf kısa" sorusuna
+bakıyordu (0/1/2 harf → 10/7/5, gerisi 0). İki harf, en uzunun 5 olduğu
+turda büyük bir hata; 10 olduğu turda küçük. Sabit eşik yüzünden
+Usta'da havuzdaki kelimelerin dörtte üçü sıfır getiriyordu.
+
+Puan artık **orana** bakıyor: yazdığın kelime, bulunabilecek en uzunun
+yüzde kaçı. Eşik seviyeyle birlikte kendiliğinden genişliyor, seviye
+başına tablo tutmak gerekmiyor. Ölçüm tekrarlandı — puan getiren
+kelime oranı: Isınma %99, Normal %93, Zor %84, Usta %67. Gradyan
+duruyor (üst seviyede puan almak hâlâ zor) ama "doğru kelimeyi buldum,
+sıfır aldım" artık istisna.
+
 ## 2026-10-08 - Marka: Zihin Turu → Tam İsabet (sürüm 2.0.0)
 
 Uygulama henüz mağazada olmadığı için paket adı da değişebildi; bu son

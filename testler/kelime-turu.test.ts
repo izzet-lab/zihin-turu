@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { Dogrulama } from '@tamisabet/cekirdek';
 import {
   kelimeTuru,
   kelimeTuruKur,
@@ -168,22 +169,59 @@ describe('puanlama — sayı turuyla aynı ölçek', () => {
     expect(p.toplam).toBe(p.taban + p.hiz + p.ilk);
   });
 
-  it('yaklaşan daha az alır, uzak kalan hiç alamaz', () => {
-    const y = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 1 }, 0, 60, false);
-    const o = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 2 }, 0, 60, false);
-    const u = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 5 }, 0, 60, false);
+  /*
+    PUAN HARF FARKINA DEĞİL ORANA BAKAR.
+
+    Ölçüm (testler/kelime-zorluk-olcum.ts) sabit harf eşiğinin üst
+    seviyelerde çalışmadığını gösterdi: Usta'da havuzdan çıkan
+    kelimelerin yalnızca %24'ü puan getiriyordu. Artık ölçüt
+    "yazdığın kelime en uzunun ne kadarı"; eşik seviyeyle birlikte
+    kendiliğinden genişliyor.
+  */
+  it('yaklaşan daha az alır, çok kısa kalan hiç alamaz', () => {
+    const tur = { enUzunUzunluk: 10 };
+    const y = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 1, harfSayisi: 9, ...tur } as Dogrulama, 0, 60, false);
+    const o = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 3, harfSayisi: 7, ...tur } as Dogrulama, 0, 60, false);
+    const u = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 7, harfSayisi: 3, ...tur } as Dogrulama, 0, 60, false);
     expect(y.toplam).toBeGreaterThan(o.toplam);
+    expect(o.toplam).toBeGreaterThan(0);
     expect(u.toplam).toBe(0);
   });
 
+  it('aynı harf farkı, uzun turda daha değerli', () => {
+    // İki harf eksik kalmak, en uzunu 5 olan turda büyük bir hata;
+    // en uzunu 10 olan turda küçük. Puan bunu yansıtmalı.
+    const kisa = kelimeTuru.puanla(
+      'normal',
+      { gecerli: true, uzaklik: 2, harfSayisi: 3, enUzunUzunluk: 5 } as Dogrulama,
+      0,
+      60,
+      false,
+    );
+    const uzun = kelimeTuru.puanla(
+      'usta',
+      { gecerli: true, uzaklik: 2, harfSayisi: 8, enUzunUzunluk: 10 } as Dogrulama,
+      0,
+      60,
+      false,
+    );
+    expect(uzun.taban).toBeGreaterThan(kisa.taban);
+  });
+
   it('hız primi yalnızca tam isabette var', () => {
-    const p = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 1 }, 59, 60, false);
+    const p = kelimeTuru.puanla(
+      'normal',
+      { gecerli: true, uzaklik: 1, harfSayisi: 7, enUzunUzunluk: 8 } as Dogrulama,
+      59,
+      60,
+      false,
+    );
     expect(p.hiz).toBe(0);
   });
 
   it('ilk bulan primi puan alanlara verilir', () => {
-    const alan = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 0 }, 0, 60, true);
-    const alamayan = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 9 }, 0, 60, true);
+    const alan = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 0, harfSayisi: 8, enUzunUzunluk: 8 } as Dogrulama, 0, 60, true);
+    const alamayan = kelimeTuru.puanla('normal', { gecerli: true, uzaklik: 9, harfSayisi: 0, enUzunUzunluk: 9 } as Dogrulama, 0, 60, true);
     expect(alan.ilk).toBe(2);
     expect(alamayan.ilk).toBe(0);
   });

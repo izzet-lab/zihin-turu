@@ -21,6 +21,9 @@ test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Normal açı
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
 
   // --- 1) Seviye seçimi kilitli, yalnızca Isınma açık ---
+  // Zorluk ana ekrandan kalktı; her mod kendi ekranında seçiyor.
+  await page.locator('[data-mod="antrenman"]').click();
+
   await expect(page.locator('text=Isınma ile başlıyorsun')).toBeVisible();
 
   const isinmaCip = page.locator('[data-seviye="cocuk"]');
@@ -33,8 +36,7 @@ test('ilk kez giren oyuncu Isınma ile başlar, tam isabet yapınca Normal açı
   const ustaCip = page.locator('[data-seviye="usta"]');
   await expect(ustaCip).toBeDisabled();
 
-  // --- 2) Antrenman'da Isınma'yı oyna, tam isabet yap ---
-  await page.locator('[data-mod="antrenman"]').click();
+  // --- 2) Isınma'yı oyna, tam isabet yap ---
   await page.locator('[data-alan="basla"]').click();
 
   await zinciriBulVeOyna(page);

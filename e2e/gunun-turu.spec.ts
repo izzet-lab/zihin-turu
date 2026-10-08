@@ -43,13 +43,24 @@ async function tohumla(page: Page) {
   });
 }
 
-async function kurulumuAc(page: Page) {
+/**
+ * Günün Turu ekranını açar.
+ *
+ * Zorluk ana ekrandan kalktı; Günün Turu kartı kendi ekranına
+ * götürüyor ve seviye orada seçiliyor. Tur oynanmışsa o ekranda
+ * seviye ızgarası yerine kilit kartı var — `seviyeSec` bu yüzden
+ * ayrı: kilit doğrulaması seviye seçmeye çalışmamalı.
+ */
+async function gununTuruEkraniniAc(page: Page) {
   await page.goto('/');
   // İlk açılışta tanıtım kendiliğinden çıkar; kapat ve devam et.
   const yardim = page.locator('[data-alan="yardim-anladim"]');
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
-  // Varsayılan mod Günün Turu; yine de açıkça seç.
-  await page.locator('[data-mod="gunun"]').click();
+  await page.locator('[data-alan="gunun-git"]').click();
+}
+
+async function kurulumuAc(page: Page) {
+  await gununTuruEkraniniAc(page);
   await page.locator('[data-seviye="normal"]').click();
 }
 
@@ -101,7 +112,7 @@ test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız
   expect(boyut).toEqual({ w: 1080, h: 1080, png: true });
 
   // --- 4) Sayfayı yenile → günlük kilit dursun ---
-  await kurulumuAc(page);
+  await gununTuruEkraniniAc(page);
   await expect(page.locator('[data-alan="kilit"]')).toBeVisible();
   await expect(page.locator('[data-alan="kilit"]')).toContainText('tamamlandı');
   await expect(page.locator('[data-alan="basla"]')).toHaveCount(0);

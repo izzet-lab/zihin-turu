@@ -126,9 +126,14 @@ export default function Uygulama() {
   // Efekt içinde ayarlansaydı Kurulum bir kez yanlış modla çizilir ve
   // seçim değişmezdi — sıralamalardaki "Antrenman yap" düğmesi
   // Günün Turu'nu açıyordu.
-  const [kurulumMod, setKurulumMod] = useState<Mod>(() => {
+  //
+  // DEĞER `undefined` OLABİLİR: ana ekran artık bir mod seçici değil,
+  // bir menü. Adres satırında mod yoksa Kurulum ANA ekranı gösterir;
+  // mod varsa (sıralamalardan gelen davet gibi) doğrudan o modun
+  // ekranı açılır.
+  const [kurulumMod, setKurulumMod] = useState<Mod | undefined>(() => {
     const m = new URLSearchParams(window.location.search).get('mod');
-    return m === 'antrenman' ? 'antrenman' : 'gunun';
+    return m === 'antrenman' ? 'antrenman' : m === 'gunun' ? 'gunun' : undefined;
   });
   // İlk açılışta tanıtımı bir kez göster; sonra "?" ile açılır.
   const [yardimAcik, setYardimAcik] = useState<boolean>(() => !yardimGoruldu());
@@ -442,9 +447,14 @@ export default function Uygulama() {
     setEkran('sonuc');
   }
 
-  /** Günün Turu'nun "Ana sayfaya dön"ü: kurulum hep Günün Turu sekmesiyle açılır. */
+  /**
+   * Günün Turu'nun "Ana sayfaya dön"ü — gerçekten ANA ekrana döner.
+   * Önce Günün Turu sekmesini açıyordu; o zaman "ana ekran" diye bir
+   * şey yoktu, kurulum bir mod seçiciydi. Artık ana ekran oyunların
+   * menüsü ve turunu bitiren oyuncunun göreceği yer orası.
+   */
   function anaSayfaya() {
-    setKurulumMod('gunun');
+    setKurulumMod(undefined);
     setEkran('kurulum');
   }
 

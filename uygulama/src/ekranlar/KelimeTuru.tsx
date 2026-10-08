@@ -325,9 +325,16 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   if (asama === 'sonuc' && sonuc) {
     const tamMi = sonuc.uzaklik === 0;
     // Çözüm oyuncunun kendi kelimesiyse göstermenin anlamı yok.
+    const cozumKelimesi = sonuc.enUzun.split(' ')[0]?.toLocaleLowerCase('tr') ?? '';
+    const benimKelime = sonuc.kelime.toLocaleLowerCase('tr');
+    // Çekimli biçimler sözlük listesinde yok ama kabul ediliyor
+    // (bkz. oyun-kelime/cekim.ts); oyuncunun kelimesi listedeki en
+    // uzundan DAHA uzun olabiliyor. Böyle bir durumda "en uzun kelime"
+    // diye daha kısa bir şey göstermek saçma olurdu.
     const cozumFarkli =
-      !!sonuc.enUzun &&
-      !sonuc.enUzun.toLocaleLowerCase('tr').startsWith(sonuc.kelime.toLocaleLowerCase('tr') + ' ');
+      !!cozumKelimesi &&
+      cozumKelimesi !== benimKelime &&
+      cozumKelimesi.length >= benimKelime.length;
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-6 text-center" data-alan="kelime-sonuc">

@@ -81,8 +81,12 @@ for (const satir of satirlar) {
   // Noktalama, kısaltma, yabancı harf, tire içerenler.
   if (!HARFLER.test(k)) { elenen++; continue; }
 
-  // Oyunda en kısa kelime 3 harf; tek ve iki harfliler havuzu kirletir.
-  if (k.length < 3 || k.length > 15) { elenen++; continue; }
+  // İKİ HARFLİ KÖKLER LİSTEDE KALIR.
+  // Oyunda en kısa CEVAP üç harf (bkz. EN_KISA_KELIME) ama sözlük
+  // cevapları değil KÖKLERİ tutuyor: "evde" ancak "ev" listedeyse
+  // doğrulanabiliyor. Önce üç harf altı elenmişti ve "ev", "su", "el"
+  // gibi gündelik köklerin bütün çekimleri reddediliyordu.
+  if (k.length < 2 || k.length > 15) { elenen++; continue; }
 
   kokler.add(k);
 }

@@ -5,10 +5,11 @@
  * Lisans metni: veri/ZEMBEREK-LISANS.txt
  * Ureten betik: araclar/kelime-listesi-uret.mjs
  *
- * 49954 kelime (kokler + duzenli cogullar), satir satir.
+ * 50129 kelime (kokler + duzenli cogullar), satir satir.
  */
 
-export const KELIME_METNI = `aba
+export const KELIME_METNI = `ab
+aba
 abajur
 abajurlar
 abaküs
@@ -66,6 +67,7 @@ abla
 ablak
 ablaklar
 ablalar
+ablar
 ablatif
 ablatifler
 ablatya
@@ -190,6 +192,7 @@ acuze
 acuzeler
 acyo
 acyolar
+aç
 açacak
 açacaklar
 açar
@@ -242,6 +245,7 @@ açkı
 açkılamak
 açkılamaklar
 açkılar
+açlar
 açlık
 açlıklar
 açma
@@ -250,6 +254,7 @@ açmaklar
 açmalar
 açmaz
 açmazlar
+ad
 ada
 adabımuaşeret
 adabımuaşeretler
@@ -343,6 +348,7 @@ adisyon
 adisyonlar
 adlanmak
 adlanmaklar
+adlar
 adli
 adliler
 adliye
@@ -361,6 +367,7 @@ aeroloji
 aerolojik
 aerolojikler
 aerolojiler
+af
 afacan
 afacanlar
 afak
@@ -413,6 +420,7 @@ afişlemekler
 afişler
 afiyet
 afiyetler
+aflar
 afoni
 afoniler
 aforizm
@@ -493,6 +501,7 @@ agulamaklar
 agular
 aguş
 aguşlar
+ağ
 ağa
 ağababa
 ağababalar
@@ -587,6 +596,7 @@ ağlamaklı
 ağlamaklılar
 ağlantı
 ağlantılar
+ağlar
 ağlaşmak
 ağlaşmaklar
 ağlatı
@@ -609,6 +619,7 @@ ağustos
 ağustoslar
 ağyar
 ağyarlar
+ah
 aha
 ahacık
 ahacıklar
@@ -669,6 +680,7 @@ ahlakiler
 ahlaklar
 ahlamak
 ahlamaklar
+ahlar
 ahlat
 ahlatlar
 ahmak
@@ -725,6 +737,7 @@ ajite
 ajiteler
 ajur
 ajurlar
+ak
 aka
 akabe
 akabeler
@@ -902,6 +915,7 @@ aklan
 aklanlar
 aklanmak
 aklanmaklar
+aklar
 aklen
 aklenler
 aklevrek
@@ -1135,6 +1149,7 @@ akyuvar
 akyuvarlar
 akzambak
 akzambaklar
+al
 ala
 alabacak
 alabacaklar
@@ -1464,6 +1479,7 @@ allamak
 allamaklar
 allame
 allameler
+allar
 allegretto
 allegrettolar
 allegro
@@ -1586,6 +1602,7 @@ alyuvar
 alyuvarlar
 alzaymır
 alzaymırlar
+am
 ama
 amabile
 amabileler
@@ -1708,6 +1725,7 @@ amitoz
 amitozlar
 amiyane
 amiyaneler
+amlar
 amma
 ammalar
 amme
@@ -1762,6 +1780,7 @@ amut
 amutlar
 amyant
 amyantlar
+an
 ana
 anabolizma
 anabolizmalar
@@ -2020,6 +2039,7 @@ anlamdaşlar
 anlamlanmak
 anlamlanmaklar
 anlamlar
+anlar
 anlaşık
 anlaşıklar
 anlaşılan
@@ -2331,6 +2351,7 @@ apteriks
 apteriksler
 apukurya
 apukuryalar
+ar
 ara
 araba
 arabalar
@@ -2583,6 +2604,7 @@ arlanmak
 arlanmaklar
 arlanmaz
 arlanmazlar
+arlar
 arma
 armada
 armadalar
@@ -2726,6 +2748,7 @@ arzu
 arzulamak
 arzulamaklar
 arzular
+as
 asa
 asabi
 asabiler
@@ -2872,6 +2895,7 @@ aslankuyruğular
 aslanlar
 aslanpençesi
 aslanpençesiler
+aslar
 aslen
 aslenler
 aslında
@@ -2962,6 +2986,7 @@ asuman
 asumanlar
 asyön
 asyönler
+aş
 aşağı
 aşağılamak
 aşağılamaklar
@@ -3032,6 +3057,7 @@ aşkefzalar
 aşkın
 aşkınlar
 aşklar
+aşlar
 aşmak
 aşmaklar
 aşoz
@@ -3040,6 +3066,7 @@ aşure
 aşureler
 aşüfte
 aşüfteler
+at
 ata
 atabek
 atabekler
@@ -3147,6 +3174,7 @@ atlambaç
 atlambaçlar
 atlangıç
 atlangıçlar
+atlar
 atlas
 atlaslar
 atlatmak
@@ -3191,6 +3219,7 @@ attar
 attarlar
 aut
 autlar
+av
 avadanlık
 avadanlıklar
 aval
@@ -3245,6 +3274,7 @@ avlamak
 avlamaklar
 avlanmak
 avlanmaklar
+avlar
 avlu
 avlular
 avokado
@@ -3277,6 +3307,7 @@ avurtlamaklar
 avurtlar
 avutmak
 avutmaklar
+ay
 aya
 ayak
 ayakaltı
@@ -3425,6 +3456,7 @@ aylandız
 aylandızlar
 aylanmak
 aylanmaklar
+aylar
 aylarca
 aylarcalar
 aylık
@@ -3519,6 +3551,7 @@ ayyaş
 ayyaşlar
 ayyuk
 ayyuklar
+az
 aza
 azade
 azadeler
@@ -3577,6 +3610,7 @@ azizeler
 aziziye
 aziziyeler
 azizler
+azlar
 azletmek
 azletmekler
 azlolmak
@@ -6645,6 +6679,7 @@ brülör
 brülörler
 brüt
 brütler
+bu
 buat
 buatlar
 bucak
@@ -6735,6 +6770,7 @@ bulanmak
 bulanmaklar
 bulantı
 bulantılar
+bular
 bulaşıcı
 bulaşıcılar
 bulaşık
@@ -7301,6 +7337,7 @@ cazibeler
 cazip
 cazipler
 cazlar
+cc
 cebbar
 cebbarlar
 cebe
@@ -9508,6 +9545,7 @@ cüzzamlar
 çürükler
 çürümek
 çürümekler
+da
 dadanmak
 dadanmaklar
 dadaş
@@ -9605,6 +9643,7 @@ dalamak
 dalamaklar
 dalan
 dalanlar
+dalar
 dalaş
 dalaşlar
 dalaşmak
@@ -9972,6 +10011,7 @@ dazlaklar
 dazlamak
 dazlamaklar
 dazlar
+de
 debagat
 debagatlar
 debbağ
@@ -10239,6 +10279,7 @@ delegelik
 delegelikler
 delepmek
 delepmekler
+deler
 delgeç
 delgeçler
 delgi
@@ -11466,6 +11507,7 @@ dizüstü
 dizüstüler
 dizyem
 dizyemler
+do
 dobra
 dobralar
 doçent
@@ -12158,6 +12200,7 @@ duyurum
 duyurumlar
 duyuüstü
 duyuüstüler
+dü
 düalist
 düalistler
 düalizm
@@ -12204,6 +12247,7 @@ düklük
 düklükler
 düldül
 düldüller
+düler
 dülger
 dülgerler
 dülgerlik
@@ -12729,6 +12773,7 @@ ejderhalar
 ejderler
 ejektör
 ejektörler
+ek
 ekalliyet
 ekalliyetler
 ekarte
@@ -12894,6 +12939,7 @@ ekvatorallar
 ekvatorlar
 ekzotermik
 ekzotermikler
+el
 ela
 elalar
 elan
@@ -13059,6 +13105,7 @@ elkızı
 elkızılar
 ellemek
 ellemekler
+eller
 elli
 ellik
 ellikler
@@ -13104,6 +13151,7 @@ elyaf
 elyaflar
 elzem
 elzemler
+em
 emanet
 emaneten
 emanetenler
@@ -13172,6 +13220,7 @@ emlak
 emlaklar
 emlemek
 emlemekler
+emler
 emlik
 emlikler
 emme
@@ -13228,6 +13277,7 @@ emzikli
 emzikliler
 emzirmek
 emzirmekler
+en
 enam
 enamlar
 enaniyet
@@ -13373,6 +13423,7 @@ enlem
 enlemesine
 enlemesineler
 enlemler
+enler
 enöte
 enöteler
 ensar
@@ -13512,6 +13563,7 @@ eprimekler
 eprimeler
 epsilon
 epsilonlar
+er
 eradikasyon
 eradikasyonlar
 erat
@@ -13642,6 +13694,7 @@ erkinler
 erklemek
 erklemekler
 erkler
+erler
 ermek
 ermekler
 ermin
@@ -13672,6 +13725,7 @@ erzak
 erzaklar
 erzel
 erzeller
+es
 esame
 esameler
 esans
@@ -13762,6 +13816,7 @@ eslek
 eslekler
 eslemek
 eslemekler
+esler
 esmayıhüsna
 esmayıhüsnalar
 esmayışerife
@@ -13824,6 +13879,7 @@ estomp
 estomplar
 esvap
 esvaplar
+eş
 eşantiyon
 eşantiyonlar
 eşarp
@@ -13870,6 +13926,7 @@ eşlemekler
 eşlemler
 eşlenik
 eşlenikler
+eşler
 eşmek
 eşmekler
 eşofman
@@ -13880,6 +13937,7 @@ eşref
 eşrefler
 eşya
 eşyalar
+et
 etajer
 etajerler
 etalon
@@ -13951,6 +14009,7 @@ etkin
 etkinler
 etlenmek
 etlenmekler
+etler
 etlik
 etlikler
 etmek
@@ -14001,6 +14060,7 @@ etyemez
 etyemezler
 eurobond
 eurobondlar
+ev
 evaze
 evazeler
 evcara
@@ -14061,6 +14121,7 @@ evleklemekler
 evlekler
 evlenmek
 evlenmekler
+evler
 evli
 evliler
 evlilik
@@ -14179,6 +14240,7 @@ ezofori
 ezoforiler
 ezoterik
 ezoterikler
+fa
 faal
 faaliyet
 faaliyetler
@@ -14278,6 +14340,7 @@ falanjist
 falanjistler
 falanjlar
 falanlar
+falar
 falçata
 falçatalar
 falçete
@@ -14482,6 +14545,7 @@ fazlalar
 fazlar
 fazlasıyla
 fazlasıylalar
+fe
 fecaat
 fecaatlar
 feci
@@ -14527,6 +14591,7 @@ felek
 felekiyat
 felekiyatlar
 felekler
+feler
 felfelek
 felfelekler
 felfellemek
@@ -15937,6 +16002,7 @@ gazup
 gazuplar
 gazve
 gazveler
+ge
 gebe
 gebeler
 geberik
@@ -16055,6 +16121,7 @@ gelenekler
 geleni
 geleniler
 gelenler
+geler
 gelgeç
 gelgeçler
 gelgel
@@ -17398,6 +17465,7 @@ güzlemekler
 güzler
 güzün
 güzünler
+ha
 hab
 habanera
 habaneralar
@@ -17599,6 +17667,7 @@ hala
 halalar
 halaoğlu
 halaoğlular
+halar
 halat
 halatlar
 halay
@@ -18368,6 +18437,7 @@ hazzetme
 hazzetmek
 hazzetmekler
 hazzetmeler
+he
 heba
 hebalar
 hebenneka
@@ -18416,6 +18486,7 @@ helecanlanmak
 helecanlanmaklar
 helecanlar
 heleler
+heler
 helezon
 helezonlar
 helik
@@ -19747,6 +19818,7 @@ icra
 icraat
 icraatlar
 icralar
+iç
 içbükey
 içbükeyler
 içecek
@@ -19791,6 +19863,7 @@ içlem
 içlemler
 içlenmek
 içlenmekler
+içler
 içmece
 içmeceler
 içmek
@@ -19910,6 +19983,7 @@ iguana
 iguanagiller
 iguanagillerler
 iguanalar
+iğ
 iğbirar
 iğbirarlar
 iğde
@@ -19922,6 +19996,7 @@ iğdiş
 iğdişler
 iğfal
 iğfallar
+iğler
 iğne
 iğnelemek
 iğnelemekler
@@ -20122,6 +20197,7 @@ iktisat
 iktisatlar
 iktiza
 iktizalar
+il
 ilaçlamak
 ilaçlamaklar
 ilanihaye
@@ -20236,6 +20312,7 @@ ille
 illegal
 illegallar
 illeler
+iller
 illet
 illetler
 illiyet
@@ -20282,6 +20359,7 @@ iltizam
 iltizamlar
 ilzam
 ilzamlar
+im
 ima
 imaj
 imajinasyon
@@ -20344,6 +20422,7 @@ imlek
 imlekler
 imlemek
 imlemekler
+imler
 immoral
 immoralizm
 immoralizmler
@@ -20386,6 +20465,7 @@ imza
 imzalamak
 imzalamaklar
 imzalar
+in
 inadına
 inadınalar
 inak
@@ -20555,6 +20635,7 @@ inkübatör
 inkübatörler
 inlemek
 inlemekler
+inler
 inme
 inmek
 inmekler
@@ -20672,6 +20753,7 @@ inzimam
 inzimamlar
 inziva
 inzivalar
+ip
 ipek
 ipeka
 ipekalar
@@ -20690,6 +20772,7 @@ ipka
 ipkalar
 iplemek
 iplemekler
+ipler
 iplik
 iplikhane
 iplikhaneler
@@ -20808,6 +20891,7 @@ irtisam
 irtisamlar
 irtişa
 irtişalar
+is
 isabet
 isabetler
 isaf
@@ -20857,6 +20941,7 @@ iskota
 iskotalar
 islemek
 islemekler
+isler
 islim
 islimler
 ismen
@@ -21102,6 +21187,7 @@ istrongilos
 istrongiloslar
 isyan
 isyanlar
+iş
 işar
 işaret
 işaretlemek
@@ -21156,6 +21242,7 @@ işlemekler
 işlemler
 işlenti
 işlentiler
+işler
 işletim
 işletimler
 işletme
@@ -21206,6 +21293,7 @@ işveren
 işverenler
 işyar
 işyarlar
+it
 ita
 itaat
 itaatlar
@@ -21276,6 +21364,7 @@ itki
 itkiler
 itlenmek
 itlenmekler
+itler
 itmam
 itmamlar
 itmek
@@ -21344,6 +21433,7 @@ iyonikler
 iyonlar
 iyot
 iyotlar
+iz
 izabe
 izabeler
 izaç
@@ -21410,6 +21500,7 @@ izlencelemekler
 izlenceler
 izlenim
 izlenimler
+izler
 izmarit
 izmaritgiller
 izmaritgillerler
@@ -21480,7 +21571,9 @@ jarse
 jarseler
 jartiyer
 jartiyerler
+je
 jel
+jeler
 jeller
 jeloz
 jelozlar
@@ -24751,6 +24844,7 @@ kızmak
 kızmaklar
 kızmemesi
 kızmemesiler
+ki
 kibar
 kibarlar
 kibarzade
@@ -27110,6 +27204,7 @@ kütürtü
 kütürtüler
 küvet
 küvetler
+la
 laakal
 laakallar
 labada
@@ -27239,6 +27334,7 @@ lala
 lalalar
 lalanga
 lalangalar
+lalar
 lale
 laleler
 lalettayin
@@ -27422,6 +27518,7 @@ lazımlık
 lazımlıklar
 lazut
 lazutlar
+le
 leasing
 leasingler
 leb
@@ -27486,6 +27583,7 @@ leksikoloji
 leksikolojiler
 lektör
 lektörler
+leler
 lemis
 lemisler
 lenduha
@@ -29933,6 +30031,7 @@ mezzo
 mezzolar
 mezzosoprano
 mezzosopranolar
+mı
 mıcır
 mıcırlar
 mıgri
@@ -29951,6 +30050,7 @@ mıknatısiyetler
 mıknatıslamak
 mıknatıslamaklar
 mıknatıslar
+mılar
 mıncıklamak
 mıncıklamaklar
 mıncırık
@@ -30011,6 +30111,7 @@ mızrak
 mızraklar
 mızrap
 mızraplar
+mi
 miat
 miatlar
 mibzer
@@ -30136,6 +30237,7 @@ milel
 mileller
 milenyum
 milenyumlar
+miler
 milföy
 milföyler
 milibar
@@ -30644,6 +30746,7 @@ möölemek
 möölemekler
 mösyö
 mösyöler
+mu
 muaccel
 muacceller
 muacciz
@@ -31024,6 +31127,7 @@ muktezi
 mukteziler
 mukus
 mukuslar
+mular
 multimedya
 multimedyalar
 multimilyoner
@@ -31310,6 +31414,7 @@ muztar
 muztarlar
 muzur
 muzurlar
+mü
 mübadele
 mübadeleler
 mübadil
@@ -31578,6 +31683,7 @@ mülazım
 mülazımlar
 mülemma
 mülemmalar
+müler
 mülevven
 mülevvenler
 mülevves
@@ -32599,6 +32705,7 @@ nazlanmaklar
 nazlar
 nazmen
 nazmenler
+ne
 nebat
 nebatat
 nebatatlar
@@ -33160,6 +33267,7 @@ nurudidem
 nurudidemler
 nutuk
 nutuklar
+nü
 nüans
 nüanslar
 nübüvvet
@@ -33188,6 +33296,7 @@ nüktedanlar
 nükteler
 nükul
 nükullar
+nüler
 nümayiş
 nümayişler
 nümismat
@@ -33246,6 +33355,7 @@ ocak
 ocaklar
 ocumak
 ocumaklar
+od
 oda
 odabaşı
 odabaşılar
@@ -33260,6 +33370,7 @@ odeon
 odeonlar
 oditoryum
 oditoryumlar
+odlar
 odun
 oduncul
 oduncullar
@@ -33314,6 +33425,7 @@ oje
 ojeler
 ojit
 ojitler
+ok
 okaliptüs
 okaliptüsler
 okapi
@@ -33330,6 +33442,7 @@ okkalamaklar
 okkalar
 oklamak
 oklamaklar
+oklar
 oklava
 oklavalar
 okramak
@@ -33468,6 +33581,7 @@ oluşuk
 oluşuklar
 oluşum
 oluşumlar
+om
 oma
 omalar
 ombra
@@ -33478,6 +33592,7 @@ omça
 omçalar
 omfazit
 omfazitler
+omlar
 omlet
 omletler
 ommatidyum
@@ -33502,6 +33617,7 @@ omuzdaşlar
 omuzlamak
 omuzlamaklar
 omuzlar
+on
 onamak
 onamaklar
 onanizm
@@ -33548,6 +33664,7 @@ onkoloji
 onkolojik
 onkolojikler
 onkolojiler
+onlar
 onlarca
 onlarcalar
 onmadık
@@ -33820,6 +33937,7 @@ osuruk
 osuruklar
 oşinografi
 oşinografiler
+ot
 otacı
 otacılar
 otağ
@@ -33854,6 +33972,7 @@ otlakiyeler
 otlaklar
 otlamak
 otlamaklar
+otlar
 otlubağa
 otlubağalar
 otluk
@@ -33986,6 +34105,7 @@ ovunmak
 ovunmaklar
 ovuşturmak
 ovuşturmaklar
+oy
 oya
 oyalamak
 oyalamaklar
@@ -33996,6 +34116,7 @@ oydaş
 oydaşlar
 oylamak
 oylamaklar
+oylar
 oyluk
 oyluklar
 oylum
@@ -34082,6 +34203,9 @@ ozugalar
 öbürler
 öcü
 öcüler
+öç
+öçler
+öd
 ödem
 ödemek
 ödemekler
@@ -34098,6 +34222,7 @@ ozugalar
 ödevler
 ödlek
 ödlekler
+ödler
 ödül
 ödüllendirmek
 ödüllendirmekler
@@ -34253,6 +34378,7 @@ ozugalar
 ömrühayatlar
 ömür
 ömürler
+ön
 önayak
 önayaklar
 önce
@@ -34301,6 +34427,7 @@ ozugalar
 önlemek
 önlemekler
 önlemler
+önler
 önlük
 önlükler
 önoloji
@@ -34475,6 +34602,7 @@ ozugalar
 öylesiler
 öylesine
 öylesineler
+öz
 özbeöz
 özbeözler
 özcesi
@@ -34547,6 +34675,7 @@ ozugalar
 özlemler
 özlenti
 özlentiler
+özler
 özleşmek
 özleşmekler
 özne
@@ -35226,6 +35355,7 @@ pazval
 pazvallar
 pazvant
 pazvantlar
+pe
 peç
 peçe
 peçelemek
@@ -35312,6 +35442,7 @@ peleng
 pelengler
 pelenk
 pelenkler
+peler
 pelerin
 pelerinler
 pelesenk
@@ -35630,6 +35761,7 @@ pezevenk
 pezevenkler
 pezo
 pezolar
+ph
 pıhtı
 pıhtılanmak
 pıhtılanmaklar
@@ -35686,6 +35818,7 @@ pıtırtılar
 pıtlar
 pıtrak
 pıtraklar
+pi
 pianta
 piantalar
 piç
@@ -35717,6 +35850,7 @@ piknometreler
 piko
 pikolar
 pil
+piler
 piliç
 piliçler
 piling
@@ -36978,6 +37112,7 @@ razı
 razılar
 razmol
 razmollar
+re
 reaksiyon
 reaksiyonlar
 reaktif
@@ -37120,6 +37255,7 @@ rektum
 rektumlar
 rekzetmek
 rekzetmekler
+reler
 rembetiko
 rembetikolar
 remel
@@ -38704,6 +38840,7 @@ sazendeler
 sazkayası
 sazkayasılar
 sazlar
+se
 seans
 seanslar
 sebat
@@ -38941,6 +39078,7 @@ selentereler
 selenterelerler
 selenyum
 selenyumlar
+seler
 selika
 selikalar
 selim
@@ -39828,6 +39966,7 @@ sızlayış
 sızlayışlar
 sızmak
 sızmaklar
+si
 sibak
 sibaklar
 sibakusiyak
@@ -39913,6 +40052,7 @@ silaj
 silajlar
 silecek
 silecekler
+siler
 silgeç
 silgeçler
 silgi
@@ -41002,6 +41142,7 @@ strüktüreller
 strüktürler
 stüdyo
 stüdyolar
+su
 sual
 suallar
 suare
@@ -41083,6 +41224,7 @@ sulamak
 sulamaklar
 sulanmak
 sulanmaklar
+sular
 sularında
 sularındalar
 sulfata
@@ -41896,6 +42038,7 @@ süzüntüler
 şaykalar
 şaz
 şazlar
+şe
 şeamet
 şeametler
 şeb
@@ -42003,6 +42146,7 @@ süzüntüler
 şekvalar
 şelek
 şelekler
+şeler
 şelf
 şelfler
 şem
@@ -42427,6 +42571,7 @@ süzüntüler
 şöyleler
 şöylesine
 şöylesineler
+şu
 şua
 şualar
 şuara
@@ -42441,6 +42586,7 @@ süzüntüler
 şufalar
 şuh
 şuhlar
+şular
 şule
 şuleler
 şuncacık
@@ -42482,6 +42628,7 @@ süzüntüler
 şüyular
 şvester
 şvesterler
+ta
 taaccüp
 taaccüpler
 taaddüt
@@ -42921,6 +43068,7 @@ talan
 talanlamak
 talanlamaklar
 talanlar
+talar
 talaş
 talaşlamak
 talaşlamaklar
@@ -43576,6 +43724,7 @@ tazminatlar
 tazminler
 tazyik
 tazyikler
+te
 teadül
 teadüller
 teakup
@@ -44040,6 +44189,7 @@ telepati
 telepatik
 telepatikler
 telepatiler
+teler
 teleradar
 teleradarlar
 teles
@@ -45041,6 +45191,7 @@ tıslamaklar
 tıslar
 tıynet
 tıynetler
+ti
 ticaret
 ticarethane
 ticarethaneler
@@ -45069,6 +45220,7 @@ tiksinmek
 tiksinmekler
 tiksinti
 tiksintiler
+tiler
 tilki
 tilkikuyruğu
 tilkikuyruğular
@@ -46191,6 +46343,7 @@ ucuzlamaklar
 ucuzlar
 ucuzuna
 ucuzunalar
+uç
 uçak
 uçaklar
 uçaksavar
@@ -46207,6 +46360,7 @@ uçkurutan
 uçkurutanlar
 uçlanmak
 uçlanmaklar
+uçlar
 uçmak
 uçmaklar
 uçman
@@ -46223,6 +46377,7 @@ uçurum
 uçurumlar
 uçuşmak
 uçuşmaklar
+uf
 ufacık
 ufacıklar
 ufak
@@ -46239,6 +46394,7 @@ ufkuiş
 ufkuişler
 uflamak
 uflamaklar
+uflar
 ufuk
 ufuklar
 ufunet
@@ -46377,8 +46533,10 @@ umut
 umutlanmak
 umutlanmaklar
 umutlar
+un
 unlamak
 unlamaklar
+unlar
 unsur
 unsurlar
 unutkan
@@ -46397,6 +46555,7 @@ upuygun
 upuygunlar
 upuzun
 upuzunlar
+ur
 urağan
 urağanlar
 uran
@@ -46411,12 +46570,14 @@ urbanizm
 urbanizmler
 urgan
 urganlar
+urlar
 urodel
 urodeller
 uruk
 uruklar
 urup
 uruplar
+us
 usanç
 usançlar
 usangın
@@ -46441,6 +46602,7 @@ uslamlamak
 uslamlamaklar
 uslanmak
 uslanmaklar
+uslar
 uslu
 uslular
 usta
@@ -46481,6 +46643,7 @@ uşkun
 uşkunlar
 uşşak
 uşşaklar
+ut
 utanç
 utançlar
 utangaç
@@ -46495,6 +46658,7 @@ uterus
 uteruslar
 utku
 utkular
+utlar
 utmak
 utmaklar
 uvertür
@@ -46583,6 +46747,7 @@ uyuşum
 uyuşumlar
 uyuz
 uyuzlar
+uz
 uzadıya
 uzadıyalar
 uzak
@@ -46617,6 +46782,7 @@ uzgören
 uzgörenler
 uzgörür
 uzgörürler
+uzlar
 uzlaşı
 uzlaşılar
 uzlaşım
@@ -46653,6 +46819,7 @@ uzviyetler
 ücretlemek
 ücretlemekler
 ücretler
+üç
 üçayak
 üçayaklar
 üçer
@@ -46725,6 +46892,7 @@ uzviyetler
 ümranlar
 ümük
 ümükler
+ün
 ündeş
 ündeşler
 üniforma
@@ -46745,6 +46913,7 @@ uzviyetler
 ünlemler
 ünlenmek
 ünlenmekler
+ünler
 ünsiyet
 ünsiyetler
 ürat
@@ -46809,6 +46978,7 @@ uzviyetler
 ürüşmekler
 üryan
 üryanlar
+üs
 üsera
 üseralar
 üsküf
@@ -46817,6 +46987,7 @@ uzviyetler
 üsküreler
 üslenmek
 üslenmekler
+üsler
 üslup
 üsluplar
 üst
@@ -47230,6 +47401,7 @@ vaziyetler
 vazlar
 vazo
 vazolar
+ve
 veba
 vebal
 vebalar
@@ -47290,6 +47462,7 @@ veledrom
 veledromlar
 velense
 velenseler
+veler
 velespit
 velespitler
 velet
@@ -47683,6 +47856,7 @@ vüsat
 vüsatlar
 vüzera
 vüzeralar
+ya
 yaba
 yabalamak
 yabalamaklar
@@ -47844,6 +48018,7 @@ yalanlamaklar
 yalanlar
 yalapşap
 yalapşaplar
+yalar
 yalavaç
 yalavaçlar
 yalaz

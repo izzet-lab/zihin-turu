@@ -8,7 +8,8 @@
 
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import { oku } from './depo';
+import { oku, yaz } from './depo';
+import { sonrakiSeviyeAnahtari } from '@tamisabet/oyun-sayi';
 
 /** Oyuncunun uygulama içi profili (oyuncu tablosundan). */
 export interface OyuncuProfil {
@@ -313,3 +314,82 @@ const KUFUR_LISTESI: string[] = [
   'fuck', 'shit', 'porno', 'sikiş', 'sik', 'orospu', 'amk',
   'bok', 'piç', 'oç', 'göt', 'yarrak', 'amına',
 ];
+
+/**
+ * Sunucudaki ilerlemeyi tarayıcı deposuna geri yazar.
+ *
+ * NEDEN GEREKLİ (8 Ekim 2026)
+ * Marka değişikliğiyle hem paket adı hem alan adı değişti. Tarayıcı
+ * deposu KAYNAĞA bağlıdır: yeni alan adı yeni bir kaynak, Android'de
+ * yeni paket adı yeni bir uygulama. İkisinde de eski depo okunamaz —
+ * bu bir hata değil, tarayıcının güvenlik kuralı. Sonuç: seri sıfıra
+ * düşüyor, açılmış seviyeler kapanıyor.
+ *
+ * Üye oyuncunun verisi sunucuda duruyor. Burada o veri geri alınıyor:
+ *   - seri: `oyuncu.seri_gun` / `seri_son`
+ *   - açılmış seviyeler: tam isabet yapılmış seviyeler ve bir üstleri
+ *   - günlük geçmiş: son 28 günün Günün Turu sonuçları (şerit için)
+ *
+ * SADECE EKLER, HİÇBİR ŞEYİ SİLMEZ. Yerelde daha ileri bir ilerleme
+ * varsa (çevrimdışı oynanmış olabilir) o korunur; sunucu değeri
+ * yalnızca daha büyükse yazılır.
+ *
+ * Misafirin verisi hiçbir yerde yok; onun için yapılabilecek bir şey
+ * yok, arayüz bunu açıkça söylüyor.
+ */
+export async function sunucudanGeriYukle(oyuncuId: string): Promise<boolean> {
+  try {
+    const { data: oyuncu } = await supabase
+      .from('oyuncu')
+      .select('seri_gun, seri_son')
+      .eq('id', oyuncuId)
+      .single();
+
+    const { data: turlar } = await supabase
+      .from('tur_sonuc')
+      .select('seviye, tarih, puan, uzaklik, mod, oyun')
+      .eq('oyuncu_id', oyuncuId)
+      .order('tarih', { ascending: false })
+      .limit(500);
+
+    const il = oku();
+    let degisti = false;
+
+    // --- Seri ---
+    const sunucuSeri = oyuncu?.seri_gun ?? 0;
+    if (sunucuSeri > il.seri.gun) {
+      il.seri = {
+        gun: sunucuSeri,
+        son: oyuncu?.seri_son ?? il.seri.son,
+        enUzun: Math.max(il.seri.enUzun, sunucuSeri),
+      };
+      degisti = true;
+    }
+
+    // --- Açılmış seviyeler ve günlük geçmiş ---
+    for (const t of turlar ?? []) {
+      if (t.oyun !== 'sayi') continue;
+
+      // Bir seviyede tam isabet yapılmışsa o seviye ve bir üstü açıktır.
+      if (t.uzaklik === 0) {
+        for (const a of [t.seviye, sonrakiSeviyeAnahtari(t.seviye)]) {
+          if (a && !il.acikSeviyeler.includes(a)) {
+            il.acikSeviyeler.push(a);
+            degisti = true;
+          }
+        }
+      }
+
+      if (t.mod === 'gunun' && !il.gunluk[t.tarih]) {
+        il.gunluk[t.tarih] = { fark: t.uzaklik, puan: t.puan, tarih: t.tarih, seviye: t.seviye };
+        degisti = true;
+      }
+    }
+
+    if (degisti) yaz(il);
+    return degisti;
+  } catch (e) {
+    console.warn('[sunucudanGeriYukle] okunamadı:', e);
+    return false;
+  }
+}

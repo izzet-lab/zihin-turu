@@ -12,12 +12,11 @@
     her şey çevrimdışı erişilebilir olur.
 */
 
-const SURUM = 'zt-v2';
+const SURUM = 'ti-v3'; // marka degisikligi: eski kabugu at
 const KABUK = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/logo.svg',
   '/favicon-32.png',
   '/ikon/ikon-192.png',
   '/ikon/ikon-512.png',

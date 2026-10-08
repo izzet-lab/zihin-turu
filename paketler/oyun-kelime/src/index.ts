@@ -62,13 +62,15 @@ export function kelimeTuruKur(sozluk: Sozluk): TurSaglayici {
 
     dogrula(tur: Tur, cevap: Cevap): Dogrulama {
       const veri = tur.veri as KelimeVeri;
-      const sonuc = dogrulaKelime(veri, String(cevap.icerik ?? ''), sozluk);
-      return {
-        gecerli: sonuc.gecerli,
-        hata: sonuc.hata,
-        uzaklik: sonuc.uzaklik,
-        ozet: sonuc.ozet,
-      };
+      // Sonuç OLDUĞU GİBİ dönüyor. Önce alanlar tek tek kopyalanıyordu
+      // ve puanlamanın ihtiyaç duyduğu `enUzunUzunluk` / `harfSayisi`
+      // yolda düşüyordu; puan oranı hesaplanamadığı için tam isabet
+      // dışındaki her cevap sıfır alıyordu.
+      //
+      // Platform bu fazladan alanları GÖRMEZ: `Dogrulama` arayüzünde
+      // yoklar, yalnızca kelime paketi okuyor. Arayüz sözleşmesi
+      // bozulmuyor.
+      return dogrulaKelime(veri, String(cevap.icerik ?? ''), sozluk);
     },
 
     puanla(

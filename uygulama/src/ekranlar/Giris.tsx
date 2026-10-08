@@ -175,7 +175,7 @@ export default function Giris({ onAtla }: Props) {
       <div className="w-full max-w-sm">
         {/* Başlık */}
         <div className="text-center mb-8">
-          <img src="/logo.svg" alt="" className="mx-auto mb-3 h-12 w-12" />
+          <img src="/ikon/ikon-192.png" alt="" className="mx-auto mb-3 h-12 w-12 rounded-xl" />
           <h1 className="text-2xl font-black text-white">Tam İsabet</h1>
           <p className="mt-2 text-sm text-slate-400">
             Üye olursan puanların kalıcı olur ve lig tablosuna işler.

@@ -210,6 +210,11 @@ export interface KelimeDogrulama {
   /** En uzun kelimeye kaç harf kaldı. 0 = en uzunu buldu. */
   uzaklik: number;
   ozet: string;
+  /** Bu turun en uzun kelimesinin harf sayısı. Puanlama buna göre
+   *  oranlanıyor (bkz. `puanlaKelime`). */
+  enUzunUzunluk: number;
+  /** Oyuncunun yazdığı kelimenin harf sayısı. */
+  harfSayisi: number;
 }
 
 /** En kısa kabul edilen kelime. Daha kısası oyunu anlamsızlaştırıyor. */
@@ -229,8 +234,10 @@ export function dogrulaKelime(
   const kelime = turkceKucult((ham ?? '').trim());
   const uzak = (u: number) => Math.max(0, veri.enUzunUzunluk - u);
 
+  const ek = { enUzunUzunluk: veri.enUzunUzunluk, harfSayisi: kelime.length };
+
   if (!kelime) {
-    return { gecerli: true, uzaklik: uzak(0), ozet: 'Kelime yazılmadı' };
+    return { gecerli: true, uzaklik: uzak(0), ozet: 'Kelime yazılmadı', ...ek };
   }
   if (kelime.length < EN_KISA_KELIME) {
     return {
@@ -238,6 +245,7 @@ export function dogrulaKelime(
       hata: `En az ${EN_KISA_KELIME} harfli bir kelime yaz.`,
       uzaklik: uzak(0),
       ozet: 'Çok kısa',
+      ...ek,
     };
   }
   if (!havuzdanYazilabilir(veri.harfler, kelime)) {
@@ -246,6 +254,7 @@ export function dogrulaKelime(
       hata: 'Bu kelime verilen harflerle yazılamıyor.',
       uzaklik: uzak(0),
       ozet: 'Harfler yetmiyor',
+      ...ek,
     };
   }
   // Sözlük kök listesi; çekimli biçimler kuralla tanınıyor (bkz. cekim.ts).
@@ -255,6 +264,7 @@ export function dogrulaKelime(
       hata: 'Bu kelime sözlükte yok.',
       uzaklik: uzak(0),
       ozet: 'Sözlükte yok',
+      ...ek,
     };
   }
 
@@ -262,6 +272,7 @@ export function dogrulaKelime(
     gecerli: true,
     uzaklik: uzak(kelime.length),
     ozet: `${kelime.length} harf`,
+    ...ek,
   };
 }
 
@@ -273,20 +284,45 @@ export function dogrulaKelime(
  * Puan — sayı turuyla AYNI ölçekte.
  *
  * İki oyun aynı lig yapısını kullanıyor; ölçekler ayrışsaydı seviye
- * başına tablolar kıyaslanamaz hâle gelirdi. Taban, "en uzunu buldun
- * mu" sorusuna göre veriliyor; hız primi yalnızca tam isabette var,
- * tıpkı sayı turundaki gibi.
+ * başına tablolar kıyaslanamaz hâle gelirdi. Hız primi yalnızca tam
+ * isabette var, tıpkı sayı turundaki gibi.
+ *
+ * NEDEN HARF FARKI DEĞİL DE ORAN (8 Ekim 2026)
+ * Önce puan "en uzundan kaç harf kısa" sorusuna bakıyordu: 0 harf 10,
+ * 1 harf 7, 2 harf 5, gerisi 0. Ölçüm bunun üst seviyelerde
+ * çalışmadığını gösterdi:
+ *
+ *   Seviye  En uzun (ort)  Puan getiren kelimelerin oranı
+ *   Isınma      4.85                 %87
+ *   Normal      5.74                 %66
+ *   Zor         6.50                 %43
+ *   Usta        7.51                 %24
+ *
+ * Usta'da havuzdan yüz kelime çıkıyor ama dördünden üçü sıfır
+ * getiriyordu: oyuncu gayet iyi bir kelime yazıp hiçbir şey
+ * alamıyordu. İki harf sabit bir eşik; en uzun kelime uzadıkça aynı
+ * iki harf giderek küçük bir hata oluyor.
+ *
+ * Artık ölçüt ORAN: yazdığın kelime, bulunabilecek en uzunun ne
+ * kadarı? Böylece eşik seviyeyle birlikte kendiliğinden genişliyor ve
+ * ayrı bir seviye tablosu tutmak gerekmiyor.
  */
 export function puanlaKelime(
-  d: { uzaklik: number },
+  d: { uzaklik: number; enUzunUzunluk?: number; harfSayisi?: number },
   kalanSaniye: number,
   toplamSaniye: number,
   ilkBulanMi: boolean,
 ): Puan {
+  const enUzun = d.enUzunUzunluk ?? 0;
+  const harf = d.harfSayisi ?? Math.max(0, enUzun - d.uzaklik);
+  const oran = enUzun > 0 ? harf / enUzun : 0;
+
   let taban = 0;
   if (d.uzaklik === 0) taban = 10;
-  else if (d.uzaklik === 1) taban = 7;
-  else if (d.uzaklik === 2) taban = 5;
+  else if (harf === 0) taban = 0;
+  else if (oran >= 0.8) taban = 7;
+  else if (oran >= 0.65) taban = 5;
+  else if (oran >= 0.5) taban = 3;
 
   let hiz = 0;
   if (taban === 10 && toplamSaniye > 0) {

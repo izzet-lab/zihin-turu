@@ -29,7 +29,7 @@ export default function Yakinda() {
           gorunur ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
         }`}
       >
-        <img src="/logo.svg" alt="" className="w-16 h-16 mb-7" />
+        <img src="/ikon/ikon-192.png" alt="" className="mb-7 h-16 w-16 rounded-xl" />
 
         <h1 className="text-4xl font-black tracking-tight text-white leading-none">
           Tam İsabet

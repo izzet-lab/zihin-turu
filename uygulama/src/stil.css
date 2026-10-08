@@ -185,6 +185,27 @@ button,
 }
 
 /*
+ * SAHTE KALIN KAPALI — büyük rakamların solu kırpılıyordu.
+ *
+ * Space Grotesk 300–700 arası geliyor; 900 ağırlığı YOK. Arayüzde
+ * `font-black` (900) kullanılan her yerde tarayıcı 700'ü alıp kendisi
+ * şişiriyordu ("sahte kalın"). Sahte kalın mürekkebi harfin kutusunun
+ * DIŞINA taşırıyor ve punto büyüdükçe taşma da büyüyor; `overflow:
+ * hidden` olan yüzeylerde — taşlar, sonuç kartları — ilk rakamın solu
+ * tıraşlanıyordu.
+ *
+ * Sentez kapatılınca tarayıcı gerçek 700 yüzünü kullanıyor: taşma
+ * bitiyor. Görsel fark minik, kırpılma ise gerçek bir hata.
+ */
+h1, h2, h3,
+button,
+[data-tas], [data-islem],
+[data-alan='hedef'], [data-alan='en-yakin'], [data-alan='sure-kalan'],
+.zt-rakam {
+  font-synthesis-weight: none;
+}
+
+/*
  * TAŞLARA DERİNLİK
  *
  * Taşlar düz dikdörtgendi; kâğıt gibi duruyordu. Oysa markanın kendi

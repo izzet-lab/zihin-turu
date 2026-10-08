@@ -74,7 +74,7 @@ test('günün turu: misafire "lige işlemedi" daveti kendi puanıyla çıkar', a
   await page.goto('/');
   await yardimiGec(page);
 
-  await page.locator('[data-mod="gunun"]').click();
+  await page.locator('[data-alan="gunun-git"]').click();
   await page.locator('[data-alan="basla"]').click();
   await zinciriBulVeOyna(page);
 
@@ -102,7 +102,7 @@ test('kurulum: misafire serisinin kaydedilmediği söylenir', async ({ page }) =
   await tohumla(page);
   await page.goto('/');
   await yardimiGec(page);
-  await page.locator('[data-mod="gunun"]').click();
+  await page.locator('[data-alan="gunun-git"]').click();
   await expect(page.locator('[data-alan="seri-misafir-notu"]')).toContainText(
     'kaydedilmiyor',
   );

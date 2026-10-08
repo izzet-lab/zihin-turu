@@ -24,6 +24,7 @@ test('sözlük yüklenir ve seviyeler görünür', async ({ page }) => {
 test('tur açılır, harfler gelir, çözüm görünmez', async ({ page }) => {
   await page.goto('/kelime');
   await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-basla"]').click();
 
   const raf = page.locator('[data-alan="kelime-raf"] button');
   await expect(raf).toHaveCount(8);
@@ -36,6 +37,7 @@ test('tur açılır, harfler gelir, çözüm görünmez', async ({ page }) => {
 test('sözlükte olmayan kelime turu bitirmez', async ({ page }) => {
   await page.goto('/kelime');
   await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-basla"]').click();
 
   const raf = page.locator('[data-alan="kelime-raf"] button');
   // Rastgele dört harf; sözlükte bir kelime olma ihtimali yok denecek
@@ -55,6 +57,7 @@ test('sözlükte olmayan kelime turu bitirmez', async ({ page }) => {
 test('boş cevapla bitirince sonuç ekranı ve çözüm gelir', async ({ page }) => {
   await page.goto('/kelime');
   await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-basla"]').click();
 
   // Hiç harf seçmeden bitirmek geçerli bir cevap: puan sıfır.
   await page.locator('[data-alan="kelime-bitir"]').click();
@@ -69,7 +72,7 @@ test('ana ekrandan kelime turuna geçilebiliyor', async ({ page }) => {
   const yardim = page.locator('[data-alan="yardim-anladim"]');
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
 
-  const dugme = page.locator('[data-alan="kelime-git"]');
+  const dugme = page.locator('[data-mod="kelime"]');
   await expect(dugme).toBeVisible();
   await dugme.click();
   await expect(page).toHaveURL(/\/kelime/);
@@ -95,23 +98,25 @@ test('günün turu oynanınca kilitlenir, antrenman açık kalır', async ({ pag
   await page.goto('/kelime');
   await page.locator('[data-mod="gunun"]').click();
   await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-basla"]').click();
   await page.locator('[data-alan="kelime-bitir"]').click();
   await expect(page.locator('[data-alan="kelime-sonuc"]')).toBeVisible();
 
   // Seçim ekranına dönünce günün turu kilitli olmalı.
   await page.goto('/kelime');
   await expect(page.locator('[data-alan="kelime-gunluk-kilit"]')).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('[data-seviye="normal"]')).toBeDisabled();
+  await expect(page.locator('[data-alan="kelime-basla"]')).toBeDisabled();
 
   // Antrenman hâlâ oynanabilir.
   await page.locator('[data-mod="antrenman"]').click();
-  await expect(page.locator('[data-seviye="normal"]')).toBeEnabled();
+  await expect(page.locator('[data-alan="kelime-basla"]')).toBeEnabled();
 });
 
 test('misafire puanın lige işlemediği söylenir', async ({ page }) => {
   await page.goto('/kelime');
   await page.locator('[data-mod="antrenman"]').click();
   await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-basla"]').click();
   await page.locator('[data-alan="kelime-bitir"]').click();
 
   // Antrenman zaten lige işlemez; bu açıkça yazmalı.

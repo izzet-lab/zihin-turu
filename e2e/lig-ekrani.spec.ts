@@ -88,9 +88,10 @@ test('boş liste davete dönüşüyor ve düğme doğru moda götürüyor', asyn
   await expect(dugme).toContainText('Günün Turunu oyna');
   await dugme.click();
 
-  // Kurulum ekranına, Günün Turu seçili olarak dönmeli.
+  // Günün Turu ekranına dönmeli. (Zorluk ana ekrandan kalktı; her mod
+  // kendi ekranında seçiyor, bu yüzden "basla" düğmesi orada.)
   await expect(page.locator('[data-alan="basla"]')).toBeVisible();
-  await expect(page.locator('[data-mod="gunun"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-alan="seviyeler"]')).toBeVisible();
 });
 
 test('antrenman boş durumu antrenman moduna götürüyor', async ({ page }) => {
@@ -103,7 +104,9 @@ test('antrenman boş durumu antrenman moduna götürüyor', async ({ page }) => 
   await expect(dugme).toContainText('Antrenman yap');
   await dugme.click();
 
-  await expect(page.locator('[data-mod="antrenman"]')).toHaveAttribute('aria-pressed', 'true');
+  // Antrenman ekranı: kendi seviye ve süre seçicisiyle açılır.
+  await expect(page.locator('[data-alan="antrenman-ayar"]')).toBeVisible();
+  await expect(page.locator('[data-alan="basla"]')).toBeVisible();
 });
 
 test('düello boş durumu düelloya götürüyor', async ({ page }) => {

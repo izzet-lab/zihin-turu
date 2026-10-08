@@ -3,6 +3,44 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Kelime turu oynanabilir
+
+Faz 6'nın arayüzü geldi: kelime turu artık telefonda açılıp
+oynanabiliyor. Ana ekranda Arena'nın altında yeşil bir giriş var.
+
+### Ekran
+
+Harf rafı, yazılan kelime, süre çubuğu, "Sil / Temizle / Bitir".
+Harflere dokunarak kelime kuruluyor; dokunulan harf rafta işaretli
+kalıyor, tekrar dokununca geri bırakılıyor. Görsel dil sayı turuyla
+aynı — aynı taş derinliği, aynı süre çubuğu, aynı sonuç kartı.
+
+**Geçersiz kelime turu bitirmiyor.** Sözlükte olmayan ya da harflerden
+yazılamayan bir cevap uyarı veriyor ve oyuncu ekranda kalıyor; sayı
+turundaki "yanlış cevap turu kapatmaz" kuralının karşılığı.
+
+**Çözüm ancak tur bitince görünüyor** (kural 8). Oyuncu en uzunu
+bulduysa başlık "aynı uzunlukta bir başka çözüm" oluyor; "en uzun
+kelime" deyip başka bir kelime göstermek "demek ki bulamadım" gibi
+okunuyordu.
+
+### Sözlük sonradan yükleniyor
+
+Kelime listesi yarım megabayt. Sayı turunu oynayan birinin bunu
+indirmesi gereksiz; liste ayrı bir parçaya konuldu ve yalnızca kelime
+turu açıldığında isteniyor (sıkıştırılmış 131 KB).
+
+### Mimari notu
+
+Kelime turu kendi ekranında yaşıyor; sayı turunun ekranlarına
+dokunulmadı. Oyun kurallarının hiçbiri arayüze kopyalanmadı — hangi
+kelime geçerli, kaç puan eder, en uzunu hangisi, hepsini
+`paketler/oyun-kelime` söylüyor (kural 1).
+
+Kelime turu henüz **tek kişilik**: lige, düelloya ve arenaya
+girmiyor. Sunucu doğrulaması da yok; bu yüzden puanı lige işlemiyor
+(kural 2'ye uygun — sunucu doğrulamadan puan verilmez).
+
 ## 2026-10-07 - Kelime turu gerçek sözlüğe kavuştu
 
 Kelime turu 150 kelimelik geçici bir listeyle çalışıyordu; oynanabilir

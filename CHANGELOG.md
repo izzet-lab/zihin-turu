@@ -3,6 +3,44 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Rozetler görünür oldu
+
+Veritabanı Ağustos 2026'dan beri rozet veriyordu ve Yardım ekranı beş
+rozet vaat ediyordu. **Hiçbiri hiçbir ekranda görünmüyordu.** Oyuncu
+kazandığını görmüyorsa rozet yoktur.
+
+### On dört rozet
+
+- **Alışkanlık:** 3, 7, 30, 100 gün üst üste.
+- **Beceri:** ilk tam isabet, 10 tam isabet, 100 tam isabet, kelime
+  turunu oynama.
+- **Rekabet:** 1 / 10 / 50 düello galibiyeti; arenada podyum, altın,
+  10 altın.
+
+Sıralamalar sayfasında **kazanılmayanlar da soluk olarak** görünüyor;
+üstüne gelince nasıl kazanılacağı yazıyor. Yalnızca kazanılanları
+göstermek bitmiş bir liste verir, kilitliyi göstermek bir sonraki
+hedefi.
+
+### Nerede veriliyor
+
+Rozet bir oyun kuralı değil, platformun ilerleme kaydı — oyun paketine
+koymak kuralı yanlış yere taşırdı, istemciye koymak hile kapısı
+açardı. Verinin yazıldığı yerde veriliyor: seri ve beceri rozetleri
+lig tetikleyicisinde, düello ve arena rozetleri derece tablolarının
+tetikleyicilerinde. O tablolara yalnızca Edge Function yazıyor.
+
+Göç 013 ayrıca bugüne kadar hak edilmiş rozetleri geriye dönük
+dolduruyor. `tur_sonuc` üzerinde sahte güncelleme YAPILMIYOR: o tablo
+lig tetikleyicisini çalıştırır ve XP ikinci kez yazılırdı.
+
+### Yan düzeltme
+
+Yardım ekranı "🏅 Günlük" diye bir rozet vaat ediyordu; öyle bir rozet
+yok, o satır yalnızca XP veriyor. Rozet adları ve simgeleri artık
+katalogla birebir aynı. Bir birim testi bu eşleşmeyi koruyor: katalogda
+olmayan bir kod veritabanından gelirse ya da tersi, test kırmızı olur.
+
 ## 2026-10-09 - Önce oyun, sonra mod; kelime sözlüğü gündelikleşti
 
 ### "Ana sayfa" çalışmıyordu

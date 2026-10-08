@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@tamisabet/oyun-sayi';
 import IstatistikKarti from '../bilesenler/IstatistikKarti';
+import RozetSeridi from '../bilesenler/RozetSeridi';
 import {
   haftalikAnahtar,
   aylikAnahtar,
@@ -171,6 +172,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         {/* ÖNCE KENDİ SAYILARIN — "kim önde" tablolarından önce "ben ne
             yaptım". Misafirde boş döner, bir şey çizilmez. */}
         <IstatistikKarti oyuncuId={oyuncuId} />
+        <RozetSeridi oyuncuId={oyuncuId} />
 
         {/* Sekme seçimi — 5 sekme.
             Üçlü ızgara: 360px'te beş sekme yan yana sığmıyor, "Haftalık"

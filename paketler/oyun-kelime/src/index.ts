@@ -10,6 +10,8 @@
  */
 
 import type {
+  BotPlani as CekirdekBotPlani,
+  BotTanim,
   Cevap,
   Cozum,
   Dogrulama,
@@ -26,11 +28,19 @@ import {
   type KelimeVeri,
 } from './mantik.ts';
 import { baslangicSozlugu, turkceBuyult, type Sozluk } from './sozluk.ts';
+import {
+  kelimeBotCevabi,
+  kelimeBotGecikmesi,
+  kelimeBotlari,
+  kelimeGecikmeTabaniMs,
+  type KelimeProfilAd,
+} from './bot.ts';
 
 export * from './sozluk.ts';
 export * from './mantik.ts';
 export * from './gonderim.ts';
 export * from './cekim.ts';
+export * from './bot.ts';
 
 export const KELIME_SEVIYE_LISTESI: readonly Seviye[] = [
   { anahtar: 'cocuk', etiket: 'Isınma', altEtiket: '7 harf', sure: 60, antrenmanSuresiz: true },
@@ -101,6 +111,32 @@ export function kelimeTuruKur(sozluk: Sozluk, yaygin: Sozluk = sozluk): TurSagla
         uzaklik: 0,
         satirlar: [`${turkceBuyult(kelime)} — ${kelime.length} harf`],
       };
+    },
+
+    /**
+     * Bot yeteneği — düello ve arena bunu çağırıyor.
+     *
+     * Bot çözümü hazır almıyor: sözlüğü kendisi tarıyor ve taraması
+     * profiline göre sınırlı. Hedef listesi (`yaygin`) kullanılıyor;
+     * bot da oyuncu gibi gündelik kelimeler buluyor.
+     */
+    bot: {
+      botlar(adet: number, gucIpucu: number): BotTanim[] {
+        return kelimeBotlari(adet, gucIpucu, adet > 1);
+      },
+
+      botPlani(tur: Tur, bot: BotTanim, tohum: number): CekirdekBotPlani {
+        const veri = tur.veri as KelimeVeri;
+        const kelime = kelimeBotCevabi(veri, bot.profil as KelimeProfilAd, yaygin, tohum);
+        return {
+          gecikmeMs: kelimeBotGecikmesi(bot.profil as KelimeProfilAd, tohum),
+          cevap: kelime ? { icerik: kelime } : null,
+        };
+      },
+
+      botGecikmeTabaniMs(turSuresiSn: number): number {
+        return kelimeGecikmeTabaniMs(turSuresiSn);
+      },
     },
   };
 }

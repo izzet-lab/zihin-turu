@@ -32,7 +32,7 @@ function sayiGoster(c: number): string {
  * (kural 1: eşik burada yeniden tanımlanmaz).
  */
 function hukumMetni(seviye: string, fark: number): string {
-  if (fark === 0) return 'Tam isabet 🎯';
+  if (fark === 0) return 'Tam isabet';
   const tolerans = SEVIYELER[seviye]?.tolerans;
   if (tolerans) {
     if (fark <= tolerans[0]!) return 'Çok yaklaştın';
@@ -367,7 +367,8 @@ export default function Sonuc({
           </div>
           <div
             data-alan="hukum"
-            className={`mt-2 text-4xl font-black ${tam ? 'text-cyan-300' : 'text-slate-200'}`}
+            // Tam isabet bir ÖDÜLDÜR: altın. Marka cyan'ı eylemlere ayrıldı.
+            className={`mt-2 text-4xl font-black ${tam ? 'zt-odul-yazi' : 'text-slate-200'}`}
           >
             {hukumMetni(seviye, sonuc.fark)}
           </div>

@@ -124,12 +124,21 @@ function rakamBoyu(deger: number | string, buyuk: boolean): string {
 }
 
 /** Hedef ve "en yakın" gösterimleri için aynı mantık, daha büyük ölçekte. */
+/**
+ * Hedef sayısının punto'su.
+ *
+ * HEDEF EKRANIN KAHRAMANI. Oyunun tek sorusu o; "En yakın" ile aynı
+ * boyda durduğu sürece ekran bir gösterge paneli gibi okunuyordu.
+ * Hane sayısı arttıkça küçülüyor, çünkü 360 piksellik ekranda beş
+ * haneli bir sayı satıra sığmak zorunda.
+ */
 function basligBoyu(deger: number | string): string {
   const hane = String(deger).length;
-  if (hane <= 3) return 'text-5xl';
-  if (hane === 4) return 'text-4xl';
-  if (hane === 5) return 'text-3xl';
-  return 'text-2xl';
+  if (hane <= 2) return 'text-7xl';
+  if (hane === 3) return 'text-6xl';
+  if (hane === 4) return 'text-5xl';
+  if (hane === 5) return 'text-4xl';
+  return 'text-3xl';
 }
 
 const ISLEMLER: { op: Islem; ad: string }[] = [

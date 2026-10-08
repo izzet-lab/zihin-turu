@@ -626,13 +626,15 @@ export default function Duello({
     const berabere = mac.kazanan === 'berabere';
     return (
       <Cerceve baslik="Düello bitti">
+        {/* ZAFER ALTIN, KAYIP SOĞUK KIRMIZI. İkisi de cyan'ken maçın
+            nasıl bittiği renkten anlaşılmıyordu. */}
         <div
           className={`text-4xl font-black ${
-            berabere ? 'text-slate-200' : kazandim ? 'text-cyan-300' : 'text-slate-300'
+            berabere ? 'text-slate-200' : kazandim ? 'zt-odul-yazi' : 'zt-kayip-yazi'
           }`}
           data-alan="duello-sonuc"
         >
-          {berabere ? 'Berabere' : kazandim ? 'Kazandın 🏆' : 'Kaybettin'}
+          {berabere ? 'Berabere' : kazandim ? 'Kazandın' : 'Kaybettin'}
         </div>
         {/* Skor sayarak çıkar: sonucun kendisi değil, sonuca varış tatmin ediyor. */}
         <div className="zt-rakam mt-2 text-2xl font-black text-slate-300" data-alan="duello-skor">

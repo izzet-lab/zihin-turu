@@ -113,8 +113,20 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
             <Kutu ust="Madalya" alt={`${ist.altin}·${ist.gumus}·${ist.bronz}`} />
             <Kutu ust="Arena" alt={String(ist.arenaSayisi)} />
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
-            🥇 {ist.altin} altın · 🥈 {ist.gumus} gümüş · 🥉 {ist.bronz} bronz
+          {/* Madalya dökümü: emoji yerine metal noktalar. */}
+          <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500">
+            {(
+              [
+                ['zt-metal-altin', ist.altin, 'altın'],
+                ['zt-metal-gumus', ist.gumus, 'gümüş'],
+                ['zt-metal-bronz', ist.bronz, 'bronz'],
+              ] as const
+            ).map(([sinif, adet, ad]) => (
+              <span key={ad} className="flex items-center gap-1.5">
+                <span className={`${sinif} h-3 w-3 rounded-full`} aria-hidden="true" />
+                {adet} {ad}
+              </span>
+            ))}
           </div>
         </>
       )}

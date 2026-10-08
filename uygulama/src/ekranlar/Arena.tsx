@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ARENA_KOLTUK, duelloTurTohumu } from '@tamisabet/cekirdek';
-import { turKur, sayiTuru, SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import Oyun from './Oyun';
+import KelimeTahtasi from './KelimeTahtasi';
+import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import { acikSeviyeler } from '../depo';
 import {
   arenaDurumOku,
@@ -34,6 +35,8 @@ const YOKLAMA_MS = 2000;
 
 interface Props {
   seviye: string;
+  /** Hangi oyunun arenası — verilmezse sayı turu. */
+  oyun?: string;
   girisYapildiMi: boolean;
   onCik: () => void;
   onGirisAc: () => void;
@@ -41,6 +44,7 @@ interface Props {
 
 export default function Arena({
   seviye: baslangicSeviyesi,
+  oyun: oyunAdi,
   girisYapildiMi,
   onCik,
   onGirisAc,
@@ -69,13 +73,21 @@ export default function Arena({
   const durumRef = useRef<ArenaDurumu | null>(null);
   durumRef.current = durum;
 
-  const seviyeEtiket = SEVIYE_LISTESI.find((s) => s.anahtar === seviye)?.etiket ?? seviye;
+  /**
+   * Hangi oyunun arenası. Sunucudan maç gelince onun `oyun` alanı esas
+   * alınıyor — sekmesini yenileyen oyuncu doğru tahtayı bulsun.
+   */
+  const oyun: OyunAdi = oyunAdiCevir(durum?.oyun ?? oyunAdi);
+  const saglayici = useOyunSaglayici(oyun);
+  const seviyeListesi = saglayici?.seviyeler ?? [];
+
+  const seviyeEtiket = seviyeListesi.find((s) => s.anahtar === seviye)?.etiket ?? seviye;
 
   /* --- Açılışta: süren arenam var mı? --- */
   useEffect(() => {
     if (!girisYapildiMi || acilisKontrolu) return;
     let durduruldu = false;
-    surenArenaSor(seviye)
+    surenArenaSor(seviye, oyun)
       .then((s) => {
         if (durduruldu) return;
         if (s.macId) setMacId(s.macId);
@@ -87,7 +99,7 @@ export default function Arena({
     return () => {
       durduruldu = true;
     };
-  }, [girisYapildiMi, seviye, acilisKontrolu]);
+  }, [girisYapildiMi, seviye, oyun, acilisKontrolu]);
 
   /* --- Arena sürerken durumu yokla (bu çağrı yarışı da ilerletiyor) --- */
   useEffect(() => {
@@ -118,12 +130,22 @@ export default function Arena({
 
   /* --- Turun bulmacası: sunucuyla aynı tohumdan --- */
   const tur = useMemo(() => {
-    if (!durum || durum.durum !== 'basladi') return null;
-    return turKur(durum.seviye, duelloTurTohumu(Number(durum.tohum), durum.aktifTur));
-  }, [durum?.tohum, durum?.aktifTur, durum?.seviye, durum?.durum]);
+    if (!durum || durum.durum !== 'basladi' || !saglayici) return null;
+    return saglayici.turUret(durum.seviye, duelloTurTohumu(Number(durum.tohum), durum.aktifTur));
+  }, [saglayici, durum?.tohum, durum?.aktifTur, durum?.seviye, durum?.durum]);
 
-  /** Bu turun hedefi — çubukların ortak cetveli. */
-  const arenaHedef = (tur?.veri as { hedef: number } | undefined)?.hedef ?? 0;
+  /**
+   * Çubukların ortak cetveli.
+   *
+   * ESKİDEN TURUN HEDEFİYDİ — ama "hedef" sayı turuna özgü bir kelime
+   * ve platform onu bilmemeli (kural 1). Artık cetvel bu turda görülen
+   * en büyük uzaklık: kimse ilerlemediyse çubuklar boş, biri
+   * yaklaştıkça aradaki fark görünür.
+   */
+  const arenaHedef = Math.max(
+    1,
+    ...(durum?.yarisanlar ?? []).map((y) => y.uzaklik ?? 0),
+  );
   const benimUzaklik =
     durum?.yarisanlar.find((y) => y.benMiyim)?.uzaklik ?? null;
 
@@ -144,31 +166,36 @@ export default function Arena({
   const turCozumu = useMemo(() => {
     if (!tur || kilitliTur !== durum?.aktifTur) return null;
     try {
-      return sayiTuru.cozumBul(tur, 400);
+      return saglayici?.cozumBul(tur, 400) ?? null;
     } catch {
       return null;
     }
-  }, [tur, kilitliTur, durum?.aktifTur]);
+  }, [saglayici, tur, kilitliTur, durum?.aktifTur]);
 
   const katil = useCallback(async () => {
     try {
-      const sonuc = await arenayaKatil(seviye);
+      const sonuc = await arenayaKatil(seviye, oyun);
       if (sonuc.macId) setMacId(sonuc.macId);
     } catch (e) {
       setHata((e as Error).message);
     }
-  }, [seviye]);
+  }, [seviye, oyun]);
 
   const ilerlemeGonder = useCallback(
-    (adimlar: { a: number; b: number; islem: string; sonuc: number }[], kilit = false) => {
+    /** `cevap`ın biçimini arena bilmez: sayıda zincir, kelimede sözcük. */
+    (cevap: unknown, kilit = false) => {
       const id = macIdRef.current;
       const d = durumRef.current;
       if (!id || !d || d.durum !== 'basladi') return;
       if (kilit) {
         setKilitliTur(d.aktifTur);
-        setKilitliAdimlar(adimlar);
+        setKilitliAdimlar(
+          Array.isArray(cevap)
+            ? (cevap as { a: number; b: number; islem: string; sonuc: number }[])
+            : [],
+        );
       }
-      arenaGonder(id, d.aktifTur, adimlar, kilit).catch((e) => {
+      arenaGonder(id, d.aktifTur, cevap, kilit).catch((e) => {
         // Tur bu arada kapanmış olabilir — arıza değil, oyunun akışı.
         const mesaj = (e as Error).message;
         if (mesaj.includes('oynanmıyor') || mesaj.includes('çıkmışsın')) return;
@@ -247,7 +274,7 @@ export default function Arena({
             Seviye
           </div>
           <div className="grid grid-cols-2 gap-2.5" data-alan="arena-seviyeler">
-            {SEVIYE_LISTESI.map((sv) => {
+            {seviyeListesi.map((sv) => {
               const kilitli = !acikListe.includes(sv.anahtar);
               const secili = seviye === sv.anahtar;
               return (
@@ -604,12 +631,44 @@ export default function Arena({
     );
   }
 
+  if (!saglayici) {
+    return (
+      <Cerceve baslik="Arena">
+        <p className="zt-nabiz text-sm text-slate-400">Sözlük hazırlanıyor…</p>
+      </Cerceve>
+    );
+  }
+
   if (!tur) return null;
 
   const gecenSn = durum.turBasladi
     ? Math.max(0, (Date.now() - Date.parse(durum.turBasladi)) / 1000)
     : 0;
   const kalanSn = Math.max(1, Math.round(durum.turSuresiSn - gecenSn));
+
+  const arenaUstBilgi = {
+    turNo: durum.aktifTur,
+    toplamTur: durum.toplamTur,
+    yarisanlar: durum.yarisanlar,
+    onIlerleme: ilerlemeGonder,
+    onCik: () => setCikisSoruluyor(true),
+  };
+
+  // KELİME ARENASI: tahta bambaşka, üstü aynı.
+  if (oyun === 'kelime') {
+    return (
+      <KelimeTahtasi
+        key={`${durum.id}-${durum.aktifTur}`}
+        saglayici={saglayici}
+        tur={tur}
+        kalan={kalanSn}
+        toplamSure={durum.turSuresiSn}
+        arena={arenaUstBilgi}
+        onIlerleme={(cevap, kilit) => ilerlemeGonder(cevap.icerik, kilit)}
+        onCik={() => setCikisSoruluyor(true)}
+      />
+    );
+  }
 
   return (
     <Oyun

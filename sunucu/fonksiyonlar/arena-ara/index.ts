@@ -17,7 +17,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ARENA_KOLTUK } from '@tamisabet/cekirdek';
-import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
+import { oyunSec } from '../oyunlar.ts';
 import { ARENA_BEKLEME_SN, arenayiBaslat, type ArenaMac } from '../arena-ortak.ts';
 
 const CORS = {
@@ -44,11 +44,15 @@ Deno.serve(async (req: Request) => {
     if (kimlikHata || !kullanici.user) return hata('Geçersiz oturum.', 401);
     const benId = kullanici.user.id;
 
-    const { seviye, sadece_kontrol } = await req.json() as {
+    const { seviye, oyun: istenenOyun, sadece_kontrol } = await req.json() as {
       seviye: string;
+      /** Hangi oyun — verilmezse sayı turu (eski istemciler). */
+      oyun?: string;
       sadece_kontrol?: boolean;
     };
-    if (!SEVIYE_LISTESI.some((s) => s.anahtar === seviye)) {
+    const oyun = istenenOyun === 'kelime' ? 'kelime' : 'sayi';
+    // Seviye listesi OYUNUN kendi listesi.
+    if (!oyunSec(oyun).seviyeler.some((s) => s.anahtar === seviye)) {
       return hata('Bilinmeyen seviye.', 400);
     }
 
@@ -91,6 +95,7 @@ Deno.serve(async (req: Request) => {
       .from('arena_mac')
       .select('*')
       .eq('durum', 'bekliyor')
+      .eq('oyun', oyun)
       .eq('seviye', seviye)
       .order('olusturuldu', { ascending: true })
       .limit(5);
@@ -128,7 +133,7 @@ Deno.serve(async (req: Request) => {
     const tohum = Math.floor(Math.random() * 2 ** 31);
     const { data: yeni, error: yeniHata } = await supabase
       .from('arena_mac')
-      .insert({ oyun: 'sayi', seviye, tohum, durum: 'bekliyor' })
+      .insert({ oyun, seviye, tohum, durum: 'bekliyor' })
       .select('*')
       .single();
     if (yeniHata || !yeni) return hata('Arena kurulamadı.', 500);

@@ -112,6 +112,11 @@ export async function girisYap(baglam: BrowserContext, eposta: string): Promise<
 export async function duelloyuTemizle(
   sayfa: import('@playwright/test').Page,
   seviye = 'cocuk',
+  /**
+   * Hangi oyunun düellosu. Adres yeniden yüklenirken bu parametre
+   * düşerse ekran sayı turuna döner ve kelime testi sayı maçı kurar.
+   */
+  oyun = 'sayi',
 ): Promise<void> {
   // Önceki testten kalan durum ne olursa olsun seçim ekranına dönülür:
   // süren maç terk edilir, biten maç ekranı kapatılır, hata ekranı
@@ -126,7 +131,7 @@ export async function duelloyuTemizle(
   let temizSayim = 0;
 
   for (let deneme = 0; deneme < 14; deneme++) {
-    await sayfa.goto(`/duello?seviye=${seviye}`);
+    await sayfa.goto(`/duello?seviye=${seviye}&oyun=${oyun}`);
     await sayfa.waitForTimeout(1200);
 
     const gorunur = async (alan: string) =>

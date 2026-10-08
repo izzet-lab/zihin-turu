@@ -65,9 +65,9 @@ interface Props {
   /** Giriş ekranını açar. */
   onGirisAc?: () => void;
   /** Düello ekranına geçer. */
-  onDuello?: (seviye: string) => void;
+  onDuello?: (seviye: string, oyun: 'sayi' | 'kelime') => void;
   /** Arena ekranına geçer. */
-  onArena?: (seviye: string) => void;
+  onArena?: (seviye: string, oyun: 'sayi' | 'kelime') => void;
   /** Kelime turuna geçer; mod verilirse o modla açılır. */
   onKelime?: (mod?: Mod) => void;
   /** Sıralamalar sayfasına götürür. */
@@ -502,18 +502,18 @@ export default function Kurulum({
     {
       anahtar: 'duello',
       ad: 'Düello',
-      not: kelimeMi ? 'Yakında' : 'Rakiple 5 tur',
+      not: 'Rakiple 5 tur',
       simge: '⚔️',
-      kapali: kelimeMi || !onDuello,
-      git: () => onDuello?.(seviye),
+      kapali: !onDuello,
+      git: () => onDuello?.(seviye, oyun),
     },
     {
       anahtar: 'arena',
       ad: 'Arena',
-      not: kelimeMi ? 'Yakında' : '5 kişi aynı anda',
+      not: '5 kişi aynı anda',
       simge: '⚡',
-      kapali: kelimeMi || !onArena,
-      git: () => onArena?.(seviye),
+      kapali: !onArena,
+      git: () => onArena?.(seviye, oyun),
     },
   ];
 

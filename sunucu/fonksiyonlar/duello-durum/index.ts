@@ -120,12 +120,14 @@ Deno.serve(async (req: Request) => {
 
     return ok({
       id: son.id,
+      // Ekran tahtayı buna göre seçiyor.
+      oyun: son.oyun,
       seviye: son.seviye,
       tohum: son.tohum,
       benTarafim,
       aktifTur: son.aktif_tur,
       turBasladi: son.tur_basladi,
-      turSuresiSn: turSuresi(son.seviye),
+      turSuresiSn: turSuresi(son.oyun, son.seviye),
       skorA: son.skor_a,
       skorB: son.skor_b,
       durum: son.durum,

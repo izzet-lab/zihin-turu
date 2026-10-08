@@ -599,8 +599,8 @@ export default function Uygulama() {
         baslangicMod={kurulumMod}
         kullanici={kullanici ? { ad: profil?.kullaniciAdi ?? kullanici.email ?? 'Oyuncu', id: kullanici.id } : null}
         onGirisAc={girisAc}
-        onDuello={(sv) => gecis(`/duello?seviye=${sv}`)}
-        onArena={(sv) => gecis(`/arena?seviye=${sv}`)}
+        onDuello={(sv, oyn) => gecis(`/duello?seviye=${sv}&oyun=${oyn}`)}
+        onArena={(sv, oyn) => gecis(`/arena?seviye=${sv}&oyun=${oyn}`)}
         onKelime={(m) => gecis(m ? `/kelime?mod=${m}` : '/kelime')}
         onSiralamalar={(sekme) => gecis(`/lig?sekme=${sekme}`)}
         onCikisYap={async () => {

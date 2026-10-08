@@ -13,6 +13,8 @@ import { supabase } from './supabase';
 
 export interface DuelloMac {
   id: string;
+  /** Hangi oyun — sunucudan geliyor; ekran tahtayı buna göre seçiyor. */
+  oyun?: string | null;
   seviye: string;
   tohum: number;
   benTarafim: 'a' | 'b';
@@ -119,8 +121,8 @@ async function cagir<T>(uc: string, govde: unknown, ikinciDeneme = false): Promi
 }
 
 /** Rakip arar. Bulunursa maç, bulunmazsa "bekliyor" döner. */
-export function duelloAra(seviye: string): Promise<AramaSonucu> {
-  return cagir<AramaSonucu>('duello-ara', { seviye });
+export function duelloAra(seviye: string, oyun = 'sayi'): Promise<AramaSonucu> {
+  return cagir<AramaSonucu>('duello-ara', { seviye, oyun });
 }
 
 /**
@@ -131,8 +133,8 @@ export function duelloAra(seviye: string): Promise<AramaSonucu> {
  * arama çağrısı kullanılsaydı ekrana bakmak bile oyuncuyu kuyruğa
  * sokardı.
  */
-export function surenMaciSor(seviye: string): Promise<AramaSonucu> {
-  return cagir<AramaSonucu>('duello-ara', { seviye, sadece_kontrol: true });
+export function surenMaciSor(seviye: string, oyun = 'sayi'): Promise<AramaSonucu> {
+  return cagir<AramaSonucu>('duello-ara', { seviye, oyun, sadece_kontrol: true });
 }
 
 /**

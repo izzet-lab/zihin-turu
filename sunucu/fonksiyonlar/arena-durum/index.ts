@@ -115,6 +115,7 @@ Deno.serve(async (req: Request) => {
 
     return ok({
       id: son.id,
+      oyun: son.oyun,
       seviye: son.seviye,
       tohum: son.tohum,
       durum: son.durum,

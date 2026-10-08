@@ -303,6 +303,9 @@ async function macKur(
 function macCevabi(m: Record<string, unknown>, benId: string) {
   return {
     id: m.id,
+    // Ekran tahtayı buna göre seçiyor; eksik gelirse kelime maçı
+    // sayı tahtasıyla açılır.
+    oyun: m.oyun,
     seviye: m.seviye,
     tohum: m.tohum,
     benTarafim: m.oyuncu_a === benId ? 'a' : 'b',

@@ -41,6 +41,7 @@ import {
   sonAntrenmanAyariOku,
 } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
+import KisaSiralama from '../bilesenler/KisaSiralama';
 
 export type Mod = 'antrenman' | 'gunun';
 
@@ -67,8 +68,10 @@ interface Props {
   onDuello?: (seviye: string) => void;
   /** Arena ekranına geçer. */
   onArena?: (seviye: string) => void;
-  /** Kelime turuna geçer. */
-  onKelime?: () => void;
+  /** Kelime turuna geçer; mod verilirse o modla açılır. */
+  onKelime?: (mod?: Mod) => void;
+  /** Sıralamalar sayfasına götürür. */
+  onSiralamalar?: (sekme: 'duello' | 'arena') => void;
   /** Çıkış yapar. */
   onCikisYap?: () => void;
 }
@@ -88,6 +91,7 @@ export default function Kurulum({
   onDuello,
   onArena,
   onKelime,
+  onSiralamalar,
 }: Props) {
   const modunEkrani = (m?: Mod): Ekran =>
     m === 'antrenman' ? 'antrenman' : m === 'gunun' ? 'gunun' : 'ana';
@@ -104,6 +108,15 @@ export default function Kurulum({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baslangicMod]);
   const [kilitAciklama, setKilitAciklama] = useState<string | null>(null);
+
+  /**
+   * Ana ekranda hangi oyun seçili?
+   *
+   * İki oyun olunca "Antrenman" tek başına ne anlama geldiğini
+   * söylemiyordu — sayı antrenmanı mı, kelime antrenmanı mı? Önce
+   * oyun seçiliyor, sonra mod.
+   */
+  const [oyun, setOyun] = useState<'sayi' | 'kelime'>('sayi');
 
   // Marka değişikliğinden sonra yerel ilerleme boş gelebiliyor (yeni
   // alan adı = yeni tarayıcı deposu). Üyenin verisi sunucuda; giriş
@@ -451,45 +464,58 @@ export default function Kurulum({
   /* ANA EKRAN                                                          */
   /* ----------------------------------------------------------------- */
 
-  // İkinci sıradaki dört mod. Hepsi aynı görsel ağırlıkta ve aynı
-  // vurgu renginde: biri diğerinden "daha önemli" değil, seçim
-  // oyuncunun o anki isteğine göre.
-  const ikinciSira: { anahtar: string; ad: string; not: string; simge: string; git: () => void }[] = [
+  const kelimeMi = oyun === 'kelime';
+
+  /**
+   * Modlar. Günün Turu listede DURUYOR: günlük ritüel oyunun en önemli
+   * alışkanlığı, menüden silinecek bir şey değil. İlk sırada ve tek
+   * vurgulu kart olarak duruyor.
+   *
+   * Düello ve Arena yalnızca sayı turunda var. Kelime seçiliyken
+   * "aktif ama tıklayınca hiçbir şey olmuyor" demek yerine açıkça
+   * "yakında" yazıyor — oyuncuyu çıkmaz sokağa sokmamak için.
+   */
+  const modlar: {
+    anahtar: string;
+    ad: string;
+    not: string;
+    simge: string;
+    vurgulu?: boolean;
+    kapali?: boolean;
+    git?: () => void;
+  }[] = [
+    {
+      anahtar: 'gunun',
+      ad: 'Günün Turu',
+      not: kilitli && !kelimeMi ? 'Bugünkü turunu oynadın' : 'Herkese aynı bulmaca',
+      simge: '📅',
+      vurgulu: true,
+      git: () => (kelimeMi ? onKelime?.('gunun') : setEkran('gunun')),
+    },
     {
       anahtar: 'antrenman',
       ad: 'Antrenman',
       not: 'İstediğin kadar oyna',
       simge: '♾️',
-      git: () => setEkran('antrenman'),
+      git: () => (kelimeMi ? onKelime?.('antrenman') : setEkran('antrenman')),
     },
-  ];
-  if (onDuello) {
-    ikinciSira.push({
+    {
       anahtar: 'duello',
       ad: 'Düello',
-      not: 'Rakiple 5 tur',
+      not: kelimeMi ? 'Yakında' : 'Rakiple 5 tur',
       simge: '⚔️',
-      git: () => onDuello(seviye),
-    });
-  }
-  if (onArena) {
-    ikinciSira.push({
+      kapali: kelimeMi || !onDuello,
+      git: () => onDuello?.(seviye),
+    },
+    {
       anahtar: 'arena',
       ad: 'Arena',
-      not: '5 kişi aynı anda',
+      not: kelimeMi ? 'Yakında' : '5 kişi aynı anda',
       simge: '⚡',
-      git: () => onArena(seviye),
-    });
-  }
-  if (onKelime) {
-    ikinciSira.push({
-      anahtar: 'kelime',
-      ad: 'Kelime Turu',
-      not: 'Harflerden en uzun kelime',
-      simge: '📖',
-      git: () => onKelime(),
-    });
-  }
+      kapali: kelimeMi || !onArena,
+      git: () => onArena?.(seviye),
+    },
+  ];
 
   return (
     <Kabuk>
@@ -498,48 +524,97 @@ export default function Kurulum({
         <img src="/ikon/ikon-192.png" alt="" className="h-9 w-9 rounded-lg" />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-black leading-none text-white">Tam İsabet</h1>
-          {/* Alt başlık platformu anlatır, tek bir oyunu değil: artık
-              altında kelime oyunu da var. */}
           <p className="text-xs text-slate-500">Türkçe zihin oyunları — sayılar ve kelimeler.</p>
         </div>
       </header>
 
-      {/* GÜNÜN TURU — tek baskın kart. Günlük ritüel, ana eylem. */}
-      <button
-        data-alan="gunun-git"
-        onClick={() => setEkran('gunun')}
-        className="zt-secim mt-7 w-full rounded-2xl border-2 border-cyan-300 bg-cyan-300/15 px-5 py-5 text-left transition hover:bg-cyan-300/20 active:scale-[.99]"
-      >
-        <div className="flex items-center gap-3">
-          <span aria-hidden="true" className="text-3xl">
-            📅
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-xl font-black leading-none text-cyan-100">Günün Turu</div>
-            <div className="mt-1 text-xs text-cyan-200/70">
-              {kilitli ? 'Bugünkü turunu oynadın' : 'Herkes bugün aynı bulmacayı oynuyor'}
-            </div>
-          </div>
-          <span aria-hidden="true" className="text-cyan-300">
-            →
-          </span>
-        </div>
-      </button>
+      {/* 1) OYUN SEÇİMİ — önce ne oynayacağını seç. */}
+      <div className="mt-7 grid grid-cols-2 gap-2.5" data-alan="oyun-secici">
+        {(
+          [
+            { k: 'sayi' as const, ad: 'Sayı Turu', not: 'Rakamlar, dört işlem', simge: '🔢' },
+            { k: 'kelime' as const, ad: 'Kelime Turu', not: 'Harflerden en uzun kelime', simge: '📖' },
+          ]
+        ).map((o) => (
+          <button
+            key={o.k}
+            data-oyun={o.k}
+            onClick={() => setOyun(o.k)}
+            aria-pressed={oyun === o.k}
+            className={`zt-secim relative min-h-[96px] rounded-xl border-2 px-3 py-3 text-left transition active:scale-[.99] ${
+              oyun === o.k
+                ? 'zt-secim-acik border-cyan-300 bg-cyan-300/15'
+                : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+            }`}
+          >
+            {oyun === o.k && (
+              <span
+                aria-hidden="true"
+                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-300 text-[11px] font-black text-slate-900"
+              >
+                ✓
+              </span>
+            )}
+            <span className="block text-2xl leading-none" aria-hidden="true">
+              {o.simge}
+            </span>
+            <span
+              className={`mt-2 block font-black leading-tight ${
+                oyun === o.k ? 'text-cyan-100' : 'text-slate-100'
+              }`}
+            >
+              {o.ad}
+            </span>
+            <span
+              className={`mt-0.5 block text-[11px] leading-snug ${
+                oyun === o.k ? 'text-cyan-200/70' : 'text-slate-400'
+              }`}
+            >
+              {o.not}
+            </span>
+          </button>
+        ))}
+      </div>
 
-      {/* İKİNCİ SIRA — 2×2, hepsi eşit ağırlıkta ve tek vurgu renginde. */}
-      <div className="mt-3 grid grid-cols-2 gap-2.5" data-alan="modlar">
-        {ikinciSira.map((m) => (
+      {/* 2) MOD SEÇİMİ — seçili oyunun modları. */}
+      <div className="mb-2 mt-5 text-sm font-bold text-slate-300">
+        {kelimeMi ? 'Kelime Turu' : 'Sayı Turu'} — nasıl oynayalım?
+      </div>
+      <div className="grid grid-cols-2 gap-2.5" data-alan="modlar">
+        {modlar.map((m) => (
           <button
             key={m.anahtar}
             data-mod={m.anahtar}
+            disabled={m.kapali}
             onClick={m.git}
-            className="zt-secim min-h-[92px] rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-3 text-left transition hover:border-slate-600 hover:bg-slate-800/80 active:scale-[.99]"
+            className={`zt-secim min-h-[92px] rounded-xl border px-3 py-3 text-left transition active:scale-[.99] ${
+              m.kapali
+                ? 'cursor-not-allowed border-slate-800 bg-slate-900/30'
+                : m.vurgulu
+                  ? 'border-2 border-cyan-300 bg-cyan-300/15 hover:bg-cyan-300/20'
+                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
+            }`}
           >
-            <div className="text-xl leading-none" aria-hidden="true">
+            <div
+              className={`text-xl leading-none ${m.kapali ? 'opacity-40' : ''}`}
+              aria-hidden="true"
+            >
               {m.simge}
             </div>
-            <div className="mt-2 font-black leading-tight text-slate-100">{m.ad}</div>
-            <div className="mt-0.5 text-[11px] leading-snug text-slate-400">{m.not}</div>
+            <div
+              className={`mt-2 font-black leading-tight ${
+                m.kapali ? 'text-slate-600' : m.vurgulu ? 'text-cyan-100' : 'text-slate-100'
+              }`}
+            >
+              {m.ad}
+            </div>
+            <div
+              className={`mt-0.5 text-[11px] leading-snug ${
+                m.kapali ? 'text-slate-700' : m.vurgulu ? 'text-cyan-200/70' : 'text-slate-400'
+              }`}
+            >
+              {m.not}
+            </div>
           </button>
         ))}
       </div>
@@ -547,17 +622,20 @@ export default function Kurulum({
       {/* Gerçek oyuncu sayıları — eşik üstündeyse gösterilir */}
       {oyuncuSayilari && (oyuncuSayilari.bugunOynayanlar || oyuncuSayilari.bugunTamIsabet) && (
         <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs text-slate-500">
-          {oyuncuSayilari.bugunOynayanlar && <span>Bugün {oyuncuSayilari.bugunOynayanlar} kişi oynadı</span>}
-          {oyuncuSayilari.bugunTamIsabet && <span>🎯 {oyuncuSayilari.bugunTamIsabet} kişi tam bildi</span>}
+          {oyuncuSayilari.bugunOynayanlar && (
+            <span>Bugün {oyuncuSayilari.bugunOynayanlar} kişi oynadı</span>
+          )}
+          {oyuncuSayilari.bugunTamIsabet && (
+            <span>🎯 {oyuncuSayilari.bugunTamIsabet} kişi tam bildi</span>
+          )}
         </div>
       )}
 
       {/* MARKA TAŞINMASI NOTU — yalnızca misafire, yalnızca ilerlemesi
-          boşsa. Uygulamanın adı ve adresi değişince tarayıcı deposu
-          yeni bir kaynak altında açıldı; eski seri okunamıyor. Bu bir
-          hata değil, tarayıcının güvenlik kuralı — ama oyuncu serisinin
-          neden sıfırlandığını bilmezse oyunun hata yaptığını sanar.
-          Üyenin verisi sunucudan geri geliyor, misafirinki gelemiyor. */}
+          boşsa. Uygulamanın adı ve adresi değişince tarayıcı deposu yeni
+          bir kaynak altında açıldı; eski seri okunamıyor. Bu bir hata
+          değil, tarayıcının güvenlik kuralı — ama oyuncu serisinin neden
+          sıfırlandığını bilmezse oyunun hata yaptığını sanar. */}
       {!kullanici && seri === 0 && Object.keys(il.gunluk).length === 0 && (
         <div
           data-alan="marka-tasima-notu"
@@ -577,6 +655,11 @@ export default function Kurulum({
 
       {seriKarti}
       {xpKarti}
+
+      {/* 3) İLK 10 — "kaçıncıyım" oyunu açan herkesin ilk sorusu; bu
+          tablo ayrı bir sayfada durdukça kimse görmüyordu. */}
+      {onSiralamalar && <KisaSiralama oyuncuId={kullanici?.id} onTumu={onSiralamalar} />}
+
       {kaliciUyarisi}
     </Kabuk>
   );

@@ -56,7 +56,7 @@ async function gununTuruEkraniniAc(page: Page) {
   // İlk açılışta tanıtım kendiliğinden çıkar; kapat ve devam et.
   const yardim = page.locator('[data-alan="yardim-anladim"]');
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
-  await page.locator('[data-alan="gunun-git"]').click();
+  await page.locator('[data-mod="gunun"]').click();
 }
 
 async function kurulumuAc(page: Page) {

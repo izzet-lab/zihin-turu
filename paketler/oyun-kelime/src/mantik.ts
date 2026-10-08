@@ -167,11 +167,20 @@ function karistir<T>(dizi: T[], zar: () => number): T[] {
  * harfleri havuza konuyor, kalanı sıklığa göre dolduruluyor. Böylece
  * havuzda EN AZ bir uzun kelimenin bulunduğu garanti — sayı turundaki
  * "her tur tam çözümlü" güvencesinin kelime karşılığı.
+ *
+ * ÇEKİRDEK VE HEDEF YAYGIN SÖZLÜKTEN GELİR
+ * Kök sözlüğü TDK tabanlı ve "bikir", "cünun", "birsam" gibi artık
+ * kullanılmayan kelimeler içeriyor. Çekirdek oradan seçilince havuzun
+ * "en uzun kelimesi" kimsenin bilmediği bir şey oluyor ve oyuncu her
+ * turda hedefin altında kalıyordu. Çekirdek ve en uzun kelime artık
+ * YAYGIN listeden seçiliyor; oyuncunun yazdığı kelime ise geniş
+ * listeden kabul ediliyor (nadir bir kelime biliyorsa ödüllendirilir).
  */
 export function havuzUret(
   seviye: string,
   tohum: number,
   sozluk: Sozluk,
+  yaygin: Sozluk = sozluk,
 ): KelimeVeri {
   const ayar = KELIME_SEVIYELERI[seviye];
   if (!ayar) throw new Error('Bilinmeyen seviye: ' + seviye);
@@ -181,7 +190,7 @@ export function havuzUret(
   // Çekirdek kelime: istenen uzunlukta yoksa bir kısaya düşülür.
   let cekirdek: string | null = null;
   for (let u = ayar.cekirdekUzunluk; u >= 3 && !cekirdek; u--) {
-    const adaylar = sozluk.uzunluktakiler(u);
+    const adaylar = yaygin.uzunluktakiler(u);
     if (adaylar.length > 0) cekirdek = adaylar[Math.floor(zar() * adaylar.length)]!;
   }
   if (!cekirdek) throw new Error('Sözlük bu seviye için yetersiz.');
@@ -192,7 +201,8 @@ export function havuzUret(
   }
 
   const karisik = karistir(harfler.slice(0, ayar.harf), zar);
-  const enUzun = enUzunKelime(karisik, sozluk);
+  // Hedef de yaygın listeden: ulaşılabilir bir hedef.
+  const enUzun = enUzunKelime(karisik, yaygin);
 
   return {
     harfler: karisik,

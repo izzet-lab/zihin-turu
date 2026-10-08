@@ -51,7 +51,7 @@ export default function Ana() {
       <Routes>
         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
         <Route path="/" element={<Uygulama />} />
-        <Route path="/lig" element={<Lig oyuncuId={kullanici?.id} />} />
+        <Route path="/lig" element={<LigRota oyuncuId={kullanici?.id} />} />
         <Route path="/duello" element={<DuelloRota girisYapildiMi={!!kullanici} />} />
         <Route path="/arena" element={<ArenaRota girisYapildiMi={!!kullanici} />} />
         <Route path="/kelime" element={<KelimeRota kullanici={kullanici} />} />
@@ -121,13 +121,26 @@ function ArenaRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
  *
  * Ekran kendi sozlugunu sonradan yukluyor; burada bir sey beklemiyoruz.
  */
+/** Sıralamalar; ana ekrandan gelen `?sekme=` ile açılır. */
+function LigRota({ oyuncuId }: { oyuncuId?: string }) {
+  const [parametreler] = useSearchParams();
+  const s = parametreler.get('sekme');
+  const sekme = s === 'duello' || s === 'arena' ? s : undefined;
+  return <Lig oyuncuId={oyuncuId} baslangicSekme={sekme} />;
+}
+
 function KelimeRota({ kullanici }: { kullanici: User | null }) {
   const gecis = useNavigate();
   const [parametreler] = useSearchParams();
   const seviye = parametreler.get('seviye') ?? undefined;
+  // Ana ekranda oyun ve mod birlikte seçiliyor; kelime ekranı o modla
+  // açılmalı, oyuncuya aynı seçimi iki kez yaptırmamalı.
+  const m = parametreler.get('mod');
+  const mod = m === 'gunun' || m === 'antrenman' ? m : undefined;
   return (
     <KelimeTuru
       baslangicSeviye={seviye}
+      baslangicMod={mod}
       kullanici={kullanici ? { ad: kullanici.email ?? '', id: kullanici.id } : null}
       onGirisAc={() => gecis('/?giris=1')}
       onCik={() => gecis('/')}

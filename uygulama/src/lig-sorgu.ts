@@ -511,3 +511,102 @@ export async function arenaLig(
 
   return { satirlar, kendi };
 }
+
+// ---------------------------------------------------------------------------
+// Oyuncunun kendi istatistikleri
+// ---------------------------------------------------------------------------
+
+export interface OyuncuIstatistik {
+  /** Düello */
+  duelloMac: number;
+  duelloGalibiyet: number;
+  duelloMaglubiyet: number;
+  duelloElo: number;
+  duelloSira: number | null;
+  /** Arena */
+  arenaSayisi: number;
+  altin: number;
+  gumus: number;
+  bronz: number;
+  arenaSira: number | null;
+  /** Tur geçmişi */
+  toplamTur: number;
+  tamIsabet: number;
+  enIyiPuan: number;
+  sayiTur: number;
+  kelimeTur: number;
+}
+
+/**
+ * Oyuncunun kendi sayıları — Sıralamalar sayfasının üstünde gösterilir.
+ *
+ * NEDEN AYRI SORGU
+ * Lig tabloları "kim önde" sorusunu cevaplıyor; bu "ben ne yaptım"
+ * sorusunu. İkisi farklı veri: biri ilk 100'ü, diğeri tek oyuncunun
+ * bütün geçmişini okuyor.
+ *
+ * Sıra numarası, oyuncunun önünde kaç kişi olduğunu sayarak bulunuyor
+ * — ilk 100 dışında kalsa bile doğru çıksın diye.
+ */
+export async function oyuncuIstatistigi(oyuncuId: string): Promise<OyuncuIstatistik | null> {
+  try {
+    const [duello, arena, turlar] = await Promise.all([
+      supabase
+        .from('duello_derece')
+        .select('elo, mac_sayisi, galibiyet, maglubiyet')
+        .eq('oyuncu_id', oyuncuId)
+        .maybeSingle(),
+      supabase
+        .from('arena_derece')
+        .select('arena_sayisi, altin, gumus, bronz')
+        .eq('oyuncu_id', oyuncuId)
+        .maybeSingle(),
+      supabase.from('tur_sonuc').select('oyun, uzaklik, puan').eq('oyuncu_id', oyuncuId).limit(2000),
+    ]);
+
+    const d = duello.data;
+    const a = arena.data;
+    const t = (turlar.data ?? []) as { oyun: string; uzaklik: number; puan: number }[];
+
+    let duelloSira: number | null = null;
+    if (d && d.mac_sayisi > 0) {
+      const { count } = await supabase
+        .from('duello_derece')
+        .select('oyuncu_id', { count: 'exact', head: true })
+        .gt('mac_sayisi', 0)
+        .gt('elo', d.elo);
+      duelloSira = (count ?? 0) + 1;
+    }
+
+    let arenaSira: number | null = null;
+    if (a && a.arena_sayisi > 0) {
+      const { count } = await supabase
+        .from('arena_derece')
+        .select('oyuncu_id', { count: 'exact', head: true })
+        .gt('arena_sayisi', 0)
+        .gt('altin', a.altin);
+      arenaSira = (count ?? 0) + 1;
+    }
+
+    return {
+      duelloMac: d?.mac_sayisi ?? 0,
+      duelloGalibiyet: d?.galibiyet ?? 0,
+      duelloMaglubiyet: d?.maglubiyet ?? 0,
+      duelloElo: d?.elo ?? 0,
+      duelloSira,
+      arenaSayisi: a?.arena_sayisi ?? 0,
+      altin: a?.altin ?? 0,
+      gumus: a?.gumus ?? 0,
+      bronz: a?.bronz ?? 0,
+      arenaSira,
+      toplamTur: t.length,
+      tamIsabet: t.filter((x) => x.uzaklik === 0).length,
+      enIyiPuan: t.reduce((en, x) => Math.max(en, x.puan), 0),
+      sayiTur: t.filter((x) => x.oyun === 'sayi').length,
+      kelimeTur: t.filter((x) => x.oyun === 'kelime').length,
+    };
+  } catch (e) {
+    console.warn('[oyuncuIstatistigi] okunamadı:', e);
+    return null;
+  }
+}

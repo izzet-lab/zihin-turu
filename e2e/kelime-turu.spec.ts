@@ -66,16 +66,33 @@ test('boş cevapla bitirince sonuç ekranı ve çözüm gelir', async ({ page })
   await expect(page.locator('[data-alan="kelime-yeni-tur"]')).toBeVisible();
 });
 
-test('ana ekrandan kelime turuna geçilebiliyor', async ({ page }) => {
+test('ana ekranda önce oyun, sonra mod seçiliyor', async ({ page }) => {
   await page.goto('/');
   // Ilk acilista "Nasil oynanir" penceresi uste biniyor.
   const yardim = page.locator('[data-alan="yardim-anladim"]');
   if (await yardim.isVisible().catch(() => false)) await yardim.click();
 
-  const dugme = page.locator('[data-mod="kelime"]');
-  await expect(dugme).toBeVisible();
-  await dugme.click();
-  await expect(page).toHaveURL(/\/kelime/);
+  // Kelime seçilince modlar kelime turuna ait olur.
+  await page.locator('[data-oyun="kelime"]').click();
+  await expect(page.locator('[data-alan="modlar"]')).toBeVisible();
+
+  // Düello ve arena kelime turunda YOK; aktif görünüp çıkmaz sokağa
+  // sokmak yerine açıkça kapalı.
+  await expect(page.locator('[data-mod="duello"]')).toBeDisabled();
+  await expect(page.locator('[data-mod="arena"]')).toBeDisabled();
+
+  await page.locator('[data-mod="antrenman"]').click();
+  await expect(page).toHaveURL(/\/kelime\?mod=antrenman/);
+});
+
+test('sayı turu seçiliyken düello ve arena açık', async ({ page }) => {
+  await page.goto('/');
+  const yardim = page.locator('[data-alan="yardim-anladim"]');
+  if (await yardim.isVisible().catch(() => false)) await yardim.click();
+
+  await expect(page.locator('[data-oyun="sayi"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-mod="duello"]')).toBeEnabled();
+  await expect(page.locator('[data-mod="arena"]')).toBeEnabled();
 });
 
 /*

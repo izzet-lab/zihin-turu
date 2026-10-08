@@ -47,18 +47,26 @@ interface Tas {
 interface Props {
   /** Başlangıç seviyesi; verilmezse oyuncu seçer. */
   baslangicSeviye?: string;
+  /** Ana ekranda seçilen mod; verilmezse Günün Turu ile açılır. */
+  baslangicMod?: Mod;
   /** Giriş yapmış kullanıcı; seri ve XP kartı için. */
   kullanici?: { ad: string; id?: string } | null;
   onGirisAc?: () => void;
   onCik: () => void;
 }
 
-export default function KelimeTuru({ baslangicSeviye, kullanici, onGirisAc, onCik }: Props) {
+export default function KelimeTuru({
+  baslangicSeviye,
+  baslangicMod,
+  kullanici,
+  onGirisAc,
+  onCik,
+}: Props) {
   const [asama, setAsama] = useState<Asama>('yukleniyor');
   const [saglayici, setSaglayici] = useState<TurSaglayici | null>(null);
   const [yuklemeHatasi, setYuklemeHatasi] = useState(false);
   const [seviye, setSeviye] = useState(baslangicSeviye ?? 'normal');
-  const [mod, setMod] = useState<Mod>('gunun');
+  const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [gunlukKilit, setGunlukKilit] = useState(() => kelimeGunlukOynandiMi());
 
   const [tur, setTur] = useState<Tur | null>(null);
@@ -92,9 +100,11 @@ export default function KelimeTuru({ baslangicSeviye, kullanici, onGirisAc, onCi
   useEffect(() => {
     let iptal = false;
     import('@tamisabet/oyun-kelime/sozluk-verisi')
-      .then(({ KELIME_METNI }) => {
+      .then(({ KELIME_METNI, YAYGIN_METNI }) => {
         if (iptal) return;
-        setSaglayici(kelimeTuruKur(tamSozlukKur(KELIME_METNI)));
+        // İki liste: geniş olan cevabı KABUL eder, yaygın olan HEDEFİ
+        // belirler (bkz. oyun-kelime/kelimeTuruKur).
+        setSaglayici(kelimeTuruKur(tamSozlukKur(KELIME_METNI), tamSozlukKur(YAYGIN_METNI)));
         setAsama('seviye');
       })
       .catch(() => {

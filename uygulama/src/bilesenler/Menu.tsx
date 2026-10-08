@@ -21,7 +21,7 @@ export default function Menu() {
   const gecis = useNavigate();
 
   /** Ana sayfadayken event, başka rotadayken yönlendirip parametre bırak. */
-  function anaSayfayaIstek(istek: 'yardim' | 'giris') {
+  function anaSayfayaIstek(istek: 'yardim' | 'giris' | 'ana') {
     if (window.location.pathname === '/') {
       window.dispatchEvent(new CustomEvent('zt-menu-istek', { detail: istek }));
     } else {
@@ -159,8 +159,17 @@ export default function Menu() {
 
             <div className="my-1 h-px bg-slate-800" />
 
+            {/* ANA SAYFA
+                Yalnızca `gecis('/')` yetmiyordu: oyun ve sonuç ekranları
+                ayrı bir ROTA değil, ana rotanın içindeki durumlar. Zaten
+                "/" üzerindeyken yönlendirme hiçbir şey değiştirmiyor ve
+                düğme ölü görünüyordu — antrenman sonucundan ana sayfaya
+                dönülemiyordu. Artık ana rotadayken olay gönderiliyor. */}
             <button
-              onClick={() => git('/')}
+              onClick={() => {
+                setMenuAcik(false);
+                anaSayfayaIstek('ana');
+              }}
               data-alan="ana-sayfa"
               className="zt-menu-oge text-slate-200"
             >

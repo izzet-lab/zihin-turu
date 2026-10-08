@@ -30,8 +30,11 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const HAM = process.argv[2];
-if (!HAM) {
-  console.error('Kullanım: node araclar/kelime-listesi-uret.mjs <ham-sozluk-dosyasi>');
+const SIKLIK = process.argv[3];
+if (!HAM || !SIKLIK) {
+  console.error(
+    'Kullanim: node araclar/kelime-listesi-uret.mjs <ham-sozluk> <siklik-listesi>',
+  );
   process.exit(1);
 }
 
@@ -99,26 +102,93 @@ for (const k of kokler) {
 
 const sirali = [...tumu].sort((a, b) => a.localeCompare(b, 'tr'));
 
+// ---------------------------------------------------------------------
+// YAYGIN KELIMELER
+//
+// Kok sozlugu TDK tabanli: 'bikir', 'cunun', 'birsam' gibi artik
+// kullanilmayan kelimeler de iceriyor. Oyuncuya 'bu havuzun en uzun
+// kelimesi BIRSAM' demek, bulunmasi imkansiz bir hedef koymak demek.
+//
+// Zemberek'in kendi `first-10K` sikli k listesi (ayni depo, ayni lisans)
+// gundelik kelimeleri ayiriyor. Bu alt liste SADECE hedef icin
+// kullaniliyor: havuzun cekirdek kelimesi ve 'en uzun kelime' buradan
+// seciliyor. Oyuncunun yazdigi kelime ise GENIS listeden kabul
+// ediliyor - nadir bir kelime biliyorsa odullendirilsin.
+const siklik = new Set(
+  readFileSync(SIKLIK, 'utf8')
+    .split(/\r?\n/)
+    .map((x) => x.trim().toLocaleLowerCase('tr'))
+    .filter(Boolean),
+);
+
+/**
+ * Hedef olarak gosterilmemesi gereken kokler.
+ *
+ * Bu, betigin ELLE BAKILAN tek parcasi. Siklik listesi kaba sozleri de
+ * iceriyor cunku gercekten sik kullaniliyorlar; ama oyun "bu havuzun en
+ * uzun kelimesi BOKLAR" demez. Kelimeler yine de KABUL ediliyor - sadece
+ * hedef ve cekirdek olarak secilmiyorlar.
+ *
+ * Liste kisa tutuldu: amac sansur degil, oyunun agzini toplamak.
+ */
+const KABA_KOKLER = new Set([
+  'bok', 'sik', 'am', 'got', 'orospu', 'pic', 'yarak', 'kahpe', 'serefsiz',
+  'gavat', 'ibne', 'tasak', 'zikir', 'sicmak', 'sicik', 'ospu',
+]);
+
+function kabaMi(k) {
+  if (KABA_KOKLER.has(k)) return true;
+  for (const ek of ['lar', 'ler']) {
+    if (k.endsWith(ek) && KABA_KOKLER.has(k.slice(0, -ek.length))) return true;
+  }
+  return false;
+}
+
+function yayginMi(k) {
+  if (kabaMi(k)) return false;
+  if (siklik.has(k)) return true;
+  // Cogul bicim: koku yayginsa cogulu da yaygin sayilir.
+  for (const ek of ['lar', 'ler']) {
+    if (k.endsWith(ek) && siklik.has(k.slice(0, -ek.length))) return true;
+  }
+  return false;
+}
+
+const yaygin = sirali.filter((k) => k.length >= 3 && yayginMi(k));
+
 mkdirSync(dirname(CIKTI), { recursive: true });
 const BT = String.fromCharCode(96);
 const baslik = [
   '/**',
   ' * kelimeler.ts - URETILMIS DOSYA, ELLE DUZENLENMEZ.',
   ' *',
-  ' * Kaynak: Zemberek-NLP Turkce kok sozlugu (Apache License 2.0).',
+  ' * Kaynak: Zemberek-NLP (Apache License 2.0).',
+  ' *   - master-dictionary.dict : taninan kelimeler',
+  ' *   - first-10K              : yaygin kelimeler (hedef icin)',
   ' * Lisans metni: veri/ZEMBEREK-LISANS.txt',
   ' * Ureten betik: araclar/kelime-listesi-uret.mjs',
   ' *',
-  ` * ${sirali.length} kelime (kokler + duzenli cogullar), satir satir.`,
+  ` * KELIME_METNI: ${sirali.length} kelime - oyuncunun cevabi buradan kabul edilir.`,
+  ` * YAYGIN_METNI: ${yaygin.length} kelime - havuzun cekirdegi ve 'en uzun kelime'`,
+  ' *   bu listeden secilir; hedef gunluk hayatta var olan bir kelime olsun.',
   ' */',
   '',
   `export const KELIME_METNI = ${BT}`,
 ].join('\n');
-writeFileSync(CIKTI, baslik + sirali.join('\n') + '\n' + BT + ';\n', 'utf8');
+
+const govde =
+  baslik +
+  sirali.join('\n') +
+  '\n' + BT + ';\n\n' +
+  `export const YAYGIN_METNI = ${BT}` +
+  yaygin.join('\n') +
+  '\n' + BT + ';\n';
+writeFileSync(CIKTI, govde, 'utf8');
 
 const uzunluk = {};
-for (const k of sirali) uzunluk[k.length] = (uzunluk[k.length] ?? 0) + 1;
+for (const k of yaygin) uzunluk[k.length] = (uzunluk[k.length] ?? 0) + 1;
 
-console.log(`Kök: ${kokler.size}  ·  Çoğullarla: ${sirali.length}  ·  Elenen: ${elenen}`);
-console.log('Uzunluk dağılımı:', Object.entries(uzunluk).map(([u, n]) => `${u}:${n}`).join(' '));
-console.log(`Yazıldı: ${CIKTI}`);
+console.log(`Kok: ${kokler.size}  .  Cogullarla: ${sirali.length}  .  Elenen: ${elenen}`);
+console.log(`Yaygin (hedef listesi): ${yaygin.length}`);
+console.log('Yaygin uzunluk dagilimi:', Object.entries(uzunluk).sort((a, b) => a[0] - b[0]).map(([u, n]) => `${u}:${n}`).join(' '));
+console.log(`Yazildi: ${CIKTI}`);

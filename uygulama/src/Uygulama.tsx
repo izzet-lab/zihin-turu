@@ -179,13 +179,27 @@ export default function Uygulama() {
       setKurulumMod(istenenMod);
       setEkran('kurulum');
     }
-    if (params.has('giris') || params.has('yardim') || params.has('mod')) {
+    if (params.has('ana')) {
+      // Başka bir rotadan gelen "Ana sayfa": olay da gönderiliyor ama
+      // bileşen henüz bağlanmamışsa parametre yakalıyor.
+      setKurulumMod(undefined);
+      setEkran('kurulum');
+    }
+    if (params.has('giris') || params.has('yardim') || params.has('mod') || params.has('ana')) {
       window.history.replaceState({}, '', window.location.pathname);
     }
 
     function menuIstegi(e: Event) {
       const detail = (e as CustomEvent<string>).detail;
       if (detail === 'yardim') setYardimAcik(true);
+      if (detail === 'ana') {
+        // Oyun ve sonuç ekranları ayrı rota değil, ana rotanın içindeki
+        // durumlar; menüdeki "Ana sayfa" yalnızca adres değiştirerek
+        // buraya dönemiyordu.
+        setKurulumMod(undefined);
+        setYardimAcik(false);
+        setEkran('kurulum');
+      }
       if (detail === 'giris') {
         setGirisOncesiEkran(ekran as Ekran);
         setEkran('giris');
@@ -587,7 +601,8 @@ export default function Uygulama() {
         onGirisAc={girisAc}
         onDuello={(sv) => gecis(`/duello?seviye=${sv}`)}
         onArena={(sv) => gecis(`/arena?seviye=${sv}`)}
-        onKelime={() => gecis('/kelime')}
+        onKelime={(m) => gecis(m ? `/kelime?mod=${m}` : '/kelime')}
+        onSiralamalar={(sekme) => gecis(`/lig?sekme=${sekme}`)}
         onCikisYap={async () => {
           await supabase.auth.signOut();
           setKullanici(null);

@@ -63,9 +63,77 @@ export interface Cozum {
   satirlar: string[];
 }
 
+/* ------------------------------------------------------------------ */
+/* BOT                                                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Masaya oturan bir bot.
+ *
+ * Platform botun NE OLDUĞUNU bilmez: `profil` oyunun kendi anladığı
+ * bir etiket (sayı turunda "cirak"/"usta", kelime turunda başka bir
+ * şey olabilir). Platform yalnızca saklar ve geri verir.
+ */
+export interface BotTanim {
+  ad: string;
+  profil: string;
+}
+
+/** Botun bir turdaki hamlesi. */
+export interface BotPlani {
+  /** Tur başlangıcından kaç ms sonra cevap verir. */
+  gecikmeMs: number;
+  /** Botun cevabı; null ise bu turu pas geçer. */
+  cevap: Cevap | null;
+}
+
+/**
+ * Düello ve arenanın bota ihtiyacı var; `TurSaglayici`'nin beş üyesi
+ * bunu karşılamıyordu.
+ *
+ * NEDEN ARAYÜZE EKLENDİ (9 Ekim 2026)
+ * Düello ve arena sunucu kodu sayı turunun bot fonksiyonlarını
+ * DOĞRUDAN çağırıyordu; o yüzden kelime turu bu modlara giremiyordu.
+ * CLAUDE.md'nin kuralı net: platform kodunda oyuna özgü çağrı varsa
+ * eksik olan arayüzdür. Eksik olan buydu.
+ *
+ * Bot isteğe bağlı: tek kişilik bir oyun bunu uygulamak zorunda değil,
+ * o zaman düello ve arenaya da giremez.
+ */
+export interface BotYetenegi {
+  /**
+   * Boş koltuklara oturacak botlar.
+   * `gucIpucu` oyuncunun derecesi gibi bir sayı; oyun bunu kendi
+   * zorluk kademesine çevirir. Platform kademeyi bilmez.
+   */
+  botlar(adet: number, gucIpucu: number): BotTanim[];
+
+  /**
+   * Botun bu turdaki planı — TOHUMLU olmak ZORUNDA.
+   *
+   * Sunucu maç durumunu bellekte tutmuyor; her istekte kayıtlardan
+   * yeniden kuruyor. "Bot oynadı mı?" sorusunun cevabı her çağrıda
+   * aynı çıkmalı, yoksa bot bir turda hem oynamış hem oynamamış
+   * görünür.
+   */
+  botPlani(tur: Tur, bot: BotTanim, tohum: number): BotPlani;
+
+  /**
+   * Botun en erken cevap verebileceği an (ms).
+   *
+   * Arenada ilk tam isabet turu kapatıyor; dört bot aynı anda hızlı
+   * olursa tur oyuncu daha oynamadan bitiyor. Oyun kendi turunun
+   * süresine göre bir taban veriyor.
+   */
+  botGecikmeTabaniMs(turSuresiSn: number): number;
+}
+
 /**
  * Bir oyunun platforma takılma noktası.
- * Beş üye. Fazlası platformun oyunu tanımaya başladığı anlamına gelir.
+ *
+ * Beş zorunlu üye; altıncısı (bot) isteğe bağlı ve yalnızca düello ile
+ * arenaya girecek oyunlar için gerekiyor. Fazlası platformun oyunu
+ * tanımaya başladığı anlamına gelir.
  */
 export interface TurSaglayici {
   readonly ad: string;
@@ -87,6 +155,9 @@ export interface TurSaglayici {
 
   /** Bot ve tur sonu açıklaması için. */
   cozumBul(tur: Tur, sinirMs?: number): Cozum;
+
+  /** Düello ve arenaya girecek oyunlar bunu uygular. */
+  readonly bot?: BotYetenegi;
 }
 
 /* ------------------------------------------------------------------ */

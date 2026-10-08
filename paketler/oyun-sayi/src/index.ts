@@ -7,7 +7,17 @@
  */
 
 import { gunlukTohum } from '@tamisabet/cekirdek';
-import type { Tur, Cevap, Dogrulama, Puan, Cozum, Seviye, TurSaglayici } from '@tamisabet/cekirdek';
+import type {
+  Tur,
+  Cevap,
+  Dogrulama,
+  Puan,
+  Cozum,
+  Seviye,
+  TurSaglayici,
+  BotTanim,
+  BotPlani as CekirdekBotPlani,
+} from '@tamisabet/cekirdek';
 import {
   SEVIYELER,
   uretimYap,
@@ -20,6 +30,13 @@ import {
   type SayiVeri,
   type Uretim,
 } from './mantik.ts';
+import {
+  arenaBotlari,
+  arenaGecikmeTabaniMs,
+  botPlaniTohumlu,
+  botUret,
+  type ProfilAd,
+} from './bot.ts';
 
 /**
  * Bir turdan onun üretimini (taşlar, hedef, çözüm) geri getirir.
@@ -146,6 +163,40 @@ export const sayiTuru: TurSaglayici = {
     // garanti ediyor (bkz. o fonksiyonun açıklaması).
     const u = turdanUretim(tur);
     return { uzaklik: u.cozum.fark, satirlar: u.cozum.adimlar.map(bicimle) };
+  },
+
+  /**
+   * Bot yeteneği — düello ve arena bunu çağırıyor.
+   *
+   * Mantığın tamamı `bot.ts` içinde ve zaten test ediliyordu; burada
+   * yalnızca platformun anladığı arayüze çevriliyor. Düello/arena
+   * sunucusu önceden bu fonksiyonları DOĞRUDAN çağırıyordu, o yüzden
+   * kelime turu o modlara giremiyordu.
+   */
+  bot: {
+    botlar(adet: number, gucIpucu: number): BotTanim[] {
+      // Arena kendi kademe dizisini kullanıyor (en fazla biri güçlü);
+      // düello tek rakip istiyor ve gücü dereceden türetiyor.
+      if (adet > 1) return arenaBotlari(adet).map((b) => ({ ad: b.ad, profil: b.profil }));
+      const b = botUret(gucIpucu);
+      return [{ ad: b.ad, profil: b.profil }];
+    },
+
+    botPlani(tur: Tur, bot: BotTanim, tohum: number): CekirdekBotPlani {
+      const plan = botPlaniTohumlu(
+        { id: 'bot', ad: bot.ad, bot: true as const, profil: bot.profil as ProfilAd },
+        tur,
+        tohum,
+      );
+      return {
+        gecikmeMs: plan.gecikmeMs,
+        cevap: plan.adimlar && plan.adimlar.length > 0 ? { icerik: plan.adimlar } : null,
+      };
+    },
+
+    botGecikmeTabaniMs(turSuresiSn: number): number {
+      return arenaGecikmeTabaniMs(turSuresiSn);
+    },
   },
 };
 

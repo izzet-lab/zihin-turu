@@ -148,11 +148,19 @@ export default function Yardim({ acik, kapat }: Props) {
         <Bolum baslik="Seri Ödülleri">
           <div className="space-y-1.5 text-sm text-slate-300">
             <p className="text-xs text-slate-500">Günün turunu <b>tamamla</b> (açmak yetmez, turu bitirmek gerekir).</p>
-            <SeriSatir gun="Her gün" xp={10} rozet="🏅 Günlük" />
-            <SeriSatir gun="3 gün üst üste" xp={25} rozet="🏅 Üç Gün" />
-            <SeriSatir gun="7 gün üst üste" xp={75} rozet="🏅 Haftalık" />
-            <SeriSatir gun="30 gün üst üste" xp={300} rozet="🏅 Aylık" />
-            <SeriSatir gun="100 gün üst üste" xp={1000} rozet="🏅 Yüz Gün" />
+            {/* Rozet adları ve simgeleri `rozetler.ts` kataloğuyla aynı
+                olmak zorunda; burada "🏅 Günlük" yazıp Sıralamalar'da
+                başka bir şey göstermek vaat edilen şeyi vermemek olur.
+                "Her gün" satırının rozeti yok — yalnızca XP veriyor. */}
+            <SeriSatir gun="Her gün" xp={10} rozet="—" />
+            <SeriSatir gun="3 gün üst üste" xp={25} rozet="🔥 Üç Gün" />
+            <SeriSatir gun="7 gün üst üste" xp={75} rozet="🗓️ Haftalık" />
+            <SeriSatir gun="30 gün üst üste" xp={300} rozet="📆 Aylık" />
+            <SeriSatir gun="100 gün üst üste" xp={1000} rozet="💯 Yüz Gün" />
+            <p className="mt-2 text-xs text-slate-500">
+              Rozetlerin tamamı <b>Sıralamalar</b> sayfasında; kazanmadıkların
+              da soluk olarak görünür, hedef olsun diye.
+            </p>
             <p className="mt-2 text-xs text-slate-500">
               Ayda bir <b>seri koruma</b> hakkın var: serin kırılırsa kısa bir
               reklam izleyip geri alabilirsin. Hak her ayın başında tazelenir.

@@ -166,3 +166,41 @@ test('arena boş durumu arenaya götürüyor', async ({ page }) => {
   await page.locator('[data-alan="bos-durum-eylem"]').click();
   await expect(page).toHaveURL(/\/arena/);
 });
+
+/*
+  ROZETLER VE İSTATİSTİKLER
+
+  Veritabanı Ağustos 2026'dan beri rozet veriyordu ve Yardım ekranı
+  rozet vaat ediyordu, ama hiçbir ekran göstermiyordu. Bu testler
+  gösterimin yerinde kaldığını koruyor.
+*/
+
+test('misafire istatistik ve rozet gösterilmez', async ({ page }) => {
+  await page.goto('/lig');
+  // Misafirin geçmişi sunucuda yok; boş kart göstermek yerine hiç
+  // gösterilmiyor.
+  await expect(page.locator('[data-alan="istatistik-karti"]')).toHaveCount(0);
+  await expect(page.locator('[data-alan="rozet-seridi"]')).toHaveCount(0);
+});
+
+test('giriş yapmış oyuncu kendi sayılarını ve rozetlerini görür', async ({ browser }) => {
+  test.skip(!testHesabiVarMi(), '.env.test yok — test hesapları tanımlı değil');
+
+  const baglam = await browser.newContext();
+  await girisYap(baglam, TEST_EPOSTALAR[0]);
+  const page = await baglam.newPage();
+  await page.goto('/lig');
+
+  const ist = page.locator('[data-alan="istatistik-karti"]');
+  await expect(ist).toBeVisible({ timeout: 20_000 });
+  await expect(ist).toContainText('Senin istatistiklerin');
+
+  const rozetler = page.locator('[data-alan="rozet-seridi"]');
+  await expect(rozetler).toBeVisible({ timeout: 20_000 });
+  // Kilitliler de görünür: bir sonraki hedefi göstermek için.
+  await expect(page.locator('[data-rozet]')).toHaveCount(14);
+  // Test hesabı düello oynadı; en az bir rozet kazanılmış olmalı.
+  await expect(page.locator('[data-rozet][data-kazanildi="1"]').first()).toBeVisible();
+
+  await baglam.close();
+});

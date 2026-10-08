@@ -17,7 +17,7 @@
  * ÇÖZÜM SIZMAZ (kural 8)
  * Dönüşte rakibin adımları yok. Rakibe giden tek bilgi uzaklık.
  *
- * Gelen istek (JSON): { mac_id, tur_no, adimlar }
+ * Gelen istek (JSON): { mac_id, tur_no, cevap }  (eski: adimlar)
  * Deploy: supabase functions deploy duello-gonder --import-map ../import_map.json
  */
 
@@ -53,7 +53,10 @@ Deno.serve(async (req: Request) => {
     const body = await req.json() as {
       mac_id: string;
       tur_no: number;
-      adimlar: Adim[];
+      /** Sayı turu için eski alan; yeni istemciler `cevap` gönderiyor. */
+      adimlar?: unknown;
+      /** Oyuna göre değişen cevap — biçimini yalnızca oyun bilir. */
+      cevap?: unknown;
       /**
        * Oyuncu "cevabım bu" dedi mi?
        *
@@ -69,7 +72,6 @@ Deno.serve(async (req: Request) => {
     if (!Number.isInteger(tur_no) || tur_no < 1 || tur_no > DUELLO_TUR_SAYISI) {
       return hata('Geçersiz tur numarası.', 400);
     }
-    if (!Array.isArray(adimlar)) return hata('adimlar dizi olmalı.', 400);
 
     // --- Maçı yükle ve tarafı belirle ---
     const { data: mac } = await supabase
@@ -90,7 +92,13 @@ Deno.serve(async (req: Request) => {
     if (tur_no !== mac.aktif_tur) return hata('Bu tur şu an oynanmıyor.', 409);
 
     // --- Zinciri doğrula, uzaklığı sunucu hesapla ---
-    const uzaklik = uzaklikHesapla(mac as Mac, tur_no, adimlar);
+    // CEVABIN BİÇİMİNİ DÜELLO BİLMEZ: sayı turunda adım zinciri,
+    // kelime turunda tek bir kelime. `adimlar` eski istemciler için
+    // duruyor.
+    const icerik = body.cevap !== undefined ? body.cevap : adimlar;
+    if (icerik === undefined || icerik === null) return hata('Cevap gerekli.', 400);
+
+    const uzaklik = uzaklikHesapla(mac as Mac, tur_no, { icerik });
     if (uzaklik == null) return hata('Geçersiz adım zinciri.', 400);
 
     // --- Sonucu yaz: yalnızca DAHA İYİ uzaklık geçer ---

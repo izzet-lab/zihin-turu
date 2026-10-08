@@ -163,21 +163,31 @@ function arenaKur(opts: {
   return { db, mac };
 }
 
+/**
+ * Turun hedefi. Arena artık `Tur` döndürüyor (oyundan bağımsız);
+ * hedef sayı turunun kendi verisinin içinde.
+ */
+function hedefi(tur: { veri: unknown }): number {
+  return (tur.veri as { hedef: number }).hedef;
+}
+
 describe('turun bulmacası', () => {
   it('aynı arena ve tur hep aynı bulmacayı verir', () => {
     const { mac } = arenaKur({ gercekOyuncu: 1 });
-    expect(turUret(mac, 3).hedef).toBe(turUret(mac, 3).hedef);
+    expect(hedefi(turUret(mac, 3))).toBe(hedefi(turUret(mac, 3)));
   });
 
   it('her tur farklı bulmaca gösterir', () => {
     const { mac } = arenaKur({ gercekOyuncu: 1 });
-    const hedefler = [1, 2, 3, 4, 5].map((n) => turUret(mac, n).hedef);
+    const hedefler = [1, 2, 3, 4, 5].map((n) => hedefi(turUret(mac, n)));
     expect(new Set(hedefler).size).toBeGreaterThan(1);
   });
 
   it('uydurma zincir reddedilir — sunucu istemciye güvenmez', () => {
     const { mac } = arenaKur({ gercekOyuncu: 1 });
-    expect(uzaklikHesapla(mac, 1, [{ a: 999, b: 998, islem: '+', sonuc: 1997 }])).toBeNull();
+    expect(
+      uzaklikHesapla(mac, 1, { icerik: [{ a: 999, b: 998, islem: '+', sonuc: 1997 }] }),
+    ).toBeNull();
   });
 });
 

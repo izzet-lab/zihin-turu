@@ -49,7 +49,10 @@ Deno.serve(async (req: Request) => {
     const govde = await req.json() as {
       mac_id: string;
       tur_no?: number;
-      adimlar?: Adim[];
+      /** Sayı turu için eski alan; yeni istemciler `cevap` gönderiyor. */
+      adimlar?: unknown;
+      /** Oyuna göre değişen cevap — biçimini yalnızca oyun bilir. */
+      cevap?: unknown;
       kilit?: boolean;
       terk?: boolean;
     };
@@ -87,11 +90,17 @@ Deno.serve(async (req: Request) => {
     if (!Number.isInteger(tur_no) || tur_no! < 1 || tur_no! > ARENA_TUR_SAYISI) {
       return hata('Geçersiz tur numarası.', 400);
     }
-    if (!Array.isArray(adimlar)) return hata('adimlar dizi olmalı.', 400);
     if (tur_no !== mac.aktif_tur) return hata('Bu tur şu an oynanmıyor.', 409);
 
-    const uzaklik = uzaklikHesapla(mac as ArenaMac, tur_no!, adimlar);
-    if (uzaklik == null) return hata('Geçersiz adım zinciri.', 400);
+    // CEVABIN BİÇİMİNİ ARENA BİLMEZ.
+    // Sayı turunda adım zinciri, kelime turunda tek bir kelime geliyor.
+    // İkisi de `cevap` alanında taşınıyor; `adimlar` eski istemciler
+    // için duruyor (uygulama güncellenene kadar).
+    const icerik = govde.cevap !== undefined ? govde.cevap : adimlar;
+    if (icerik === undefined || icerik === null) return hata('Cevap gerekli.', 400);
+
+    const uzaklik = uzaklikHesapla(mac as ArenaMac, tur_no!, { icerik });
+    if (uzaklik == null) return hata('Cevap kabul edilmedi.', 400);
 
     const { data: mevcut } = await supabase
       .from('arena_tur')

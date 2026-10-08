@@ -21,16 +21,8 @@ import {
   type Taraf,
   type TurKaydi,
 } from '@tamisabet/cekirdek';
-import {
-  uretimYap,
-  varsayilanBuyukAdet,
-  dogrulaZinciri,
-  turKur,
-  botPlaniTohumlu,
-  SEVIYE_LISTESI,
-  type Adim,
-  type ProfilAd,
-} from '@tamisabet/oyun-sayi';
+import type { Cevap, Tur } from '@tamisabet/cekirdek';
+import { oyunSec, turSuresi as oyunTurSuresi } from './oyunlar.ts';
 
 /** Supabase istemcisi; tip ayrıntısı burada önemli değil. */
 // deno-lint-ignore no-explicit-any
@@ -38,6 +30,8 @@ type Db = any;
 
 export interface Mac {
   id: string;
+  /** Hangi oyun — sütun Faz 3'ten beri var, düello artık onu okuyor. */
+  oyun?: string | null;
   seviye: string;
   tohum: number;
   oyuncu_a: string;
@@ -52,29 +46,32 @@ export interface Mac {
   kazanan: string | null;
 }
 
-/** Bir turun bulmacasını maç tohumundan üretir. Tek kaynak burası. */
-export function turUret(mac: Mac, turNo: number) {
+/**
+ * Bir turun bulmacasını maç tohumundan üretir. Tek kaynak burası.
+ *
+ * Hangi oyun olduğu maçın `oyun` sütununda; düello artık sayı turunu
+ * TANIMIYOR, yalnızca `TurSaglayici` arayüzünü çağırıyor.
+ */
+export function turUret(mac: Mac, turNo: number): Tur {
   const turTohumu = duelloTurTohumu(Number(mac.tohum), turNo);
-  return uretimYap(mac.seviye, turTohumu, varsayilanBuyukAdet(mac.seviye));
+  return oyunSec(mac.oyun).turUret(mac.seviye, turTohumu);
 }
 
 /** Seviyenin tur süresi (saniye). */
-export function turSuresi(seviye: string): number {
-  return SEVIYE_LISTESI.find((s) => s.anahtar === seviye)?.sure ?? 60;
+export function turSuresi(oyun: string | null | undefined, seviye: string): number {
+  return oyunTurSuresi(oyun, seviye);
 }
 
 /**
- * Adım zincirini doğrular ve hedefe uzaklığı döndürür.
- * Geçersiz zincirde null döner — sunucu istemciye güvenmez (kural 2).
+ * Cevabı doğrular ve hedefe uzaklığı döndürür.
+ * Geçersiz cevapta null döner — sunucu istemciye güvenmez (kural 2).
+ *
+ * `uzaklik`ın ANLAMINI düello bilmez; yalnızca "0 ise tam isabet"
+ * kuralını uygular.
  */
-export function uzaklikHesapla(
-  mac: Mac,
-  turNo: number,
-  adimlar: Adim[],
-): number | null {
-  const uretim = turUret(mac, turNo);
-  if (adimlar.length === 0) return uretim.hedef; // hiç işlem yapılmadı
-  const dogr = dogrulaZinciri(uretim.sayilar, adimlar, uretim.hedef);
+export function uzaklikHesapla(mac: Mac, turNo: number, cevap: Cevap): number | null {
+  const tur = turUret(mac, turNo);
+  const dogr = oyunSec(mac.oyun).dogrula(tur, cevap);
   return dogr.gecerli ? dogr.uzaklik : null;
 }
 
@@ -101,22 +98,25 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
     .maybeSingle();
   if (mevcut) return;
 
+  const saglayici = oyunSec(mac.oyun);
+  // Bot yeteneği olmayan bir oyun düelloya zaten giremez; yine de
+  // savunma.
+  if (!saglayici.bot) return;
+
   const turTohumu = duelloTurTohumu(Number(mac.tohum), turNo);
-  const tur = turKur(mac.seviye, turTohumu);
-  const bot = {
-    id: 'bot',
-    ad: mac.bot_ad ?? 'Rakip',
-    bot: true as const,
-    profil: (mac.bot_profil as ProfilAd) ?? 'orta',
-  };
-  const plan = botPlaniTohumlu(bot, tur, turTohumu);
+  const tur = turUret(mac, turNo);
+  const plan = saglayici.bot.botPlani(
+    tur,
+    { ad: mac.bot_ad ?? 'Rakip', profil: mac.bot_profil ?? '' },
+    turTohumu,
+  );
 
   // Bot pas geçtiyse bir şey yazma; turu süre kapatır.
-  if (!plan.adimlar || plan.adimlar.length === 0) return;
+  if (!plan.cevap) return;
 
-  // Botun zinciri de doğrulanır. Bot ayrıcalıklı değil: hatalı bir
-  // zincir üretirse turu kaybeder.
-  const uzaklik = uzaklikHesapla(mac, turNo, plan.adimlar as Adim[]);
+  // Botun cevabı da doğrulanır. Bot ayrıcalıklı değil: geçersiz bir
+  // cevap üretirse turu kaybeder.
+  const uzaklik = uzaklikHesapla(mac, turNo, plan.cevap);
   if (uzaklik == null) return;
 
   // Satır HEMEN yazılır ama `bildirildi` GELECEKTE: botun cevabı ancak o
@@ -159,7 +159,7 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
  */
 export async function macIlerlet(db: Db, mac: Mac): Promise<DuelloDurum> {
   let guncelMac = { ...mac };
-  const sure = turSuresi(mac.seviye);
+  const sure = turSuresi(mac.oyun, mac.seviye);
 
   for (let adim = 0; adim < DUELLO_TUR_SAYISI + 1; adim++) {
     const simdiMs = Date.now();

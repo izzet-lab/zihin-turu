@@ -150,7 +150,17 @@ export const sayiTuru: TurSaglayici = {
 
   dogrula(tur: Tur, cevap: Cevap): Dogrulama {
     const veri = tur.veri as SayiVeri;
-    const adimlar = cevap.icerik as Adim[];
+    const adimlar = (cevap.icerik ?? []) as Adim[];
+
+    // BOŞ ZİNCİR GEÇERLİ BİR CEVAPTIR.
+    // Oyuncu hiç işlem yapmadan süreyi bitirmiş olabilir; uzaklık
+    // hedefin kendisi, puan sıfır. Bu kural önce düello ve arena
+    // sunucusunda ayrı ayrı yazılıydı — oyun kuralı olduğu için
+    // buraya taşındı (kural 1).
+    if (!Array.isArray(adimlar) || adimlar.length === 0) {
+      return { gecerli: true, uzaklik: veri.hedef, ozet: 'Adım yok' };
+    }
+
     return dogrulaZinciri(veri.sayilar, adimlar, veri.hedef);
   },
 

@@ -201,6 +201,16 @@ interface Props {
   onAyarlar: () => void;
   /** Üyelik notuna tıklanınca giriş ekranı açılır. */
   onGirisAc: () => void;
+  /**
+   * Turun sunucuya işlenip işlenmediği.
+   *
+   * NEDEN EKRANDA YAZIYOR
+   * Gönderim "ateşle ve unut" biçimindeydi; sunucu hata verdiğinde
+   * oyuncuya hiçbir şey görünmüyordu. 18 Ağustos – 8 Ekim 2026 arasında
+   * bütün antrenman turları bu yüzden sessizce kayboldu ve yedi hafta
+   * kimse fark etmedi. Artık sonuç ekranı ne olduğunu söylüyor.
+   */
+  ligDurumu?: 'bekliyor' | 'islendi' | 'basarisiz' | 'misafir';
 }
 
 export default function Sonuc({
@@ -222,6 +232,7 @@ export default function Sonuc({
   onYeniTur,
   onAyarlar,
   onGirisAc,
+  ligDurumu,
 }: Props) {
   const veri = tur.veri as SayiVeri;
   const tam = sonuc.fark === 0;
@@ -389,6 +400,27 @@ export default function Sonuc({
           {sonuc.jokerler.length > 0 && (
             <div className="mt-2 text-xs text-amber-300" data-alan="kullanilan-jokerler">
               Joker: {jokerOzeti(sonuc.jokerler)}
+            </div>
+          )}
+
+          {/* Sunucuya işlendi mi — sessiz hata bir daha yedi hafta
+              yaşamasın diye. Misafirde zaten üyelik daveti çıkıyor,
+              burada tekrar edilmiyor. */}
+          {ligDurumu && ligDurumu !== 'misafir' && (
+            <div className="mt-3 text-xs" data-alan="lig-durumu">
+              {ligDurumu === 'bekliyor' && (
+                <span className="text-slate-500">Sunucuya gönderiliyor…</span>
+              )}
+              {ligDurumu === 'islendi' && (
+                <span className="text-slate-500">
+                  {mod === 'antrenman' ? 'Çalışkanlık tablosuna işlendi' : 'Lige işlendi'}
+                </span>
+              )}
+              {ligDurumu === 'basarisiz' && (
+                <span className="text-amber-300">
+                  Puanın kaydedilemedi — bağlantını kontrol edip tekrar dene.
+                </span>
+              )}
             </div>
           )}
         </div>

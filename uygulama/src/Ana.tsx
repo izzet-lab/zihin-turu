@@ -16,6 +16,7 @@ import Uygulama from './Uygulama';
 import Lig from './ekranlar/Lig';
 import Duello from './ekranlar/Duello';
 import Arena from './ekranlar/Arena';
+import KelimeTuru from './ekranlar/KelimeTuru';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
 import YasalIndeks from './ekranlar/YasalIndeks';
@@ -53,6 +54,7 @@ export default function Ana() {
         <Route path="/lig" element={<Lig oyuncuId={kullanici?.id} />} />
         <Route path="/duello" element={<DuelloRota girisYapildiMi={!!kullanici} />} />
         <Route path="/arena" element={<ArenaRota girisYapildiMi={!!kullanici} />} />
+        <Route path="/kelime" element={<KelimeRota />} />
 
         {/* Herkese açık profil sayfası */}
         <Route path="/o/:kullaniciAdi" element={<ProfilSayfasi />} />
@@ -112,6 +114,18 @@ function ArenaRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
       onGirisAc={() => gecis('/?giris=1')}
     />
   );
+}
+
+/**
+ * Kelime turu rotasi.
+ *
+ * Ekran kendi sozlugunu sonradan yukluyor; burada bir sey beklemiyoruz.
+ */
+function KelimeRota() {
+  const gecis = useNavigate();
+  const [parametreler] = useSearchParams();
+  const seviye = parametreler.get('seviye') ?? undefined;
+  return <KelimeTuru baslangicSeviye={seviye} onCik={() => gecis('/')} />;
 }
 
 function Div404() {

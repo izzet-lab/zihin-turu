@@ -552,6 +552,7 @@ export default function Uygulama() {
         onGirisAc={girisAc}
         onDuello={(sv) => gecis(`/duello?seviye=${sv}`)}
         onArena={(sv) => gecis(`/arena?seviye=${sv}`)}
+        onKelime={() => gecis('/kelime')}
         onCikisYap={async () => {
           await supabase.auth.signOut();
           setKullanici(null);

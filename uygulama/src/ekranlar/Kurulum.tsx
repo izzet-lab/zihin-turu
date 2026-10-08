@@ -39,6 +39,8 @@ interface Props {
   onDuello?: (seviye: string) => void;
   /** Arena ekranına geçer (seçili seviyeyle). */
   onArena?: (seviye: string) => void;
+  /** Kelime turuna geçer. */
+  onKelime?: () => void;
   /** Çıkış yapar. */
   onCikisYap?: () => void;
 }
@@ -46,7 +48,7 @@ interface Props {
 // Risk çarpanı yalnızca bu dört süre için tanımlı (bkz. oyun-sayi/antrenmanCarpani).
 const SURE_SECENEK = [90, 60, 30, 15];
 
-export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc, onDuello, onArena }: Props) {
+export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, onGirisAc, onDuello, onArena, onKelime }: Props) {
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [kilitAciklama, setKilitAciklama] = useState<string | null>(null);
 
@@ -227,6 +229,27 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
               </span>
             </span>
             <span aria-hidden="true" className="text-amber-300">→</span>
+          </button>
+        )}
+
+        {/* KELİME TURU — ikinci oyun. Rekabet düğmelerinin altında
+            duruyor çünkü henüz tek kişilik: lig ve düello sayı turunda.
+            Zorluk kendi ekranında seçiliyor, buradaki seviye onu
+            ilgilendirmiyor. */}
+        {onKelime && (
+          <button
+            data-alan="kelime-git"
+            onClick={onKelime}
+            className="zt-secim mt-2.5 flex min-h-[76px] w-full items-center gap-3 rounded-xl border-2 border-emerald-300/40 bg-emerald-300/10 px-4 py-3 text-left transition hover:border-emerald-300 hover:bg-emerald-300/15"
+          >
+            <span aria-hidden="true" className="text-2xl">📖</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-black text-emerald-200">Kelime Turu</span>
+              <span className="block text-[11px] leading-snug text-emerald-200/70">
+                Harflerden en uzun kelime · tek kişilik
+              </span>
+            </span>
+            <span aria-hidden="true" className="text-emerald-300">→</span>
           </button>
         )}
 

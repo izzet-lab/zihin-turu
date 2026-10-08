@@ -32,6 +32,8 @@ export interface ArenaPodyumSatiri {
 
 export interface ArenaDurumu {
   id: string;
+  /** Hangi oyunun arenası — tahtayı bu belirler. */
+  oyun?: string;
   seviye: string;
   tohum: number;
   durum: 'bekliyor' | 'basladi' | 'bitti';
@@ -103,8 +105,8 @@ export interface ArenaKatilim {
 }
 
 /** Arenaya katılır; bekleyen arena varsa ona oturur, yoksa yenisini açar. */
-export function arenayaKatil(seviye: string): Promise<ArenaKatilim> {
-  return cagir<ArenaKatilim>('arena-ara', { seviye });
+export function arenayaKatil(seviye: string, oyun = 'sayi'): Promise<ArenaKatilim> {
+  return cagir<ArenaKatilim>('arena-ara', { seviye, oyun });
 }
 
 /**
@@ -114,8 +116,8 @@ export function arenayaKatil(seviye: string): Promise<ArenaKatilim> {
  * yarışına geri dönebilsin diye. Normal katılma çağrısı kullanılsaydı
  * ekrana bakmak bile oyuncuyu bir arenaya sokardı.
  */
-export function surenArenaSor(seviye: string): Promise<ArenaKatilim> {
-  return cagir<ArenaKatilim>('arena-ara', { seviye, sadece_kontrol: true });
+export function surenArenaSor(seviye: string, oyun = 'sayi'): Promise<ArenaKatilim> {
+  return cagir<ArenaKatilim>('arena-ara', { seviye, oyun, sadece_kontrol: true });
 }
 
 /**

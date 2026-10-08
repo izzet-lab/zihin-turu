@@ -86,9 +86,11 @@ function DuelloRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
   const gecis = useNavigate();
   const [parametreler] = useSearchParams();
   const seviye = parametreler.get('seviye') ?? 'normal';
+  const oyun = parametreler.get('oyun') ?? undefined;
   return (
     <Duello
       seviye={seviye}
+      oyun={oyun}
       girisYapildiMi={girisYapildiMi}
       onCik={() => gecis('/')}
       onGirisAc={() => gecis('/?giris=1')}
@@ -106,9 +108,11 @@ function ArenaRota({ girisYapildiMi }: { girisYapildiMi: boolean }) {
   const gecis = useNavigate();
   const [parametreler] = useSearchParams();
   const seviye = parametreler.get('seviye') ?? 'normal';
+  const oyun = parametreler.get('oyun') ?? undefined;
   return (
     <Arena
       seviye={seviye}
+      oyun={oyun}
       girisYapildiMi={girisYapildiMi}
       onCik={() => gecis('/')}
       onGirisAc={() => gecis('/?giris=1')}

@@ -76,10 +76,9 @@ test('ana ekranda önce oyun, sonra mod seçiliyor', async ({ page }) => {
   await page.locator('[data-oyun="kelime"]').click();
   await expect(page.locator('[data-alan="modlar"]')).toBeVisible();
 
-  // Düello ve arena kelime turunda YOK; aktif görünüp çıkmaz sokağa
-  // sokmak yerine açıkça kapalı.
-  await expect(page.locator('[data-mod="duello"]')).toBeDisabled();
-  await expect(page.locator('[data-mod="arena"]')).toBeDisabled();
+  // Kelime turu artık düelloya ve arenaya da giriyor; dört mod da açık.
+  await expect(page.locator('[data-mod="duello"]')).toBeEnabled();
+  await expect(page.locator('[data-mod="arena"]')).toBeEnabled();
 
   await page.locator('[data-mod="antrenman"]').click();
   await expect(page).toHaveURL(/\/kelime\?mod=antrenman/);

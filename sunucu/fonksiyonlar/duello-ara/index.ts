@@ -29,7 +29,8 @@ import {
   botaDusulsunMu,
   eslesirMi,
 } from '@tamisabet/cekirdek';
-import { SEVIYE_LISTESI, botUret, botProfilSec } from '@tamisabet/oyun-sayi';
+import { botUret, botProfilSec } from '@tamisabet/oyun-sayi';
+import { oyunSec } from '../oyunlar.ts';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -58,8 +59,10 @@ Deno.serve(async (req: Request) => {
     if (kimlikHata || !kullanici.user) return hata('Geçersiz oturum.', 401);
     const benId = kullanici.user.id;
 
-    const { seviye, sadece_kontrol } = await req.json() as {
+    const { seviye, oyun: istenenOyun, sadece_kontrol } = await req.json() as {
       seviye: string;
+      /** Hangi oyun — verilmezse sayı turu (eski istemciler). */
+      oyun?: string;
       /**
        * Yalnızca "süren maçım var mı?" diye sorar; kuyruğa YAZMAZ.
        *
@@ -69,7 +72,10 @@ Deno.serve(async (req: Request) => {
        */
       sadece_kontrol?: boolean;
     };
-    const seviyeObj = SEVIYE_LISTESI.find((s) => s.anahtar === seviye);
+    const oyun = istenenOyun === 'kelime' ? 'kelime' : 'sayi';
+    // Seviye listesi OYUNUN kendi listesi; sayı turunun listesine
+    // bakmak kelime seviyelerini reddederdi.
+    const seviyeObj = oyunSec(oyun).seviyeler.find((s) => s.anahtar === seviye);
     if (!seviyeObj) return hata('Bilinmeyen seviye.', 400);
 
     const simdi = Date.now();
@@ -119,6 +125,7 @@ Deno.serve(async (req: Request) => {
         oyuncu_id: benId,
         elo: benimElo,
         seviye,
+        oyun,
       });
     }
     const benimGirdiMs = kendiSatir ? Date.parse(kendiSatir.girdi) : simdi;
@@ -130,6 +137,7 @@ Deno.serve(async (req: Request) => {
     const { data: adaylar } = await supabase
       .from('duello_kuyruk')
       .select('oyuncu_id, elo, girdi')
+      .eq('oyun', oyun)
       .eq('seviye', seviye)
       .neq('oyuncu_id', benId)
       .order('girdi', { ascending: true })
@@ -177,6 +185,7 @@ Deno.serve(async (req: Request) => {
       await supabase.from('duello_kuyruk').delete().eq('oyuncu_id', benId);
 
       const mac = await macKur(supabase, {
+        oyun,
         seviye,
         oyuncuA: benId,
         oyuncuB: aday.oyuncu_id,
@@ -198,8 +207,16 @@ Deno.serve(async (req: Request) => {
         ustUsteKayip,
         elo: benimElo,
       });
-      const bot = botUret(benimElo, profil);
+      // Botu OYUN üretiyor; düello kademeyi bilmiyor. Sayı turunda
+      // profil yukarıdaki `botProfilSec` ile derecelendiriliyor,
+      // kelime turunda oyunun kendi kademesi kullanılıyor.
+      const saglayici = oyunSec(oyun);
+      const bot =
+        oyun === 'sayi'
+          ? { ad: botUret(benimElo, profil).ad, profil }
+          : (saglayici.bot?.botlar(1, benimElo)[0] ?? { ad: 'Rakip', profil: 'orta' });
       const mac = await macKur(supabase, {
+        oyun,
         seviye,
         oyuncuA: benId,
         oyuncuB: null,
@@ -248,6 +265,7 @@ async function ustUsteKayipSayisi(
 async function macKur(
   supabase: ReturnType<typeof createClient>,
   g: {
+    oyun: string;
     seviye: string;
     oyuncuA: string;
     oyuncuB: string | null;
@@ -261,7 +279,7 @@ async function macKur(
   const { data, error } = await supabase
     .from('duello_mac')
     .insert({
-      oyun: 'sayi',
+      oyun: g.oyun,
       seviye: g.seviye,
       tohum,
       oyuncu_a: g.oyuncuA,
@@ -291,6 +309,9 @@ function macCevabi(m: Record<string, unknown>, benId: string) {
   const benTarafim = m.oyuncu_a === benId ? 'a' : 'b';
   return {
     id: m.id,
+    // Ekran tahtayı buna göre seçiyor; eksik gelirse kelime maçı
+    // sayı tahtasıyla açılır.
+    oyun: m.oyun,
     seviye: m.seviye,
     tohum: m.tohum,
     benTarafim,

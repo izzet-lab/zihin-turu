@@ -24,9 +24,11 @@ async function seviyeleriAc(baglam: import('@playwright/test').BrowserContext) {
 }
 
 /** Arenayı temiz bir başlangıca getirir: kalan yarış varsa çıkılır. */
-async function arenayiTemizle(sayfa: Page, seviye = 'cocuk'): Promise<void> {
-  for (let deneme = 0; deneme < 10; deneme++) {
-    await sayfa.goto(`/arena?seviye=${seviye}`);
+async function arenayiTemizle(sayfa: Page, seviye = 'cocuk', oyun = 'sayi'): Promise<void> {
+  for (let deneme = 0; deneme < 12; deneme++) {
+    // `oyun` adres satırından düşerse ekran sayı turuna döner ve
+    // kelime testi sayı arenası kurar.
+    await sayfa.goto(`/arena?seviye=${seviye}&oyun=${oyun}`);
     await sayfa.waitForTimeout(1200);
     const gorunur = async (alan: string) =>
       sayfa.locator(`[data-alan="${alan}"]`).isVisible().catch(() => false);
@@ -137,4 +139,39 @@ test.describe('arena', () => {
     await dugme.click();
     await expect(page).toHaveURL(/\/arena\?seviye=/);
   });
+});
+
+/*
+  KELİME ARENASI
+
+  Kelime turu artık arenaya da giriyor. Korunan şey aynı: kelime
+  arenası SAYI tahtasını açmamalı. Arena durumu da maçın `oyun`
+  alanını yayınlıyor, yoksa sekmesini yenileyen oyuncu yanlış tahtaya
+  düşer.
+*/
+test('kelime arenası kelime tahtasını açar', async ({ browser }) => {
+  test.skip(!testHesabiVarMi(), '.env.test yok — test hesapları tanımlı değil');
+  // Sözlük indirmesi ve bot bekleme süresi varsayılan sınıra sığmıyor.
+  test.setTimeout(180_000);
+
+  const baglam = await browser.newContext();
+  await girisYap(baglam, TEST_EPOSTALAR[0]);
+  const sayfa = await baglam.newPage();
+
+  await arenayiTemizle(sayfa, 'cocuk', 'kelime');
+  await sayfa.locator('[data-alan="arena-katil"]').click();
+
+  const raf = sayfa.locator('[data-alan="kelime-raf"]');
+  await expect(raf).toBeVisible({ timeout: 90_000 });
+
+  // Sayı tahtası yok.
+  await expect(sayfa.locator('[data-alan="raf"]')).toHaveCount(0);
+  await expect(sayfa.locator('[data-alan="islemler"]')).toHaveCount(0);
+  // Isınma seviyesi yedi harf verir.
+  await expect(raf.locator('button')).toHaveCount(7);
+
+  // Arena üst bilgisi ortak bileşenden geliyor: beş koltuk.
+  await expect(sayfa.locator('[data-alan="arena-yarisci"]')).toHaveCount(5);
+
+  await baglam.close();
 });

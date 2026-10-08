@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@tamisabet/cekirdek';
-import { turKur, sayiTuru, SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
+import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
+import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
+import KelimeTahtasi from './KelimeTahtasi';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
@@ -42,6 +44,8 @@ const YOKLAMA_MS = 2000;
 interface Props {
   /** Kurulum'dan gelen başlangıç seviyesi; oyuncu burada değiştirebilir. */
   seviye: string;
+  /** Hangi oyunun düellosu — verilmezse sayı turu. */
+  oyun?: string;
   girisYapildiMi: boolean;
   onCik: () => void;
   onGirisAc: () => void;
@@ -49,6 +53,7 @@ interface Props {
 
 export default function Duello({
   seviye: baslangicSeviyesi,
+  oyun: oyunAdi,
   girisYapildiMi,
   onCik,
   onGirisAc,
@@ -72,6 +77,15 @@ export default function Duello({
       : (acikSeviyeListesi[acikSeviyeListesi.length - 1] ?? 'cocuk'),
   );
   const [mac, setMac] = useState<DuelloMac | null>(null);
+
+  /**
+   * Hangi oyunun düellosu. Maç geldiğinde onun `oyun` alanı esas
+   * alınıyor — kopan bağlantıdan dönen oyuncu doğru tahtayı bulsun.
+   */
+  const oyun: OyunAdi = oyunAdiCevir(mac?.oyun ?? oyunAdi);
+  const saglayici = useOyunSaglayici(oyun);
+
+
   const [bekleyenSn, setBekleyenSn] = useState(0);
   const [hata, setHata] = useState<string | null>(null);
   const [rakipUzaklik, setRakipUzaklik] = useState<number | null>(null);
@@ -121,7 +135,7 @@ export default function Duello({
   useEffect(() => {
     if (!girisYapildiMi || acilisKontrolu) return;
     let durduruldu = false;
-    surenMaciSor(seviye)
+    surenMaciSor(seviye, oyunAdiCevir(oyunAdi))
       .then((sonuc) => {
         if (durduruldu) return;
         if (sonuc.mac) setMac(sonuc.mac);
@@ -142,7 +156,7 @@ export default function Duello({
 
     async function ara() {
       try {
-        const sonuc = await duelloAra(seviye);
+        const sonuc = await duelloAra(seviye, oyunAdiCevir(oyunAdi));
         if (durduruldu) return;
         if (sonuc.mac) {
           setMac(sonuc.mac);
@@ -256,9 +270,9 @@ export default function Duello({
 
   /* --- Turun bulmacası: sunucuyla aynı tohumdan --- */
   const tur = useMemo(() => {
-    if (!mac) return null;
-    return turKur(mac.seviye, duelloTurTohumu(Number(mac.tohum), mac.aktifTur));
-  }, [mac?.tohum, mac?.aktifTur, mac?.seviye]);
+    if (!mac || !saglayici) return null;
+    return saglayici.turUret(mac.seviye, duelloTurTohumu(Number(mac.tohum), mac.aktifTur));
+  }, [saglayici, mac?.tohum, mac?.aktifTur, mac?.seviye]);
 
   /**
    * Bu turun bir çözümü.
@@ -271,7 +285,7 @@ export default function Duello({
   const turCozumu = useMemo(() => {
     if (!tur || kilitliTur !== mac?.aktifTur) return null;
     try {
-      return sayiTuru.cozumBul(tur, 400);
+      return saglayici?.cozumBul(tur, 400) ?? null;
     } catch {
       return null;
     }
@@ -279,15 +293,19 @@ export default function Duello({
 
   /* --- Oyuncunun ilerlemesini sunucuya bildir --- */
   const ilerlemeGonder = useCallback(
-    (adimlar: { a: number; b: number; islem: string; sonuc: number }[], kilit = false) => {
+    /**
+     * `cevap`ın biçimini düello ekranı bilmiyor: sayı turunda adım
+     * zinciri, kelime turunda tek kelime. Yalnızca taşınıyor.
+     */
+    (cevap: unknown, kilit = false) => {
       const m = macRef.current;
       if (!m || m.durum !== 'basladi') return;
       if (kilit) {
         setKilitliTur(m.aktifTur);
         setKilitliMac(m.id);
-        setKilitliAdimlar(adimlar);
+        setKilitliAdimlar(Array.isArray(cevap) ? cevap : []);
       }
-      duelloGonder(m.id, m.aktifTur, adimlar, kilit)
+      duelloGonder(m.id, m.aktifTur, cevap, kilit)
         .then((sonuc) => {
           setKilitliUzaklik(sonuc.uzaklik);
           setMac((onceki) =>
@@ -330,8 +348,11 @@ export default function Duello({
   const turOzetSatirlari = useMemo(() => {
     if (!mac?.turOzeti) return [];
     return mac.turOzeti.map((t) => {
-      const turBulmaca = turKur(mac.seviye, duelloTurTohumu(Number(mac.tohum), t.turNo));
-      const veri = turBulmaca.veri as { hedef: number };
+      const turBulmaca = saglayici?.turUret(
+        mac.seviye,
+        duelloTurTohumu(Number(mac.tohum), t.turNo),
+      );
+      const veri = (turBulmaca?.veri ?? {}) as { hedef?: number };
       const anlat = (u: number | null) =>
         u == null ? 'oynamadı' : u === 0 ? 'tam isabet' : `${u} fark`;
       return {
@@ -884,6 +905,40 @@ export default function Duello({
           Maçtan çık
         </button>
       </Cerceve>
+    );
+  }
+
+  const ustBilgi = {
+    turNo: mac.aktifTur,
+    toplamTur: DUELLO_TUR_SAYISI,
+    skorBen: benim === 'a' ? mac.skorA : mac.skorB,
+    skorRakip: benim === 'a' ? mac.skorB : mac.skorA,
+    rakipAd: mac.rakip?.ad ?? (mac.botMu ? (mac.botAd ?? 'Rakip') : 'Rakip'),
+    rakipElo: mac.rakip?.elo ?? null,
+    rakipGalibiyet: mac.rakip?.galibiyet ?? null,
+    rakipUzaklik,
+  };
+
+  // KELİME DÜELLOSU: tahta bambaşka, üstü aynı.
+  if (oyun === 'kelime') {
+    if (!saglayici || !tur) {
+      return (
+        <Cerceve baslik="Kelime Turu">
+          <p className="zt-nabiz text-sm text-slate-400">Sözlük hazırlanıyor…</p>
+        </Cerceve>
+      );
+    }
+    return (
+      <KelimeTahtasi
+        key={`${mac.id}-${mac.aktifTur}`}
+        saglayici={saglayici}
+        tur={tur}
+        kalan={kalanSn}
+        toplamSure={mac.turSuresiSn ?? 60}
+        duello={ustBilgi}
+        onIlerleme={(cevap, kilit) => ilerlemeGonder(cevap.icerik, kilit)}
+        onCik={() => setCikisSoruluyor(true)}
+      />
     );
   }
 

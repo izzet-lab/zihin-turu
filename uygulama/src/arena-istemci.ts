@@ -138,17 +138,20 @@ export interface ArenaGonderimSonucu {
   podyum: ArenaPodyumSatiri[] | null;
 }
 
-/** Turdaki zinciri gönderir; uzaklığı sunucu hesaplar. */
+/**
+ * Turdaki cevabı gönderir; uzaklığı sunucu hesaplar.
+ * `cevap`ın biçimi oyuna göre değişir (bkz. duello-istemci).
+ */
 export function arenaGonder(
   macId: string,
   turNo: number,
-  adimlar: { a: number; b: number; islem: string; sonuc: number }[],
+  cevap: unknown,
   kilit = false,
 ): Promise<ArenaGonderimSonucu> {
   return cagir<ArenaGonderimSonucu>('arena-gonder', {
     mac_id: macId,
     tur_no: turNo,
-    adimlar,
+    cevap,
     kilit,
   });
 }

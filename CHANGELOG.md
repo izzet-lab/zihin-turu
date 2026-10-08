@@ -3,6 +3,29 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Yarış tahtasının üstü ortaklaştı
+
+Kelime turunu düelloya ve arenaya sokmanın istemci tarafındaki
+hazırlığı.
+
+**Tahta üstü ayrı bileşene çıkarıldı.** Tur sayacı, rakip kartı,
+yarışçı listesi ve süre çubuğu oyundan bağımsız — sayı turunda da
+kelime turunda da aynı. Bunlar `Oyun.tsx` içinde sayı tahtasıyla iç
+içeydi. Kopyalamak yerine çıkarıldı: kopya, bir düzeltmenin ikisinden
+birinde unutulması demek. Görüntü değişmedi; düello maçı, arena
+yarışı, günün turu ve antrenman testleri aynen geçiyor.
+
+**Kelime tahtası yazıldı** (`KelimeTahtasi.tsx`): ortak üst bilgi +
+harf rafı + yazılan kelime + "Cevabı kilitle". Tek kişilik kelime
+ekranından farkı, turun dışarıdan gelmesi ve "Bitir"in turu
+kapatmaması — cevabı kilitlemesi. Rakibe yalnızca uzaklık bildiriliyor
+(kural 8); seçilen harfler dışarı çıkmıyor. Geçersiz kelime
+bildirilmiyor: rakibe yanıltıcı ilerleme göstermemek için.
+
+**İstemci artık `cevap` gönderiyor.** `adimlar` yerine biçimi oyuna
+göre değişen tek bir alan. Canlı sunucuya karşı gerçek düello maçı,
+arena yarışı ve kilitleme testleriyle doğrulandı.
+
 ## 2026-10-09 - Düello ve arena artık oyunu tanımıyor
 
 Kelime turunu düelloya ve arenaya sokmanın önündeki engel kaldırıldı:

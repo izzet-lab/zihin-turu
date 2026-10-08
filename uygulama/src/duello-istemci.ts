@@ -158,11 +158,17 @@ export interface GonderimSonucu {
   kazanan: string | null;
 }
 
-/** Turdaki zinciri sunucuya gönderir; uzaklığı sunucu hesaplar. */
+/**
+ * Turdaki cevabı sunucuya gönderir; uzaklığı sunucu hesaplar.
+ *
+ * `cevap`ın BİÇİMİ oyuna göre değişir: sayı turunda adım zinciri,
+ * kelime turunda tek bir kelime. İstemci de sunucu da biçimi
+ * yorumlamıyor, yalnızca taşıyor.
+ */
 export function duelloGonder(
   macId: string,
   turNo: number,
-  adimlar: { a: number; b: number; islem: string; sonuc: number }[],
+  cevap: unknown,
   /**
    * Oyuncu "cevabım bu" dedi mi?
    *
@@ -174,7 +180,7 @@ export function duelloGonder(
   return cagir<GonderimSonucu>('duello-gonder', {
     mac_id: macId,
     tur_no: turNo,
-    adimlar,
+    cevap,
     kilit,
   });
 }

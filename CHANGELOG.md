@@ -3,6 +3,53 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Kelime turu lige bağlandı
+
+Kelime turu artık puan kazandırıyor: Sıralamalar ekranında kendi
+tabloları var ve puanı sunucu veriyor.
+
+### Günün Kelime Turu
+
+Kelime turu ikiye ayrıldı: **Günün Turu** lige işler, **Antrenman**
+işlemez (kural 4'ün kelime karşılığı). Günün turunda harfler tarihten
+türeyen tohumla üretiliyor — herkes aynı harfleri alıyor ve günde bir
+kez oynanıyor.
+
+### Doğrulama sunucuda
+
+Yeni `kelime-gonder` Edge Function'ı geldi. İstemcinin "şu kelimeyi
+buldum, şu kadar puan aldım" demesi yetmiyor: sunucu tohumdan harf
+havuzunu yeniden üretiyor, kelimeyi sıfırdan doğruluyor ve puanı kendi
+hesaplıyor (kural 2).
+
+Reddettikleri canlıda denendi: uydurma tohum, geçmiş tarih, sözlükte
+olmayan kelime, şişirilmiş kalan süre ve aynı turun ikinci kez
+gönderilmesi — hepsi geri çevriliyor.
+
+`tur-gonder` ile birleştirilmedi: o fonksiyon baştan sona sayı turuna
+özgü (adım zinciri, jokerler). Birleştirmek canlıdaki sayı turunu
+riske atmak olurdu.
+
+### Veritabanına dokunulmadı
+
+Göç gerekmedi. Lig tabloları ve tetikleyici baştan `oyun` sütunuyla
+yazılmış; kelime satırı eklenince günlük, haftalık ve aylık tablolar
+kendiliğinden doluyor. Faz 3'te alınan "platform oyunu bilmesin"
+kararının karşılığını burada aldık.
+
+### Sıralamalar ekranı
+
+Günlük / Haftalık / Aylık / Antrenman sekmelerinin üstüne bir **oyun
+seçici** eklendi: Sayı Turu ↔ Kelime Turu. Düello ve arena yalnızca
+sayı turunda olduğu için o sekmelerde görünmüyor. Boş tablodaki davet
+de seçili oyuna götürüyor.
+
+### Not: seri tek sayaç
+
+Günlük seri (streak) oyuna göre ayrılmadı. Hangi oyunu oynarsan oyna
+"bugün oynadın" sayılıyor. Seri, oyuncunun alışkanlığını ölçüyor;
+oyun başına ayrı seri tutmak iki ayrı alışkanlık icat etmek olurdu.
+
 ## 2026-10-08 - Kelime turu oynanabilir
 
 Faz 6'nın arayüzü geldi: kelime turu artık telefonda açılıp

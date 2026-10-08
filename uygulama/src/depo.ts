@@ -566,3 +566,27 @@ export function bekleyenTurOku(): BekleyenTur | null {
 export function bekleyenTurSil(): void {
   genelYaz(BEKLEYEN_TUR_ANAHTAR, '');
 }
+
+/* --- Günün Kelime Turu kilidi --- */
+
+const KELIME_GUNLUK_ANAHTAR = 'zihinturu.kelime.gunluk.v1';
+
+/**
+ * Günün Kelime Turu'nun o gün oynanıp oynanmadığı.
+ *
+ * Sayı turunun kilidi `Ilerleme` içinde yaşıyor ve orası sayı turunun
+ * geçmişiyle dolu; kelime turunu oraya sıkıştırmak iki oyunun
+ * kayıtlarını birbirine karıştırırdı. Kelime turu kendi anahtarını
+ * kullanıyor.
+ *
+ * Bu yalnızca ARAYÜZ kilidi. Gerçek kilit sunucuda: `tur_sonuc`
+ * tablosundaki benzersizlik kısıtı aynı günün aynı turunu ikinci kez
+ * kabul etmiyor (kural 2).
+ */
+export function kelimeGunlukOynandiMi(gun = bugun()): boolean {
+  return genelOku(KELIME_GUNLUK_ANAHTAR) === gun;
+}
+
+export function kelimeGunlukIsaretle(gun = bugun()): void {
+  genelYaz(KELIME_GUNLUK_ANAHTAR, gun);
+}

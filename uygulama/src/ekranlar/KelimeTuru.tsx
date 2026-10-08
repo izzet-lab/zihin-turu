@@ -17,6 +17,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Tur, TurSaglayici } from '@zihinturu/cekirdek';
+import { gunlukTohum } from '@zihinturu/cekirdek';
+import { kelimeGonder } from '../kimlik';
+import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
 import {
   KELIME_SEVIYE_LISTESI,
   kelimeTuruKur,
@@ -25,6 +28,12 @@ import {
 } from '@zihinturu/oyun-kelime';
 
 type Asama = 'yukleniyor' | 'seviye' | 'oyun' | 'sonuc';
+
+/**
+ * Gunun Turu lige isler, Antrenman islemez.
+ * Sayi turundaki ayrimin aynisi (kural 4).
+ */
+type Mod = 'gunun' | 'antrenman';
 
 /** Rafa konan tek bir harf. Aynı harf havuzda birden çok kez olabilir,
  *  bu yüzden kimlik harfin kendisi değil sırası. */
@@ -44,6 +53,8 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   const [saglayici, setSaglayici] = useState<TurSaglayici | null>(null);
   const [yuklemeHatasi, setYuklemeHatasi] = useState(false);
   const [seviye, setSeviye] = useState(baslangicSeviye ?? 'normal');
+  const [mod, setMod] = useState<Mod>('gunun');
+  const [gunlukKilit, setGunlukKilit] = useState(() => kelimeGunlukOynandiMi());
 
   const [tur, setTur] = useState<Tur | null>(null);
   const [taslar, setTaslar] = useState<Tas[]>([]);
@@ -60,6 +71,9 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   } | null>(null);
 
   const [oturum, setOturum] = useState({ turSayisi: 0, puan: 0 });
+  /** Sunucunun verdigi puan. null ise misafir ya da aga ulasilamadi. */
+  const [sunucuPuan, setSunucuPuan] = useState<number | null>(null);
+  const [gonderiliyor, setGonderiliyor] = useState(false);
 
   const seviyeAyar = useMemo(
     () => KELIME_SEVIYE_LISTESI.find((s) => s.anahtar === seviye) ?? KELIME_SEVIYE_LISTESI[1]!,
@@ -91,11 +105,13 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
   /* --------------------------------------------------------------- */
 
   const turBaslat = useCallback(
-    (sv: string) => {
+    (sv: string, m: Mod) => {
       if (!saglayici) return;
-      // Tohum anlık: antrenman turu kimseyle paylaşılmıyor, tekrar
-      // üretilmesi gerekmiyor.
-      const tohum = Math.floor(Math.random() * 2 ** 31);
+      // Gunun Turu'nda tohum TARIHTEN tureyor: herkes ayni bulmacayi
+      // oynuyor ve sunucu ayni tohumu bekliyor (kural 3). Antrenman
+      // turu kimseyle paylasilmiyor, tohumu anlik.
+      const tohum =
+        m === 'gunun' ? gunlukTohum('kelime', sv, bugun()) : Math.floor(Math.random() * 2 ** 31);
       const yeni = saglayici.turUret(sv, tohum);
       const harfler = (yeni.veri as { harfler: string[] }).harfler;
       setTur(yeni);
@@ -105,6 +121,8 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
       setSonuc(null);
       const sure = KELIME_SEVIYE_LISTESI.find((s) => s.anahtar === sv)?.sure ?? 60;
       setKalan(sure);
+      setSunucuPuan(null);
+      setMod(m);
       setAsama('oyun');
     },
     [saglayici],
@@ -136,7 +154,29 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
     });
     setOturum((o) => ({ turSayisi: o.turSayisi + 1, puan: o.puan + p.toplam }));
     setAsama('sonuc');
-  }, [saglayici, tur, secilenler, taslar, seviye, seviyeAyar.sure, kalan]);
+
+    if (mod === 'gunun') {
+      setGunlukKilit(true);
+      kelimeGunlukIsaretle();
+    }
+
+    // SUNUCU DOGRULAMASI (kural 2)
+    // Ekranda gosterilen puan yalnizca anlik geri bildirim; lige islenen
+    // puani sunucu kendi hesabindan veriyor. Misafirde ve ag hatasinda
+    // null doner, oyun yine de akar.
+    setGonderiliyor(true);
+    kelimeGonder({
+      mod,
+      seviye,
+      tarih: bugun(),
+      tohum: Number(tur.tohum),
+      kelime,
+      sure_sn: toplamSure,
+      kalan_sn: kalan,
+    })
+      .then((y) => setSunucuPuan(y ? y.puan : null))
+      .finally(() => setGonderiliyor(false));
+  }, [saglayici, tur, secilenler, taslar, seviye, seviyeAyar.sure, kalan, mod]);
 
   // Süre sayacı. `bitirRef` sayesinde sayaç her tuşta yeniden kurulmuyor.
   const bitirRef = useRef(bitir);
@@ -223,16 +263,52 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
           Verilen harflerden en uzun kelimeyi türet. Her harf bir kez kullanılır.
         </p>
 
-        <div className="mt-6 space-y-2.5" data-alan="kelime-seviye-secici">
+        {/* MOD — Günün Turu lige işler, Antrenman işlemez (kural 4). */}
+        <div className="mt-5 grid grid-cols-2 gap-2" data-alan="kelime-mod-secici">
+          {([
+            { k: 'gunun' as Mod, ad: 'Günün Turu', alt: 'lige işler' },
+            { k: 'antrenman' as Mod, ad: 'Antrenman', alt: 'serbest' },
+          ]).map((m) => (
+            <button
+              key={m.k}
+              data-mod={m.k}
+              aria-pressed={mod === m.k}
+              onClick={() => setMod(m.k)}
+              className={`min-h-[56px] rounded-xl border-2 px-3 text-left transition ${
+                mod === m.k
+                  ? 'border-cyan-300 bg-cyan-300/10'
+                  : 'border-slate-700 bg-slate-800/40'
+              }`}
+            >
+              <span className={`block text-sm font-black ${mod === m.k ? 'text-cyan-200' : 'text-slate-200'}`}>
+                {m.ad}
+              </span>
+              <span className="block text-[11px] text-slate-500">{m.alt}</span>
+            </button>
+          ))}
+        </div>
+
+        {mod === 'gunun' && gunlukKilit && (
+          <div
+            className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-sm text-slate-400"
+            data-alan="kelime-gunluk-kilit"
+          >
+            Günün kelime turunu bugün oynadın. Yarın yeni harfler gelecek —
+            o zamana kadar Antrenman'da istediğin kadar oynayabilirsin.
+          </div>
+        )}
+
+        <div className="mt-5 space-y-2.5" data-alan="kelime-seviye-secici">
           {KELIME_SEVIYE_LISTESI.map((s) => (
             <button
               key={s.anahtar}
               data-seviye={s.anahtar}
+              disabled={mod === 'gunun' && gunlukKilit}
               onClick={() => {
                 setSeviye(s.anahtar);
-                turBaslat(s.anahtar);
+                turBaslat(s.anahtar, mod);
               }}
-              className="flex min-h-[64px] w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 px-4 text-left transition active:scale-[0.99]"
+              className="flex min-h-[64px] w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 px-4 text-left transition active:scale-[0.99] disabled:opacity-40"
             >
               <div>
                 <div className="text-base font-black text-white">{s.etiket}</div>
@@ -293,6 +369,21 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
           </div>
           )}
 
+          {/* LIGE ISLEDI MI — puani sunucu veriyor (kural 2). */}
+          <div className="mt-4 text-xs" data-alan="kelime-lig-durumu">
+            {mod === 'antrenman' ? (
+              <span className="text-slate-500">Antrenman turu lige işlemez.</span>
+            ) : gonderiliyor ? (
+              <span className="text-slate-500">Sunucuya gönderiliyor…</span>
+            ) : sunucuPuan != null ? (
+              <span className="text-cyan-300">Lige işlendi · sunucu {sunucuPuan} puan verdi</span>
+            ) : (
+              <span className="text-slate-500">
+                Lige işlenmedi — puan için giriş yapmış olman gerekiyor.
+              </span>
+            )}
+          </div>
+
           {oturum.turSayisi > 1 && (
             <div className="mt-5 text-sm text-slate-400" data-alan="kelime-oturum">
               Bu oturumda {oturum.turSayisi} turda {oturum.puan} puan topladın.
@@ -300,11 +391,12 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
           )}
 
           <button
-            onClick={() => turBaslat(seviye)}
+            onClick={() => turBaslat(seviye, 'antrenman')}
             className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition active:scale-[0.99]"
             data-alan="kelime-yeni-tur"
           >
-            Yeni tur
+            {/* Gunun turu gunde bir kez; "yeni tur" antrenmana gecirir. */}
+            {mod === 'gunun' ? 'Antrenmana devam et' : 'Yeni tur'}
           </button>
           <button
             onClick={() => setAsama('seviye')}

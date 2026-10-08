@@ -74,3 +74,75 @@ test('ana ekrandan kelime turuna geçilebiliyor', async ({ page }) => {
   await dugme.click();
   await expect(page).toHaveURL(/\/kelime/);
 });
+
+/*
+  LİGE BAĞLANMA
+
+  Kelime turu artık lige işliyor. Arayüz tarafında korunan üç şey:
+  mod seçimi görünür, Günün Turu günde bir kez, ve misafire puanın
+  lige işlemediği açıkça söylenir (sessizce yutulmaz).
+*/
+
+test('mod seçici var; Günün Turu lige işlediğini söyler', async ({ page }) => {
+  await page.goto('/kelime');
+  await expect(page.locator('[data-alan="kelime-mod-secici"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-mod="gunun"]')).toBeVisible();
+  await expect(page.locator('[data-mod="antrenman"]')).toBeVisible();
+  await expect(page.locator('[data-alan="kelime-mod-secici"]')).toContainText('lige işler');
+});
+
+test('günün turu oynanınca kilitlenir, antrenman açık kalır', async ({ page }) => {
+  await page.goto('/kelime');
+  await page.locator('[data-mod="gunun"]').click();
+  await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-bitir"]').click();
+  await expect(page.locator('[data-alan="kelime-sonuc"]')).toBeVisible();
+
+  // Seçim ekranına dönünce günün turu kilitli olmalı.
+  await page.goto('/kelime');
+  await expect(page.locator('[data-alan="kelime-gunluk-kilit"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-seviye="normal"]')).toBeDisabled();
+
+  // Antrenman hâlâ oynanabilir.
+  await page.locator('[data-mod="antrenman"]').click();
+  await expect(page.locator('[data-seviye="normal"]')).toBeEnabled();
+});
+
+test('misafire puanın lige işlemediği söylenir', async ({ page }) => {
+  await page.goto('/kelime');
+  await page.locator('[data-mod="antrenman"]').click();
+  await page.locator('[data-seviye="normal"]').click();
+  await page.locator('[data-alan="kelime-bitir"]').click();
+
+  // Antrenman zaten lige işlemez; bu açıkça yazmalı.
+  await expect(page.locator('[data-alan="kelime-lig-durumu"]')).toContainText('lige işlemez');
+});
+
+test('sıralamalarda oyun seçici var; boş kelime tablosu kelime turuna götürür', async ({
+  page,
+}) => {
+  // Tablolar canlı veriye bağlı; boş durumu görebilmek için istek
+  // yakalanıyor (lig-ekrani.spec.ts ile aynı yöntem).
+  for (const tablo of ['lig_gunluk', 'lig_donem', 'lig_antrenman_hafta']) {
+    await page.route(`**/rest/v1/${tablo}*`, (yol) =>
+      yol.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+    );
+  }
+
+  await page.goto('/lig');
+  await expect(page.locator('[data-alan="oyun-secici"]')).toBeVisible();
+  await page.locator('[data-oyun="kelime"]').click();
+
+  // Boş tablodaki davet SEÇİLİ OYUNA götürmeli; sayı turuna atsaydı
+  // oyuncu adını yazdıramayacağı yere giderdi.
+  const dugme = page.locator('[data-alan="bos-durum-eylem"]');
+  await expect(dugme).toContainText('Kelime turunu oyna', { timeout: 15_000 });
+  await dugme.click();
+  await expect(page).toHaveURL(/\/kelime/);
+});
+
+test('düello sekmesinde oyun seçici gizlenir', async ({ page }) => {
+  await page.goto('/lig');
+  await page.locator('[data-sekme="duello"]').click();
+  await expect(page.locator('[data-alan="oyun-secici"]')).toHaveCount(0);
+});

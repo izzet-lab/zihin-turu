@@ -29,6 +29,7 @@ import { baslangicSozlugu, turkceBuyult, type Sozluk } from './sozluk.ts';
 
 export * from './sozluk.ts';
 export * from './mantik.ts';
+export * from './gonderim.ts';
 
 export const KELIME_SEVIYE_LISTESI: readonly Seviye[] = [
   { anahtar: 'cocuk', etiket: 'Isınma', altEtiket: '7 harf', sure: 60, antrenmanSuresiz: true },

@@ -14,6 +14,7 @@ import {
 } from '@tamisabet/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
+import { titret } from '../titresim';
 import YarisUstBilgi, { SureCubugu } from '../bilesenler/YarisUstBilgi';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
@@ -281,7 +282,10 @@ export default function Oyun({
     // Bir taş birleşimin ikinci ayağı olduğunda burada değil,
     // gecmis uzunluğu değiştiğinde ses çalınır (aşağıdaki efekt).
     // Yalnızca seçim/seçim kaldırma anında kısa bir tık duyulur.
-    if (durum.secimA === null || durum.islem === null) sesTasSec();
+    if (durum.secimA === null || durum.islem === null) {
+      sesTasSec();
+      titret('hafif');
+    }
     gonder({ t: 'tas', id });
   }
 
@@ -383,9 +387,13 @@ export default function Oyun({
   // Tam isabet olunca kısa bir gecikmeyle tur kapanır; ses ve konfeti
   // yalnızca bir kez, isabet anında tetiklenir.
   const [konfetiGoster, setKonfetiGoster] = useState(false);
+  /** Tam isabette ekran bir an sarsılır — konfetiden önce gelen tepki. */
+  const [sarsinti, setSarsinti] = useState(false);
   useEffect(() => {
     if (!tamIsabet) return;
     sesTamIsabet();
+    titret('basari');
+    setSarsinti(true);
     setKonfetiGoster(true);
     const z = setTimeout(() => bitir(), 650);
     return () => clearTimeout(z);
@@ -403,7 +411,10 @@ export default function Oyun({
   // Başarılı bir birleştirme olduğunda (geçmiş uzadığında) kısa bir ton.
   const oncekiGecmisUzunluk = useRef(0);
   useEffect(() => {
-    if (durum.gecmis.length > oncekiGecmisUzunluk.current) sesBirlestir();
+    if (durum.gecmis.length > oncekiGecmisUzunluk.current) {
+      sesBirlestir();
+      titret('orta');
+    }
     oncekiGecmisUzunluk.current = durum.gecmis.length;
   }, [durum.gecmis.length]);
 
@@ -411,7 +422,11 @@ export default function Oyun({
   return (
     // pt-16: sabit hamburger menü (top-4 + 44px) içeriğin üstüne
     // binmesin diye. Menü düğmesi artık başlığın üstünde duruyor.
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main
+      className={`zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200 ${
+        sarsinti ? 'zt-sarsinti' : ''
+      }`}
+    >
       {konfetiGoster && <Konfeti />}
       {/* Düelloda joker paneli yok; boşalan yer taşlara ve işlemlere
           dağıtılsın diye kapsayıcı ekran yüksekliğini dolduruyor. */}
@@ -475,7 +490,7 @@ export default function Oyun({
           className={`grid grid-cols-4 gap-2.5 ${yaris ? 'mt-7' : 'mt-5'}`}
           data-alan="raf"
         >
-          {durum.taslar.map((t) => {
+          {durum.taslar.map((t, sira) => {
             const secili = durum.secimA === t.id;
             const uretilmis = t.yol.length > 0;
             return (
@@ -488,7 +503,10 @@ export default function Oyun({
                 data-tas={t.deger}
                 onClick={() => tasTikla(t.id)}
                 aria-pressed={secili}
-                className={`overflow-hidden rounded-xl border px-2 font-black tabular-nums leading-none transition active:scale-95 ${
+                // Taşlar yeni turda sırayla düşüyor; sıra numarası
+                // gecikmeyi veriyor (bkz. .zt-dusen).
+                style={{ ['--zt-sira' as string]: String(sira) }}
+                className={`zt-dusen overflow-hidden rounded-xl border px-2 font-black tabular-nums leading-none ${
                   yaris ? 'min-h-[76px]' : 'min-h-[64px]'
                 } ${rakamBoyu(t.deger, !!yaris)} ${
                   secili
@@ -515,7 +533,7 @@ export default function Oyun({
               data-islem={i.op}
               aria-label={i.ad}
               onClick={() => gonder({ t: 'islem', op: i.op })}
-              className={`rounded-xl border text-2xl font-black transition active:scale-95 ${
+              className={`rounded-xl border text-2xl font-black ${
                 duello ? 'min-h-[64px]' : 'min-h-[52px]'
               } ${
                 durum.islem === i.op

@@ -668,7 +668,7 @@ export default function Kurulum({
 /** Ortak dış kabuk — arka plan ve genişlik sınırı. */
 function Kabuk({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 py-8 text-slate-200">
+    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 py-8 text-slate-200">
       <div className="mx-auto w-full max-w-md">{children}</div>
     </main>
   );

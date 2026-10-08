@@ -212,13 +212,16 @@ export function SureCubugu({
   toplamSure: number;
 }) {
   const sureYuzde = toplamSure > 0 ? Math.max(0, (kalan / toplamSure) * 100) : 100;
+  // Son on saniye: çubuk nabız gibi atsın. Sayıyı okumadan "acele et"
+  // diyen tek işaret; süresiz antrenmanda hiç çıkmaz.
+  const kritik = toplamSure > 0 && kalan <= 10 && kalan > 0;
   return (
     <>
     <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-800">
       <div
         className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${
-          sureYuzde < 25 ? 'bg-amber-400' : 'bg-cyan-300'
-        }`}
+          kritik ? 'zt-sure-kritik' : ''
+        } ${sureYuzde < 25 ? 'bg-amber-400' : 'bg-cyan-300'}`}
         style={{ width: `${sureYuzde}%` }}
         data-alan="sure-cubuk"
       />

@@ -20,6 +20,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Cevap, Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { turkceBuyult } from '@tamisabet/oyun-kelime';
+import { titret } from '../titresim';
 import YarisUstBilgi, {
   SureCubugu,
   type ArenaUstBilgi,
@@ -84,6 +85,7 @@ export default function KelimeTahtasi({
 
   const harfTikla = (id: number) => {
     setUyari(null);
+    titret('hafif');
     setSecilenler((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   };
 
@@ -92,13 +94,16 @@ export default function KelimeTahtasi({
     if (!d.gecerli) {
       // Geçersiz cevap turu kilitlemez; oyuncu düzeltebilsin.
       setUyari(d.hata ?? 'Bu cevap kabul edilmedi.');
+      titret('kayip');
       return;
     }
+    // Uzaklık sıfırsa en uzun kelime bulundu: tam isabet.
+    titret(d.uzaklik === 0 ? 'basari' : 'orta');
     onIlerleme({ icerik: yazilan }, true);
   }, [saglayici, tur, yazilan, onIlerleme]);
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
       <div className="mx-auto flex w-full max-w-md flex-col">
         <YarisUstBilgi duello={duello} arena={arena} />
         <SureCubugu kalan={kalan} toplamSure={toplamSure} />
@@ -125,17 +130,22 @@ export default function KelimeTahtasi({
 
         {/* Harf rafı */}
         <div className="mt-6 grid grid-cols-4 gap-2.5" data-alan="kelime-raf">
-          {taslar.map((t) => {
+          {taslar.map((t, sira) => {
+            // Kelimeye girmiş harf TÜKENMİŞTİR: raftan silinmiyor ama
+            // soluklaşıp geri çekiliyor (bkz. [data-kullanilmis]).
             const secili = secilenler.includes(t.id);
             return (
               <button
                 key={t.id}
                 data-harf={t.harf}
+                data-kullanilmis={secili ? '1' : undefined}
                 aria-pressed={secili}
                 onClick={() => harfTikla(t.id)}
-                className={`min-h-[76px] rounded-xl border px-2 text-2xl font-black uppercase leading-none transition active:scale-95 ${
+                // Yeni turda harfler sırayla düşsün.
+                style={{ ['--zt-sira' as string]: String(sira) }}
+                className={`zt-dusen min-h-[76px] rounded-xl border px-2 text-2xl font-black uppercase leading-none ${
                   secili
-                    ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
+                    ? 'border-cyan-300/60 bg-cyan-300/10 text-cyan-100'
                     : 'border-slate-700 bg-slate-800/50 text-slate-100'
                 }`}
               >

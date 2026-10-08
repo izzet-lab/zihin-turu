@@ -160,6 +160,53 @@ export async function turGonder(params: {
 }
 
 /**
+ * Kelime turu sonucunu sunucuya gönderir.
+ *
+ * Neden ayrı fonksiyon: sunucu tarafı da ayrı (`kelime-gonder`).
+ * Sayı turunun gönderdiği adım zinciri ve jokerler burada yok;
+ * gönderilen tek şey kelimenin kendisi.
+ */
+export async function kelimeGonder(params: {
+  mod: string;
+  seviye: string;
+  tarih: string;
+  tohum: number;
+  kelime: string;
+  sure_sn: number;
+  kalan_sn: number;
+}): Promise<{ puan: number; uzaklik: number } | null> {
+  const { data: oturum } = await supabase.auth.getSession();
+  if (!oturum.session) return null; // misafir: lige işlemez
+
+  const jwt = oturum.session.access_token;
+  const url = import.meta.env.VITE_SUPABASE_URL as string;
+  if (!url || url === 'https://placeholder.supabase.co') return null;
+
+  try {
+    const yanit = await fetch(`${url}/functions/v1/kelime-gonder`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({ oyun: 'kelime', ...params }),
+    });
+
+    if (!yanit.ok) {
+      const h = await yanit.json().catch(() => ({})) as { hata?: string };
+      if (yanit.status === 409) return null; // ayni tur zaten gonderildi
+      console.warn('[kelimeGonder] Sunucu hatasi:', h?.hata ?? yanit.status);
+      return null;
+    }
+
+    return await yanit.json() as { puan: number; uzaklik: number };
+  } catch (e) {
+    console.warn('[kelimeGonder] Ag hatasi:', e);
+    return null;
+  }
+}
+
+/**
  * Hesabı kalıcı olarak siler — KVKK "Silinme Hakkı".
  * Edge Function hesap-sil çağrılır; cascade sayesinde
  * oyuncu + tur_sonuc + lig tablolar hepsi silinir.

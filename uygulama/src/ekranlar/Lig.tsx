@@ -57,6 +57,11 @@ export default function Lig({ oyuncuId }: Props) {
   const [sekme, setSekme] = useState<Sekme>('gunluk');
   const [seviye, setSeviye] = useState<string>('normal');
   const [satirlar, setSatirlar] = useState<LigSatiri[]>([]);
+  /**
+   * Hangi oyunun tablosu? Gunluk/Haftalik/Aylik/Antrenman sekmeleri iki
+   * oyun icin de var; duello ve arena yalnizca sayi turunda.
+   */
+  const [oyun, setOyun] = useState<'sayi' | 'kelime'>('sayi');
   const [kendi, setKendi] = useState<KendiDurumu | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
 
@@ -100,11 +105,11 @@ export default function Lig({ oyuncuId }: Props) {
       let result;
 
       if (sekme === 'gunluk') {
-        result = await gunlukLig('sayi', seviye, tarih, oyuncuId);
+        result = await gunlukLig(oyun, seviye, tarih, oyuncuId);
       } else if (sekme === 'haftalik') {
-        result = await donemLig('hafta', haftalikAnahtar(), 'sayi', seviye, oyuncuId);
+        result = await donemLig('hafta', haftalikAnahtar(), oyun, seviye, oyuncuId);
       } else if (sekme === 'aylik') {
-        result = await donemLig('ay', aylikAnahtar(), 'sayi', seviye, oyuncuId);
+        result = await donemLig('ay', aylikAnahtar(), oyun, seviye, oyuncuId);
       } else if (sekme === 'arena') {
         // Arena madalyası seviyeden bağımsız; tek bir tablo.
         result = await arenaLig(oyuncuId);
@@ -112,7 +117,7 @@ export default function Lig({ oyuncuId }: Props) {
         // Düello derecesi seviyeden bağımsız; tek bir tablo.
         result = await duelloLig(oyuncuId);
       } else {
-        result = await antrenmanLig(haftalikAnahtar(), 'sayi', seviye, oyuncuId);
+        result = await antrenmanLig(haftalikAnahtar(), oyun, seviye, oyuncuId);
       }
 
       // Bu yanıt geldiğinde daha yeni bir sorgu başlamışsa yok sayılır.
@@ -126,7 +131,7 @@ export default function Lig({ oyuncuId }: Props) {
 
   useEffect(() => {
     sorguYap();
-  }, [sekme, seviye, oyuncuId]);
+  }, [sekme, seviye, oyun, oyuncuId]);
 
   return (
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
@@ -177,7 +182,13 @@ export default function Lig({ oyuncuId }: Props) {
             <button
               key={s.k}
               data-sekme={s.k}
-              onClick={() => setSekme(s.k)}
+              onClick={() => {
+                setSekme(s.k);
+                // Duello ve arena yalnizca sayi turunda var; o sekmelere
+                // gecince oyun secici gizleniyor, secim de sifirlaniyor
+                // ki geri donuldugunde bos tablo gorunmesin.
+                if (s.k === 'duello' || s.k === 'arena') setOyun('sayi');
+              }}
               aria-pressed={sekme === s.k}
               className={`min-h-[48px] rounded-lg border px-2 py-2 text-sm font-bold transition ${
                 sekme === s.k
@@ -189,6 +200,39 @@ export default function Lig({ oyuncuId }: Props) {
             </button>
           ))}
         </div>
+
+        {/* OYUN SEÇİCİ — iki oyunun tabloları ayrı.
+            Düello ve arena yalnızca sayı turunda olduğu için o
+            sekmelerde gösterilmiyor. */}
+        {sekme !== 'duello' && sekme !== 'arena' && (
+          <div className="mb-6" data-alan="oyun-secici">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+              Oyun
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { k: 'sayi', ad: 'Sayı Turu' },
+                  { k: 'kelime', ad: '📖 Kelime Turu' },
+                ] as const
+              ).map((o) => (
+                <button
+                  key={o.k}
+                  data-oyun={o.k}
+                  onClick={() => setOyun(o.k)}
+                  aria-pressed={oyun === o.k}
+                  className={`min-h-[48px] rounded-lg border px-2 text-sm font-bold transition ${
+                    oyun === o.k
+                      ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
+                      : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  {o.ad}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Seviye seçimi — düelloda yok: derece seviyeden bağımsız. */}
         {sekme !== 'duello' && sekme !== 'arena' && (
@@ -381,6 +425,10 @@ export default function Lig({ oyuncuId }: Props) {
               onClick={() => {
                 if (sekme === 'duello') gecis(`/duello?seviye=${seviye}`);
                 else if (sekme === 'arena') gecis(`/arena?seviye=${seviye}`);
+                // Boş tablodaki davet, SEÇİLİ OYUNA götürmeli. Kelime
+                // sekmesindeyken sayı turuna atması, oyuncuyu adını
+                // yazdıramayacağı yere göndermek olurdu.
+                else if (oyun === 'kelime') gecis(`/kelime?seviye=${seviye}`);
                 else if (sekme === 'antrenman') gecis('/?mod=antrenman');
                 else gecis('/?mod=gunun');
               }}
@@ -388,9 +436,9 @@ export default function Lig({ oyuncuId }: Props) {
             >
               {sekme === 'duello' && 'Düello başlat'}
               {sekme === 'arena' && 'Arena başlat'}
-              {sekme === 'antrenman' && 'Antrenman yap'}
+              {sekme === 'antrenman' && (oyun === 'kelime' ? 'Kelime antrenmanı yap' : 'Antrenman yap')}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
-                'Günün Turunu oyna'}
+                (oyun === 'kelime' ? 'Kelime turunu oyna' : 'Günün Turunu oyna')}
             </button>
           </div>
         )}
@@ -422,5 +470,8 @@ export default function Lig({ oyuncuId }: Props) {
 }
 
 // Seviye listesi (Kurulum.tsx ile eşleşmelidir)
-// Tüm seviyeler; liste tek kaynaktan (SEVIYE_LISTESI) gelir.
+// Seviye listesi tek kaynaktan. İki oyunun seviye ANAHTARLARI aynı
+// (cocuk/normal/zor/usta) ve bu listede yalnızca etiket gösteriliyor
+// ("Isınma", "Normal"…), oyuna özgü alt bilgi değil. Bu yüzden tek
+// liste yetiyor.
 const seviyeler = sayiTuru.seviyeler;

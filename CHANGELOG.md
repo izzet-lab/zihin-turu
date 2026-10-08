@@ -3,6 +3,23 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Sonuç ekranı turun işlenip işlenmediğini söylüyor
+
+Antrenman hatasının yedi hafta yaşamasının sebebi hata değil,
+**sessizlikti**: tur sunucuya "ateşle ve unut" biçiminde gönderiliyor,
+sunucu hata verince oyuncuya hiçbir şey görünmüyordu.
+
+Artık sayı turunun sonuç ekranında da küçük bir satır var:
+"Lige işlendi" / "Çalışkanlık tablosuna işlendi", gönderim sürerken
+"Sunucuya gönderiliyor…", hata olursa "Puanın kaydedilemedi —
+bağlantını kontrol edip tekrar dene." Misafirde gösterilmiyor; orada
+zaten üyelik daveti çıkıyor ve iki mesaj üst üste binerdi.
+
+Ayrıca giriş yapmış bir test hesabıyla gerçek bir antrenman turu
+oynayıp sonucun çalışkanlık tablosuna işlendiğini doğrulayan bir e2e
+testi eklendi. Aynı hata tekrarlarsa bu test kırmızı olur — yedi hafta
+beklemeye gerek kalmaz.
+
 ## 2026-10-08 - Antrenman turları yedi haftadır kaydedilmiyormuş
 
 Kelime turunu lige bağlarken ortaya çıktı: **18 Ağustos 2026'dan beri

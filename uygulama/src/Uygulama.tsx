@@ -299,6 +299,15 @@ export default function Uygulama() {
     setEkran('oyun');
   }
 
+  /**
+   * Turun sunucuya işlenip işlenmediği — sonuç ekranında gösteriliyor.
+   * Gönderim eskiden "ateşle ve unut"tu; sunucu hata verdiğinde kimse
+   * fark etmiyordu (bkz. 8 Ekim 2026 antrenman hatası).
+   */
+  const [ligDurumu, setLigDurumu] = useState<
+    'bekliyor' | 'islendi' | 'basarisiz' | 'misafir'
+  >('misafir');
+
   async function bitti(s: OyunSonuc) {
     if (!oturum) return;
 
@@ -318,6 +327,7 @@ export default function Uygulama() {
 
       // Giriş yapıldıysa sunucuya gönder (sunucu doğrular, kaydeder)
       if (kullanici) {
+        setLigDurumu('bekliyor');
         turGonder({
           oyun: oturum.tur.oyun,
           mod: oturum.mod,
@@ -328,8 +338,14 @@ export default function Uygulama() {
           sure_sn: oturum.sure,
           kalan_sn: s.kalan,
           jokerler: s.jokerler,
-        }).catch((e) => console.warn('[Uygulama] turGonder başarısız:', e));
+        })
+          .then((y) => setLigDurumu(y ? 'islendi' : 'basarisiz'))
+          .catch((e) => {
+            console.warn('[Uygulama] turGonder başarısız:', e);
+            setLigDurumu('basarisiz');
+          });
       } else {
+        setLigDurumu('misafir');
         // Misafir: turu sakla, giriş yaparsa gönderilebilsin.
         // Hız primi gönderim anında sıfırlanır (kalan_sn: 0), çünkü
         // aradan geçen sürede oyuncunun gerçekten hızlı olduğu
@@ -359,6 +375,7 @@ export default function Uygulama() {
 
       // Giriş yapılmışsa antrenman turunu da sunucuya gönder (XP + antrenman ligi)
       if (kullanici) {
+        setLigDurumu('bekliyor');
         turGonder({
           oyun: oturum.tur.oyun,
           mod: oturum.mod,
@@ -370,7 +387,14 @@ export default function Uygulama() {
           kalan_sn: s.kalan,
           jokerler: s.jokerler,
           buyuk_adet: oturum.buyukAdet,
-        }).catch((e) => console.warn('[Uygulama] antrenman turGonder başarısız:', e));
+        })
+          .then((y) => setLigDurumu(y ? 'islendi' : 'basarisiz'))
+          .catch((e) => {
+            console.warn('[Uygulama] antrenman turGonder başarısız:', e);
+            setLigDurumu('basarisiz');
+          });
+      } else {
+        setLigDurumu('misafir');
       }
     }
 
@@ -539,6 +563,7 @@ export default function Uygulama() {
         onYeniTur={yeniTur}
         onAyarlar={ayarlaraDon}
         onGirisAc={girisAc}
+        ligDurumu={ligDurumu}
       />
     );
   } else {

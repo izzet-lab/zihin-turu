@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ARENA_KOLTUK, duelloTurTohumu } from '@tamisabet/cekirdek';
 import Oyun from './Oyun';
 import KelimeTahtasi from './KelimeTahtasi';
+import TurCevaplari from '../bilesenler/TurCevaplari';
+import { useTurCevaplari } from '../tur-cevaplari';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import { acikSeviyeler } from '../depo';
 import {
@@ -79,6 +81,18 @@ export default function Arena({
    */
   const oyun: OyunAdi = oyunAdiCevir(durum?.oyun ?? oyunAdi);
   const saglayici = useOyunSaglayici(oyun);
+
+  /**
+   * Turların cevapları — yalnızca yarış BİTTİĞİNDE hesaplanıyor.
+   * Kural 8: çözüm, tur bitmeden istemciye gitmez.
+   */
+  const turCevaplari = useTurCevaplari(
+    durum?.durum === 'bitti' ? saglayici : null,
+    durum?.seviye,
+    durum?.tohum,
+    durum?.toplamTur ?? 0,
+  );
+
   const seviyeListesi = saglayici?.seviyeler ?? [];
 
   const seviyeEtiket = seviyeListesi.find((s) => s.anahtar === seviye)?.etiket ?? seviye;
@@ -477,6 +491,11 @@ export default function Arena({
             );
           })}
         </ul>
+
+        {/* TURLARIN CEVAPLARI
+            "Hangi kelimeler çıktı?" sorusunun cevabı. Yarış bittiği
+            için çözümü göstermek artık serbest. */}
+        <TurCevaplari cevaplar={turCevaplari} />
 
         <button
           onClick={() => {

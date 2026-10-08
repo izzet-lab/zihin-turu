@@ -84,6 +84,16 @@ test.describe('düello maçı', () => {
     expect(a1).toBe(b2);
     expect(b1).toBe(a2);
 
+    // MAÇ BİTTİ: turların doğru cevapları görünür.
+    // Maç sürerken çözüm istemciye gitmiyor (kural 8); bittikten sonra
+    // "hangi tur neydi, doğrusu neymiş" sorusunun cevabı veriliyor.
+    await expect(sayfa1.locator('[data-alan="tur-cevabi"]').first()).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(sayfa2.locator('[data-alan="tur-cevabi"]').first()).toBeVisible({
+      timeout: 30_000,
+    });
+
     await baglam1.close();
     await baglam2.close();
   });

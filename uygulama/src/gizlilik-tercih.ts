@@ -16,7 +16,7 @@ export interface Tercihler {
   crashlytics: boolean;
 }
 
-export const GIZLILIK_ANAHTAR = 'zihinturu.gizlilik.v1';
+export const GIZLILIK_ANAHTAR = 'tamisabet.gizlilik.v1';
 
 /**
  * Varsayılan tercihler.

@@ -10,8 +10,8 @@ import {
   turSiralamasi,
   type ArenaDurum,
   type ArenaOlay,
-} from '@zihinturu/cekirdek';
-import { arenaBotlari, arenaGecikmeTabaniMs } from '@zihinturu/oyun-sayi';
+} from '@tamisabet/cekirdek';
+import { arenaBotlari, arenaGecikmeTabaniMs } from '@tamisabet/oyun-sayi';
 
 /*
   ARENA — 5 kişilik eşzamanlı yarış.

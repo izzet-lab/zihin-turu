@@ -19,7 +19,7 @@ const DENEYIMLI = {
 
 async function tohumla(page: import('@playwright/test').Page) {
   await page.addInitScript((t) => {
-    window.localStorage.setItem('zihinturu.v2', JSON.stringify(t));
+    window.localStorage.setItem('tamisabet.v2', JSON.stringify(t));
   }, DENEYIMLI);
 }
 
@@ -88,7 +88,7 @@ test('günün turu: misafire "lige işlemedi" daveti kendi puanıyla çıkar', a
 
   // Turun kendisi, giriş yapılınca gönderilebilsin diye saklanmış olmalı.
   const bekleyen = await page.evaluate(() =>
-    window.localStorage.getItem('zihinturu.bekleyen-tur'),
+    window.localStorage.getItem('tamisabet.bekleyen-tur'),
   );
   expect(bekleyen).toBeTruthy();
   const t = JSON.parse(bekleyen!);

@@ -19,7 +19,7 @@ const DENEYIMLI = {
 
 async function seviyeleriAc(baglam: import('@playwright/test').BrowserContext) {
   await baglam.addInitScript((t) => {
-    window.localStorage.setItem('zihinturu.v2', JSON.stringify(t));
+    window.localStorage.setItem('tamisabet.v2', JSON.stringify(t));
   }, DENEYIMLI);
 }
 
@@ -125,7 +125,7 @@ test.describe('arena', () => {
 
   test('kurulumdaki arena düğmesi arenaya götürür', async ({ page }) => {
     await page.addInitScript((t) => {
-      window.localStorage.setItem('zihinturu.v2', JSON.stringify(t));
+      window.localStorage.setItem('tamisabet.v2', JSON.stringify(t));
     }, DENEYIMLI);
     await page.goto('/');
     const yardim = page.locator('[data-alan="yardim-anladim"]');

@@ -32,7 +32,7 @@ export default function Yakinda() {
         <img src="/logo.svg" alt="" className="w-16 h-16 mb-7" />
 
         <h1 className="text-4xl font-black tracking-tight text-white leading-none">
-          Zihin Turu
+          Tam İsabet
         </h1>
         <p className="mt-3 text-base leading-relaxed text-slate-400">
           Türkçe zihin oyunu. Tek başına, karşılıklı ya da arenada.
@@ -67,7 +67,7 @@ export default function Yakinda() {
         </p>
 
         <footer className="mt-14 border-t border-slate-800 pt-5 text-xs text-slate-600">
-          © {new Date().getFullYear()} Zihin Turu
+          © {new Date().getFullYear()} Tam İsabet
         </footer>
       </div>
     </main>

@@ -1,4 +1,4 @@
-# Play Store Yayın Notları — Zihin Turu
+# Play Store Yayın Notları — Tam İsabet
 
 > Bu belge AAB yüklemeden önce doldurulacak formlar ve dikkat edilecek
 > noktaları özetler. Son güncelleme: 2026-09-05.
@@ -79,7 +79,7 @@ yapılmalıdır.
    çocuklara yönelik uygulamalar için zorunludur.
 
 2. **Risk değerlendirmesi:** Google, uygulamanın gerçekte çocuklara hitap
-   edip etmediğini içeriğe bakarak kendi değerlendirir. Zihin Turu bir
+   edip etmediğini içeriğe bakarak kendi değerlendirir. Tam İsabet bir
    matematik bulmacası — bu tür uygulamalar Google'ın "çocuklara yönelik"
    olarak değerlendirebileceği bir kategori. Ancak:
    - Kayıt asgari yaşı 13 olarak uygulanıyor
@@ -110,11 +110,16 @@ yapılmalıdır.
 `local.properties` dosyasına aşağıdaki satırlar eklenmeli:
 
 ```properties
-ZIHIN_KEYSTORE_FILE=/path/to/zihinturu-release.jks
-ZIHIN_KEYSTORE_PASSWORD=...
-ZIHIN_KEY_ALIAS=zihinturu
-ZIHIN_KEY_PASSWORD=...
+TAMISABET_KEYSTORE_FILE=/path/to/release.jks
+TAMISABET_KEYSTORE_PASSWORD=...
+TAMISABET_KEY_ALIAS=zihinturu
+TAMISABET_KEY_PASSWORD=...
 ```
+
+> Takma ad (`KEY_ALIAS`) eski markadan kalma ve **öyle kalmalı**: takma
+> ad imza anahtarının içinde yazılı, yeniden adlandırılamaz.
+> Değiştirmek yeni bir anahtar üretmek demek olurdu ve Play Store
+> uygulamayı aynı uygulama olarak tanımazdı.
 
 ### Ön koşul: Java 17+
 

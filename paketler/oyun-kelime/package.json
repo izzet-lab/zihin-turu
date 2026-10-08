@@ -1,5 +1,5 @@
 {
-  "name": "@zihinturu/oyun-kelime",
+  "name": "@tamisabet/oyun-kelime",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,5 +9,5 @@
     ".": "./src/index.ts",
     "./sozluk-verisi": "./veri/kelimeler.ts"
   },
-  "dependencies": { "@zihinturu/cekirdek": "*" }
+  "dependencies": { "@tamisabet/cekirdek": "*" }
 }

@@ -26,7 +26,7 @@ import {
   cozumYogunluguDetay,
   BUYUK,
   type Adim,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /**
  * Seviye başına tur sayısı. Taş sayısı arttıkça arama pahalılaşıyor;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Tur } from '@zihinturu/cekirdek';
+import type { Tur } from '@tamisabet/cekirdek';
 import {
   SEVIYELER,
   turKur,
@@ -11,7 +11,7 @@ import {
   varsayilanBuyukAdet,
   type SayiVeri,
   type Adim,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /**
  * ÇÖZÜM, EKRANDAKİ TURA AİT OLMALI.

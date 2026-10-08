@@ -16,8 +16,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { ARENA_KOLTUK } from '@zihinturu/cekirdek';
-import { SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { ARENA_KOLTUK } from '@tamisabet/cekirdek';
+import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { ARENA_BEKLEME_SN, arenayiBaslat, type ArenaMac } from '../arena-ortak.ts';
 
 const CORS = {

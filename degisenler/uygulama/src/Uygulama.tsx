@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Tur } from '@zihinturu/cekirdek';
-import { sayiTuru, gununTuru, uretimYap, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
+import type { Tur } from '@tamisabet/cekirdek';
+import { sayiTuru, gununTuru, uretimYap, sonrakiSeviyeAnahtari } from '@tamisabet/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';

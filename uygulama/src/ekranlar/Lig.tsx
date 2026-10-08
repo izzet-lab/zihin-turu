@@ -7,7 +7,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sayiTuru } from '@zihinturu/oyun-sayi';
+import { sayiTuru } from '@tamisabet/oyun-sayi';
 import {
   haftalikAnahtar,
   aylikAnahtar,

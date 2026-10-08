@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Seviye } from '@zihinturu/cekirdek';
-import { antrenmanCarpani } from '@zihinturu/oyun-sayi';
+import type { Seviye } from '@tamisabet/cekirdek';
+import { antrenmanCarpani } from '@tamisabet/oyun-sayi';
 import { gunlukOynandiMiSunucu, ilerlemeOku, xpSeviyeHesapla, type OyuncuIlerleme } from '../kimlik';
 import { oyuncuSayilariOku } from '../oyuncu-sayisi';
 import {
@@ -130,7 +130,7 @@ export default function Kurulum({ seviyeler, onBasla, baslangicMod, kullanici, o
         <header className="relative flex items-center gap-3 pr-12">
           <img src="/logo.svg" alt="" className="h-9 w-9" />
           <div className="flex-1">
-            <h1 className="text-2xl font-black leading-none text-white">Zihin Turu</h1>
+            <h1 className="text-2xl font-black leading-none text-white">Tam İsabet</h1>
             <p className="text-xs text-slate-500">Sayı Turu — rakamlar, dört işlem, bir hedef.</p>
           </div>
         </header>

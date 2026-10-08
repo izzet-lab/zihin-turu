@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { macIlerlet, uzaklikHesapla, turUret, type Mac } from '../sunucu/fonksiyonlar/duello-ortak';
-import { DUELLO_TUR_SAYISI } from '@zihinturu/cekirdek';
+import { DUELLO_TUR_SAYISI } from '@tamisabet/cekirdek';
 
 /*
   DÜELLO SUNUCU MANTIĞI

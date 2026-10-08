@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { gunlukTohum } from '@zihinturu/cekirdek';
-import { kelimeGonderimDogrula, enFazlaHarf } from '@zihinturu/oyun-kelime';
+import { gunlukTohum } from '@tamisabet/cekirdek';
+import { kelimeGonderimDogrula, enFazlaHarf } from '@tamisabet/oyun-kelime';
 
 /*
   KELİME GÖNDERİM DENETİMİ

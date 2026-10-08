@@ -68,7 +68,7 @@ export function davetGosterilsinMi(d: DavetDurumu): boolean {
  * sahip. Erişilemediği ortamlarda (gizli sekme, izin kapalı) bellek
  * yedeğine düşülür — depo.ts ile aynı yaklaşım.
  */
-const ONEK = 'zihinturu.davet-kapatildi.';
+const ONEK = 'tamisabet.davet-kapatildi.';
 const bellek = new Set<string>();
 let bellegeDustu = false;
 

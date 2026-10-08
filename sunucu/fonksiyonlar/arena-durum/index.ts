@@ -16,7 +16,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { ARENA_TUR_SAYISI } from '@zihinturu/cekirdek';
+import { ARENA_TUR_SAYISI } from '@tamisabet/cekirdek';
 import {
   ARENA_BEKLEME_SN,
   arenayiBaslat,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { KELIME_METNI } from '@zihinturu/oyun-kelime/sozluk-verisi';
-import { kelimeTuruKur, tamSozlukKur, KELIME_SEVIYE_LISTESI } from '@zihinturu/oyun-kelime';
+import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { kelimeTuruKur, tamSozlukKur, KELIME_SEVIYE_LISTESI } from '@tamisabet/oyun-kelime';
 
 /*
   GERÇEK SÖZLÜK — Zemberek kök listesinden üretilmiş yaklaşık 50 bin

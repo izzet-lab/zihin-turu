@@ -7,7 +7,7 @@ import {
   ARENA_BEKLEME_SN,
   type ArenaMac,
 } from '../sunucu/fonksiyonlar/arena-ortak';
-import { ARENA_KOLTUK, ARENA_TUR_SAYISI } from '@zihinturu/cekirdek';
+import { ARENA_KOLTUK, ARENA_TUR_SAYISI } from '@tamisabet/cekirdek';
 
 /*
   ARENA SUNUCU MANTIĞI

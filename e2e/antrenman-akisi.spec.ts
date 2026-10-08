@@ -17,9 +17,9 @@ import { zinciriBulVeOyna } from './oyun-yardimcilari';
 
 async function deneyimliTohumla(page: import('@playwright/test').Page) {
   await page.addInitScript(() => {
-    if (window.localStorage.getItem('zihinturu.v2')) return;
+    if (window.localStorage.getItem('tamisabet.v2')) return;
     window.localStorage.setItem(
-      'zihinturu.v2',
+      'tamisabet.v2',
       JSON.stringify({
         surum: 2,
         seri: { son: null, gun: 0, enUzun: 0 },

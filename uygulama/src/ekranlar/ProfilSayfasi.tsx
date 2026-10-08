@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { seviyeEtiketi } from '@zihinturu/oyun-sayi';
+import { seviyeEtiketi } from '@tamisabet/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
 import { profilOku } from '../kimlik';
 import { supabase } from '../supabase';

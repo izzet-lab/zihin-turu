@@ -1,4 +1,4 @@
-package com.zihinturu.app;
+package com.tamisabet.app;
 
 import com.getcapacitor.BridgeActivity;
 

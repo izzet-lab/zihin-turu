@@ -12,7 +12,7 @@
  * (adımlar, işlem işaretleri, ara sonuçlar) buraya hiç gelmez.
  */
 
-import type { JokerTip } from '@zihinturu/oyun-sayi';
+import type { JokerTip } from '@tamisabet/oyun-sayi';
 
 export const BOYUT = 1080;
 
@@ -109,10 +109,13 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   c.textAlign = 'left';
   c.textBaseline = 'alphabetic';
 
-  // Marka
-  c.fillStyle = '#7CEDFB';
-  c.font = '700 46px system-ui, sans-serif';
-  c.fillText('Zihin Turu', 130, 190);
+  // MARKA — kasten küçük ve sakin.
+  // Oyunun kazanma mesajı da "tam isabet"; marka aynı puntoda
+  // yazılsaydı kartta aynı söz iki kez bağırır, tekrar gibi dururdu.
+  // Marka burada bir künye; asıl söz aşağıdaki sonuç.
+  c.fillStyle = '#4C8795';
+  c.font = '700 38px system-ui, sans-serif';
+  c.fillText('Tam İsabet', 130, 186);
 
   c.fillStyle = '#64748B';
   c.font = '500 34px system-ui, sans-serif';
@@ -129,9 +132,11 @@ export function kartCiz(c: Ctx, k: Kayit): void {
 
   // İsabet durumu
   if (k.fark === 0) {
+    // Marka adıyla birebir aynı sözü tekrarlamamak için "TAM İSABET"
+    // yerine bu cümle: aynı şeyi söylüyor, kartta iki kez okunmuyor.
     c.fillStyle = '#7CEDFB';
     c.font = '800 72px system-ui, sans-serif';
-    c.fillText('TAM İSABET 🎯', 130, 740);
+    c.fillText('HEDEFİ TUTTURDUN 🎯', 130, 740);
   } else {
     c.fillStyle = '#94A3B8';
     c.font = '700 64px system-ui, sans-serif';

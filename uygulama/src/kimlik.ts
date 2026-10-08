@@ -287,7 +287,7 @@ export const XP_SEVIYELER = [
   { seviye: 2, xp: 500, unvan: 'Hesapçı' },
   { seviye: 3, xp: 2000, unvan: 'Zihin İşçisi' },
   { seviye: 4, xp: 5000, unvan: 'Rakam Ustası' },
-  { seviye: 5, xp: 12000, unvan: 'Zihin Turu Ustası' },
+  { seviye: 5, xp: 12000, unvan: 'Tam İsabet Ustası' },
 ] as const;
 
 /** Verilen XP miktarı için seviye ve unvan hesaplar. */

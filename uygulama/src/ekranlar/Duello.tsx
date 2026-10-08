@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@zihinturu/cekirdek';
-import { turKur, sayiTuru, SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@tamisabet/cekirdek';
+import { turKur, sayiTuru, SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {

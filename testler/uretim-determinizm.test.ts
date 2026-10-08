@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { SEVIYELER, uretimYap } from '@zihinturu/oyun-sayi';
+import { SEVIYELER, uretimYap } from '@tamisabet/oyun-sayi';
 
 /**
  * Üretim, makine hızından BAĞIMSIZ olmalı.

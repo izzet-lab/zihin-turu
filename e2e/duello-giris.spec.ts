@@ -19,7 +19,7 @@ const DENEYIMLI = {
 
 async function hazirla(page: import('@playwright/test').Page) {
   await page.addInitScript((t) => {
-    window.localStorage.setItem('zihinturu.v2', JSON.stringify(t));
+    window.localStorage.setItem('tamisabet.v2', JSON.stringify(t));
   }, DENEYIMLI);
   await page.goto('/');
   const yardim = page.locator('[data-alan="yardim-anladim"]');

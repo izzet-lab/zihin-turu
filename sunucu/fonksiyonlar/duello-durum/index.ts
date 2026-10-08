@@ -21,7 +21,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { macIlerlet, turSuresi, type Mac } from '../duello-ortak.ts';
-import type { Taraf } from '@zihinturu/cekirdek';
+import type { Taraf } from '@tamisabet/cekirdek';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

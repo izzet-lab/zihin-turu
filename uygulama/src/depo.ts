@@ -11,7 +11,7 @@
  * tutamamak, oynamayı engellememeli.
  */
 
-import { SEVIYE_ANAHTARLARI } from '@zihinturu/oyun-sayi';
+import { SEVIYE_ANAHTARLARI } from '@tamisabet/oyun-sayi';
 
 export interface Seri {
   son: string | null; // en son oynanan gün (YYYY-MM-DD)
@@ -38,8 +38,8 @@ export interface Ilerleme {
   acikSeviyeler: string[];
 }
 
-const ANAHTAR = 'zihinturu.v2';
-const ESKI_ANAHTAR = 'zihinturu.v1'; // sürüm 1: gunluk "tarih:seviye" anahtarlıydı
+const ANAHTAR = 'tamisabet.v2';
+const ESKI_ANAHTAR = 'tamisabet.v1'; // sürüm 1: gunluk "tarih:seviye" anahtarlıydı
 
 const BOS = (): Ilerleme => ({
   surum: 2,
@@ -74,6 +74,44 @@ function genelYaz(anahtar: string, deger: string): void {
   }
   bellekHaritasi.set(anahtar, deger);
 }
+
+/**
+ * Marka değişikliği taşıması: `zihinturu.*` → `tamisabet.*`
+ *
+ * NEDEN GEREKLİ
+ * Oyuncunun serisi, günlük kilidi, ses tercihi, doğum yılı ve veli
+ * onayı tarayıcı deposunda duruyor. Anahtarların adı değişince bunlar
+ * bulunamaz; oyuncu serisini kaybeder, yaş kaydı silinir ve yaş
+ * sorusu yeniden sorulur. Eski anahtarlar bir kez kopyalanıyor.
+ *
+ * Kopyalama; taşıma değil: eski anahtar silinmiyor. Kullanıcı eski
+ * adrese geri dönerse orada da çalışmaya devam etsin.
+ *
+ * Tek seferlik: hedef anahtar zaten varsa dokunulmuyor, yoksa
+ * oyuncunun yeni ilerlemesi eskisiyle ezilirdi.
+ */
+const ESKI_ONEK = 'zihinturu.';
+const YENI_ONEK = 'tamisabet.';
+
+function markaTasimasiYap(): void {
+  try {
+    const eskiler: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const a = window.localStorage.key(i);
+      if (a && a.startsWith(ESKI_ONEK)) eskiler.push(a);
+    }
+    for (const eski of eskiler) {
+      const yeni = YENI_ONEK + eski.slice(ESKI_ONEK.length);
+      if (window.localStorage.getItem(yeni) !== null) continue;
+      const deger = window.localStorage.getItem(eski);
+      if (deger !== null) window.localStorage.setItem(yeni, deger);
+    }
+  } catch {
+    // Depo kapalıysa taşınacak bir şey de yoktur.
+  }
+}
+
+markaTasimasiYap();
 
 function depoOku(): string | null {
   return genelOku(ANAHTAR);
@@ -305,7 +343,7 @@ export function seviyeAc(seviye: string): Ilerleme {
 /* ve hem "Yeni tur" düğmesinde hem de Kurulum ekranı yeniden          */
 /* açıldığında (uygulama kapatılıp açılsa bile) varsayılan olur.       */
 
-const ANTRENMAN_ANAHTAR = 'zihinturu.antrenman.v1';
+const ANTRENMAN_ANAHTAR = 'tamisabet.antrenman.v1';
 
 export interface AntrenmanAyari {
   seviye: string;
@@ -330,7 +368,7 @@ export function sonAntrenmanAyariYaz(a: AntrenmanAyari): void {
 
 /* --- Yardım / ilk tanıtım --- */
 
-const YARDIM_ANAHTAR = 'zihinturu.yardim.v1';
+const YARDIM_ANAHTAR = 'tamisabet.yardim.v1';
 
 /** İlk tanıtım daha önce görüldü mü? */
 export function yardimGoruldu(): boolean {
@@ -344,7 +382,7 @@ export function yardimGorulduIsaretle(): void {
 
 /* --- Ses tercihi --- */
 
-const SES_ANAHTAR = 'zihinturu.ses.v1';
+const SES_ANAHTAR = 'tamisabet.ses.v1';
 
 /** Ses efektleri açık mı? Kayıt yoksa varsayılan açıktır. */
 export function sesAcikMi(): boolean {
@@ -358,7 +396,7 @@ export function sesTercihiYaz(acik: boolean): void {
 
 /* --- Bildirim ayarı --- */
 
-const BILDIRIM_ANAHTAR = 'zihinturu.bildirim.v1';
+const BILDIRIM_ANAHTAR = 'tamisabet.bildirim.v1';
 
 export interface BildirimAyari {
   acik: boolean;
@@ -386,7 +424,7 @@ export function bildirimAyariYaz(a: BildirimAyari): void {
 
 /* --- İlk tur bildirim istemi --- */
 
-const BILDIRIM_SORULDU_ANAHTAR = 'zihinturu.bildirim-soruldu';
+const BILDIRIM_SORULDU_ANAHTAR = 'tamisabet.bildirim-soruldu';
 
 /** Bildirim izni daha önce soruldu mu (ilk turdan sonra)? */
 export function bildirimSorulduMu(): boolean {
@@ -400,7 +438,7 @@ export function bildirimSorulduIsaretle(): void {
 
 /* --- Seri koruma hakkı (ayda bir) --- */
 
-const SERI_KORUMA_ANAHTAR = 'zihinturu.seri-koruma-ay';
+const SERI_KORUMA_ANAHTAR = 'tamisabet.seri-koruma-ay';
 
 /** Bir tarihin ay anahtarı: '2026-08'. */
 function ayAnahtari(gun: string): string {
@@ -422,7 +460,7 @@ export function seriKorumaHakkiKullan(gun = bugun()): void {
 
 /* --- İlk oturum reklamsızlığı --- */
 
-const TAMAMLANAN_TUR_ANAHTAR = 'zihinturu.tamamlanan-tur';
+const TAMAMLANAN_TUR_ANAHTAR = 'tamisabet.tamamlanan-tur';
 
 /**
  * Bu sayıda tur tamamlanana kadar hiç banner gösterilmez.
@@ -473,8 +511,8 @@ export function bugun(): string {
 
 /* --- Doğum yılı ve veli onayı (yaş sınırı için) --- */
 
-const DOGUM_YILI_ANAHTAR = 'zihinturu.dogumyili';
-const VELI_ONAYI_ANAHTAR = 'zihinturu.veli-onayi';
+const DOGUM_YILI_ANAHTAR = 'tamisabet.dogumyili';
+const VELI_ONAYI_ANAHTAR = 'tamisabet.veli-onayi';
 
 /** Kaydedilmiş doğum yılını okur, yoksa null. */
 export function dogumYiliOku(): number | null {
@@ -530,7 +568,7 @@ export function resinDegilMi(): boolean {
  * Tur içeriği DEĞİL, tohum ve adımlar saklanır (kural 3).
  */
 
-const BEKLEYEN_TUR_ANAHTAR = 'zihinturu.bekleyen-tur';
+const BEKLEYEN_TUR_ANAHTAR = 'tamisabet.bekleyen-tur';
 
 export interface BekleyenTur {
   oyun: string;
@@ -569,7 +607,7 @@ export function bekleyenTurSil(): void {
 
 /* --- Günün Kelime Turu kilidi --- */
 
-const KELIME_GUNLUK_ANAHTAR = 'zihinturu.kelime.gunluk.v1';
+const KELIME_GUNLUK_ANAHTAR = 'tamisabet.kelime.gunluk.v1';
 
 /**
  * Günün Kelime Turu'nun o gün oynanıp oynanmadığı.

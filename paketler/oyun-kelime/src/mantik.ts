@@ -7,7 +7,7 @@
  * Platform bu dosyayı tanımaz; yalnızca `TurSaglayici` üzerinden konuşur.
  */
 
-import { rastgele, type Puan } from '@zihinturu/cekirdek';
+import { rastgele, type Puan } from '@tamisabet/cekirdek';
 import { turkceKucult, type Sozluk } from './sozluk.ts';
 import { sozluktePayVar } from './cekim.ts';
 

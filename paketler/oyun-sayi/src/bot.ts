@@ -9,7 +9,7 @@
  * olasılığı düşer — böylece zayıf bot gerçekten zayıf.
  */
 
-import { rastgele, type Tur } from '@zihinturu/cekirdek';
+import { rastgele, type Tur } from '@tamisabet/cekirdek';
 import { cozZinciri, type Adim, type SayiVeri } from './mantik.ts';
 
 export type ProfilAd = 'cirak' | 'acemi' | 'orta' | 'usta';

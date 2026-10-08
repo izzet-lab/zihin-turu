@@ -17,7 +17,7 @@ import type {
   Seviye,
   Tur,
   TurSaglayici,
-} from '@zihinturu/cekirdek';
+} from '@tamisabet/cekirdek';
 import {
   dogrulaKelime,
   enUzunKelime,

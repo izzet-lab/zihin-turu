@@ -21,7 +21,7 @@ import {
   turSuresiDoldu,
   type ArenaDurum,
   type PodyumSatiri,
-} from '@zihinturu/cekirdek';
+} from '@tamisabet/cekirdek';
 import {
   uretimYap,
   varsayilanBuyukAdet,
@@ -33,7 +33,7 @@ import {
   SEVIYE_LISTESI,
   type Adim,
   type ProfilAd,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 // deno-lint-ignore no-explicit-any
 type Db = any;

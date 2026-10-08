@@ -2,12 +2,12 @@
  * Oyun motoru — saf, arayüzden bağımsız.
  *
  * Kural yok burada: işlem geçerliliği, çözüm, puanlama hep
- * `@zihinturu/oyun-sayi` içinde. Bu dosya yalnızca oyuncunun taş
+ * `@tamisabet/oyun-sayi` içinde. Bu dosya yalnızca oyuncunun taş
  * birleştirme etkileşimini yönetir (seç, işlem, birleştir, geri al,
  * sıfırla) ve her adımı doğrulanabilir bir `Adim` zinciri olarak tutar.
  */
 
-import { uygula, type Adim, type Islem } from '@zihinturu/oyun-sayi';
+import { uygula, type Adim, type Islem } from '@tamisabet/oyun-sayi';
 
 /** Raftaki bir taş. `yol` onu üreten adım zinciri (orijinal taşta boş). */
 export interface Tas {

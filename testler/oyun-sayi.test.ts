@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Tur, Cevap } from '@zihinturu/cekirdek';
+import type { Tur, Cevap } from '@tamisabet/cekirdek';
 import {
   sayiTuru,
   gununTuru,
@@ -22,7 +22,7 @@ import {
   botPlani,
   type Adim,
   type SayiVeri,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /** Sayı turu için sahte bir tur kabuğu (hile senaryolarında elle kurmak için). */
 function sahteTur(sayilar: number[], hedef: number): Tur {

@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { gunlukTohum } from '@zihinturu/cekirdek';
+import { gunlukTohum } from '@tamisabet/cekirdek';
 import {
   uretimYap,
   dogrulaZinciri,
@@ -23,7 +23,7 @@ import {
   antrenmanToplamCarpani,
   type Adim,
   type JokerTip,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 // ---------------------------------------------------------------------------
 // Yardımcılar (Edge Function mantığının özü, test ortamına kopyalanmış değil —

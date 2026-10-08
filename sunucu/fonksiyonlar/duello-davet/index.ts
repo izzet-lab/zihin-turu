@@ -26,7 +26,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { SEVIYE_LISTESI } from '@zihinturu/oyun-sayi';
+import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { dereceleriGuncelle, type Mac } from '../duello-ortak.ts';
 
 const CORS = {

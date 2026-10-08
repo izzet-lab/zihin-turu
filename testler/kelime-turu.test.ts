@@ -14,7 +14,7 @@ import {
   KELIME_SEVIYELERI,
   KELIME_SEVIYE_LISTESI,
   type KelimeVeri,
-} from '@zihinturu/oyun-kelime';
+} from '@tamisabet/oyun-kelime';
 
 /*
   KELİME TURU

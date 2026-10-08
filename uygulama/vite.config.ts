@@ -7,13 +7,13 @@ export default defineConfig({
   plugins: [react(), tailwind()],
   resolve: {
     alias: {
-      '@zihinturu/cekirdek': resolve(__dirname, '../paketler/cekirdek/src/index.ts'),
-      '@zihinturu/oyun-sayi': resolve(__dirname, '../paketler/oyun-sayi/src/index.ts'),
-      '@zihinturu/oyun-kelime/sozluk-verisi': resolve(
+      '@tamisabet/cekirdek': resolve(__dirname, '../paketler/cekirdek/src/index.ts'),
+      '@tamisabet/oyun-sayi': resolve(__dirname, '../paketler/oyun-sayi/src/index.ts'),
+      '@tamisabet/oyun-kelime/sozluk-verisi': resolve(
         __dirname,
         '../paketler/oyun-kelime/veri/kelimeler.ts',
       ),
-      '@zihinturu/oyun-kelime': resolve(__dirname, '../paketler/oyun-kelime/src/index.ts'),
+      '@tamisabet/oyun-kelime': resolve(__dirname, '../paketler/oyun-kelime/src/index.ts'),
 
       // Firebase yalnızca Android'de kullanılır. @capacitor-firebase/*
       // eklentilerinin web uygulamaları firebase/* paketlerini içe

@@ -7,7 +7,7 @@ import {
   SEVIYELER,
   type JokerTip,
   type NihaiPuanGirdi,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /**
  * JOKER BEDELİ GERÇEKTEN DÜŞMELİ.

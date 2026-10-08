@@ -91,7 +91,7 @@ test.describe('cevabı kilitleme', () => {
     // uzun sayılar hiç görünmez; test anlamsızlaşır. Seviyeler açılıyor.
     await baglam.addInitScript(() => {
       window.localStorage.setItem(
-        'zihinturu.v2',
+        'tamisabet.v2',
         JSON.stringify({
           surum: 2,
           seri: { son: null, gun: 0, enUzun: 0 },
@@ -144,7 +144,7 @@ test.describe('düello seviye seçimi', () => {
     // Yeni oyuncu gibi: yalnızca Isınma açık.
     await baglam.addInitScript(() => {
       window.localStorage.setItem(
-        'zihinturu.v2',
+        'tamisabet.v2',
         JSON.stringify({
           surum: 2,
           seri: { son: null, gun: 0, enUzun: 0 },
@@ -174,7 +174,7 @@ test.describe('düello seviye seçimi', () => {
     await girisYap(baglam, TEST_EPOSTALAR[0]!);
     await baglam.addInitScript(() => {
       window.localStorage.setItem(
-        'zihinturu.v2',
+        'tamisabet.v2',
         JSON.stringify({
           surum: 2,
           seri: { son: null, gun: 0, enUzun: 0 },

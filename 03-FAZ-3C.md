@@ -115,7 +115,7 @@ hızında ilerler. Kimseyle yarışmaz, sadece büyür.
 | 2 | 500 | Hesapçı |
 | 3 | 2.000 | Zihin İşçisi |
 | 4 | 5.000 | Rakam Ustası |
-| 5 | 12.000 | Zihin Turu Ustası |
+| 5 | 12.000 | Tam İsabet Ustası |
 
 Profilde ve kurulum ekranında görünür. Antrenman artık "boşa oynanan"
 bir şey olmaktan çıkar.
@@ -263,7 +263,7 @@ yapanların kullanıcı adları lig tablosunda zaten görünüyor.
 >
 > **3. Oyuncu seviyesi (XP).** Antrenman puanları XP olarak biriksin,
 > hiç sıfırlanmasın. Seviyeler: 1 Çaylak (0), 2 Hesapçı (500),
-> 3 Zihin İşçisi (2.000), 4 Rakam Ustası (5.000), 5 Zihin Turu Ustası
+> 3 Zihin İşçisi (2.000), 4 Rakam Ustası (5.000), 5 Tam İsabet Ustası
 > (12.000). Profilde ve kurulum ekranında görünsün.
 >
 > **4. Lig ekranına dördüncü sekme: Antrenman.** Haftalık sıfırlanan

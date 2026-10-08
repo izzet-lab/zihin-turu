@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.zihinturu.app"
+    namespace = "com.tamisabet.app"
     compileSdk = rootProject.ext.compileSdkVersion
     // Sürüm bilgisi version.properties dosyasından okunur.
     // Her yayında versionCode artırılır: ./surum-artir.sh
@@ -10,7 +10,7 @@ android {
     if (versionFile.exists()) versionProps.load(new FileInputStream(versionFile))
 
     defaultConfig {
-        applicationId "com.zihinturu.app"
+        applicationId "com.tamisabet.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode (versionProps.getProperty('VERSION_CODE', '1') as int)
@@ -24,20 +24,24 @@ android {
     }
     // İmza yapılandırması: keystore bilgileri local.properties veya
     // gradle.properties dosyasından okunur (repoya girmez).
-    //   ZIHIN_KEYSTORE_FILE=/path/to/keystore.jks
-    //   ZIHIN_KEYSTORE_PASSWORD=...
-    //   ZIHIN_KEY_ALIAS=...
-    //   ZIHIN_KEY_PASSWORD=...
+    //   TAMISABET_KEYSTORE_FILE=/path/to/keystore.jks
+    //   TAMISABET_KEYSTORE_PASSWORD=...
+    //   TAMISABET_KEY_ALIAS=...
+    //   TAMISABET_KEY_PASSWORD=...
     signingConfigs {
         release {
             def props = new Properties()
             def propsFile = rootProject.file('local.properties')
             if (propsFile.exists()) props.load(new FileInputStream(propsFile))
 
-            storeFile file(props.getProperty('ZIHIN_KEYSTORE_FILE', 'keystore.jks'))
-            storePassword props.getProperty('ZIHIN_KEYSTORE_PASSWORD', '')
-            keyAlias props.getProperty('ZIHIN_KEY_ALIAS', 'zihinturu')
-            keyPassword props.getProperty('ZIHIN_KEY_PASSWORD', '')
+            storeFile file(props.getProperty('TAMISABET_KEYSTORE_FILE', 'keystore.jks'))
+            storePassword props.getProperty('TAMISABET_KEYSTORE_PASSWORD', '')
+            // Varsayılan takma ad ESKİ markadan kalma ve ÖYLE KALMALI:
+            // takma ad imza anahtarının içinde yazılı, yeniden
+            // adlandırılamaz. Değiştirmek yeni bir anahtar demek olurdu
+            // ve Play Store aynı uygulamayı tanımazdı.
+            keyAlias props.getProperty('TAMISABET_KEY_ALIAS', 'zihinturu')
+            keyPassword props.getProperty('TAMISABET_KEY_PASSWORD', '')
         }
     }
     buildTypes {

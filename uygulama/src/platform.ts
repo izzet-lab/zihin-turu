@@ -6,7 +6,7 @@
  * yönlendirilirse e-postadaki link tarayıcıda açılır ve uygulamaya
  * geri dönemez. Bu yüzden native ortamda özel bir şema kullanılır:
  *
- *   com.zihinturu.app://giris
+ *   com.tamisabet.app://giris
  *
  * Bu şema Android tarafında AndroidManifest.xml içindeki
  * intent-filter ile uygulamaya bağlanmıştır.
@@ -21,5 +21,5 @@ export function nativeMi(): boolean {
 
 /** Giriş sonrası dönülecek adres — ortama göre değişir. */
 export function girisDonusAdresi(): string {
-  return nativeMi() ? 'com.zihinturu.app://giris' : window.location.origin;
+  return nativeMi() ? 'com.tamisabet.app://giris' : window.location.origin;
 }

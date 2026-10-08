@@ -6,7 +6,7 @@
  *
  * KURAL 1'E DİKKAT
  * Burada hiçbir oyun kuralı yok. Hangi kelime geçerli, kaç puan eder,
- * en uzunu hangisi — hepsini `@zihinturu/oyun-kelime` söylüyor. Bu
+ * en uzunu hangisi — hepsini `@tamisabet/oyun-kelime` söylüyor. Bu
  * dosya yalnızca harfleri gösteriyor, dokunuşları topluyor ve cevabı
  * sağlayıcıya veriyor.
  *
@@ -16,8 +16,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Tur, TurSaglayici } from '@zihinturu/cekirdek';
-import { gunlukTohum } from '@zihinturu/cekirdek';
+import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
+import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
 import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
 import {
@@ -25,7 +25,7 @@ import {
   kelimeTuruKur,
   tamSozlukKur,
   turkceBuyult,
-} from '@zihinturu/oyun-kelime';
+} from '@tamisabet/oyun-kelime';
 
 type Asama = 'yukleniyor' | 'seviye' | 'oyun' | 'sonuc';
 
@@ -86,7 +86,7 @@ export default function KelimeTuru({ baslangicSeviye, onCik }: Props) {
 
   useEffect(() => {
     let iptal = false;
-    import('@zihinturu/oyun-kelime/sozluk-verisi')
+    import('@tamisabet/oyun-kelime/sozluk-verisi')
       .then(({ KELIME_METNI }) => {
         if (iptal) return;
         setSaglayici(kelimeTuruKur(tamSozlukKur(KELIME_METNI)));

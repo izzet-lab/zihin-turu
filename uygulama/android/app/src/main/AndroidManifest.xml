@@ -20,12 +20,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Giriş dönüşü: com.zihinturu.app://giris -->
+            <!-- Giriş dönüşü: com.tamisabet.app://giris -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.zihinturu.app" />
+                <data android:scheme="com.tamisabet.app" />
             </intent-filter>
         </activity>
 

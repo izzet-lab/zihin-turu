@@ -1,8 +1,8 @@
 {
-  "name": "zihinturu",
+  "name": "tamisabet",
   "private": true,
   "version": "0.1.0",
-  "description": "Zihin Turu — Türkçe zihin oyunu platformu",
+  "description": "Tam İsabet — Türkçe zihin oyunu platformu",
   "workspaces": [
     "paketler/*",
     "uygulama"

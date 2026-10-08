@@ -5,7 +5,7 @@ import {
   PROFILLER,
   PROFIL_SIRASI,
   KORUMALI_DUELLO_SAYISI,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /*
   BOTUN GÜCÜ

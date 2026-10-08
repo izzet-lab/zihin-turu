@@ -28,8 +28,8 @@ import {
   BASLANGIC_ELO,
   botaDusulsunMu,
   eslesirMi,
-} from '@zihinturu/cekirdek';
-import { SEVIYE_LISTESI, botUret, botProfilSec } from '@zihinturu/oyun-sayi';
+} from '@tamisabet/cekirdek';
+import { SEVIYE_LISTESI, botUret, botProfilSec } from '@tamisabet/oyun-sayi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

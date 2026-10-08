@@ -6,8 +6,8 @@
  * içinde saklı kalır. Mantığın tamamı `mantik.ts` içindedir.
  */
 
-import { gunlukTohum } from '@zihinturu/cekirdek';
-import type { Tur, Cevap, Dogrulama, Puan, Cozum, Seviye, TurSaglayici } from '@zihinturu/cekirdek';
+import { gunlukTohum } from '@tamisabet/cekirdek';
+import type { Tur, Cevap, Dogrulama, Puan, Cozum, Seviye, TurSaglayici } from '@tamisabet/cekirdek';
 import {
   SEVIYELER,
   uretimYap,

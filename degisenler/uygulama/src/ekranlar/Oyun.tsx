@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import type { Tur } from '@zihinturu/cekirdek';
+import type { Tur } from '@tamisabet/cekirdek';
 import {
   puanlaHesap,
   jokerVer,
@@ -13,7 +13,7 @@ import {
   type Islem,
   type SayiVeri,
   type JokerTip,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
 import Konfeti from '../bilesenler/Konfeti';

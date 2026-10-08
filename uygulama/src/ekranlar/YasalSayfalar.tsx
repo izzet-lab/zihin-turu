@@ -1,7 +1,7 @@
 /**
  * YasalSayfalar.tsx — KVKK, gizlilik, çerez, kullanım koşulları, hesap silme
  *
- * Zihin Turu projesinin gerçek durumunu yansıtan yasal metinler.
+ * Tam İsabet projesinin gerçek durumunu yansıtan yasal metinler.
  *
  * ⚠️ AVUKAT ONAYINDAN SONRA YAYINLANMALIDIR
  *
@@ -51,16 +51,21 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
         <div className={icerik}>
           <p>
             Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK")
-            kapsamında, <strong>Zihin Turu</strong> uygulamasını kullanan siz değerli
+            kapsamında, <strong>Tam İsabet</strong> uygulamasını kullanan siz değerli
             kullanıcılarımızı bilgilendirmek amacıyla hazırlanmıştır.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 20 Ağustos 2026
+            <strong>Son güncelleme:</strong> 8 Ekim 2026
+          </p>
+          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+            <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
+            işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
+            önceki adres zihin.artei.net idi.
           </p>
 
           <h2 className={h2}>1. Veri Sorumlusu</h2>
           <p>
-            Veri sorumlusu, Zihin Turu uygulamasını geliştiren ve işleten bireysel
+            Veri sorumlusu, Tam İsabet uygulamasını geliştiren ve işleten bireysel
             girişimcidir. İletişim: <strong>sefa162354@gmail.com</strong>
           </p>
 
@@ -230,12 +235,17 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
       cocuklar={
         <div className={icerik}>
           <p>
-            Zihin Turu, kullanıcılarının gizliliğine saygı gösterir. Bu politika,
+            Tam İsabet, kullanıcılarının gizliliğine saygı gösterir. Bu politika,
             hangi verilerin toplandığını, nasıl korunduğunu ve haklarınızın neler
             olduğunu açıklar.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 20 Ağustos 2026
+            <strong>Son güncelleme:</strong> 8 Ekim 2026
+          </p>
+          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+            <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
+            işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
+            önceki adres zihin.artei.net idi.
           </p>
 
           <h2 className={h2}>1. Toplanan Veriler</h2>
@@ -306,7 +316,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>6. Çocukların Gizliliği</h2>
           <p>
-            Zihin Turu <strong>13 yaş ve üzeri</strong> kullanıcılara yöneliktir.
+            Tam İsabet <strong>13 yaş ve üzeri</strong> kullanıcılara yöneliktir.
             13 yaş altındaki kişiler hesap açamaz.
           </p>
           <p>
@@ -378,11 +388,16 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
       cocuklar={
         <div className={icerik}>
           <p>
-            Bu politika, Zihin Turu uygulamasının çerez ve yerel depolama
+            Bu politika, Tam İsabet uygulamasının çerez ve yerel depolama
             kullanımını açıklar.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 20 Ağustos 2026
+            <strong>Son güncelleme:</strong> 8 Ekim 2026
+          </p>
+          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+            <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
+            işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
+            önceki adres zihin.artei.net idi.
           </p>
 
           <h2 className={h2}>1. Çerez Kullanımı</h2>
@@ -461,16 +476,21 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
       cocuklar={
         <div className={icerik}>
           <p>
-            Bu koşullar, Zihin Turu uygulamasını kullanımınızı düzenler.
+            Bu koşullar, Tam İsabet uygulamasını kullanımınızı düzenler.
             Hesap oluşturarak bu koşulları kabul etmiş sayılırsınız.
           </p>
           <p>
-            <strong>Son güncelleme:</strong> 20 Ağustos 2026
+            <strong>Son güncelleme:</strong> 8 Ekim 2026
+          </p>
+          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+            <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
+            işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
+            önceki adres zihin.artei.net idi.
           </p>
 
           <h2 className={h2}>1. Hizmet Tanımı</h2>
           <p>
-            Zihin Turu, matematik ve mantık becerileri geliştirmeye yönelik ücretsiz
+            Tam İsabet, matematik ve mantık becerileri geliştirmeye yönelik ücretsiz
             bir zihin oyunudur. Günlük bulmacalar ve antrenman modları sunar.
             Herhangi bir ücret talep etmez.
           </p>
@@ -511,7 +531,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>5. Fikri Mülkiyet</h2>
           <p>
-            Zihin Turu'nun tasarımı, kodu, logosu ve içeriği proje sahibine aittir.
+            Tam İsabet'in tasarımı, kodu, logosu ve içeriği proje sahibine aittir.
             Kullanıcılar uygulamayı yalnızca kişisel kullanım amacıyla kullanabilir.
           </p>
 
@@ -524,7 +544,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>7. Sorumluluk Sınırı</h2>
           <p>
-            Zihin Turu, veri kaybı, hizmet kesintisi veya uygulamanın
+            Tam İsabet, veri kaybı, hizmet kesintisi veya uygulamanın
             kullanımından doğabilecek dolaylı zararlardan sorumlu tutulamaz.
           </p>
 

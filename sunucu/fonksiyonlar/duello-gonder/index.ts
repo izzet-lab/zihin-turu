@@ -22,9 +22,9 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { DUELLO_TUR_SAYISI, type Taraf } from '@zihinturu/cekirdek';
+import { DUELLO_TUR_SAYISI, type Taraf } from '@tamisabet/cekirdek';
 import { macIlerlet, uzaklikHesapla, type Mac } from '../duello-ortak.ts';
-import type { Adim } from '@zihinturu/oyun-sayi';
+import type { Adim } from '@tamisabet/oyun-sayi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

@@ -21,8 +21,15 @@ Türkçe zihin oyunu platformu. İki oyun, tek altyapı:
 
 Platform oyunu bilmez. Oyunlar `TurSaglayici` arayüzüyle takılır.
 
-**Marka:** Zihin Turu · **Paket:** `com.zihinturu.app` ·
-**Web:** zihin.artei.net · **Depo:** `izzet-lab/zihin-turu`
+**Marka:** Tam İsabet · **Paket:** `com.tamisabet.app` ·
+**Web:** tamisabet.tr · **Depo:** `izzet-lab/zihin-turu`
+
+> Marka 8 Ekim 2026'da **Zihin Turu**'ndan **Tam İsabet**'e değişti;
+> alan adı zihin.artei.net yerine tamisabet.tr oldu. Depo adı eski
+> kaldı (GitHub adresini değiştirmek açık PR'ları ve yerel kopyaları
+> kırar). Üç şey bilerek eski adıyla duruyor: imza anahtarının takma
+> adı (anahtarın içinde yazılı, değiştirilemez), Supabase proje
+> referansı ve Instagram hesabı.
 
 ## Kiminle konuşuyorsun
 
@@ -133,7 +140,7 @@ bir köprü dosyası olmak zorunda; CLI yalnızca oraya bakıyor, gerçek kod
 does not exist" der.
 
 `--import-map` olmadan dağıtım **başarısız olur**: fonksiyon oyun
-paketini `@zihinturu/oyun-sayi` diye çağırıyor, harita verilmezse Deno
+paketini `@tamisabet/oyun-sayi` diye çağırıyor, harita verilmezse Deno
 bunu çözemez ve paketleme 400 döner. Harita ayrıca paket kaynaklarının
 da yüklenmesini sağlar — onsuz yalnızca fonksiyon dosyası gider.
 
@@ -216,7 +223,7 @@ Günlük seri oyuna göre ayrılmaz: hangi oyun oynanırsa oynansın "bugün
 oynadı" sayılır. Seri alışkanlığı ölçüyor, beceriyi değil.
 
 **XP:** Lv.1 Çaylak (0), Lv.2 Hesapçı (500), Lv.3 Zihin İşçisi (2.000),
-Lv.4 Rakam Ustası (5.000), Lv.5 Zihin Turu Ustası (12.000).
+Lv.4 Rakam Ustası (5.000), Lv.5 Tam İsabet Ustası (12.000).
 Seri ödülleri: her gün +10, 3 gün +25, 7 gün +75, 30 gün +300,
 100 gün +1.000. **Puan oynamadan verilmez.** Ayda bir seri koruma hakkı.
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
-import type { Tur } from '@zihinturu/cekirdek';
-import { sayiTuru, gununTuru, turKur, sonrakiSeviyeAnahtari } from '@zihinturu/oyun-sayi';
+import type { Tur } from '@tamisabet/cekirdek';
+import { sayiTuru, gununTuru, turKur, sonrakiSeviyeAnahtari } from '@tamisabet/oyun-sayi';
 import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';

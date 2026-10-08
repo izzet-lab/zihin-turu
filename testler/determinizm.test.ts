@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SEVIYELER, uretimYap, type Uretim } from '@zihinturu/oyun-sayi';
+import { SEVIYELER, uretimYap, type Uretim } from '@tamisabet/oyun-sayi';
 
 const TEKRAR = 5;       // her turu kaç kez üretip karşılaştıracağız
 const TUR_SAYISI = 200;  // seviye başına kaç farklı tohum

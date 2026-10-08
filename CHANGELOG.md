@@ -3,6 +3,74 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-08 - Marka: Zihin Turu → Tam İsabet (sürüm 2.0.0)
+
+Uygulama henüz mağazada olmadığı için paket adı da değişebildi; bu son
+şanstı.
+
+### Değişenler
+
+- **Paket adı:** `com.zihinturu.app` → `com.tamisabet.app`. Gradle
+  namespace ve applicationId, AndroidManifest, Java paket klasörü,
+  Capacitor yapılandırması, derin bağlantı şeması
+  (`com.tamisabet.app://giris`) ve `google-services.json`.
+- **Görünen ad:** Android uygulama adı, PWA manifest (name /
+  short_name), sayfa başlığı, apple-mobile-web-app-title, og ve
+  twitter etiketleri, arayüz metinleri, XP unvanı ("Tam İsabet
+  Ustası"), yasal metinler, README, CLAUDE.md, CHANGELOG, mağaza
+  notları.
+- **Alan adı:** zihin.artei.net → tamisabet.tr. Profil adresi örneği,
+  og görseli adresi, yasal metinler.
+- **İkonlar:** yeni set (192, 512, maskable 512, apple-touch, favicon,
+  og görseli). Manifest'te maskable olanın `purpose` değeri
+  `maskable`, diğerleri `any`.
+- **Paket kapsamı:** `@zihinturu/*` → `@tamisabet/*`. On Edge
+  Function'ın hepsi yeni kapsamla yeniden dağıtıldı ve canlıda
+  denendi.
+
+### Paylaşım kartı
+
+"Tam isabet" zaten oyunun kazanma mesajı. Kartta marka ile sonuç aynı
+sözü tekrarlamasın diye iki şey yapıldı: marka üstte küçük (38px) ve
+sakin bir renkte, bir künye gibi; kazanma satırı ise büyük (72px) ve
+artık **"HEDEFİ TUTTURDUN 🎯"** yazıyor. Aynı şeyi söylüyor, kartta
+iki kez okunmuyor.
+
+### Tarayıcı deposu taşındı
+
+Oyuncunun serisi, günlük kilidi, ses tercihi, doğum yılı ve veli onayı
+tarayıcı deposunda `zihinturu.*` anahtarlarıyla duruyordu. Anahtarlar
+`tamisabet.*` oldu ve **tek seferlik bir kopyalama** eklendi: eski
+anahtar varsa değeri yenisine taşınıyor. Olmasaydı mevcut oyuncular
+serilerini ve yaş kaydını kaybeder, yaş sorusu yeniden sorulurdu.
+
+### Bilerek eski adıyla kalanlar
+
+- **İmza anahtarının takma adı** (`zihinturu`). Takma ad anahtarın
+  içinde yazılı; değiştirmek yeni bir anahtar üretmek demek olurdu ve
+  Play Store uygulamayı aynı uygulama saymazdı.
+- **Supabase proje referansı**, tablo ve sütun adları, Edge Function
+  adları — iç isimler, kullanıcı görmüyor.
+- **Depo adı** `izzet-lab/zihin-turu` — değiştirmek açık PR'ları ve
+  yerel kopyaları kırar.
+- **Instagram hesabı** `@zihinturuapp` — proje sahibinin hesabı;
+  koddan değiştirilemez.
+
+### Proje sahibinin yapması gerekenler
+
+1. **Firebase**: `com.tamisabet.app` için yeni bir Android uygulaması
+   tanımlanmalı ve yeni `google-services.json` indirilmeli. Şu anki
+   dosyada paket adı elle değiştirildi; Firebase konsolunda karşılığı
+   yoksa Analytics ve Crashlytics çalışmaz.
+2. **AdMob**: uygulama kimliği paket adına bağlı. Yeni paket için yeni
+   bir AdMob uygulaması açılmalı ve manifest'teki kimlik
+   güncellenmeli.
+3. **Supabase Auth**: izin verilen dönüş adreslerine
+   `com.tamisabet.app://giris` ve `https://tamisabet.tr` eklenmeli.
+4. **Alan adı**: tamisabet.tr alınıp Cloudflare Pages'e bağlanmalı.
+5. **Yasal metinler** avukata yeniden gösterilmeli. Metinlerin başına
+   "bu sürümde yalnızca marka ve alan adı değişti" notu eklendi.
+
 ## 2026-10-08 - Sonuç ekranı turun işlenip işlenmediğini söylüyor
 
 Antrenman hatasının yedi hafta yaşamasının sebebi hata değil,
@@ -1890,7 +1958,7 @@ gerekecek.
 - **İlk 3 tur tamamlanana kadar hiç banner gösterilmiyor.** Kaldırmaların
   çoğu ilk 24 saatte oluyor ve bu kategoride birinci sebep reklam;
   kullanıcıya değer görmeden maliyet gösterilmiyor.
-- Sayaç **kalıcı saklanıyor** (`zihinturu.tamamlanan-tur`); uygulama
+- Sayaç **kalıcı saklanıyor** (`tamisabet.tamamlanan-tur`); uygulama
   kapanıp açılınca sıfırlanmıyor. Eşiğe ulaşınca artmayı bırakıyor.
 - Kapı `bannerGoster` içinde, tek yerde. Kurulum, Sonuç, Lig ve Profil
   ekranları kuralı otomatik uyguluyor.

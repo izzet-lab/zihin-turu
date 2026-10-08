@@ -169,7 +169,7 @@ export default function Yardim({ acik, kapat }: Props) {
               <XpSatir seviye={2} unvan="Hesapçı" xp={500} />
               <XpSatir seviye={3} unvan="Zihin İşçisi" xp={2000} />
               <XpSatir seviye={4} unvan="Rakam Ustası" xp={5000} />
-              <XpSatir seviye={5} unvan="Zihin Turu Ustası" xp={12000} />
+              <XpSatir seviye={5} unvan="Tam İsabet Ustası" xp={12000} />
             </div>
           </div>
         </Bolum>

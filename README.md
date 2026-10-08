@@ -1,4 +1,4 @@
-# Zihin Turu
+# Tam İsabet
 
 Türkçe zihin oyunu platformu. İki oyun, tek altyapı:
 

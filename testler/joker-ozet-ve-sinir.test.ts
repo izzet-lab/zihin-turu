@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { JOKER_HAK_SAYISI, ODULLU_EK_JOKER, jokerUstSiniri } from '@zihinturu/oyun-sayi';
-import { gonderimDogrula } from '@zihinturu/oyun-sayi';
+import { JOKER_HAK_SAYISI, ODULLU_EK_JOKER, jokerUstSiniri } from '@tamisabet/oyun-sayi';
+import { gonderimDogrula } from '@tamisabet/oyun-sayi';
 import { jokerOzeti } from '../uygulama/src/kart';
 
 /*

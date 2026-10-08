@@ -17,8 +17,8 @@ import {
   duelloTurTohumu,
   type DuelloDurum,
   type DuelloOlay,
-} from '@zihinturu/cekirdek';
-import { turKur, botPlaniTohumlu, PROFILLER } from '@zihinturu/oyun-sayi';
+} from '@tamisabet/cekirdek';
+import { turKur, botPlaniTohumlu, PROFILLER } from '@tamisabet/oyun-sayi';
 
 /*
   Düellonun beyni: eşleştirme ve maç akışı.

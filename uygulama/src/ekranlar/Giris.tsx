@@ -125,7 +125,7 @@ export default function Giris({ onAtla }: Props) {
           <div className="text-5xl mb-4">🎂</div>
           <h1 className="text-xl font-black text-white mb-3">Yaşın henüz yetmiyor</h1>
           <p className="text-slate-400 text-sm mb-2">
-            Zihin Turu'na üye olmak için en az <strong className="text-slate-200">13 yaşında</strong> olman gerekiyor.
+            Tam İsabet'e üye olmak için en az <strong className="text-slate-200">13 yaşında</strong> olman gerekiyor.
           </p>
           <p className="text-slate-500 text-sm mb-8">
             Ama misafir olarak oynamaya devam edebilirsin — hesap açmadan da bulmacaları çözebilirsin.
@@ -176,7 +176,7 @@ export default function Giris({ onAtla }: Props) {
         {/* Başlık */}
         <div className="text-center mb-8">
           <img src="/logo.svg" alt="" className="mx-auto mb-3 h-12 w-12" />
-          <h1 className="text-2xl font-black text-white">Zihin Turu</h1>
+          <h1 className="text-2xl font-black text-white">Tam İsabet</h1>
           <p className="mt-2 text-sm text-slate-400">
             Üye olursan puanların kalıcı olur ve lig tablosuna işler.
           </p>

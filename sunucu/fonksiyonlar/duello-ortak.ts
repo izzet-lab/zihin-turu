@@ -20,7 +20,7 @@ import {
   type DuelloDurum,
   type Taraf,
   type TurKaydi,
-} from '@zihinturu/cekirdek';
+} from '@tamisabet/cekirdek';
 import {
   uretimYap,
   varsayilanBuyukAdet,
@@ -30,7 +30,7 @@ import {
   SEVIYE_LISTESI,
   type Adim,
   type ProfilAd,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 /** Supabase istemcisi; tip ayrıntısı burada önemli değil. */
 // deno-lint-ignore no-explicit-any

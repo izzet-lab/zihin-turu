@@ -1,8 +1,8 @@
 {
   "imports": {
-    "@zihinturu/cekirdek": "../../paketler/cekirdek/src/index.ts",
-    "@zihinturu/oyun-sayi": "../../paketler/oyun-sayi/src/index.ts",
-    "@zihinturu/oyun-kelime": "../../paketler/oyun-kelime/src/index.ts",
-    "@zihinturu/oyun-kelime/sozluk-verisi": "../../paketler/oyun-kelime/veri/kelimeler.ts"
+    "@tamisabet/cekirdek": "../../paketler/cekirdek/src/index.ts",
+    "@tamisabet/oyun-sayi": "../../paketler/oyun-sayi/src/index.ts",
+    "@tamisabet/oyun-kelime": "../../paketler/oyun-kelime/src/index.ts",
+    "@tamisabet/oyun-kelime/sozluk-verisi": "../../paketler/oyun-kelime/veri/kelimeler.ts"
   }
 }

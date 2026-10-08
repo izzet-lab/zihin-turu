@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { KELIME_METNI } from '@zihinturu/oyun-kelime/sozluk-verisi';
-import { sozluktePayVar, tamSozlukKur } from '@zihinturu/oyun-kelime';
+import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { sozluktePayVar, tamSozlukKur } from '@tamisabet/oyun-kelime';
 
 /*
   ÇEKİMLİ BİÇİMLER

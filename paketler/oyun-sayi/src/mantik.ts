@@ -8,8 +8,8 @@
  * (tek kaynak: `rastgele`, `karistir` çekirdekte yaşar).
  */
 
-import { rastgele, karistir } from '@zihinturu/cekirdek';
-import type { Dogrulama, Puan } from '@zihinturu/cekirdek';
+import { rastgele, karistir } from '@tamisabet/cekirdek';
+import type { Dogrulama, Puan } from '@tamisabet/cekirdek';
 
 /* ------------------------------------------------------------------ */
 /* Tipler                                                              */

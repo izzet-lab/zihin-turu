@@ -26,13 +26,13 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { gunlukTohum } from '@zihinturu/cekirdek';
+import { gunlukTohum } from '@tamisabet/cekirdek';
 import {
   kelimeTuruKur,
   tamSozlukKur,
   kelimeGonderimDogrula,
-} from '@zihinturu/oyun-kelime';
-import { KELIME_METNI } from '@zihinturu/oyun-kelime/sozluk-verisi';
+} from '@tamisabet/oyun-kelime';
+import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

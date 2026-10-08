@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Tur } from '@zihinturu/cekirdek';
+import type { Tur } from '@tamisabet/cekirdek';
 import {
   sayiTuru,
   SEVIYELER,
@@ -10,7 +10,7 @@ import {
   nihaiPuanHesap,
   type SayiVeri,
   type JokerTip,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 import { kartMetni, kartDataUrl, jokerOzeti, type Kayit } from '../kart';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';

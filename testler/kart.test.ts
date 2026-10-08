@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { kartMetni, kartCiz, BOYUT, type Kayit } from '../uygulama/src/kart';
-import { gununTuru, uretimYap, type SayiVeri } from '@zihinturu/oyun-sayi';
+import { gununTuru, uretimYap, type SayiVeri } from '@tamisabet/oyun-sayi';
 
 /**
  * Sahte 2B bağlam: kartCiz'in yazdığı tüm metinleri toplar. Amaç,

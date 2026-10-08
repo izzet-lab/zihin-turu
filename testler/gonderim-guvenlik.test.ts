@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gonderimDogrula, TARIH_PAYI_GUN, type GonderimGirdi } from '@zihinturu/oyun-sayi';
+import { gonderimDogrula, TARIH_PAYI_GUN, type GonderimGirdi } from '@tamisabet/oyun-sayi';
 
 /**
  * SUNUCU GİRDİ DENETİMİ — istemci düşmandır.

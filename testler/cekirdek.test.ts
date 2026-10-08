@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rastgele, tohumla, karistir, gunlukTohum } from '@zihinturu/cekirdek';
+import { rastgele, tohumla, karistir, gunlukTohum } from '@tamisabet/cekirdek';
 
 describe('tohumlu rastgelelik', () => {
   it('aynı tohum aynı akışı üretir', () => {

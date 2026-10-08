@@ -108,7 +108,7 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
         {/* Profil linki */}
         <p className="mt-6 text-center text-xs text-slate-600">
           Seçtiğin adla profil sayfan açılacak:{' '}
-          <span className="text-cyan-300">zihin-turu.pages.dev/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
+          <span className="text-cyan-300">tamisabet.tr/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
         </p>
       </div>
     </main>

@@ -28,7 +28,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { gunlukTohum } from '@zihinturu/cekirdek';
+import { gunlukTohum } from '@tamisabet/cekirdek';
 import {
   uretimYap,
   varsayilanBuyukAdet,
@@ -41,7 +41,7 @@ import {
   SEVIYE_LISTESI,
   type JokerTip,
   type Adim,
-} from '@zihinturu/oyun-sayi';
+} from '@tamisabet/oyun-sayi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

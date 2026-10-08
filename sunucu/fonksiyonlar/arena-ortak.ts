@@ -22,18 +22,8 @@ import {
   type ArenaDurum,
   type PodyumSatiri,
 } from '@tamisabet/cekirdek';
-import {
-  uretimYap,
-  varsayilanBuyukAdet,
-  dogrulaZinciri,
-  turKur,
-  botPlaniTohumlu,
-  arenaBotlari,
-  arenaGecikmeTabaniMs,
-  SEVIYE_LISTESI,
-  type Adim,
-  type ProfilAd,
-} from '@tamisabet/oyun-sayi';
+import type { BotTanim, Cevap, Tur } from '@tamisabet/cekirdek';
+import { oyunSec, turSuresi as oyunTurSuresi } from './oyunlar.ts';
 
 // deno-lint-ignore no-explicit-any
 type Db = any;
@@ -43,6 +33,8 @@ export const ARENA_BEKLEME_SN = 10;
 
 export interface ArenaMac {
   id: string;
+  /** Hangi oyun — sütun Faz 3'ten beri var, arena artık onu okuyor. */
+  oyun?: string | null;
   seviye: string;
   tohum: number;
   durum: string;
@@ -62,28 +54,37 @@ export interface ArenaKoltuk {
   ayrildi: boolean;
 }
 
-/** Bir turun bulmacasını maç tohumundan üretir. Tek kaynak burası. */
-export function turUret(mac: ArenaMac, turNo: number) {
+/**
+ * Bir turun bulmacasını maç tohumundan üretir. Tek kaynak burası.
+ *
+ * Hangi oyun olduğu maçın `oyun` sütununda; arena artık sayı turunu
+ * TANIMIYOR, yalnızca `TurSaglayici` arayüzünü çağırıyor.
+ */
+export function turUret(mac: ArenaMac, turNo: number): Tur {
   const turTohumu = duelloTurTohumu(Number(mac.tohum), turNo);
-  return uretimYap(mac.seviye, turTohumu, varsayilanBuyukAdet(mac.seviye));
+  return oyunSec(mac.oyun).turUret(mac.seviye, turTohumu);
 }
 
-export function turSuresi(seviye: string): number {
-  return SEVIYE_LISTESI.find((s) => s.anahtar === seviye)?.sure ?? 60;
+export function turSuresi(oyun: string | null | undefined, seviye: string): number {
+  return oyunTurSuresi(oyun, seviye);
 }
 
 /**
- * Adım zincirini doğrular ve hedefe uzaklığı döndürür.
- * Geçersiz zincirde null — sunucu istemciye güvenmez (kural 2).
+ * Cevabı doğrular ve hedefe uzaklığı döndürür.
+ * Geçersiz cevapta null — sunucu istemciye güvenmez (kural 2).
+ *
+ * `uzaklik`ın ANLAMINI arena bilmez: sayı turunda hedefe kalan fark,
+ * kelime turunda en uzun kelimeye kalan harf. Arena yalnızca
+ * "0 ise tam isabet" kuralını uygular.
  */
 export function uzaklikHesapla(
   mac: ArenaMac,
   turNo: number,
-  adimlar: Adim[],
+  cevap: Cevap,
 ): number | null {
-  const uretim = turUret(mac, turNo);
-  if (adimlar.length === 0) return uretim.hedef;
-  const dogr = dogrulaZinciri(uretim.sayilar, adimlar, uretim.hedef);
+  const saglayici = oyunSec(mac.oyun);
+  const tur = turUret(mac, turNo);
+  const dogr = saglayici.dogrula(tur, cevap);
   return dogr.gecerli ? dogr.uzaklik : null;
 }
 
@@ -102,10 +103,10 @@ export async function arenayiBaslat(db: Db, mac: ArenaMac): Promise<void> {
     if (!dolu.has(koltuk)) bosKoltuklar.push(koltuk);
   }
 
-  // Botlar tek seferde üretiliyor: güç kademesi ve adları ARENA'ya göre
-  // seçiliyor (bkz. `arenaBotlari`) — adlar tekrar etmiyor, en fazla
-  // bir güçlü bot oluyor.
-  const botlar = arenaBotlari(bosKoltuklar.length);
+  // Botlar oyunun KENDİ bot yeteneğinden geliyor; arena kademeyi
+  // bilmiyor. Güç ipucu olarak orta bir derece veriliyor, oyun bunu
+  // kendi kademesine çeviriyor.
+  const botlar: BotTanim[] = oyunSec(mac.oyun).bot?.botlar(bosKoltuklar.length, 1200) ?? [];
   bosKoltuklar.forEach((koltuk, i) => {
     const bot = botlar[i]!;
     yeniler.push({
@@ -147,6 +148,11 @@ async function botlariOynat(
   const botlar = koltuklar.filter((k) => k.bot_profil && !k.ayrildi);
   if (botlar.length === 0 || !mac.tur_basladi) return;
 
+  const saglayici = oyunSec(mac.oyun);
+  // Bot yeteneği olmayan bir oyun arenaya zaten giremez; yine de
+  // savunma: botsuz oyunda hiçbir şey yapılmıyor.
+  if (!saglayici.bot) return;
+
   const { data: mevcut } = await db
     .from('arena_tur')
     .select('koltuk')
@@ -163,26 +169,24 @@ async function botlariOynat(
     // Her botun kendi tohumu: aynı turda beş bot aynı anda aynı cevabı
     // vermemeli, yoksa yarış yapay görünür.
     const botTohumu = (duelloTurTohumu(Number(mac.tohum), turNo) + bot.koltuk * 104729) >>> 0;
-    const tur = turKur(mac.seviye, duelloTurTohumu(Number(mac.tohum), turNo));
-    const plan = botPlaniTohumlu(
-      {
-        id: `bot${bot.koltuk}`,
-        ad: bot.bot_ad ?? 'Rakip',
-        bot: true as const,
-        profil: (bot.bot_profil as ProfilAd) ?? 'orta',
-      },
+    const tur = turUret(mac, turNo);
+    const plan = saglayici.bot!.botPlani(
       tur,
+      { ad: bot.bot_ad ?? 'Rakip', profil: bot.bot_profil ?? '' },
       botTohumu,
     );
 
     // Arenada dört rakip var ve ilk tam isabet turu kapatıyor. Taban
     // olmadan tur, oyuncu ikinci işlemini yapmadan bitiyordu.
-    const gecikme = Math.max(plan.gecikmeMs, arenaGecikmeTabaniMs(turSuresi(mac.seviye)));
+    const gecikme = Math.max(
+      plan.gecikmeMs,
+      saglayici.bot!.botGecikmeTabaniMs(turSuresi(mac.oyun, mac.seviye)),
+    );
     if (simdiMs - turBasladiMs < gecikme) continue;
-    if (!plan.adimlar || plan.adimlar.length === 0) continue;
+    if (!plan.cevap) continue;
 
-    // Botun zinciri de doğrulanır; bot ayrıcalıklı değil.
-    const uzaklik = uzaklikHesapla(mac, turNo, plan.adimlar as Adim[]);
+    // Botun cevabı da doğrulanır; bot ayrıcalıklı değil.
+    const uzaklik = uzaklikHesapla(mac, turNo, plan.cevap);
     if (uzaklik == null) continue;
 
     satirlar.push({
@@ -217,7 +221,7 @@ export interface ArenaSonuc {
  */
 export async function arenayiIlerlet(db: Db, mac: ArenaMac): Promise<ArenaSonuc> {
   let guncel = { ...mac };
-  const sure = turSuresi(mac.seviye);
+  const sure = turSuresi(mac.oyun, mac.seviye);
 
   const { data: koltukSatirlari } = await db
     .from('arena_koltuk')

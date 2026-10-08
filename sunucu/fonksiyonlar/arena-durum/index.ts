@@ -122,7 +122,7 @@ Deno.serve(async (req: Request) => {
       aktifTur: son.aktif_tur,
       toplamTur: ARENA_TUR_SAYISI,
       turBasladi: son.tur_basladi,
-      turSuresiSn: turSuresi(son.seviye),
+      turSuresiSn: turSuresi(son.oyun, son.seviye),
       olusturuldu: son.olusturuldu,
       beklemeSn: ARENA_BEKLEME_SN,
       yarisanlar: (koltuklar ?? []).map((k: {

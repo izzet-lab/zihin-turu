@@ -172,18 +172,26 @@ function kur(mac: Mac): SahteDb {
 /* Testler                                                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Turun verisi. Düello artık `Tur` döndürüyor (oyundan bağımsız);
+ * hedef ve taşlar sayı turunun kendi verisinin içinde.
+ */
+function sayiVerisi(tur: { veri: unknown }): { hedef: number; sayilar: number[] } {
+  return tur.veri as { hedef: number; sayilar: number[] };
+}
+
 describe('turun bulmacası', () => {
   it('aynı maç ve tur hep aynı bulmacayı verir', () => {
     const mac = botMaci(0);
     const a = turUret(mac, 2);
     const b = turUret(mac, 2);
-    expect(a.hedef).toBe(b.hedef);
-    expect(a.sayilar).toEqual(b.sayilar);
+    expect(sayiVerisi(a).hedef).toBe(sayiVerisi(b).hedef);
+    expect(sayiVerisi(a).sayilar).toEqual(sayiVerisi(b).sayilar);
   });
 
   it('her tur farklı bulmaca gösterir', () => {
     const mac = botMaci(0);
-    const hedefler = [1, 2, 3, 4, 5].map((n) => turUret(mac, n).hedef);
+    const hedefler = [1, 2, 3, 4, 5].map((n) => sayiVerisi(turUret(mac, n)).hedef);
     expect(new Set(hedefler).size).toBeGreaterThan(1);
   });
 
@@ -191,12 +199,12 @@ describe('turun bulmacası', () => {
     const mac = botMaci(0);
     // Rafta olmayan sayılarla uydurma bir adım
     const sahte = [{ a: 999, b: 998, islem: '+' as const, sonuc: 1997 }];
-    expect(uzaklikHesapla(mac, 1, sahte)).toBeNull();
+    expect(uzaklikHesapla(mac, 1, { icerik: sahte })).toBeNull();
   });
 
   it('hiç adım atılmazsa uzaklık hedefin kendisidir', () => {
     const mac = botMaci(0);
-    expect(uzaklikHesapla(mac, 1, [])).toBe(turUret(mac, 1).hedef);
+    expect(uzaklikHesapla(mac, 1, { icerik: [] })).toBe(sayiVerisi(turUret(mac, 1)).hedef);
   });
 });
 
@@ -239,7 +247,7 @@ describe('bot oynuyor mu', () => {
     await macIlerlet(db, mac);
     const satir = db.tablolar.duello_tur!.find((s) => s.taraf === 'b')!;
     expect(satir.uzaklik as number).toBeGreaterThanOrEqual(0);
-    expect(satir.uzaklik as number).toBeLessThanOrEqual(turUret(mac, 1).hedef);
+    expect(satir.uzaklik as number).toBeLessThanOrEqual(sayiVerisi(turUret(mac, 1)).hedef);
   });
 });
 

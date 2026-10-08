@@ -3,6 +3,50 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Düello ve arena artık oyunu tanımıyor
+
+Kelime turunu düelloya ve arenaya sokmanın önündeki engel kaldırıldı:
+o iki modun sunucu kodu sayı turunun fonksiyonlarını **doğrudan**
+çağırıyordu.
+
+### Arayüz genişledi (proje sahibi onayladı)
+
+CLAUDE.md'nin kuralı net: platform kodunda oyuna özgü çağrı varsa
+eksik olan arayüzdür. Eksik olan **bot**tu. `TurSaglayici`'ye isteğe
+bağlı bir bot yeteneği eklendi — üç şey istiyor: boş koltuklara bot
+üret, botun bu turdaki planını ver, botun en erken cevap anını söyle.
+Bot profilinin ne anlama geldiğini platform bilmiyor; o etiketi oyun
+yorumluyor.
+
+- **Sayı turu** mevcut bot koduyla uyguluyor; davranış değişmedi.
+- **Kelime turu** için yeni bot: sözlüğü kendisi tarıyor, taraması
+  profiline göre sınırlı (zayıf bot az bakar, kısa kelime bulur),
+  çözümü hazır almıyor.
+
+### Sunucu
+
+Düello ve arena artık yalnızca `TurSaglayici` çağırıyor; hangi oyun
+olduğu maçın `oyun` sütunundan okunuyor. Sözlük tembel yükleniyor —
+sayı turu düellosuna bakan bir istek yarım megabaytı boşuna kurmuyor.
+
+**Cevabın biçimi sunucuyu ilgilendirmiyor.** Eskiden `adimlar` diye bir
+dizi bekleniyordu; artık `cevap` alanı var ve içeriğini yalnızca oyun
+yorumluyor. Eski alan geriye dönük uyumluluk için duruyor: telefondaki
+uygulama güncellenene kadar eski biçimi gönderiyor.
+
+**Veritabanı değişikliği gerekmedi.** `duello_mac` ve `arena_mac` zaten
+`oyun` sütununa sahipti ve tur tablolarında cevabın kendisi değil
+yalnızca uzaklık saklanıyor.
+
+### Yol boyunca bulunan: kural yanlış yerdeydi
+
+"Oyuncu hiç işlem yapmadıysa uzaklık hedefin kendisidir" kuralı düello
+ve arena sunucusunda **ayrı ayrı** yazılıydı — oyun kuralı olduğu hâlde
+platformda. Sayı turunun kendi doğrulamasına taşındı (kural 1).
+
+Canlı doğrulama: yedi Edge Function dağıtıldı, ardından iki tarayıcıyla
+gerçek düello maçı, arena yarışı ve cevap kilitleme testleri koşturuldu.
+
 ## 2026-10-09 - Rozetler görünür oldu
 
 Veritabanı Ağustos 2026'dan beri rozet veriyordu ve Yardım ekranı beş

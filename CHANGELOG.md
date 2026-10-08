@@ -3,6 +3,77 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Önce oyun, sonra mod; kelime sözlüğü gündelikleşti
+
+### "Ana sayfa" çalışmıyordu
+
+Antrenman sonucundayken menüdeki "Ana sayfa" hiçbir şey yapmıyordu.
+Sebebi: oyun ve sonuç ekranları ayrı bir ADRES değil, ana adresin
+içindeki durumlar. Düğme yalnızca adresi değiştiriyordu, adres zaten
+"/" olduğu için hiçbir şey olmuyordu. Artık ana adresteyken olay
+gönderiliyor. Lig, kelime ve yasal sayfalardan da denendi.
+
+### Ana ekran: önce oyun, sonra mod
+
+İki oyun olunca "Antrenman" tek başına ne anlama geldiğini söylemiyordu
+— sayı antrenmanı mı, kelime antrenmanı mı? Artık en üstte iki oyun
+kartı var (Sayı Turu / Kelime Turu); seçilen oyuna göre altındaki mod
+ızgarası değişiyor.
+
+Proje sahibinin önerisinde iki boşluk vardı, ikisi de kapatıldı:
+
+- **Günün Turu modlar arasında duruyor.** Öneride yoktu ama günlük
+  ritüel oyunun en önemli alışkanlığı; seriyi, ligi ve geri dönüşü o
+  taşıyor. İlk sırada ve tek vurgulu kart.
+- **Kelime turunda Düello ve Arena "Yakında".** Kelime turu tek
+  kişilik; aktif görünüp hiçbir yere gitmeyen düğme oyuncuyu çıkmaz
+  sokağa sokardı.
+
+### Ana ekranda ilk 10, Sıralamalar'da kendi sayıların
+
+Ana ekranın altına **İlk 10** eklendi: Düello ve Arena sekmeleri,
+"Tümü →" ile Sıralamalar'a bağlanıyor. "Kaçıncıyım" sorusu oyunu açan
+herkesin ilk sorusu; o tablo ayrı bir sayfada durdukça kimse
+görmüyordu.
+
+Sıralamalar sayfasının başına **Senin istatistiklerin** kartı kondu:
+toplam tur, tam isabet, isabet yüzdesi, sayı/kelime dağılımı, en iyi
+puan; düello sırası ve galibiyet dökümü; arena sırası ve madalyalar.
+Lig tabloları "kim önde" sorusunu cevaplıyordu, bu "ben ne yaptım"
+sorusunu.
+
+### Kelime turu artık bilinen kelimeleri soruyor
+
+Proje sahibi 50 antrenman turunda 10'unu bile bilememiş; örnek verdiği
+kelimeler "bikir", "aktöre", "cünun", "birsam". Hepsi listede
+bulundu — kök sözlüğü TDK tabanlı ve artık kullanılmayan binlerce
+kelime içeriyor.
+
+**İki liste yapıldı:**
+
+- **Tanınan liste (~50 bin):** oyuncunun cevabını kabul eder. Geniş
+  kaldı; nadir bir kelime bilen ödüllendirilsin.
+- **Yaygın liste (~5 bin):** havuzun çekirdek kelimesi ve "en uzun
+  kelime" buradan seçiliyor. Kaynak, Zemberek'in kendi `first-10K`
+  sıklık listesi — aynı depo, aynı Apache 2.0 lisansı.
+
+Böylece hedef her zaman günlük hayatta var olan bir kelime. Hedef
+listesinden kaba sözler ayrıca ayıklandı: oyun "bu havuzun en uzun
+kelimesi BOKLAR" demez. (Kelimeler yine kabul ediliyor, sadece hedef
+olarak seçilmiyorlar. Betiğin elle bakılan tek yeri burası.)
+
+**Ölçüm, seviye başına 150 tur:**
+
+| Seviye | Tek çözüm % (önce → sonra) | Puan getiren kelime % |
+|---|---|---|
+| Isınma | 34 → 13 | 96 |
+| Normal | 37 → 14 | 95 |
+| Zor | 44 → 17 | 93 |
+| Usta | 49 → 21 | 74 |
+
+"Tek çözüm", en uzun kelimenin tek olduğu turların oranı — yani
+bulması ya hep ya hiç olan turlar. Yarıdan beşte bire indi.
+
 ## 2026-10-08 - Ana ekran yeniden kuruldu, kelime turu dengelendi
 
 ### Ana ekran bir menüye dönüşmüştü

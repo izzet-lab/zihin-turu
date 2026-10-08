@@ -32,15 +32,16 @@ import {
   EN_KISA_KELIME,
   type KelimeVeri,
 } from '@tamisabet/oyun-kelime';
-import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { KELIME_METNI, YAYGIN_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 
 const TUR_SAYISI = Number(process.argv[2] ?? 300);
 
 const sozluk = tamSozlukKur(KELIME_METNI);
-const kelime = kelimeTuruKur(sozluk);
+const yaygin = tamSozlukKur(YAYGIN_METNI);
+const kelime = kelimeTuruKur(sozluk, yaygin);
 
 /** Sözlüğü uzunluk uzunluk gezip havuzdan yazılabilenleri sayar. */
-function havuzIstatistigi(harfler: readonly string[]) {
+function havuzIstatistigi(harfler: readonly string[], hedefUzunluk: number) {
   const uzunluklar: number[] = [];
   let toplam = 0;
   for (let u = harfler.length; u >= EN_KISA_KELIME; u--) {
@@ -51,13 +52,9 @@ function havuzIstatistigi(harfler: readonly string[]) {
     uzunluklar[u] = sayi;
     toplam += sayi;
   }
-  let enUzun = 0;
-  for (let u = harfler.length; u >= EN_KISA_KELIME; u--) {
-    if ((uzunluklar[u] ?? 0) > 0) {
-      enUzun = u;
-      break;
-    }
-  }
+  // Hedef, OYUNUN kendi belirlediği uzunluk (yaygın listeden). Burada
+  // yeniden hesaplamak ölçümü oyundan ayırırdı.
+  const enUzun = hedefUzunluk;
   // Puanlama yalnızca en uzundan EN ÇOK İKİ harf kısa cevaplara puan
   // veriyor (10 / 7 / 5, sonrası 0). "Puanlı" sütunu bu pencereye
   // düşen kelime sayısı: oyuncunun sıfırdan kurtulma şansı.
@@ -120,7 +117,7 @@ for (const sv of KELIME_SEVIYE_LISTESI) {
   for (let tohum = 1; tohum <= TUR_SAYISI; tohum++) {
     const tur = kelime.turUret(sv.anahtar, tohum);
     const veri = tur.veri as KelimeVeri;
-    const ist = havuzIstatistigi(veri.harfler);
+    const ist = havuzIstatistigi(veri.harfler, veri.enUzunUzunluk);
 
     toplamlar.push(ist.toplam);
     enUzunlar.push(ist.enUzun);

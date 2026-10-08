@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { KELIME_METNI, YAYGIN_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 import { kelimeTuruKur, tamSozlukKur, KELIME_SEVIYE_LISTESI } from '@tamisabet/oyun-kelime';
 
 /*
@@ -10,7 +10,8 @@ import { kelimeTuruKur, tamSozlukKur, KELIME_SEVIYE_LISTESI } from '@tamisabet/o
 */
 
 const sozluk = tamSozlukKur(KELIME_METNI);
-const kelime = kelimeTuruKur(sozluk);
+const yaygin = tamSozlukKur(YAYGIN_METNI);
+const kelime = kelimeTuruKur(sozluk, yaygin);
 
 describe('Türkçe sözlük', () => {
   it('yeterince büyük', () => {

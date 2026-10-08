@@ -42,11 +42,17 @@ export const KELIME_SEVIYE_LISTESI: readonly Seviye[] = [
 /**
  * Kelime turu sağlayıcısını kurar.
  *
- * Sözlük dışarıdan veriliyor: yayına çıkacak liste bir lisans kararına
- * bağlı ve o karar oyunun kurallarını ilgilendirmiyor. Sözlük
- * değiştiğinde bu dosyada hiçbir şey değişmez.
+ * İKİ SÖZLÜK
+ * `sozluk` oyuncunun cevabını KABUL etmek için — geniş tutuluyor,
+ * nadir bir kelime bilen ödüllendirilsin. `yaygin` ise HEDEF için:
+ * havuzun çekirdek kelimesi ve "en uzun kelime" buradan seçiliyor.
+ * Verilmezse ikisi aynı listedir.
+ *
+ * Neden ayrıldı: kök sözlüğü TDK tabanlı ve artık kullanılmayan
+ * kelimelerle dolu. Hedef oradan seçilince oyuncu her turda
+ * bilinmeyen bir kelimenin altında kalıyordu.
  */
-export function kelimeTuruKur(sozluk: Sozluk): TurSaglayici {
+export function kelimeTuruKur(sozluk: Sozluk, yaygin: Sozluk = sozluk): TurSaglayici {
   return {
     ad: 'kelime',
     seviyeler: KELIME_SEVIYE_LISTESI,
@@ -56,7 +62,7 @@ export function kelimeTuruKur(sozluk: Sozluk): TurSaglayici {
         oyun: 'kelime',
         seviye,
         tohum,
-        veri: havuzUret(seviye, tohum, sozluk),
+        veri: havuzUret(seviye, tohum, sozluk, yaygin),
       };
     },
 
@@ -85,7 +91,9 @@ export function kelimeTuruKur(sozluk: Sozluk): TurSaglayici {
 
     cozumBul(tur: Tur, sinirMs?: number): Cozum {
       const veri = tur.veri as KelimeVeri;
-      const kelime = enUzunKelime(veri.harfler, sozluk, sinirMs);
+      // Çözüm de yaygın listeden: oyuncuya "en uzunu BİRSAM'dı" demek
+      // öğretici değil, moral bozucu.
+      const kelime = enUzunKelime(veri.harfler, yaygin, sinirMs);
       if (!kelime) {
         return { uzaklik: veri.enUzunUzunluk, satirlar: ['Kelime bulunamadı'] };
       }

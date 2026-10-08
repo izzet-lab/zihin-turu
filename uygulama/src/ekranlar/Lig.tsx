@@ -8,6 +8,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@tamisabet/oyun-sayi';
+import IstatistikKarti from '../bilesenler/IstatistikKarti';
 import {
   haftalikAnahtar,
   aylikAnahtar,
@@ -31,9 +32,11 @@ type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'arena' | 'antrenman';
 
 interface Props {
   oyuncuId?: string; // null = misafir; kendi sırası gösterilmez
+  /** Ana ekrandaki kısa sıralamadan gelen sekme. */
+  baslangicSekme?: 'duello' | 'arena';
 }
 
-export default function Lig({ oyuncuId }: Props) {
+export default function Lig({ oyuncuId, baslangicSekme }: Props) {
   const gecis = useNavigate();
 
   // Misafir daveti — kapatılırsa bu oturumda bir daha çıkmaz.
@@ -54,7 +57,7 @@ export default function Lig({ oyuncuId }: Props) {
     };
   }, []);
 
-  const [sekme, setSekme] = useState<Sekme>('gunluk');
+  const [sekme, setSekme] = useState<Sekme>(baslangicSekme ?? 'gunluk');
   const [seviye, setSeviye] = useState<string>('normal');
   const [satirlar, setSatirlar] = useState<LigSatiri[]>([]);
   /**
@@ -164,6 +167,10 @@ export default function Lig({ oyuncuId }: Props) {
               'Çalışkanlık tablosu — ne kadar çalıştığını gösterir, ne kadar iyi olduğunu değil.'}
           </p>
         </header>
+
+        {/* ÖNCE KENDİ SAYILARIN — "kim önde" tablolarından önce "ben ne
+            yaptım". Misafirde boş döner, bir şey çizilmez. */}
+        <IstatistikKarti oyuncuId={oyuncuId} />
 
         {/* Sekme seçimi — 5 sekme.
             Üçlü ızgara: 360px'te beş sekme yan yana sığmıyor, "Haftalık"

@@ -63,5 +63,5 @@ test('düellodan vazgeçince ana sayfaya dönülür', async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
   // Ana ekranın baskın eylemi Günün Turu kartı; "Başla" artık modun
   // kendi ekranında.
-  await expect(page.locator('[data-alan="gunun-git"]')).toBeVisible();
+  await expect(page.locator('[data-mod="gunun"]')).toBeVisible();
 });

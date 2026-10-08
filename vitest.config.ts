@@ -6,6 +6,7 @@ export default defineConfig({
     alias: {
       '@zihinturu/cekirdek': resolve(__dirname, 'paketler/cekirdek/src/index.ts'),
       '@zihinturu/oyun-sayi': resolve(__dirname, 'paketler/oyun-sayi/src/index.ts'),
+      '@zihinturu/oyun-kelime/sozluk-verisi': resolve(__dirname, 'paketler/oyun-kelime/veri/kelimeler.ts'),
       '@zihinturu/oyun-kelime': resolve(__dirname, 'paketler/oyun-kelime/src/index.ts'),
     },
   },

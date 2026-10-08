@@ -3,6 +3,41 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-07 - Kelime turu gerçek sözlüğe kavuştu
+
+Kelime turu 150 kelimelik geçici bir listeyle çalışıyordu; oynanabilir
+değildi. Artık yaklaşık **50 bin kelimelik** gerçek bir Türkçe sözlüğü
+var.
+
+### Lisans kararı
+
+TDK sözlüğü telifli, kullanılamazdı. Kaynak olarak **Zemberek**in
+Türkçe kök sözlüğü seçildi: Apache License 2.0, ticari kullanıma açık,
+tek şartı kaynağı belirtmek. Lisans metni depoda
+(`paketler/oyun-kelime/veri/ZEMBEREK-LISANS.txt`).
+
+### Liste nasıl üretiliyor
+
+`araclar/kelime-listesi-uret.mjs` ham sözlüğü oyuna uygun hale
+getiriyor: dilbilim etiketleri atılıyor, özel adlar, kısaltmalar,
+ünlemler, ikilemeler ve çok kelimeli maddeler ayıklanıyor. Düzenli
+**çoğullar** ünlü uyumuna göre ekleniyor — oyuncunun "kitaplar" yazıp
+reddedilmesi can sıkıcı olurdu. Diğer çekimler türetilmiyor; ünsüz
+yumuşaması doğru yapılmadan üretilen liste uydurma kelimelerle dolardı.
+
+Liste elle düzenlenmiyor, betikle yeniden üretiliyor.
+
+### Çözücü hızlandı
+
+Gerçek sözlükle bir turu kurmak yarım saniye sürüyordu — telefonda bu,
+tur açılırken donma demek. Harf sayımı her kelime için yeniden
+kuruluyordu; artık bir kez kurulup yeniden kullanılıyor. **Tur başına
+yarım saniyeden iki milisaniyeye** indi.
+
+Kabul testi: dört seviyede 200'er tur üretiliyor ve hepsinin
+çözülebilir olduğu doğrulanıyor — sayı turundaki "her tur tam çözümlü"
+güvencesinin kelime karşılığı.
+
 ## 2026-10-07 - Arena turu oyuncuya vakit bırakıyor
 
 Arenada tur 60 saniyeydi ama pratikte 8–12 saniyede bitiyordu: boş

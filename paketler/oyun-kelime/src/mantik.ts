@@ -95,13 +95,52 @@ export function enUzunKelime(
   sinirMs?: number,
 ): string | null {
   const baslangic = Date.now();
+
+  // Havuzun harf sayımı BİR KEZ kuruluyor. Her kelime için yeniden
+  // kurmak elli bin kelimelik sözlükte turu yarım saniye yavaşlatıyordu;
+  // telefonda bu, tur açılırken donma demek.
+  const havuzSayim = new Map<string, number>();
+  for (const h of havuz) {
+    const k = turkceKucult(h);
+    havuzSayim.set(k, (havuzSayim.get(k) ?? 0) + 1);
+  }
+
+  // Saat her kelimede değil, 512 kelimede bir okunuyor: `Date.now()`
+  // aramanın kendisinden pahalıya geliyordu.
+  let sayac = 0;
+
   for (let uzunluk = havuz.length; uzunluk >= 2; uzunluk--) {
     for (const kelime of sozluk.uzunluktakiler(uzunluk)) {
-      if (sinirMs != null && Date.now() - baslangic > sinirMs) return null;
-      if (havuzdanYazilabilir(havuz, kelime)) return kelime;
+      if (sinirMs != null && (sayac++ & 511) === 0 && Date.now() - baslangic > sinirMs) {
+        return null;
+      }
+      if (sayimdanYazilabilir(havuzSayim, kelime)) return kelime;
     }
   }
   return null;
+}
+
+/**
+ * Hazır harf sayımına göre kontrol — ara bellek ayırmaz.
+ *
+ * Kullanılan harfleri sayımdan düşüp sonunda geri koyuyor; böylece
+ * kelime başına yeni bir Map kurulmuyor.
+ */
+function sayimdanYazilabilir(sayim: Map<string, number>, kelime: string): boolean {
+  let i = 0;
+  let olur = true;
+  for (; i < kelime.length; i++) {
+    const h = kelime[i]!;
+    const kalan = sayim.get(h) ?? 0;
+    if (kalan === 0) { olur = false; break; }
+    sayim.set(h, kalan - 1);
+  }
+  // Düşülenleri geri koy — sayım bir sonraki kelimede aynen gerekiyor.
+  for (let j = 0; j < i; j++) {
+    const h = kelime[j]!;
+    sayim.set(h, (sayim.get(h) ?? 0) + 1);
+  }
+  return olur;
 }
 
 /** Diziyi tohumlu karıştırır (Fisher–Yates). */

@@ -3,6 +3,7 @@ import { duelloTurTohumu, DUELLO_TUR_SAYISI } from '@tamisabet/cekirdek';
 import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import KelimeTahtasi from './KelimeTahtasi';
+import { useTurCevaplari } from '../tur-cevaplari';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
@@ -352,18 +353,30 @@ export default function Duello({
         mac.seviye,
         duelloTurTohumu(Number(mac.tohum), t.turNo),
       );
-      const veri = (turBulmaca?.veri ?? {}) as { hedef?: number };
+      // "Hedef" sayı turuna özgü bir kelime; cümleyi oyun kuruyor.
+      const tanim = turBulmaca ? (saglayici?.turTanimi?.(turBulmaca) ?? '') : '';
       const anlat = (u: number | null) =>
         u == null ? 'oynamadı' : u === 0 ? 'tam isabet' : `${u} fark`;
       return {
         turNo: t.turNo,
-        hedef: veri.hedef,
+        tanim,
         benimMetin: `Sen: ${anlat(t.benimUzaklik)}`,
         rakipMetin: `Rakip: ${anlat(t.rakipUzaklik)}`,
         kazanan: t.kazanan,
       };
     });
-  }, [mac?.turOzeti, mac?.tohum, mac?.seviye]);
+  }, [saglayici, mac?.turOzeti, mac?.tohum, mac?.seviye]);
+
+  /**
+   * Turların cevapları — yalnızca maç BİTTİĞİNDE hesaplanıyor.
+   * Kural 8: çözüm, tur bitmeden istemciye gitmez.
+   */
+  const turCevaplari = useTurCevaplari(
+    mac?.durum === 'bitti' ? saglayici : null,
+    mac?.seviye,
+    mac?.tohum,
+    DUELLO_TUR_SAYISI,
+  );
 
   /**
    * Kaybeden oyuncuya en çok yaklaştığı anı hatırlatan cümle.
@@ -667,9 +680,7 @@ export default function Duello({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-300">
-                        Hedef <span className="zt-rakam">{t.hedef}</span>
-                      </span>
+                      <span className="text-xs font-bold text-slate-300">{t.tanim}</span>
                       <span
                         className={`shrink-0 text-[11px] font-bold ${
                           t.kazanan === 'ben'
@@ -689,6 +700,20 @@ export default function Duello({
                     <div className="mt-0.5 text-[11px] text-slate-500">
                       {t.benimMetin} · {t.rakipMetin}
                     </div>
+                    {/* DOĞRU CEVAP — maç bitti, çözümü göstermek serbest. */}
+                    {(turCevaplari.find((c) => c.turNo === t.turNo)?.satirlar ?? []).length >
+                      0 && (
+                      <ul
+                        className="elyazisi mt-1 space-y-0.5 text-base text-amber-100/90"
+                        data-alan="tur-cevabi"
+                      >
+                        {turCevaplari
+                          .find((c) => c.turNo === t.turNo)!
+                          .satirlar.map((satir, i) => (
+                            <li key={i}>{satir}</li>
+                          ))}
+                      </ul>
+                    )}
                   </div>
                 </li>
               ))}

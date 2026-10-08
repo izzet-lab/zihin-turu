@@ -113,6 +113,11 @@ export function kelimeTuruKur(sozluk: Sozluk, yaygin: Sozluk = sozluk): TurSagla
       };
     },
 
+    /** Maç sonu özetinde turun tek satırlık tanımı. */
+    turTanimi(tur: Tur): string {
+      return (tur.veri as KelimeVeri).harfler.map(turkceBuyult).join(' ');
+    },
+
     /**
      * Bot yeteneği — düello ve arena bunu çağırıyor.
      *

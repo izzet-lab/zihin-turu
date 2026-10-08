@@ -156,6 +156,15 @@ export interface TurSaglayici {
   /** Bot ve tur sonu açıklaması için. */
   cozumBul(tur: Tur, sinirMs?: number): Cozum;
 
+  /**
+   * Turun tek satırlık tanımı: "bu turda ne soruldu?"
+   *
+   * Maç bittikten sonra tur tur özette gösteriliyor. Platform turun
+   * içeriğini okuyamaz (kural 1) — sayı turunda hedefi, kelime turunda
+   * harfleri yazacak cümleyi oyunun kendisi kuruyor.
+   */
+  turTanimi?(tur: Tur): string;
+
   /** Düello ve arenaya girecek oyunlar bunu uygular. */
   readonly bot?: BotYetenegi;
 }

@@ -175,6 +175,11 @@ export const sayiTuru: TurSaglayici = {
     return { uzaklik: u.cozum.fark, satirlar: u.cozum.adimlar.map(bicimle) };
   },
 
+  /** Maç sonu özetinde turun tek satırlık tanımı. */
+  turTanimi(tur: Tur): string {
+    return `Hedef ${(tur.veri as SayiVeri).hedef}`;
+  },
+
   /**
    * Bot yeteneği — düello ve arena bunu çağırıyor.
    *

@@ -50,16 +50,42 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
   return (
     <>
     <div className="flex items-center justify-between pr-14">
+      {/* TUR SAYACI
+          Maç sırasında "kaçıncı turdayım" en çok bakılan bilgi ve
+          11 piksellik yazıyla okunmuyordu. Tur numarası artık iri ve
+          beyaz, yanındaki ayrıntı küçük kalıyor. */}
       {arena ? (
-        <div className="text-xs font-bold text-slate-400" data-alan="arena-gostergesi">
-          ⚡ Arena · Tur {arena.turNo}/{arena.toplamTur}
+        <div data-alan="arena-gostergesi">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            ⚡ Arena
+          </div>
+          <div className="text-base font-black text-white">
+            Tur{' '}
+            <span className="zt-rakam text-xl">
+              {arena.turNo}
+              <span className="text-sm font-bold text-slate-500">/{arena.toplamTur}</span>
+            </span>
+          </div>
         </div>
       ) : duello ? (
-        <div className="text-xs font-bold text-slate-400" data-alan="duello-gostergesi">
-          Tur {duello.turNo}/{duello.toplamTur} ·{' '}
-          <span className="text-cyan-300">{duello.skorBen}</span>
-          <span className="text-slate-600"> — </span>
-          <span className="text-slate-300">{duello.skorRakip}</span>
+        <div data-alan="duello-gostergesi">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            Düello
+          </div>
+          <div className="flex items-baseline gap-2.5 text-base font-black text-white">
+            <span>
+              Tur{' '}
+              <span className="zt-rakam text-xl">
+                {duello.turNo}
+                <span className="text-sm font-bold text-slate-500">/{duello.toplamTur}</span>
+              </span>
+            </span>
+            <span className="zt-rakam text-lg">
+              <span className="text-cyan-300">{duello.skorBen}</span>
+              <span className="text-slate-600">—</span>
+              <span className="text-slate-300">{duello.skorRakip}</span>
+            </span>
+          </div>
         </div>
       ) : mod === 'antrenman' && oturumPuan ? (
         <div className="text-xs font-bold text-slate-500" data-alan="oturum-gostergesi">

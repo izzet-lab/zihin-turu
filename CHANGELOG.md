@@ -3,6 +3,39 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Çekimli biçimler: eksikler kapandı
+
+Çekim tanıma zaten vardı ("kitabı", "evde", "arabasını" kabul
+ediliyordu) ama dört delik açıktı. Yirmi beş örnekle ölçüldü, eksikler
+kapatıldı:
+
+- **İyelik ekleri** yoktu: "gözlerim", "evimiz", "arabanız"
+  reddediliyordu. Ek listesine eklendi.
+- **"ile" bitişik yazılınca** tanınmıyordu: "kalemle", "arabayla".
+- **Son ünlüsü düşen kökler** ("burun"→"burnu", "şehir"→"şehrin") ve
+  **son ünsüzü ikilenen kökler** ("hak"→"hakkı") tanınmıyordu. Bu
+  davranış kurala bağlanamıyor, Zemberek'te yazılı; işaretli köklerin
+  bağlı gövdeleri üretimde çıkarılıp ayrı bir listeye yazılıyor
+  (`GOVDE_METNI`, 270 madde).
+
+**Bir fazladan kabul de kapandı:** yumuşamış gövde artık yalnızca
+ünlüyle başlayan ekten önce geçerli. "kitabın" doğru, "kitablar"
+değil; önceden ikisi de kabul ediliyordu.
+
+Kasıtlı cömertlik duruyor: ünlü uyumu ve yumuşama istisnaları
+denetlenmiyor, "kitapu" ve "sepedi" hâlâ kabul ediliyor. İkisini de
+yakalamak için Zemberek'in istisna listelerini paketle taşımak
+gerekir; haklı bir cevabı reddetme riski kazancından büyük.
+
+Doğrulama hem istemcide hem sunucuda aynı kodla çalıştığı için
+`kelime-gonder`, `duello-gonder` ve `arena-gonder` yeniden dağıtıldı.
+
+**Yan iş — düello testleri artık gerçekten eşleşiyor.** İki test
+hesabı sırayla temizleniyordu; birinci oyuncu kuyrukta sekiz saniyeyi
+aşınca bot devreye giriyor ve "iki taraf aynı maçta mı?" sorusu hiç
+sorulamıyordu. Yeni `gercekDuelloKur` yardımcısı eşleşmeyi doğruluyor,
+bota düşülürse yeniden deniyor.
+
 ## 2026-10-09 - Ses ve titreşim tek yerde
 
 Ses anahtarı menüdeydi, titreşim gizlilik ayarlarındaydı; ikisi

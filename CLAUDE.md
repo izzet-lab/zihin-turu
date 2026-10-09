@@ -240,6 +240,15 @@ kökler + düzenli çoğullar). Liste `araclar/kelime-listesi-uret.mjs` ile
 üretilir, elle düzenlenmez. Günün Kelime Turu lige işler, Antrenman
 işlemez. Doğrulama `kelime-gonder` Edge Function'ında.
 
+**Çekimli biçimler listede değil, kuralla tanınıyor** (`cekim.ts`):
+"kitabı", "evlerimizde", "burnu", "hakkı", "kalemle" kabul ediliyor.
+Yirmi beş bin kökün bütün çekimlerini üretmek listeyi üç yüz binin
+üzerine çıkarırdı. Son ünlüsü düşen ("burun"→"burn") ve son ünsüzü
+ikilenen ("hak"→"hakk") kökler kurala bağlanamadığı için üretimde
+ayrı bir **bağlı gövde** listesine yazılıyor (270 madde). Tanıma
+bilerek cömert: olmayan bir çekimi de kabul edebiliyor ("kitapu"),
+çünkü haklı bir cevabı reddetmenin bedeli daha büyük.
+
 Kelime turu düelloya ve arenaya da giriyor. Eşleştirme kuyruğu oyuna
 göre ayrı (göç 014); maç ve durum yanıtları `oyun` alanını taşıyor,
 tahtayı o belirliyor. Alkollü içecek adları listede yok — süzgeç
@@ -331,19 +340,14 @@ Ayrıntılar `CHANGELOG.md`'de.
 
 ### Sıradakiler
 
-1. **Kelime turunda çekimli biçimler.** Sözlükte kökler ve düzenli
-   çoğullar var; "kitabı", "evde" gibi hâl ekleri yok. Oyuncu bildiği
-   bir kelimenin reddedildiğini görürse canı sıkılıyor. Ünsüz
-   yumuşaması doğru yapılmadan üretilen liste uydurma kelimelerle
-   dolacağı için bu iş dikkat istiyor.
-2. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
+1. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
    kurulu (yerel bildirim); sunucudan gönderim yok.
-3. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
+2. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
    test kullanıcısı, 14 günlük kapalı test. Proje sahibinin işi.
-4. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
-5. **Crashlytics eşleme dosyası** 1.8.0'dan beri yüklenmiyor (yerel
+3. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
+4. **Crashlytics eşleme dosyası** 1.8.0'dan beri yüklenmiyor (yerel
    TLS sorunu). Dosya derlemede üretiliyor, elle yüklenebilir.
-6. **Edge Function tip denetimi tam değil.** `npm run sunucu-denetle`
+5. **Edge Function tip denetimi tam değil.** `npm run sunucu-denetle`
    yalnızca tanımsız isim ve bulunamayan dosya arıyor; tam denetim
    Supabase kütüphanesinin çözülen sürümünden onlarca sahte uyarı
    veriyor.

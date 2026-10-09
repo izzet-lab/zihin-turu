@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
-import { girisYap, testHesabiVarMi, duelloyuTemizle, TEST_EPOSTALAR } from './duello-kimlik';
+import { girisYap, testHesabiVarMi, duelloyuTemizle,
+  gercekDuelloKur, TEST_EPOSTALAR } from './duello-kimlik';
 
 /*
   "BİTİR" ÇALIŞMIYOR SORUNU
@@ -36,16 +37,9 @@ test.describe('cevabı kilitleme', () => {
     const sayfa1 = await baglam1.newPage();
     const sayfa2 = await baglam2.newPage();
 
-    await duelloyuTemizle(sayfa1);
-    await duelloyuTemizle(sayfa2);
-    await Promise.all([
-      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
-      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
-    ]);
-    await Promise.all([
-      expect(sayfa1.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-      expect(sayfa2.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-    ]);
+    // İki hesap GERÇEKTEN birbiriyle eşleşmeli; bota düşerse yeniden
+    // denenir (bkz. gercekDuelloKur).
+    await gercekDuelloKur(sayfa1, sayfa2);
 
     // Düğme düelloda ne yaptığını söylüyor.
     await expect(sayfa1.locator('[data-alan="bitir"]')).toContainText('Cevabı kilitle');

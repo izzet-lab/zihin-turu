@@ -104,11 +104,13 @@ export default function KelimeTuru({
   useEffect(() => {
     let iptal = false;
     import('@tamisabet/oyun-kelime/sozluk-verisi')
-      .then(({ KELIME_METNI, YAYGIN_METNI }) => {
+      .then(({ KELIME_METNI, YAYGIN_METNI, GOVDE_METNI }) => {
         if (iptal) return;
         // İki liste: geniş olan cevabı KABUL eder, yaygın olan HEDEFİ
         // belirler (bkz. oyun-kelime/kelimeTuruKur).
-        setSaglayici(kelimeTuruKur(tamSozlukKur(KELIME_METNI), tamSozlukKur(YAYGIN_METNI)));
+        setSaglayici(
+          kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI)),
+        );
         setAsama('seviye');
       })
       .catch(() => {

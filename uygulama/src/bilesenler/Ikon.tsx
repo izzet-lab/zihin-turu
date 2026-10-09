@@ -57,7 +57,9 @@ export type IkonAdi =
   | 'ayar'
   | 'cerez'
   | 'liste'
-  | 'uyari';
+  | 'uyari'
+  | 'tac'
+  | 'madalya';
 
 /** Her ikonun gövdesi; ortak sarmalayıcı aşağıda. */
 const CIZIMLER: Record<IkonAdi, JSX.Element> = {
@@ -270,6 +272,19 @@ const CIZIMLER: Record<IkonAdi, JSX.Element> = {
       <rect x="5" y="4.8" width="14" height="15.2" rx="2" />
       <path d="M9 3.6h6v2.6H9z" />
       <path d="M8.6 11h6.8M8.6 15h4.6" />
+    </>
+  ),
+  tac: (
+    <>
+      <path d="M4 17.5 5.2 7.4l4.3 3.6L12 5.2l2.5 5.8 4.3-3.6L20 17.5H4Z" />
+      <path d="M5.2 20.3h13.6" />
+    </>
+  ),
+  madalya: (
+    <>
+      <path d="M8.5 3.5 10.8 9M15.5 3.5 13.2 9" />
+      <circle cx="12" cy="14.8" r="5.6" />
+      <circle cx="12" cy="14.8" r="2.1" />
     </>
   ),
   uyari: (

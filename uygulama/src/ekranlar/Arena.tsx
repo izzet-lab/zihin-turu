@@ -4,6 +4,7 @@ import Oyun from './Oyun';
 import KelimeTahtasi from './KelimeTahtasi';
 import TurCevaplari from '../bilesenler/TurCevaplari';
 import SayanSayi from '../bilesenler/SayanSayi';
+import { kutlamayiDenetle } from '../kutlama';
 import Ikon from '../bilesenler/Ikon';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
@@ -88,6 +89,16 @@ export default function Arena({
    * Turların cevapları — yalnızca yarış BİTTİĞİNDE hesaplanıyor.
    * Kural 8: çözüm, tur bitmeden istemciye gitmez.
    */
+  /*
+   * Yarış bitti: madalya rozetlerini sunucu o anda veriyor, tören
+   * ondan sonra çıkıyor.
+   */
+  const arenaBittiMi = durum?.durum === 'bitti';
+  useEffect(() => {
+    if (!arenaBittiMi) return;
+    void kutlamayiDenetle();
+  }, [arenaBittiMi]);
+
   const turCevaplari = useTurCevaplari(
     durum?.durum === 'bitti' ? saglayici : null,
     durum?.seviye,

@@ -19,6 +19,8 @@ import Arena from './ekranlar/Arena';
 import KelimeTuru from './ekranlar/KelimeTuru';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
+import KutlamaKatmani from './bilesenler/Kutlama';
+import { ilkFotografiAl } from './kutlama';
 import YasalIndeks from './ekranlar/YasalIndeks';
 import GizlilikAyarlari from './ekranlar/GizlilikAyarlari';
 import { supabase } from './supabase';
@@ -45,9 +47,22 @@ export default function Ana() {
     return () => dinleyici.subscription.unsubscribe();
   }, []);
 
+  /*
+   * İlk fotoğraf sessizce alınır.
+   *
+   * Olmasaydı hesabına ilk kez giren oyuncuya o güne kadar kazandığı
+   * bütün rozetler arka arkaya kutlanırdı.
+   */
+  useEffect(() => {
+    void ilkFotografiAl(kullanici?.id);
+  }, [kullanici?.id]);
+
   return (
     <BrowserRouter>
       <Menu />
+      {/* Ödül töreni tek yerde: tur hangi ekranda biterse bitsin
+          kutlama buradan çıkıyor. */}
+      <KutlamaKatmani />
       <Routes>
         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
         <Route path="/" element={<Uygulama />} />

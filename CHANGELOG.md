@@ -3,6 +3,39 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Edge Function tip denetimi tamamlandı
+
+Sunucu kodu `npm run tip`'in dışında (Deno'ya ait); eksik bir import
+satırı Ekim'de canlıya 500 olarak gitmişti. O gün kurulan denetim tam
+değildi: yirmi altı hatanın hepsi gerçek olmadığı için yalnızca üç
+hata kodu süzülüyordu.
+
+**Hataların yirmi biri tek bir sebepten geliyormuş.** Fonksiyonlar
+arasında gezen Supabase istemcisi her dosyada ayrı ayrı
+`ReturnType<typeof createClient>` diye yazılıyordu; jenerik verilmeyince
+veritabanı tipi `unknown` oluyor, `from('duello_mac')` sonucu `never`a
+düşüyor ve her alan okuması hata veriyordu. Tip tek bir yere alındı
+(`sunucu/fonksiyonlar/istemci.ts`).
+
+Kalan beş hata gerçekti:
+
+- **Null okuması (7 nokta).** `duello-gonder` ve `arena-gonder`, cevabı
+  işledikten sonra maç satırını yeniden okuyor ve satır bu arada
+  kaybolursa çöküyordu — istemciye anlamsız bir 500 gidiyordu. Artık
+  "tekrar dene" diyen düzgün bir cevap dönüyor.
+- **Bağlantı tipi.** `oyuncu:oyuncu_id(kullanici_adi)` tek satır
+  döndürüyor ama Supabase onu dizi sayıyor. Kod iki biçimi de okuyor.
+
+Süzgeç kaldırıldı: **artık her hata kırmızı.** Denetimin gerçekten
+yakaladığı, koda bilerek iki hata konularak doğrulandı.
+
+**Yol boyunca bulunan: denetim hiçbir şeyi denetlemiyormuş.** Aynı gün
+betik geçici bir klasörde çalışacak şekilde değiştirilmişti; deno
+mutlak yoldaki yıldızı çözemeyip "No matching files found" demiş,
+betik de "temiz" diye yeşil vermişti. Hiçbir şey denetlemeyen bir
+denetim, denetim olmamasından beterdir: güven veriyor. Dosyalar artık
+tek tek sayılıyor ve kaç fonksiyon denetlendiği yazdırılıyor.
+
 ## 2026-10-09 - Düello testlerindeki zamanlama kırılganlığı
 
 Takım tek tek koşturulunca hep yeşildi, tam koşuda arada üç test

@@ -134,6 +134,10 @@ Deno.serve(async (req: Request) => {
       .eq('id', mac_id)
       .single();
 
+    // Yarış satırı bu arada kaybolabilir; çökmek yerine tekrar
+    // denemesi söylenir (bkz. duello-gonder'deki aynı koruma).
+    if (!son) return hata('Yarış durumu okunamadı, tekrar dene.', 503);
+
     return ok({
       uzaklik: yeniUzaklik,
       aktifTur: son.aktif_tur,

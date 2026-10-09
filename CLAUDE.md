@@ -113,7 +113,10 @@ Proje sahibi kod yazmıyor ve okumuyor. Bu şu demek:
 13. **Yeşil takımdan başla.** Her işe başlamadan **önce** `npm test`,
     `npm run tip` ve `npm run e2e` çalıştır. Sunucu kodu değiştiyse
     `npm run sunucu-denetle` de — `sunucu/` klasörü tsconfig'in dışında,
-    eksik bir import satırı `npm run tip`'ten geçip canlıda 500 verir. Kırmızı varsa önce onu
+    eksik bir import satırı `npm run tip`'ten geçip canlıda 500 verir.
+    Fonksiyonlar arasında gezen Supabase istemcisi `istemci.ts`'teki
+    `Istemci` tipiyle yazılır; `ReturnType<typeof createClient>`
+    yazılırsa veritabanı tipi `unknown`a düşer ve denetim çöker. Kırmızı varsa önce onu
     düzelt, sonra yeni işe başla. *(24 Ağustos 2026'da üç ayrı yerde
     eski kırmızı bulundu — bu kural o yüzden var. Kırmızı bir takımın
     üstüne çalışmak, yeni hatayı eskilerin arasında kaybetmek demek.)*
@@ -347,10 +350,11 @@ Ayrıntılar `CHANGELOG.md`'de.
    Java'nın güven deposu eski kökü tutuyordu. `bash
    araclar/java-guven-deposu.sh` depoyu Windows'taki güncel kökten
    yeniden kuruyor. Avast kökü yine değişirse aynı betik çalıştırılır.
-5. **Edge Function tip denetimi tam değil.** `npm run sunucu-denetle`
-   yalnızca tanımsız isim ve bulunamayan dosya arıyor; tam denetim
-   Supabase kütüphanesinin çözülen sürümünden onlarca sahte uyarı
-   veriyor.
+5. ~~**Edge Function tip denetimi tam değil**~~ — çözüldü
+   (9 Ekim 2026). `npm run sunucu-denetle` artık TAM denetim yapıyor;
+   her hata kırmızı. Yalnızca veritabanı şeması denetim dışında
+   (şemanın TypeScript karşılığı üretilmiyor, sütun adları
+   doğrulanmıyor).
 
 ---
 

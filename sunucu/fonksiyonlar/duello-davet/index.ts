@@ -26,6 +26,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Istemci } from '../istemci.ts';
 import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { dereceleriGuncelle, type Mac } from '../duello-ortak.ts';
 
@@ -263,7 +264,7 @@ Deno.serve(async (req: Request) => {
 });
 
 async function macKur(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Istemci,
   g: {
     seviye: string;
     oyuncuA: string;

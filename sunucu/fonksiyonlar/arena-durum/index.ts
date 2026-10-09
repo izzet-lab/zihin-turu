@@ -30,6 +30,14 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/** Bağlantıdan gelen oyuncu adı; dizi de tek nesne de olabilir. */
+function oyuncuAdi(
+  o: { kullanici_adi: string } | { kullanici_adi: string }[] | null,
+): string | null {
+  if (!o) return null;
+  return Array.isArray(o) ? (o[0]?.kullanici_adi ?? null) : o.kullanici_adi;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
@@ -126,16 +134,22 @@ Deno.serve(async (req: Request) => {
       turSuresiSn: turSuresi(son.oyun, son.seviye),
       olusturuldu: son.olusturuldu,
       beklemeSn: ARENA_BEKLEME_SN,
+      /*
+       * `oyuncu:oyuncu_id(kullanici_adi)` bağlantısı TEK SATIR döndürür
+       * ama Supabase'in tipleri onu DİZİ sayıyor. İkisi de karşılanıyor:
+       * tip tarafı kütüphaneye uyuyor, çalışma zamanı iki biçimi de
+       * okuyor. Yalnızca nesne varsayıldığında tip denetimi açılamıyordu.
+       */
       yarisanlar: (koltuklar ?? []).map((k: {
         koltuk: number;
         oyuncu_id: string | null;
         bot_ad: string | null;
         puan: number;
         ayrildi: boolean;
-        oyuncu: { kullanici_adi: string } | null;
+        oyuncu: { kullanici_adi: string } | { kullanici_adi: string }[] | null;
       }) => ({
         koltuk: k.koltuk,
-        ad: k.oyuncu?.kullanici_adi ?? k.bot_ad ?? 'Yarışçı',
+        ad: oyuncuAdi(k.oyuncu) ?? k.bot_ad ?? 'Yarışçı',
         botMu: k.oyuncu_id === null,
         benMiyim: k.koltuk === benimKoltuk.koltuk,
         puan: k.puan,

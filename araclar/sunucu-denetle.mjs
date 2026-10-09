@@ -15,7 +15,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -30,10 +30,29 @@ import { join, resolve } from 'node:path';
  * dosyalar mutlak yolla veriliyor.
  */
 
-const ONEMLI = ['TS2304', 'TS2552', 'TS2307'];
-
 const kok = process.cwd();
 const gecici = mkdtempSync(join(tmpdir(), 'tamisabet-denetim-'));
+
+/*
+ * DOSYALAR BURADA SAYILIYOR, YILDIZLA DEGIL.
+ *
+ * Once klasor desenli bir yol (yildizli) deno'ya veriliyordu.
+ * Gecici klasorde calismaya gecince deno mutlak yoldaki yildizi
+ * cozemedi, "No matching files found" deyip HICBIR SEYI denetlemedi —
+ * ve betik "temiz" diye yesil verdi. Hicbir sey denetlemeyen bir
+ * denetim, denetim olmamasindan beterdir: guven veriyor.
+ */
+const fonksiyonKok = resolve(kok, 'sunucu/fonksiyonlar');
+const dosyalar = readdirSync(fonksiyonKok, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => join(fonksiyonKok, d.name, 'index.ts'))
+  .filter((y) => existsSync(y));
+
+if (dosyalar.length === 0) {
+  console.error('Denetlenecek Edge Function bulunamadi — yol yanlis olabilir.');
+  process.exit(1);
+}
+console.log(`${dosyalar.length} Edge Function denetleniyor.`);
 
 const sonuc = spawnSync(
   'npx',
@@ -44,7 +63,7 @@ const sonuc = spawnSync(
     '--node-modules-dir=auto',
     '--import-map',
     JSON.stringify(resolve(kok, 'sunucu/fonksiyonlar/import_map.json')),
-    JSON.stringify(resolve(kok, 'sunucu/fonksiyonlar/*/index.ts')),
+    ...dosyalar.map((y) => JSON.stringify(y)),
   ],
   { encoding: 'utf8', shell: true, cwd: gecici },
 );
@@ -58,8 +77,7 @@ const cikti = `${sonuc.stdout ?? ''}${sonuc.stderr ?? ''}`.replace(
 const satirlar = cikti.split('\n');
 const bulunan = [];
 for (let i = 0; i < satirlar.length; i++) {
-  const kod = ONEMLI.find((k) => satirlar[i].includes(k));
-  if (!kod) continue;
+  if (!/TS[0-9]+ \[ERROR\]/.test(satirlar[i])) continue;
   const yer = satirlar.slice(i, i + 6).find((s) => s.includes('sunucu/fonksiyonlar'));
   bulunan.push(`${satirlar[i].trim()}${yer ? `\n    ${yer.trim()}` : ''}`);
 }
@@ -70,4 +88,4 @@ if (bulunan.length > 0) {
   process.exit(1);
 }
 
-console.log('Edge Function denetimi temiz: tanımsız isim veya bulunamayan dosya yok.');
+console.log('Edge Function denetimi temiz.');

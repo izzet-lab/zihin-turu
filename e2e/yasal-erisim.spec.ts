@@ -62,3 +62,36 @@ test('yasal bağlantılar kurulum ekranının alt bilgisinde artık yok', async 
 
   await expect(page.locator('footer')).toHaveCount(0);
 });
+
+/*
+  SES VE TİTREŞİM ANAHTARLARI
+
+  İkisi de oyuncunun kendi profilinde duruyor. Ama misafirin profil
+  sayfası yok (adres bir kullanıcı adı ister); sesi kapatma yolu
+  tamamen kapanmasın diye gizlilik ayarlarından da ulaşılıyor.
+  Menüden kaldırıldılar — bu test o kapının açık kaldığını koruyor.
+*/
+test('misafir ses ve titreşimi gizlilik ayarlarından kapatabilir', async ({ page }) => {
+  await page.goto('/gizlilik-ayarlari');
+
+  const ayarlar = page.locator('[data-alan="oyun-ayarlari"]');
+  await expect(ayarlar).toBeVisible();
+
+  const ses = page.locator('[data-alan="ses-ac-kapa"]');
+  const titresim = page.locator('[data-alan="titresim-ac-kapa"]');
+  await expect(ses).toHaveAttribute('aria-pressed', 'true');
+  await expect(titresim).toHaveAttribute('aria-pressed', 'true');
+
+  await ses.click();
+  await titresim.click();
+  await expect(ses).toHaveAttribute('aria-pressed', 'false');
+  await expect(titresim).toHaveAttribute('aria-pressed', 'false');
+
+  // Sayfa yenilenince tercih duruyor — oturumluk bir anahtar değil.
+  await page.reload();
+  await expect(page.locator('[data-alan="ses-ac-kapa"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-alan="titresim-ac-kapa"]')).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});

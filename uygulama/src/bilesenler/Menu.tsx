@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import { profilOku, type OyuncuProfil } from '../kimlik';
-import { sesAcikMi, sesTercihiYaz } from '../depo';
 import { nativeMi } from '../platform';
 import { Browser } from '@capacitor/browser';
 import Ikon from './Ikon';
@@ -36,7 +35,6 @@ export default function Menu() {
   }
 
   const [menuAcik, setMenuAcik] = useState(false);
-  const [sesAcik, setSesAcik] = useState<boolean>(sesAcikMi());
   const [kullanici, setKullanici] = useState<User | null>(null);
   const [profil, setProfil] = useState<OyuncuProfil | null>(null);
 
@@ -93,12 +91,6 @@ export default function Menu() {
       }
     }
     window.open(adres, '_blank', 'noopener,noreferrer');
-  }
-
-  function sesDegistir() {
-    const yeni = !sesAcik;
-    setSesAcik(yeni);
-    sesTercihiYaz(yeni);
   }
 
   async function cikisYap() {
@@ -198,17 +190,11 @@ export default function Menu() {
             )}
 
 
+            {/* SES ANAHTARI MENÜDEN ÇIKTI.
+                Artık titreşimle birlikte tek yerde: kendi profilinde ve
+                gizlilik ayarlarında. Menüde ayrı durduğu sürece ikisi
+                birbirinden habersiz iki ayardı. */}
             <div className="my-1 h-px bg-slate-800" />
-
-            <button
-              onClick={sesDegistir}
-              data-alan="ses-ac-kapa"
-              aria-pressed={sesAcik}
-              className="zt-menu-oge text-slate-200"
-            >
-              <Ikon ad={sesAcik ? 'ses-acik' : 'ses-kapali'} className="mr-2.5 -mt-0.5" />
-              {sesAcik ? 'Ses açık' : 'Ses kapalı'}
-            </button>
 
             <button
               onClick={() => {

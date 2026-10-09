@@ -2,9 +2,10 @@
 
 Deponun kökünde durur, her oturumda okunur.
 
-> **Sürüm notu:** Son güncelleme 8 Ekim 2026. O tarihte Faz 4 (düello),
-> Faz 5 (arena) ve Faz 6 (kelime turu) tamamlanmış durumdaydı; bu dosya
-> hâlâ "Faz 6 henüz yok" diyordu ve gerçekle arası açılmıştı.
+> **Sürüm notu:** Son güncelleme 9 Ekim 2026, uygulama sürümü 2.7.0
+> (versionCode 30). O tarihte Faz 0–6 tamamlanmış, kelime turu düelloya
+> ve arenaya girmiş, "oyun hissi" tasarım çalışmasının yedi maddesi de
+> bitmişti.
 >
 > Ağustos 2026'da "reklam yok" kuralı değişti; projede artık AdMob var
 > (kural 5). Bu dosya ile projenin gerçek durumu arasında çelişki
@@ -110,7 +111,9 @@ Proje sahibi kod yazmıyor ve okumuyor. Bu şu demek:
     Android'de 404 verir. Tüm gezinme router üzerinden.
 
 13. **Yeşil takımdan başla.** Her işe başlamadan **önce** `npm test`,
-    `npm run tip` ve `npm run e2e` çalıştır. Kırmızı varsa önce onu
+    `npm run tip` ve `npm run e2e` çalıştır. Sunucu kodu değiştiyse
+    `npm run sunucu-denetle` de — `sunucu/` klasörü tsconfig'in dışında,
+    eksik bir import satırı `npm run tip`'ten geçip canlıda 500 verir. Kırmızı varsa önce onu
     düzelt, sonra yeni işe başla. *(24 Ağustos 2026'da üç ayrı yerde
     eski kırmızı bulundu — bu kural o yüzden var. Kırmızı bir takımın
     üstüne çalışmak, yeni hatayı eskilerin arasında kaybetmek demek.)*
@@ -171,7 +174,7 @@ kullanıcı açıp `.env.test` dosyasına şu üç satırı yazmak yeterli:
 ```
 paketler/cekirdek       TurSaglayici arayüzü, tohumlu rastgelelik
 paketler/oyun-sayi      sayı turu: üretici, çözücü, doğrulayıcı, puanlayıcı, bot
-paketler/oyun-kelime    kelime turu (Faz 6, henüz yok)
+paketler/oyun-kelime    kelime turu: sözlük, üretici, doğrulayıcı, puanlayıcı, bot
 uygulama                React + Vite arayüz, PWA, Capacitor
 sunucu/fonksiyonlar     Supabase Edge Functions
 sunucu/gocler           SQL göçleri
@@ -188,6 +191,10 @@ interface TurSaglayici {
   dogrula(tur: Tur, cevap: Cevap): Dogrulama;
   puanla(seviye, d, kalanSn, toplamSn, ilkMi): Puan;
   cozumBul(tur: Tur, sinirMs?: number): Cozum;
+  /** Maç sonu özetinde turun tek satırlık tanımı. */
+  turTanimi?(tur: Tur): string;
+  /** Düello ve arenaya girecek oyunlar bunu uygular. */
+  bot?: BotYetenegi;
 }
 ```
 
@@ -233,7 +240,10 @@ kökler + düzenli çoğullar). Liste `araclar/kelime-listesi-uret.mjs` ile
 üretilir, elle düzenlenmez. Günün Kelime Turu lige işler, Antrenman
 işlemez. Doğrulama `kelime-gonder` Edge Function'ında.
 
-Kelime turu **tek kişilik**: düelloya ve arenaya girmiyor.
+Kelime turu düelloya ve arenaya da giriyor. Eşleştirme kuyruğu oyuna
+göre ayrı (göç 014); maç ve durum yanıtları `oyun` alanını taşıyor,
+tahtayı o belirliyor. Alkollü içecek adları listede yok — süzgeç
+üretim betiğinde.
 
 **Düello:** 1v1, 5 tur, ELO derecesi, rakip yoksa 8 saniyede bot.
 Rakibin yalnızca hedefe uzaklığı yayınlanır. Rövanş ve özel oda var.
@@ -244,12 +254,29 @@ turu, tur süresinin yarısı geçmeden kapatamaz. Madalya tablosu
 (altın > gümüş > bronz > toplam puan); **yalnızca en az iki gerçek
 yarışçının olduğu arenalar sayılır.**
 
+**Oyun hissi** (Ekim 2026 tasarım çalışması, yedi maddenin hepsi
+bitti): taşlar yaylı basılıyor ve nesne gibi duruyor, yeni turda
+sırayla düşüyor; ekran geçişleri kayarak; tam isabette sarsıntı;
+puanlar sayarak çıkıyor; süre çubuğu son on saniyede nabız atıyor.
+Dokunsal geri bildirim var (Capacitor Haptics). Renk anlam taşıyor:
+marka cyan, ödül altın, uyarı amber, kayıp soğuk kırmızı, nadir mor —
+**ödül altını uyarı sarısından ayrı bir ton.** Emoji kullanılmıyor,
+tek bir SVG ikon takımı var (`bilesenler/Ikon.tsx`). Seviye atlama,
+rozet ve seri eşikleri tam ekran kutlanıyor (`kutlama-karar.ts` kararı
+verir, `Kutlama.tsx` gösterir). Bütün animasyonlar yalnızca
+`transform`/`opacity` ve `prefers-reduced-motion` ile tek yerden
+kapanıyor.
+
+**Ses ve titreşim** oyuncunun kendi profilinde, ortak bir "Oyun
+ayarları" bloğunda. Aynı blok gizlilik ayarlarında da duruyor —
+misafirin profil sayfası yok, yoksa sesi kapatamazdı.
+
 **Tamamlanan:** Faz 0–3C (çekirdek, tek kişilik oyun, PWA, üyelik,
 misafir geçişi, sunucu doğrulama, lig, XP, seri, gerçek oyuncu
 sayaçları, yasal metinler, hesap silme), Faz 4 (düello), Faz 5 (arena),
-Faz 6 (kelime turu), Capacitor Android paketi, Firebase
-(Analytics/Crashlytics/Remote Config), AdMob banner, yaş 13 + UMP onay
-akışı.
+Faz 6 (kelime turu — düello ve arena dahil), Capacitor Android paketi,
+Firebase (Analytics/Crashlytics/Remote Config), AdMob banner, yaş 13 +
+UMP onay akışı, rozetler ve ödül töreni.
 
 **Yığın:** TypeScript · React + Vite · Tailwind · Supabase (Frankfurt) ·
 Cloudflare Pages · Capacitor · Vitest + Playwright
@@ -296,6 +323,9 @@ yasağı `npa` bayrağıyla aynen sürüyor. Ayrıntı `CHANGELOG.md`'de.
 ### ~~Faz 4 — Düello~~ — bitti (Eylül 2026)
 ### ~~Faz 5 — Arena~~ — bitti (7 Ekim 2026)
 ### ~~Faz 6 — Kelime turu~~ — bitti (8 Ekim 2026)
+### ~~Kelime turu düelloda ve arenada~~ — bitti (9 Ekim 2026)
+### ~~Oyun hissi (yedi madde)~~ — bitti (9 Ekim 2026)
+### ~~Kupa ve rozetler, ödül töreni~~ — bitti (9 Ekim 2026)
 
 Ayrıntılar `CHANGELOG.md`'de.
 
@@ -306,12 +336,17 @@ Ayrıntılar `CHANGELOG.md`'de.
    bir kelimenin reddedildiğini görürse canı sıkılıyor. Ünsüz
    yumuşaması doğru yapılmadan üretilen liste uydurma kelimelerle
    dolacağı için bu iş dikkat istiyor.
-2. **Kupa ve rozetler** (Faz 5'ten kalan), **FCM bildirimleri.**
+2. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
+   kurulu (yerel bildirim); sunucudan gönderim yok.
 3. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
    test kullanıcısı, 14 günlük kapalı test. Proje sahibinin işi.
 4. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
 5. **Crashlytics eşleme dosyası** 1.8.0'dan beri yüklenmiyor (yerel
    TLS sorunu). Dosya derlemede üretiliyor, elle yüklenebilir.
+6. **Edge Function tip denetimi tam değil.** `npm run sunucu-denetle`
+   yalnızca tanımsız isim ve bulunamayan dosya arıyor; tam denetim
+   Supabase kütüphanesinin çözülen sürümünden onlarca sahte uyarı
+   veriyor.
 
 ---
 
@@ -328,4 +363,9 @@ Ayrıntılar `CHANGELOG.md`'de.
 - Veritabanı göçünden önce push etmek — canlı site hata verir
 - `<a href>` ile gezinmek — Android'de 404
 - Kelime listesini elle düzenlemek — betikle üretiliyor, elle değişiklik ilk üretimde kaybolur
+- Sözlüğü değiştirip Edge Function'ları dağıtmamak — aynı tohum iki tarafta farklı tur üretir
+- Arayüze emoji koymak — her telefonda başka çiziliyor, `bilesenler/Ikon.tsx` var
+- Ödül altını yerine uyarı sarısı kullanmak — iki anlam karışır
+- `transform`/`opacity` dışında bir şeyi canlandırmak — ucuz telefonda kare düşer
+- Aynı kartı iki ekranda ayrı ayrı yazmak — seri/XP kartı tam bunu yaşadı
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

@@ -39,8 +39,9 @@ describe('kutlama kararı', () => {
     const simdi: IlerlemeOzeti = { ...bos, rozetler: ['seri_3', 'tam_ilk'] };
     const k = kutlamalariBul(onceki, simdi);
     expect(k).toHaveLength(1);
-    expect(k[0]).toMatchObject({ tur: 'rozet' });
-    expect(k[0]!.tur === 'rozet' && k[0].rozet.kod).toBe('tam_ilk');
+    const ilk = k[0]!;
+    expect(ilk.tur).toBe('rozet');
+    expect(ilk.tur === 'rozet' ? ilk.rozet.kod : null).toBe('tam_ilk');
   });
 
   it('katalogda olmayan rozet kodu sessizce atlanır', () => {

@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import Ikon from '../bilesenler/Ikon';
+import OyunAyarlari from '../bilesenler/OyunAyarlari';
 import { useParams, useNavigate } from 'react-router-dom';
 import { seviyeEtiketi } from '@tamisabet/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
@@ -154,10 +155,13 @@ export default function ProfilSayfasi() {
           </p>
         </div>
 
-        {/* Hesap ayarları — yalnızca kendi profilinde görünür */}
+        {/* OYUN VE HESAP AYARLARI — yalnızca kendi profilinde.
+            Başkasının profilinde ses anahtarı göstermek anlamsız. */}
         {kendiProfili && (
           <div className="mt-10 space-y-2">
             <div className="my-2 h-px bg-slate-800" />
+            <OyunAyarlari />
+            <div className="my-3 h-px bg-slate-800" />
             <button
               onClick={() => navigate('/gizlilik-ayarlari')}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"

@@ -16,13 +16,13 @@
 import type { TurSaglayici } from '@tamisabet/cekirdek';
 import { sayiTuru } from '@tamisabet/oyun-sayi';
 import { kelimeTuruKur, tamSozlukKur } from '@tamisabet/oyun-kelime';
-import { KELIME_METNI, YAYGIN_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { KELIME_METNI, YAYGIN_METNI, GOVDE_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 
 let kelimeTuru: TurSaglayici | null = null;
 
 function kelimeyiKur(): TurSaglayici {
   if (!kelimeTuru) {
-    kelimeTuru = kelimeTuruKur(tamSozlukKur(KELIME_METNI), tamSozlukKur(YAYGIN_METNI));
+    kelimeTuru = kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI));
   }
   return kelimeTuru;
 }

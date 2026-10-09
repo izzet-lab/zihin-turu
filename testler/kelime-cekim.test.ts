@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KELIME_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { KELIME_METNI, GOVDE_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 import { sozluktePayVar, tamSozlukKur } from '@tamisabet/oyun-kelime';
 
 /*
@@ -14,7 +14,7 @@ import { sozluktePayVar, tamSozlukKur } from '@tamisabet/oyun-kelime';
   reddetmenin bedelinden küçük.
 */
 
-const sozluk = tamSozlukKur(KELIME_METNI);
+const sozluk = tamSozlukKur(KELIME_METNI, GOVDE_METNI);
 
 describe('çekimli biçimler tanınıyor', () => {
   it('kökün kendisi', () => {
@@ -34,6 +34,44 @@ describe('çekimli biçimler tanınıyor', () => {
     for (const k of ['kitabı', 'kitaba', 'kitabın', 'ağacı', 'rengi']) {
       expect(sozluktePayVar(k, sozluk), k).toBe(true);
     }
+  });
+
+  it('iyelik ekleri — ben, sen, biz, siz', () => {
+    // Bunlar eksikti: "gözlerim" reddediliyordu.
+    for (const k of [
+      'evim', 'evin', 'evimiz', 'eviniz',
+      'gözlerim', 'kitabım', 'kalemimiz', 'arabanız',
+    ]) {
+      expect(sozluktePayVar(k, sozluk), k).toBe(true);
+    }
+  });
+
+  it('"ile" bitişik yazılınca', () => {
+    for (const k of ['kalemle', 'arabayla', 'gözle']) {
+      expect(sozluktePayVar(k, sozluk), k).toBe(true);
+    }
+  });
+
+  it('son ünlüsü düşen kökler', () => {
+    // "burun" ünlüyle başlayan ek alınca "burn" oluyor; bu gövde
+    // sözlükte yok, üretimde ayrı bir listeye yazılıyor.
+    for (const k of ['burnu', 'şehrin', 'oğlu', 'aklı', 'karnı', 'ağzı']) {
+      expect(sozluktePayVar(k, sozluk), k).toBe(true);
+    }
+  });
+
+  it('son ünsüzü ikilenen kökler', () => {
+    for (const k of ['hakkı', 'sırrı', 'hissi']) {
+      expect(sozluktePayVar(k, sozluk), k).toBe(true);
+    }
+  });
+
+  it('yumuşamış gövde yalnızca ünlüyle başlayan ekten önce geçerli', () => {
+    // "kitabın" doğru ama "kitablar" değil: çoğul eki ünsüzle başlıyor,
+    // yumuşama olmaz. Kontrol olmasaydı ikisi de kabul edilirdi.
+    expect(sozluktePayVar('kitabın', sozluk)).toBe(true);
+    expect(sozluktePayVar('kitablar', sozluk), 'kitablar kabul edilmemeli').toBe(false);
+    expect(sozluktePayVar('burnlar', sozluk), 'burnlar kabul edilmemeli').toBe(false);
   });
 
   it('ünlüyle biten köklerde tampon harfler', () => {

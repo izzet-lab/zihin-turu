@@ -168,3 +168,67 @@ export async function duelloyuTemizle(
 
   await sayfa.locator('[data-alan="duello-rastgele"]').waitFor({ timeout: 30_000 });
 }
+
+/**
+ * İki test hesabını GERÇEKTEN birbiriyle eşleştirir.
+ *
+ * NEDEN AYRI BİR YARDIMCI
+ * Rakip bulunamazsa sekiz saniyede bot devreye giriyor — ürünün doğru
+ * davranışı. Ama iki hesabın birbirini bulmasını sınayan testlerde bu
+ * bir tuzak: temizleme turu uzun sürerse birinci oyuncu kuyrukta
+ * sekiz saniyeyi aşıyor ve bota düşüyor. Test o zaman "iki taraf aynı
+ * maçta mı?" sorusunu hiç soramadan kırılıyor.
+ *
+ * Burada eşleşme kontrol ediliyor: rakip adı diğer test hesabı değilse
+ * maç terk edilip yeniden deneniyor.
+ */
+export async function gercekDuelloKur(
+  sayfa1: import('@playwright/test').Page,
+  sayfa2: import('@playwright/test').Page,
+  seviye = 'cocuk',
+): Promise<void> {
+  let sonDurum = '';
+
+  for (let deneme = 0; deneme < 3; deneme++) {
+    await Promise.all([
+      duelloyuTemizle(sayfa1, seviye),
+      duelloyuTemizle(sayfa2, seviye),
+    ]);
+    await Promise.all([
+      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
+      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
+    ]);
+    await Promise.all([
+      sayfa1.locator('[data-alan="raf"]').waitFor({ timeout: 60_000 }),
+      sayfa2.locator('[data-alan="raf"]').waitFor({ timeout: 60_000 }),
+    ]);
+
+    /*
+     * Rakip adı HEMEN gelmiyor: maç kurulduktan sonra karşı tarafın
+     * profili ayrı bir okumayla düşüyor ve o ana kadar ekranda
+     * "Rakip" yazıyor. Birkaç saniye beklenip tekrar bakılıyor.
+     */
+    const adOku = async (sayfa: import('@playwright/test').Page) => {
+      for (let i = 0; i < 10; i++) {
+        const ad = (await sayfa.locator('[data-alan="rakip-ad"]').textContent()) ?? '';
+        if (ad.includes('test_duello')) return ad;
+        await sayfa.waitForTimeout(600);
+      }
+      return (await sayfa.locator('[data-alan="rakip-ad"]').textContent()) ?? '';
+    };
+
+    const [r1, r2] = await Promise.all([adOku(sayfa1), adOku(sayfa2)]);
+    sonDurum = `${r1} / ${r2}`;
+
+    /*
+     * Gerçek rakip iki biçimde görünebilir: kullanıcı adıyla
+     * ("test_duello_2") ya da adı henüz yüklenmemişken "Rakip" diye.
+     * Bot ise HER ZAMAN gerçek isim görünümünde bir ad taşıyor
+     * ("Emine K."); ayırt edici olan bu.
+     */
+    const gercekMi = (ad: string) => ad.includes('test_duello') || ad.trim() === 'Rakip';
+    if (gercekMi(r1) && gercekMi(r2)) return;
+  }
+
+  throw new Error(`İki test hesabı eşleşemedi, bot devreye girdi: ${sonDurum}`);
+}

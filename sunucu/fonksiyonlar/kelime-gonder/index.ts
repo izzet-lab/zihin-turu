@@ -32,7 +32,7 @@ import {
   tamSozlukKur,
   kelimeGonderimDogrula,
 } from '@tamisabet/oyun-kelime';
-import { KELIME_METNI, YAYGIN_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
+import { KELIME_METNI, YAYGIN_METNI, GOVDE_METNI } from '@tamisabet/oyun-kelime/sozluk-verisi';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -41,7 +41,7 @@ const CORS = {
 
 // Sözlük modül düzeyinde bir kez kuruluyor: elli bin kelimelik kümeyi
 // her istekte yeniden kurmak işlevi gereksiz yere yavaşlatırdı.
-const kelimeTuru = kelimeTuruKur(tamSozlukKur(KELIME_METNI), tamSozlukKur(YAYGIN_METNI));
+const kelimeTuru = kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI));
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });

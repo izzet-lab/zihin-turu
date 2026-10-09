@@ -1,6 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import { zinciriBulVeOyna } from './oyun-yardimcilari';
-import { girisYap, testHesabiVarMi, duelloyuTemizle, TEST_EPOSTALAR } from './duello-kimlik';
+import {
+  girisYap,
+  testHesabiVarMi,
+  gercekDuelloKur,
+  TEST_EPOSTALAR,
+} from './duello-kimlik';
 
 /*
   GERÇEK DÜELLO — iki tarayıcı, iki hesap, tek maç.
@@ -33,19 +38,9 @@ test.describe('düello maçı', () => {
 
     // İkisi de neredeyse aynı anda kuyruğa girmeli: sekiz saniye
     // içinde eşleşmezlerse birine bot atanır ve maç birbirleriyle olmaz.
-    // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
-    await duelloyuTemizle(sayfa1);
-    await duelloyuTemizle(sayfa2);
-    await Promise.all([
-      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
-      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
-    ]);
-
-    // Eşleşme: iki tarafta da tahta açılmalı.
-    await Promise.all([
-      expect(sayfa1.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-      expect(sayfa2.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-    ]);
+    // Önceki testten kalan maç terk edilir ve iki hesap GERÇEKTEN
+    // birbiriyle eşleştirilir; bota düşerse yeniden denenir.
+    await gercekDuelloKur(sayfa1, sayfa2);
 
     // Gerçekten birbirleriyle eşleştiler mi? Bota düşseydi rakip adı
     // bot adı olurdu; burada iki tarafta da "Rakip" yazar.
@@ -134,12 +129,13 @@ test.describe('düello maçı', () => {
     });
 
     // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
-    await duelloyuTemizle(sayfa1);
-    await duelloyuTemizle(sayfa2);
-    await Promise.all([
-      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
-      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
-    ]);
+    // İKİSİ BİRDEN TEMİZLENİYOR.
+    // Sırayla yapıldığında birinci oyuncu kuyrukta sekiz saniyeden
+    // fazla bekliyor ve bot devreye giriyor; iki test hesabı
+    // eşleşemeden maç başlıyordu. Testin aradığı şey gerçek maç.
+    // İki hesap GERÇEKTEN birbiriyle eşleşmeli; bota düşerse yeniden
+    // denenir (bkz. gercekDuelloKur).
+    await gercekDuelloKur(sayfa1, sayfa2);
 
     await Promise.all([
       expect(sayfa1.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),

@@ -26,6 +26,9 @@
 
 import { turkceKucult, type Sozluk } from './sozluk.ts';
 
+/** Ünlüyle başlayan ek mi? Bağlı gövdeler yalnızca bunlardan önce gelir. */
+const UNLULER = 'aeıioöuü';
+
 /** En çok kaç ek soyulur. Üçten fazlası uydurma gövdeler üretmeye başlıyor. */
 export const EN_FAZLA_EK = 3;
 
@@ -40,7 +43,13 @@ const EN_KISA_GOVDE = 2;
  * okunur kılıyor.
  */
 const EKLER: readonly string[] = [
-  // iyelik/hâl birleşimleri ve tamponlu biçimler (önce uzun olanlar)
+  // --- iyelik: biz ve siz (en uzunlar başta) ---
+  'ımız', 'imiz', 'umuz', 'ümüz',
+  'ınız', 'iniz', 'unuz', 'ünüz',
+  'mız', 'miz', 'muz', 'müz',
+  'nız', 'niz', 'nuz', 'nüz',
+
+  // --- hâl ekleri, tamponlu biçimler ve birleşimler ---
   'nın', 'nin', 'nun', 'nün',
   'ndan', 'nden',
   'ları', 'leri',
@@ -52,6 +61,14 @@ const EKLER: readonly string[] = [
   'ya', 'ye',
   'ın', 'in', 'un', 'ün',
   'na', 'ne', 'nı', 'ni', 'nu', 'nü',
+
+  // --- ile: ayrı yazılabildiği gibi bitişik de yazılıyor ---
+  'yla', 'yle', 'la', 'le',
+
+  // --- iyelik: ben ve sen ---
+  'ım', 'im', 'um', 'üm',
+  'm',
+
   'ı', 'i', 'u', 'ü',
   'a', 'e',
   'n',
@@ -72,12 +89,19 @@ const SERTLESME: Record<string, string> = {
   g: 'k',
 };
 
-/** Bir gövdenin sözlükte aranacak bütün biçimleri. */
-function govdeAdaylari(govde: string): string[] {
+/**
+ * Bir gövdenin sözlükte aranacak bütün biçimleri.
+ *
+ * Yumuşamış biçim YALNIZCA ünlüyle başlayan bir ekten önce geçerli:
+ * "kitabın" doğru, "kitablar" değil. Kontrol olmasaydı ikincisi de
+ * kabul edilirdi.
+ */
+function govdeAdaylari(govde: string, ek: string): string[] {
   const adaylar = [govde];
   const son = govde[govde.length - 1];
   const sert = son ? SERTLESME[son] : undefined;
-  if (sert) adaylar.push(govde.slice(0, -1) + sert);
+  const unluyleBasliyor = !!ek[0] && UNLULER.includes(ek[0]);
+  if (sert && unluyleBasliyor) adaylar.push(govde.slice(0, -1) + sert);
   return adaylar;
 }
 
@@ -105,7 +129,11 @@ export function sozluktePayVar(ham: string, sozluk: Sozluk): boolean {
         const govde = mevcut.slice(0, mevcut.length - ek.length);
         if (govde.length < EN_KISA_GOVDE) continue;
 
-        for (const aday of govdeAdaylari(govde)) {
+        // Bağlı gövde de ünlüyle başlayan ekten önce geçerli:
+        // "burnu" doğru, "burnlar" değil.
+        if (ek[0] && UNLULER.includes(ek[0]) && sozluk.govdeMi(govde)) return true;
+
+        for (const aday of govdeAdaylari(govde, ek)) {
           if (sozluk.icerir(aday)) return true;
           if (!gorulen.has(aday)) {
             gorulen.add(aday);

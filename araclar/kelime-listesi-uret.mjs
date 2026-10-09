@@ -58,7 +58,33 @@ function cogul(kelime) {
 
 const satirlar = readFileSync(HAM, 'utf8').split(/\r?\n/);
 const kokler = new Set();
+/*
+ * BAGLI GOVDELER
+ *
+ * Bazi kokler unlu ile baslayan bir ek aldiginda sekil degistiriyor ve
+ * ortaya sozlukte olmayan bir govde cikiyor:
+ *
+ *   burun + u  -> burnu   (son unlu duser)
+ *   sehir + in -> sehrin
+ *   hak   + i  -> hakki   (son unsuz ikilenir)
+ *
+ * Cekim tanima bu govdeleri sozlukte bulamadigi icin "burnu" ve
+ * "hakki" reddediliyordu. Hangi kokun boyle davrandigi kurala
+ * baglanamaz, SOZLUKTE YAZILI: Zemberek bunlari `LastVowelDrop` ve
+ * `Doubling` olarak isaretliyor. Isaretli koklerin bagli govdeleri
+ * burada uretilip ayri bir listeye yaziliyor.
+ */
+const bagliGovdeler = new Set();
+const UNLULER = 'aeıioöuü';
 let elenen = 0;
+
+/** "burun" -> "burn", "sehir" -> "sehr": son unluyu atar. */
+function sonUnluyuAt(k) {
+  for (let i = k.length - 1; i >= 0; i--) {
+    if (UNLULER.includes(k[i])) return k.slice(0, i) + k.slice(i + 1);
+  }
+  return null;
+}
 
 for (const satir of satirlar) {
   const ham = satir.trim();
@@ -92,6 +118,14 @@ for (const satir of satirlar) {
   if (k.length < 2 || k.length > 15) { elenen++; continue; }
 
   kokler.add(k);
+
+  if (/LastVowelDrop/.test(etiket)) {
+    const g = sonUnluyuAt(k);
+    if (g && g.length >= 2) bagliGovdeler.add(g);
+  }
+  if (/Doubling/.test(etiket)) {
+    bagliGovdeler.add(k + k[k.length - 1]);
+  }
 }
 
 /**
@@ -134,6 +168,9 @@ function ickiMi(k) {
 // Icki kokleri hem taninan hem yaygin listeden cikariliyor.
 for (const k of [...kokler]) {
   if (ickiMi(k)) kokler.delete(k);
+}
+for (const g of [...bagliGovdeler]) {
+  if (ickiMi(g)) bagliGovdeler.delete(g);
 }
 
 const tumu = new Set(kokler);
@@ -213,6 +250,9 @@ const baslik = [
   ` * KELIME_METNI: ${sirali.length} kelime - oyuncunun cevabi buradan kabul edilir.`,
   ` * YAYGIN_METNI: ${yaygin.length} kelime - havuzun cekirdegi ve 'en uzun kelime'`,
   ' *   bu listeden secilir; hedef gunluk hayatta var olan bir kelime olsun.',
+  ` * GOVDE_METNI: ${bagliGovdeler.size} bagli govde - tek baslarina kelime DEGIL.`,
+  ' *   "burnu" ve "hakki" gibi bicimler taninsin diye cekim cozumlemesinde',
+  ' *   govde olarak kabul edilirler (bkz. cekim.ts).',
   ' */',
   '',
   `export const KELIME_METNI = ${BT}`,
@@ -224,12 +264,16 @@ const govde =
   '\n' + BT + ';\n\n' +
   `export const YAYGIN_METNI = ${BT}` +
   yaygin.join('\n') +
+  '\n' + BT + ';\n\n' +
+  `export const GOVDE_METNI = ${BT}` +
+  [...bagliGovdeler].sort((a, b) => a.localeCompare(b, 'tr')).join('\n') +
   '\n' + BT + ';\n';
 writeFileSync(CIKTI, govde, 'utf8');
 
 const uzunluk = {};
 for (const k of yaygin) uzunluk[k.length] = (uzunluk[k.length] ?? 0) + 1;
 
+console.log(`Bagli govde: ${bagliGovdeler.size}`);
 console.log(`Kok: ${kokler.size}  .  Cogullarla: ${sirali.length}  .  Elenen: ${elenen}`);
 console.log(`Yaygin (hedef listesi): ${yaygin.length}`);
 console.log('Yaygin uzunluk dagilimi:', Object.entries(uzunluk).sort((a, b) => a[0] - b[0]).map(([u, n]) => `${u}:${n}`).join(' '));

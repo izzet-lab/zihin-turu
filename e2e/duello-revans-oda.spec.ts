@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { zinciriBulVeOyna } from './oyun-yardimcilari';
-import { girisYap, testHesabiVarMi, duelloyuTemizle, TEST_EPOSTALAR } from './duello-kimlik';
+import { girisYap, testHesabiVarMi, duelloyuTemizle,
+  gercekDuelloKur, TEST_EPOSTALAR } from './duello-kimlik';
 
 /*
   Kuyruğa girmeden maç kurmanın iki yolu ve kopan bağlantıdan dönüş.
@@ -57,16 +58,9 @@ test.describe('rövanş, özel oda ve geri dönüş', () => {
     const sayfa2 = await baglam2.newPage();
 
     // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
-    await duelloyuTemizle(sayfa1);
-    await duelloyuTemizle(sayfa2);
-    await Promise.all([
-      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
-      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
-    ]);
-    await Promise.all([
-      expect(sayfa1.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-      expect(sayfa2.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-    ]);
+    // İki hesap GERÇEKTEN birbiriyle eşleşmeli; bota düşerse yeniden
+    // denenir (bkz. gercekDuelloKur).
+    await gercekDuelloKur(sayfa1, sayfa2);
 
     // Bağlantı koptu gibi: sekmeyi baştan yükle.
     await sayfa1.reload();
@@ -90,16 +84,9 @@ test.describe('rövanş, özel oda ve geri dönüş', () => {
     const sayfa2 = await baglam2.newPage();
 
     // Önceki testten kalan maç varsa terk edilir; testler bağımsız olsun.
-    await duelloyuTemizle(sayfa1);
-    await duelloyuTemizle(sayfa2);
-    await Promise.all([
-      sayfa1.locator('[data-alan="duello-rastgele"]').click(),
-      sayfa2.locator('[data-alan="duello-rastgele"]').click(),
-    ]);
-    await Promise.all([
-      expect(sayfa1.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-      expect(sayfa2.locator('[data-alan="raf"]')).toBeVisible({ timeout: 60_000 }),
-    ]);
+    // İki hesap GERÇEKTEN birbiriyle eşleşmeli; bota düşerse yeniden
+    // denenir (bkz. gercekDuelloKur).
+    await gercekDuelloKur(sayfa1, sayfa2);
 
     // Maçı bitir: birinci oyuncu turları çözüyor.
     for (let tur = 1; tur <= 5; tur++) {

@@ -27,6 +27,15 @@ export interface Sozluk {
   uzunluktakiler(uzunluk: number): readonly string[];
   /** Sözlükteki toplam kelime sayısı. */
   readonly adet: number;
+  /**
+   * Bağlı gövde mi? Tek başına kelime değil ama çekimin gövdesi olabilir.
+   *
+   * "burun" ünlüyle başlayan ek alınca "burn"a dönüşüyor; o gövde
+   * sözlükte yok ve "burnu" reddediliyordu. Hangi kökün böyle
+   * davrandığı kurala bağlanamıyor, Zemberek'te yazılı — liste
+   * üretimde çıkarılıp buraya veriliyor (bkz. GOVDE_METNI).
+   */
+  govdeMi(kelime: string): boolean;
 }
 
 /**
@@ -46,7 +55,10 @@ export function turkceBuyult(s: string): string {
 }
 
 /** Bellekteki bir kelime kümesinden sözlük kurar. */
-export function kumeSozluk(kelimeler: Iterable<string>): Sozluk {
+export function kumeSozluk(
+  kelimeler: Iterable<string>,
+  govdeler: Iterable<string> = [],
+): Sozluk {
   const kume = new Set<string>();
   const uzunlugaGore = new Map<number, string[]>();
 
@@ -64,10 +76,17 @@ export function kumeSozluk(kelimeler: Iterable<string>): Sozluk {
   // SIRASI da sabit olmalı (kural 3'ün gereği: tohum → tur).
   for (const liste of uzunlugaGore.values()) liste.sort();
 
+  const govdeKume = new Set<string>();
+  for (const ham of govdeler) {
+    const g = turkceKucult(ham.trim());
+    if (g) govdeKume.add(g);
+  }
+
   return {
     adet: kume.size,
     icerir: (kelime: string) => kume.has(turkceKucult(kelime.trim())),
     uzunluktakiler: (uzunluk: number) => uzunlugaGore.get(uzunluk) ?? [],
+    govdeMi: (kelime: string) => govdeKume.has(turkceKucult(kelime.trim())),
   };
 }
 
@@ -117,6 +136,6 @@ export const baslangicSozlugu: Sozluk = kumeSozluk(BASLANGIC_KELIMELER);
  * gereksiz. Ayrı modülde durunca paketleyici onu ayrı bir parçaya
  * koyabiliyor ve yalnızca kelime turu açıldığında yükleniyor.
  */
-export function tamSozlukKur(metin: string): Sozluk {
-  return kumeSozluk(metin.split('\n'));
+export function tamSozlukKur(metin: string, govdeMetni = ''): Sozluk {
+  return kumeSozluk(metin.split('\n'), govdeMetni ? govdeMetni.split('\n') : []);
 }

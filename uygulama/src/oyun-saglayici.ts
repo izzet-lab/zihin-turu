@@ -32,7 +32,7 @@ export function kelimeyiYukle(): Promise<TurSaglayici> {
       import('@tamisabet/oyun-kelime/sozluk-verisi'),
     ]).then(([paket, veri]) => {
       kelimeSaglayici = paket.kelimeTuruKur(
-        paket.tamSozlukKur(veri.KELIME_METNI),
+        paket.tamSozlukKur(veri.KELIME_METNI, veri.GOVDE_METNI),
         paket.tamSozlukKur(veri.YAYGIN_METNI),
       );
       return kelimeSaglayici;

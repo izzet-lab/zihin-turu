@@ -11,6 +11,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { ROZETLER, ROZET_GRUP_ADI, type RozetTanim } from '../rozetler';
+import Ikon from './Ikon';
+
+/** Rozet kademesinin metal yüzüğü. */
+export const METAL: Record<'bronz' | 'gumus' | 'altin', string> = {
+  bronz: 'zt-metal-bronz',
+  gumus: 'zt-metal-gumus',
+  altin: 'zt-metal-altin',
+};
 
 interface Props {
   oyuncuId?: string;
@@ -28,8 +36,17 @@ function Rozet({ r, kazanildi }: { r: RozetTanim; kazanildi: boolean }) {
           : 'border-slate-800 bg-slate-900/40'
       }`}
     >
-      <span className={`text-xl leading-none ${kazanildi ? '' : 'opacity-25 grayscale'}`} aria-hidden="true">
-        {r.simge}
+      {/* Aile ikonla, basamak metal yüzükle anlatılıyor. */}
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-full ${
+          kazanildi
+            ? r.kademe
+              ? METAL[r.kademe]
+              : 'bg-cyan-300/15 text-cyan-200'
+            : 'bg-slate-800/60 text-slate-700'
+        }`}
+      >
+        <Ikon ad={r.simge} boyut={18} />
       </span>
       <span
         className={`mt-1 text-[10px] font-bold leading-tight ${

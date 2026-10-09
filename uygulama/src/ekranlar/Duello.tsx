@@ -7,6 +7,7 @@ import SayanSayi from '../bilesenler/SayanSayi';
 import Ikon from '../bilesenler/Ikon';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { titret } from '../titresim';
+import { kutlamayiDenetle } from '../kutlama';
 import { acikSeviyeler } from '../depo';
 import Oyun from './Oyun';
 import {
@@ -379,6 +380,8 @@ export default function Duello({
   useEffect(() => {
     if (!bittiMi) return;
     titret(kazandimMi ? 'basari' : 'kayip');
+    // Galibiyet rozetlerini sunucu maç biterken veriyor; tören ondan sonra.
+    void kutlamayiDenetle();
   }, [bittiMi, kazandimMi]);
 
   const turCevaplari = useTurCevaplari(

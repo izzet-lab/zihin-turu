@@ -773,3 +773,48 @@ main {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* ÖDÜL TÖRENİ                                                         */
+/*                                                                     */
+/* Kazanılan şey ekrana KONMAZ, GELİR: nişan büyüyerek oturur, yazı    */
+/* altından kayarak yetişir. Törenin tamamı bir saniyenin altında —    */
+/* kutlama, oyuncuyu bekleten bir şey olmamalı.                        */
+/* ------------------------------------------------------------------ */
+
+.zt-kutlama {
+  animation: zt-kutlama-ac 200ms ease-out;
+}
+
+@keyframes zt-kutlama-ac {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.zt-kutlama-nisan {
+  animation: zt-nisan-gel 620ms var(--zt-yay) backwards;
+  animation-delay: 80ms;
+}
+
+@keyframes zt-nisan-gel {
+  from { transform: scale(0.2) rotate(-18deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.zt-kutlama-yazi {
+  animation: zt-kutlama-yazi 420ms ease-out backwards;
+  animation-delay: 320ms;
+}
+
+@keyframes zt-kutlama-yazi {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-kutlama,
+  .zt-kutlama-nisan,
+  .zt-kutlama-yazi {
+    animation: none;
+  }
+}

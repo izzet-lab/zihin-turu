@@ -13,6 +13,7 @@ import { sesKilidiKur } from './ses';
 import { bannerGoster, bannerGizle, bannerKaldir } from './reklam';
 import { supabase } from './supabase';
 import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
+import { kutlamayiDenetle } from './kutlama';
 import {
   bugun,
   gunlukKaydet,
@@ -358,7 +359,11 @@ export default function Uygulama() {
           kalan_sn: s.kalan,
           jokerler: s.jokerler,
         })
-          .then((y) => setLigDurumu(y ? 'islendi' : 'basarisiz'))
+          .then((y) => {
+            setLigDurumu(y ? 'islendi' : 'basarisiz');
+            // Sunucu XP ve rozeti bu çağrıda veriyor; tören ondan sonra.
+            void kutlamayiDenetle(kullanici?.id);
+          })
           .catch((e) => {
             console.warn('[Uygulama] turGonder başarısız:', e);
             setLigDurumu('basarisiz');
@@ -407,7 +412,11 @@ export default function Uygulama() {
           jokerler: s.jokerler,
           buyuk_adet: oturum.buyukAdet,
         })
-          .then((y) => setLigDurumu(y ? 'islendi' : 'basarisiz'))
+          .then((y) => {
+            setLigDurumu(y ? 'islendi' : 'basarisiz');
+            // Sunucu XP ve rozeti bu çağrıda veriyor; tören ondan sonra.
+            void kutlamayiDenetle(kullanici?.id);
+          })
           .catch((e) => {
             console.warn('[Uygulama] antrenman turGonder başarısız:', e);
             setLigDurumu('basarisiz');

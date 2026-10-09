@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
+import { kutlamayiDenetle } from '../kutlama';
 import { titret } from '../titresim';
 import Ikon from '../bilesenler/Ikon';
 import SayanSayi from '../bilesenler/SayanSayi';
@@ -194,7 +195,10 @@ export default function KelimeTuru({
       sure_sn: toplamSure,
       kalan_sn: kalan,
     })
-      .then((y) => setSunucuPuan(y ? y.puan : null))
+      .then((y) => {
+        setSunucuPuan(y ? y.puan : null);
+        void kutlamayiDenetle(kullanici?.id);
+      })
       .finally(() => setGonderiliyor(false));
   }, [saglayici, tur, secilenler, taslar, seviye, seviyeAyar.sure, kalan, mod]);
 

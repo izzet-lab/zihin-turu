@@ -3,6 +3,189 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Ses ve titreşim tek yerde
+
+Ses anahtarı menüdeydi, titreşim gizlilik ayarlarındaydı; ikisi
+birbirinden habersiz iki ayardı. Oysa aynı soruya cevap veriyorlar:
+"oyun bana nasıl karşılık versin?"
+
+İkisi tek bir **Oyun ayarları** bloğuna alındı ve oyuncunun kendi
+profil sayfasına taşındı. Blok ayrıca gizlilik ayarları ekranında da
+duruyor — misafirin profil sayfası yok (adres bir kullanıcı adı
+ister), yalnızca profile koysaydık misafirin sesi kapatma yolu
+tamamen kapanırdı. Tek bileşen, iki kapı.
+
+Titreşim artık bir gizlilik ayarı sayılmıyor: hiçbir veri
+göndermiyor, orada durmasının tek sebebi kapatılacak bir yer
+gerekmesiydi.
+
+**Yol boyunca:** `zt-dokunma-alani` sınıfı `display`'i `inline-block`
+yapıyor ve uygulandığı satırın flex dizilişini bozuyor — anahtar
+sağda duracakken metnin altına düşüyordu. O sınıf yalnızca metin
+bağlantıları için; satır düzeni olan yerlerde kullanılmamalı.
+
+## 2026-10-09 - Ödül töreni
+
+Seviye atlama, rozet ve uzun seri birer metin satırıydı. Oyunlar
+başarıyı kutlar, bildirmez; kazanılan an görülmezse kazanılmamış
+sayılır.
+
+**Tam ekran kutlama katmanı.** Nişan büyüyerek oturuyor, konfeti
+düşüyor, telefon çift titriyor. Birden fazla ödül aynı anda gelirse
+sıraya giriyor: önce seviye, sonra rozetler, sonra seri. Üç saniyede
+kendiliğinden, dokununca hemen geçiyor.
+
+**Karar saf, gösterim ayrı.** "Neyin kutlanacağı" bir arayüz sorusu
+değil kural sorusu; `kutlama-karar.ts` iki ilerleme fotoğrafı alıp
+kutlama listesi döndürüyor. Dokuz birim testi şunları koruyor: ilk
+fotoğrafta hiçbir şey kutlanmaz (hesabına ilk kez giren oyuncuya
+geçmişi arka arkaya patlamaz), aynı rozet iki kez kutlanmaz,
+katalogda olmayan rozet kodu sessizce atlanır, seri eşikleri rozetli
+günlerle çakışmaz.
+
+Veriler sunucudan okunuyor (kural 2). İstemcinin kendi hesabına
+güvenilseydi, sunucuda karşılığı olmayan bir "seviye atladın"
+çıkabilirdi.
+
+**Rozet simgeleri değişti.** On dört emoji gitti; aile ikonla,
+basamak metalle anlatılıyor — aynı alev dört kez geçiyor ama yüzüğü
+bronzdan altına yükseliyor.
+
+**Bulunan hata:** kutlama katmanı "Nasıl oynanır" penceresiyle aynı
+katmandaydı. İlk turunu bitiren yeni oyuncunun kutlaması — yani en
+çok önem taşıdığı an — yardım penceresinin arkasında kalıyordu.
+
+## 2026-10-09 - Zemin derinliği ve tek ikon takımı
+
+**Zemin.** Tek düz lacivert dolgu yerine üç katman: üstten gelen
+soluk ışık havuzu, kenarlarda vinyet, çok hafif gürültü dokusu. Doku
+ayrıca ucuz ekranlarda koyu geçişlerde oluşan bantlaşmayı kırıyor.
+Oyun tahtasının arkasında altı çok yavaş parçacık süzülüyor; ilk
+denemede fazla parlaktılar ve tahtanın üstünde leke gibi
+duruyorlardı, saydamlık beşte birine indirildi.
+
+**İkonlar.** 36 ikonluk tek takım (`Ikon.tsx`): 24×24, yalnızca
+çizgi, tek kalınlık, renk `currentColor` — renk sistemi ikonlara da
+kendiliğinden işliyor. Emoji her telefonda başka çiziliyor, boyutu
+ve rengi kontrol edilemiyor, markanın parçası olmuyordu. Logonun iç
+içe halkaları hedef, kupa ve çerez ikonlarında tekrar ediyor.
+
+Düello ikonu iki kez çizildi: önce çapraz iki kılıçtı, 14 pikselde
+namlular birbirine girip makasa benziyordu. Karşı karşıya iki ok ucu
+ve orta çizgiyle değiştirildi.
+
+## 2026-10-09 - Alkollü içecek kelimeleri sözlükten çıktı
+
+Proje sahibinin kararı: "alkol", "bira", "rakı" gibi kelimeler kelime
+oyununda hiç geçmesin. Süzgeç üretim betiğine eklendi ve liste
+yeniden üretildi — elle düzenlenmedi, yoksa ilk yeniden üretimde geri
+gelirdi.
+
+Kaba sözlerden farkı: onlar yalnızca **hedef** olarak seçilmiyordu,
+cevap olarak kabul ediliyordu. Bunlar listeden tamamen çıktı.
+
+Eş anlamlısı olanlar bilerek kaldı: "cin" (peri), "bar" (halk oyunu),
+"rom" (Roman), "şek", "şişe", "kadeh", "şarapnel". Eşleşme tam kelime
+üzerinden; testle sabitlendi.
+
+Liste 50.129 → 50.083, hedef listesi 5.018 → 5.010. **Sözlük
+değişince aynı tohum farklı tur üretiyor**; kelime turu üreten yedi
+Edge Function yeniden dağıtıldı.
+
+## 2026-10-09 - Renk anlam taşıyor, hedef sayısı kahraman oldu
+
+Arayüzde tek bir cyan vardı: ödül de, kayıp da, seviye atlama da aynı
+renkti. Anlam taşıyan bir palet kuruldu — marka cyan, ödül altın,
+uyarı amber (değişmedi), kayıp soğuk kırmızı, nadir mor.
+
+**Ödül altını uyarı sarısından ayrı bir ton.** Aynı sarının hem
+"kazandın" hem "dikkat" demesi ikisini de anlamsız yapıyordu. Tam
+isabet süre çubuğu tam olarak uyarı sarısını kullanıyordu; altına
+çevrildi.
+
+Hedef sayısı "En yakın" ile aynı boydaydı. Oyunun tek sorusu o sayı;
+artık hane sayısına göre ekranın en büyük öğesi.
+
+Yazı tipi tarafında yapılacak başka şey çıkmadı: Space Grotesk zaten
+oyun yüzeyinde, rakamlar sütun sütun hizalı, sahte kalın kapalı.
+Türkçe kapsama doğrulandı — genişletilmiş Latin kümesi yükleniyor,
+ğ/İ/ş/ı/ç/ö/ü fontun kendi çizimiyle geliyor.
+
+**Yol boyunca bulunan kopya:** Seri ve XP kartları hem `SeriVeXp`
+içinde hem `Kurulum` içinde ayrı ayrı yazılıydı. Renk sistemi
+uygulanınca Kelime Turu'nun serisi altın oldu, ana ekranınki cyan
+kaldı — kopya ancak böyle görünür oldu. Tek bileşene indirildi.
+
+## 2026-10-09 - Oyun hissi: hareket, titreşim, taş malzemesi
+
+Uygulama bir oyun gibi değil kontrol paneli gibi duruyordu. Teşhisin
+en büyük maddesi hiçbir şeyin hareket etmemesiydi.
+
+**Hareket.** Taşa basınca küçülüp yay eğrisiyle yerine oturuyor. Yeni
+turda taşlar 60 ms arayla sırayla düşüyor. Ekranlar kayarak geliyor.
+Son on saniyede süre çubuğu nabız gibi atıyor. Tam isabette ekran
+kısa bir an sarsılıyor. Podyum basamakları aşağıdan yukarı büyüyor,
+madalyalar düşerek geliyor. Sıralama satırları sırayla beliriyor.
+Düello skoru ve arena puanı sıfırdan sayarak çıkıyor.
+
+Her animasyon yalnızca `transform` ve `opacity` kullanıyor; düzen
+yeniden hesaplanmıyor. "Hareketi azalt" açıksa hepsi tek yerden
+kapanıyor.
+
+**Titreşim.** Capacitor Haptics: taş/harf seçiminde hafif, işlem
+tamamlanınca orta, tam isabette çift, kaybedince tek uzun. Eklenti
+tembel yükleniyor; kapalıyken indirilmiyor bile.
+
+**Taşlar nesne oldu.** Üstten ışık, gövde eğimi, alt kenarda koyu
+çizgi (kalınlık hissi) ve zemin gölgesi. Seçili taş yukarı kalkıp
+gölgesini uzatıyor; kelimeye girmiş harf solup geri çekiliyor.
+
+**Madalya metalleri.** Podyum gri kutulardan oluşuyordu. Altın, gümüş
+ve bronz gerçek metal tonlarında, parlaklık geçişiyle.
+
+**Yan etki:** düello maç testi skoru sayma bitmeden okuyup yanlış
+karşılaştırıyordu; değer oturana kadar bekliyor.
+
+## 2026-10-09 - Maç bitince turların cevapları görünüyor
+
+Düello sonucunda ve arena podyumunda tur tur "ne soruldu, doğrusu
+neymiş" yazıyor. Kelime maçında o turun harfleri ve bulunabilecek en
+uzun kelime; sayı maçında hedef ve bir çözüm zinciri. Çözüm **yalnızca
+maç bittikten sonra** hesaplanıyor (kural 8) ve ekran çizildikten
+sonra tur tur ekleniyor — beşini birden hesaplamak sonuç ekranını
+kilitliyordu.
+
+Tur özetindeki "Hedef 32" yazısı platform kodunda duruyordu; "hedef"
+sayı turuna özgü bir kelime ve platform onu bilmemeli (kural 1).
+`TurSaglayici`'ye isteğe bağlı `turTanimi` eklendi: cümleyi oyunun
+kendisi kuruyor — sayıda hedef, kelimede turun harfleri.
+
+Maç sırasındaki tur sayacı 11 pikseldi ve okunmuyordu; büyütüldü.
+
+## 2026-10-09 - Kelime turu düelloya ve arenaya girdi
+
+Kelime turu artık yalnız oynanmıyor.
+
+**Eşleştirme kuyruğu oyuna göre ayrıldı** (göç 014). Sayı bekleyen
+oyuncu kelime bekleyenle eşleşirse biri yanlış oyunu oynardı.
+
+**Maç ve durum yanıtları `oyun` alanını taşıyor**; tahta onunla
+seçiliyor. Sekmesini yenileyen oyuncu doğru tahtaya dönüyor.
+
+**Bulunan çökme:** sağlayıcı durumda tutuluyordu ve oyun değiştiğinde
+bir çizim boyunca eski oyunun sağlayıcısı dönüyordu. Adres satırında
+kelime yazarken sunucudan sayı maçı gelince tahta sayı turu açılıyor,
+tur ise kelime turu oluyordu; ekran bomboş kalıyordu. Sağlayıcı artık
+istenen oyuna ait değilse `null` dönüyor.
+
+**Kural 1 düzeltmesi:** arenanın ilerleme çubuğu cetvel olarak turun
+hedefini kullanıyordu. Cetvel artık o turda görülen en büyük uzaklık.
+
+**Denetim boşluğu kapatıldı.** `sunucu/` klasörü tsconfig'in dışında
+olduğu için Edge Function'larda eksik import satırları derlemeden
+geçiyordu — Ekim'de canlıya tam böyle bir 500 gitti. `npm run
+sunucu-denetle` artık tanımsız isim ve bulunamayan dosya arıyor.
+
 ## 2026-10-09 - Yarış tahtasının üstü ortaklaştı
 
 Kelime turunu düelloya ve arenaya sokmanın istemci tarafındaki

@@ -59,7 +59,8 @@ export type IkonAdi =
   | 'liste'
   | 'uyari'
   | 'tac'
-  | 'madalya';
+  | 'madalya'
+  | 'titresim';
 
 /** Her ikonun gövdesi; ortak sarmalayıcı aşağıda. */
 const CIZIMLER: Record<IkonAdi, JSX.Element> = {
@@ -272,6 +273,15 @@ const CIZIMLER: Record<IkonAdi, JSX.Element> = {
       <rect x="5" y="4.8" width="14" height="15.2" rx="2" />
       <path d="M9 3.6h6v2.6H9z" />
       <path d="M8.6 11h6.8M8.6 15h4.6" />
+    </>
+  ),
+  // Titreşen telefon: iki yanında dalga.
+  titresim: (
+    <>
+      <rect x="8.5" y="3.5" width="7" height="17" rx="2" />
+      <path d="M11 6.6h2" />
+      <path d="M5.2 9.4a5.6 5.6 0 0 0 0 5.2M2.8 7.6a9 9 0 0 0 0 8.8" />
+      <path d="M18.8 9.4a5.6 5.6 0 0 1 0 5.2M21.2 7.6a9 9 0 0 1 0 8.8" />
     </>
   ),
   tac: (

@@ -4,6 +4,7 @@ import Oyun from './Oyun';
 import KelimeTahtasi from './KelimeTahtasi';
 import TurCevaplari from '../bilesenler/TurCevaplari';
 import SayanSayi from '../bilesenler/SayanSayi';
+import Ikon from '../bilesenler/Ikon';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import { acikSeviyeler } from '../depo';
@@ -308,7 +309,7 @@ export default function Arena({
                   }`}
                 >
                   <span className="block text-sm font-black">
-                    {kilitli && '🔒 '}
+                    {kilitli && <Ikon ad="kilit" boyut={13} className="mr-1 -mt-0.5" />}
                     {sv.etiket}
                   </span>
                   <span className="block text-[11px] opacity-70">{sv.altEtiket}</span>
@@ -584,7 +585,7 @@ export default function Arena({
           </div>
           <div className="mt-1 text-xs text-slate-400">
             {benimUzaklik === 0
-              ? 'hedefi tam tutturdun 🎯'
+              ? 'hedefi tam tutturdun'
               : kilitliAdimlar.length === 0
                 ? 'hiç işlem yapmadın'
                 : `fark · hedef ${arenaHedef}`}
@@ -613,7 +614,7 @@ export default function Arena({
                       : y.uzaklik == null
                         ? 'henüz yok'
                         : y.uzaklik === 0
-                          ? 'tam isabet 🎯'
+                          ? 'tam isabet'
                           : `${y.uzaklik} fark`}
                   </span>
                 </div>

@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef } from 'react';
+import Ikon from '../bilesenler/Ikon';
 import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@tamisabet/oyun-sayi';
 import IstatistikKarti from '../bilesenler/IstatistikKarti';
@@ -183,8 +184,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               { k: 'gunluk', ad: 'Günlük' },
               { k: 'haftalik', ad: 'Haftalık' },
               { k: 'aylik', ad: 'Aylık' },
-              { k: 'duello', ad: '⚔️ Düello' },
-              { k: 'arena', ad: '⚡ Arena' },
+              { k: 'duello', ad: 'Düello', simge: 'duello' },
+              { k: 'arena', ad: 'Arena', simge: 'arena' },
               { k: 'antrenman', ad: 'Antrenman' },
             ] as const
           ).map((s) => (
@@ -205,6 +206,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                   : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
               }`}
             >
+              {'simge' in s && <Ikon ad={s.simge} boyut={14} className="mr-1.5 -mt-0.5" />}
               {s.ad}
             </button>
           ))}
@@ -222,7 +224,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               {(
                 [
                   { k: 'sayi', ad: 'Sayı Turu' },
-                  { k: 'kelime', ad: '📖 Kelime Turu' },
+                  { k: 'kelime', ad: 'Kelime Turu', simge: 'kelime' },
                 ] as const
               ).map((o) => (
                 <button
@@ -236,6 +238,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                       : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
                   }`}
                 >
+                  {'simge' in o && <Ikon ad={o.simge} boyut={15} className="mr-1.5 -mt-0.5" />}
                   {o.ad}
                 </button>
               ))}
@@ -430,15 +433,19 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             className="rounded-2xl border border-slate-800 bg-slate-900/40 px-5 py-8 text-center"
             data-alan="bos-durum"
           >
-            <div className="text-3xl" aria-hidden="true">
-              {sekme === 'duello'
-                ? '⚔️'
-                : sekme === 'arena'
-                  ? '🏆'
-                  : sekme === 'antrenman'
-                    ? '♾️'
-                    : '🏁'}
-            </div>
+            <Ikon
+              ad={
+                sekme === 'duello'
+                  ? 'duello'
+                  : sekme === 'arena'
+                    ? 'kupa'
+                    : sekme === 'antrenman'
+                      ? 'antrenman'
+                      : 'bayrak'
+              }
+              boyut={34}
+              className="text-slate-600"
+            />
             <p className="mt-3 text-sm font-bold text-slate-200">
               {sekme === 'duello' && 'Henüz düello oynanmamış.'}
               {sekme === 'arena' && 'Henüz arena oynanmamış.'}

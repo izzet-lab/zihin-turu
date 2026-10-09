@@ -15,6 +15,8 @@ import {
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
 import { titret } from '../titresim';
+import Parcaciklar from '../bilesenler/Parcaciklar';
+import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
 import YarisUstBilgi, { SureCubugu } from '../bilesenler/YarisUstBilgi';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
 import { nativeMi } from '../platform';
@@ -148,10 +150,10 @@ const ISLEMLER: { op: Islem; ad: string }[] = [
   { op: '÷', ad: 'böl' },
 ];
 
-const JOKER_META: { tip: JokerTip; ad: string; simge: string }[] = [
-  { tip: 'adim', ad: 'Bir adım aç', simge: '💡' },
-  { tip: 'yanlis', ad: 'Yanlışı sil', simge: '🧹' },
-  { tip: 'sure', ad: 'Süre ekle', simge: '⏱' },
+const JOKER_META: { tip: JokerTip; ad: string; simge: IkonAdi }[] = [
+  { tip: 'adim', ad: 'Bir adım aç', simge: 'ampul' },
+  { tip: 'yanlis', ad: 'Yanlışı sil', simge: 'silgi' },
+  { tip: 'sure', ad: 'Süre ekle', simge: 'kronometre' },
 ];
 
 export default function Oyun({
@@ -436,11 +438,13 @@ export default function Oyun({
         sarsinti ? 'zt-sarsinti' : ''
       }`}
     >
+      <Parcaciklar />
       {konfetiGoster && <Konfeti />}
       {/* Düelloda joker paneli yok; boşalan yer taşlara ve işlemlere
           dağıtılsın diye kapsayıcı ekran yüksekliğini dolduruyor. */}
       <div
-        className={`mx-auto flex w-full max-w-md flex-col ${
+        // relative z-10: arka plandaki parçacık katmanının üstünde dursun.
+        className={`relative z-10 mx-auto flex w-full max-w-md flex-col ${
           yaris ? 'min-h-[calc(100dvh-6rem)]' : ''
         }`}
       >
@@ -597,7 +601,7 @@ export default function Oyun({
                     title={devreDisiNot ?? undefined}
                     className="min-h-[52px] w-full rounded-lg border border-slate-700 bg-slate-900/60 px-1 text-[11px] font-bold text-slate-200 transition active:scale-95 disabled:opacity-30"
                   >
-                    <div className="text-base leading-none">{j.simge}</div>
+                    <Ikon ad={j.simge} boyut={18} className="text-cyan-300" />
                     <div className="mt-1 leading-tight">{j.ad}</div>
                     <div className="text-slate-500">−{JOKER_MALIYET[j.tip]} puan</div>
                   </button>
@@ -627,7 +631,14 @@ export default function Oyun({
               className="mt-2 w-full rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/20 disabled:opacity-50"
               data-alan="reklam-joker"
             >
-              {reklamYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, +1 joker kazan'}
+              {reklamYukleniyor ? (
+                'Yükleniyor…'
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <Ikon ad="video" boyut={16} />
+                  'Reklam izle, +1 joker kazan'
+                </span>
+              )}
             </button>
           )}
         </div>

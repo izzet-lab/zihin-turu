@@ -361,6 +361,77 @@ button,
 }
 
 /* ================================================================== */
+/* ZEMİN VE DERİNLİK                                                   */
+/*                                                                     */
+/* Zemin tek bir düz lacivert dolguydu. Oyun zeminleri derinliklidir:  */
+/* ışık bir yerden gelir, kenarlar kararır.                            */
+/*                                                                     */
+/* Üç katman, hepsi `main` üzerinde tek seferde:                       */
+/*   1. Üstten gelen soluk ışık havuzu (radyal geçiş)                  */
+/*   2. Kenarlarda vinyet — bakışı ortada tutar                        */
+/*   3. Çok hafif gürültü dokusu                                       */
+/*                                                                     */
+/* GÜRÜLTÜ NEDEN VAR: Koyu zeminlerde yumuşak geçişler ucuz ekranlarda */
+/* "bantlaşıyor" — düz renk şeritleri halinde görünüyor. İnce bir      */
+/* doku bu şeritleri kırıyor. Yan etkisi, zemine kâğıt gibi bir dokunuş*/
+/* katması.                                                            */
+/*                                                                     */
+/* MALİYETİ YOK: üç katman da boya; `background-attachment: fixed` ile */
+/* sayfa kaydırılırken yeniden hesaplanmıyor, ekranla birlikte duruyor.*/
+/* Doku 56 baytlık bir SVG; dosya indirmesi yok.                       */
+/*                                                                     */
+/* ABARTILMADI: fark edilmemeli, yokluğu hissedilmeli.                 */
+/* ================================================================== */
+
+main {
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, rgb(124 237 251 / 0.07) 0%, rgb(124 237 251 / 0) 60%),
+    radial-gradient(100% 100% at 50% 45%, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.45) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)' opacity='0.035'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-attachment: fixed, fixed, fixed;
+}
+
+/*
+ * OYUN EKRANININ PARÇACIKLARI
+ *
+ * Tahtanın arkasında çok yavaş süzülen birkaç soluk nokta. Ekranın
+ * "canlı" olduğunu söyleyen en ucuz işaret; okumayı hiç engellemesin
+ * diye hem çok sönük hem çok yavaş.
+ *
+ * Yalnızca transform ve opacity oynuyor, tıklamayı geçiriyor, ekran
+ * okuyucuya görünmüyor. "Hareketi azalt" açıksa hiç çizilmiyor.
+ */
+.zt-parcacik-alani {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.zt-parcacik {
+  position: absolute;
+  border-radius: 999px;
+  /* Çok sönük: ilk denemede 0.5'ti ve tahtanın üstünde leke gibi
+     duruyordu. Arka plan fark edilmemeli. */
+  background: radial-gradient(circle, rgb(124 237 251 / 0.09) 0%, rgb(124 237 251 / 0) 70%);
+  animation: zt-suzul linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes zt-suzul {
+  0% { transform: translate3d(0, 20px, 0) scale(0.9); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate3d(14px, -120px, 0) scale(1.1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-parcacik-alani { display: none; }
+}
+
+/* ================================================================== */
 /* RENK SİSTEMİ — RENK ANLAM TAŞIR                                     */
 /*                                                                     */
 /* Arayüzde tek bir cyan vardı: ödül de, kayıp da, seviye atlama da    */

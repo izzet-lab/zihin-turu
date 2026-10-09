@@ -20,6 +20,7 @@ import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
 import { titret } from '../titresim';
+import Ikon from '../bilesenler/Ikon';
 import SayanSayi from '../bilesenler/SayanSayi';
 import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
@@ -248,7 +249,7 @@ export default function KelimeTuru({
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-20 text-center">
-          <div className="text-4xl">📕</div>
+          <Ikon ad="kitap-kapali" boyut={44} className="text-slate-600" />
           <h1 className="mt-4 text-xl font-black text-white">Sözlük yüklenemedi</h1>
           <p className="mt-2 text-sm text-slate-400">
             Kelime turu sözlüğe ihtiyaç duyuyor. Bağlantını kontrol edip tekrar dene.
@@ -268,7 +269,7 @@ export default function KelimeTuru({
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-24 text-center" data-alan="kelime-yukleniyor">
-          <div className="zt-nabiz text-4xl">📖</div>
+          <Ikon ad="kelime" boyut={44} className="zt-nabiz text-slate-500" />
           <p className="mt-4 text-sm font-bold text-slate-400">Sözlük hazırlanıyor…</p>
         </div>
       </Cerceve>
@@ -289,8 +290,18 @@ export default function KelimeTuru({
             cümle kullanmak aynı şeyi iki farklı şey gibi gösteriyordu. */}
         <div className="mt-5 grid grid-cols-2 gap-2.5" data-alan="kelime-mod-secici">
           {([
-            { k: 'gunun' as Mod, ad: 'Günün Turu', alt: 'Herkese aynı bulmaca · lige işler', simge: '📅' },
-            { k: 'antrenman' as Mod, ad: 'Antrenman', alt: 'İstediğin kadar oyna', simge: '♾️' },
+            {
+              k: 'gunun' as Mod,
+              ad: 'Günün Turu',
+              alt: 'Herkese aynı bulmaca · lige işler',
+              simge: 'gunun' as const,
+            },
+            {
+              k: 'antrenman' as Mod,
+              ad: 'Antrenman',
+              alt: 'İstediğin kadar oyna',
+              simge: 'antrenman' as const,
+            },
           ]).map((m) => (
             <button
               key={m.k}
@@ -303,9 +314,11 @@ export default function KelimeTuru({
                   : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
               }`}
             >
-              <span className="block text-xl leading-none" aria-hidden="true">
-                {m.simge}
-              </span>
+              <Ikon
+                ad={m.simge}
+                boyut={24}
+                className={mod === m.k ? 'text-cyan-300' : 'text-slate-400'}
+              />
               <span
                 className={`mt-2 block font-black leading-tight ${
                   mod === m.k ? 'text-cyan-100' : 'text-slate-100'
@@ -389,7 +402,7 @@ export default function KelimeTuru({
           )}
           <div className="mt-2 text-sm text-slate-400">
             {tamMi
-              ? 'En uzun kelimeyi buldun 🎯'
+              ? 'En uzun kelimeyi buldun'
               : sonuc.kelime
                 ? `${sonuc.ozet} · en uzunu ${sonuc.uzaklik} harf daha uzundu`
                 : 'Bu turdan puan çıkmadı'}
@@ -465,7 +478,8 @@ export default function KelimeTuru({
     <Cerceve onCik={onCik}>
       <div className="flex items-center justify-between pr-14">
         <div className="text-xs font-bold text-slate-400" data-alan="kelime-gostergesi">
-          📖 Kelime Turu · {seviyeAyar.etiket}
+          <Ikon ad="kelime" boyut={15} className="mr-1.5 -mt-0.5" />
+          Kelime Turu · {seviyeAyar.etiket}
         </div>
       </div>
 

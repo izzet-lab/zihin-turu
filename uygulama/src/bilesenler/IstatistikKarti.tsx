@@ -11,6 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import { oyuncuIstatistigi, type OyuncuIstatistik } from '../lig-sorgu';
+import Ikon from './Ikon';
 
 interface Props {
   oyuncuId?: string;
@@ -90,7 +91,8 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
       {ist.duelloMac > 0 && (
         <>
           <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-            ⚔️ Düello
+            <Ikon ad="duello" boyut={14} className="mr-1.5 -mt-0.5" />
+            Düello
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Kutu ust="Sıra" alt={ist.duelloSira ? `${ist.duelloSira}.` : '—'} vurgu />
@@ -106,7 +108,8 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
       {ist.arenaSayisi > 0 && (
         <>
           <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-            ⚡ Arena
+            <Ikon ad="arena" boyut={14} className="mr-1.5 -mt-0.5" />
+            Arena
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Kutu ust="Sıra" alt={ist.arenaSira ? `${ist.arenaSira}.` : '—'} vurgu />

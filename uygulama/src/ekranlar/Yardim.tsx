@@ -6,6 +6,8 @@
  * uygun; emir değil bilgi.
  */
 
+import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
+
 interface Props {
   acik: boolean;
   kapat: () => void;
@@ -126,9 +128,9 @@ export default function Yardim({ acik, kapat }: Props) {
               puanının yaklaşık yarısını verirsin.
             </p>
             <div className="space-y-2">
-              <JokerSatir emoji="💡" ad="Adım ipucu" bedel={3} aciklama="Çözümün bir adımını gösterir." />
-              <JokerSatir emoji="❌" ad="Yanlışı sil" bedel={2} aciklama="Çözümde kullanılmayan bir taşı siler." />
-              <JokerSatir emoji="⏱" ad="Süre ekle" bedel={2} aciklama="+15 saniye ek süre verir." />
+              <JokerSatir simge="ampul" ad="Adım ipucu" bedel={3} aciklama="Çözümün bir adımını gösterir." />
+              <JokerSatir simge="silgi" ad="Yanlışı sil" bedel={2} aciklama="Çözümde kullanılmayan bir taşı siler." />
+              <JokerSatir simge="kronometre" ad="Süre ekle" bedel={2} aciklama="+15 saniye ek süre verir." />
             </div>
           </div>
         </Bolum>
@@ -224,10 +226,20 @@ function Bolum({ baslik, children }: { baslik: string; children: React.ReactNode
   );
 }
 
-function JokerSatir({ emoji, ad, bedel, aciklama }: { emoji: string; ad: string; bedel: number; aciklama: string }) {
+function JokerSatir({
+  simge,
+  ad,
+  bedel,
+  aciklama,
+}: {
+  simge: IkonAdi;
+  ad: string;
+  bedel: number;
+  aciklama: string;
+}) {
   return (
     <div className="flex items-start gap-2 rounded-lg bg-slate-900/50 p-2.5">
-      <span className="text-lg">{emoji}</span>
+      <Ikon ad={simge} boyut={18} className="mt-0.5 text-cyan-300" />
       <div>
         <span className="font-bold text-slate-100">{ad}</span>
         {/*

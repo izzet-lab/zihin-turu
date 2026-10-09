@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { arenaLig, duelloLig, type LigSatiri } from '../lig-sorgu';
+import Ikon from './Ikon';
 
 type Sekme = 'duello' | 'arena';
 
@@ -66,8 +67,8 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
       <div className="mb-3 grid grid-cols-2 gap-2" role="tablist" aria-label="Sıralama türü">
         {(
           [
-            { k: 'duello' as Sekme, ad: '⚔️ Düello' },
-            { k: 'arena' as Sekme, ad: '⚡ Arena' },
+            { k: 'duello' as Sekme, ad: 'Düello', simge: 'duello' as const },
+            { k: 'arena' as Sekme, ad: 'Arena', simge: 'arena' as const },
           ]
         ).map((s) => (
           <button
@@ -81,6 +82,7 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
                 : 'border-slate-800 bg-slate-900/40 text-slate-300'
             }`}
           >
+            <Ikon ad={s.simge} boyut={14} className="mr-1.5 -mt-0.5" />
             {s.ad}
           </button>
         ))}

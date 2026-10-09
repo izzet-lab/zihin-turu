@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react';
+import Ikon from '../bilesenler/Ikon';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { girisDonusAdresi } from '../platform';
@@ -122,7 +123,7 @@ export default function Giris({ onAtla }: Props) {
     return (
       <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-5">
         <div className="w-full max-w-sm text-center">
-          <div className="text-5xl mb-4">🎂</div>
+          <Ikon ad="pasta" boyut={52} className="mb-4 text-slate-500" />
           <h1 className="text-xl font-black text-white mb-3">Yaşın henüz yetmiyor</h1>
           <p className="text-slate-400 text-sm mb-2">
             Tam İsabet'e üye olmak için en az <strong className="text-slate-200">13 yaşında</strong> olman gerekiyor.
@@ -151,7 +152,7 @@ export default function Giris({ onAtla }: Props) {
     return (
       <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-5">
         <div className="w-full max-w-sm text-center">
-          <div className="text-5xl mb-4">📬</div>
+          <Ikon ad="zarf" boyut={52} className="mb-4 text-cyan-300" />
           <h1 className="text-2xl font-black text-white mb-2">Bağlantı gönderildi</h1>
           <p className="text-slate-400 mb-1">
             <strong className="text-slate-200">{eposta}</strong> adresine bir giriş bağlantısı gönderdik.

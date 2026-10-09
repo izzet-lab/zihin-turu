@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Cevap, Tur, TurSaglayici } from '@tamisabet/cekirdek';
 import { turkceBuyult } from '@tamisabet/oyun-kelime';
 import { titret } from '../titresim';
+import Parcaciklar from '../bilesenler/Parcaciklar';
 import YarisUstBilgi, {
   SureCubugu,
   type ArenaUstBilgi,
@@ -104,7 +105,9 @@ export default function KelimeTahtasi({
 
   return (
     <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
-      <div className="mx-auto flex w-full max-w-md flex-col">
+      <Parcaciklar />
+      {/* relative z-10: parçacık katmanının üstünde. */}
+      <div className="relative z-10 mx-auto flex w-full max-w-md flex-col">
         <YarisUstBilgi duello={duello} arena={arena} />
         <SureCubugu kalan={kalan} toplamSure={toplamSure} />
 

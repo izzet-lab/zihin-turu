@@ -30,6 +30,7 @@
  */
 
 import { useState } from 'react';
+import Ikon from '../bilesenler/Ikon';
 import { Link } from 'react-router-dom';
 import { hesapSil } from '../kimlik';
 import SayfaSablonu from './SayfaSablonu';
@@ -624,7 +625,8 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
       cocuklar={
         <div className={icerik}>
           <div className="rounded-lg border border-red-800 bg-red-900/20 p-4 text-red-200 text-xs">
-            ⚠️ <strong>Geri alınamaz:</strong> Hesabınızı sildiğinizde tüm verileriniz
+            <Ikon ad="uyari" boyut={15} className="mr-1.5 -mt-0.5" />
+            <strong>Geri alınamaz:</strong> Hesabınızı sildiğinizde tüm verileriniz
             kalıcı olarak kaldırılır ve bu işlem geri alınamaz.
           </div>
 

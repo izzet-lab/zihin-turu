@@ -16,6 +16,7 @@ import { profilOku, type OyuncuProfil } from '../kimlik';
 import { sesAcikMi, sesTercihiYaz } from '../depo';
 import { nativeMi } from '../platform';
 import { Browser } from '@capacitor/browser';
+import Ikon from './Ikon';
 
 export default function Menu() {
   const gecis = useNavigate();
@@ -173,7 +174,8 @@ export default function Menu() {
               data-alan="ana-sayfa"
               className="zt-menu-oge text-slate-200"
             >
-              🏠 Ana sayfa
+              <Ikon ad="ana-sayfa" className="mr-2.5 -mt-0.5" />
+              Ana sayfa
             </button>
 
             <button
@@ -181,7 +183,8 @@ export default function Menu() {
               data-alan="lig-ac"
               className="zt-menu-oge text-slate-200"
             >
-              📊 Sıralamalar
+              <Ikon ad="siralama" className="mr-2.5 -mt-0.5" />
+              Sıralamalar
             </button>
 
             {kullanici && profil && (
@@ -189,7 +192,8 @@ export default function Menu() {
                 onClick={() => git(`/o/${profil.kullaniciAdi}`)}
                 className="zt-menu-oge text-slate-200"
               >
-                👤 Profil
+                <Ikon ad="profil" className="mr-2.5 -mt-0.5" />
+                Profil
               </button>
             )}
 
@@ -202,7 +206,8 @@ export default function Menu() {
               aria-pressed={sesAcik}
               className="zt-menu-oge text-slate-200"
             >
-              {sesAcik ? '🔊 Ses açık' : '🔇 Ses kapalı'}
+              <Ikon ad={sesAcik ? 'ses-acik' : 'ses-kapali'} className="mr-2.5 -mt-0.5" />
+              {sesAcik ? 'Ses açık' : 'Ses kapalı'}
             </button>
 
             <button
@@ -213,7 +218,8 @@ export default function Menu() {
               data-alan="yardim-ac"
               className="zt-menu-oge text-slate-200"
             >
-              ❓ Nasıl oynanır
+              <Ikon ad="soru" className="mr-2.5 -mt-0.5" />
+              Nasıl oynanır
             </button>
 
             {/*
@@ -229,7 +235,8 @@ export default function Menu() {
               data-alan="yasal-ac"
               className="zt-menu-oge text-slate-200"
             >
-              🔒 Gizlilik ve yasal
+              <Ikon ad="kalkan" className="mr-2.5 -mt-0.5" />
+              Gizlilik ve yasal
             </button>
 
             {/* Sosyal */}
@@ -239,7 +246,8 @@ export default function Menu() {
               data-alan="instagram"
               className="zt-menu-oge text-slate-400"
             >
-              📷 Instagram'da takip et
+              <Ikon ad="kamera" className="mr-2.5 -mt-0.5" />
+              Instagram'da takip et
             </button>
           </div>
         </>

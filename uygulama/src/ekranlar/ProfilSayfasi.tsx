@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Ikon from '../bilesenler/Ikon';
 import { useParams, useNavigate } from 'react-router-dom';
 import { seviyeEtiketi } from '@tamisabet/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
@@ -161,19 +162,22 @@ export default function ProfilSayfasi() {
               onClick={() => navigate('/gizlilik-ayarlari')}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
             >
-              🔒 Gizlilik ayarları
+              <Ikon ad="ayar" boyut={16} className="mr-2 -mt-0.5" />
+            Gizlilik ayarları
             </button>
             <button
               onClick={() => navigate('/yasal/kvkk')}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
             >
-              📄 Yasal metinler
+              <Ikon ad="belge" boyut={16} className="mr-2 -mt-0.5" />
+            Yasal metinler
             </button>
             <button
               onClick={() => navigate('/yasal/hesap-sil')}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-red-400/80 hover:bg-slate-800/60 hover:text-red-400"
             >
-              🗑️ Hesabımı sil
+              <Ikon ad="cop" boyut={16} className="mr-2 -mt-0.5" />
+            Hesabımı sil
             </button>
           </div>
         )}

@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import Ikon from '../bilesenler/Ikon';
 import { kullaniciAdiAyarla, kullaniciAdiDogrula, misafirGecmisiniTasi } from '../kimlik';
 
 interface Props {
@@ -52,7 +53,7 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
     <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-5">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">🏷️</div>
+          <Ikon ad="etiket" boyut={44} className="mb-3 text-cyan-300" />
           <h1 className="text-2xl font-black text-white">Kullanıcı adın ne olsun?</h1>
           <p className="mt-2 text-sm text-slate-400">
             Lig tablosunda bu ad görünür. Sonradan değiştirilemez — dikkatli seç.

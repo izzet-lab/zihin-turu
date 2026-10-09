@@ -13,6 +13,7 @@
  */
 
 import type { Seviye } from '@tamisabet/cekirdek';
+import Ikon from './Ikon';
 
 interface Props {
   seviyeler: readonly Seviye[];
@@ -77,7 +78,7 @@ export default function SeviyeIzgara({
                   kilitliMi ? 'text-slate-600' : seciliMi ? 'text-slate-900' : 'text-slate-100'
                 }`}
               >
-                {kilitliMi && '🔒 '}
+                {kilitliMi && <Ikon ad="kilit" boyut={14} className="mr-1.5 -mt-0.5" />}
                 {s.etiket}
               </span>
               <span
@@ -97,7 +98,12 @@ export default function SeviyeIzgara({
           Isınma'da tam isabet yaptığında bir sonraki seviye açılır.
         </p>
       )}
-      {kilitAciklama && <p className="mt-2 text-[11px] text-amber-300/80">🔒 {kilitAciklama}</p>}
+      {kilitAciklama && (
+        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-300/80">
+          <Ikon ad="kilit" boyut={13} />
+          {kilitAciklama}
+        </p>
+      )}
     </div>
   );
 }

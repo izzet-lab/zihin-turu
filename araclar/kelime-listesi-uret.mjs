@@ -94,6 +94,48 @@ for (const satir of satirlar) {
   kokler.add(k);
 }
 
+/**
+ * Oyunda hic gecmemesi istenen kokler: alkollu icecekler ve
+ * icki cevresi.
+ *
+ * KABA_KOKLER'den FARKI: onlar yalnizca hedef olarak secilmiyordu,
+ * cevap olarak kabul ediliyordu. Bunlar listeden tamamen cikiyor -
+ * proje sahibinin karari. Oyun her yastan oyuncuya acik ve magaza
+ * yas derecelendirmesi de bunu soyluyor.
+ *
+ * Es anlamlisi olan kelimeler BILEREK DISARIDA birakildi: "cin"
+ * (cin/peri), "bar" (halk oyunu, basinc birimi), "rom" (Roman),
+ * "sek" (sek su), "sise", "kadeh". Bunlari atmak dili fakirlestirir
+ * ve asil amaci asar.
+ *
+ * Eslesme TAM kelime uzerinden; "sarapnel" gibi baska kelimeler
+ * yanlislikla elenmez.
+ */
+const ICKI_KOKLERI = new Set([
+  'alkol', 'alkollu', 'alkollü', 'alkolik', 'alkolizm',
+  'bira', 'birahane', 'rakı', 'rakici', 'rakıcı',
+  'şarap', 'şarapçı', 'şaraphane', 'şarapçılık',
+  'votka', 'viski', 'konyak', 'likör', 'şampanya', 'tekila', 'vermut',
+  'meyhane', 'meyhaneci', 'meyhanecilik',
+  'içki', 'içkici', 'içkicilik',
+  'sarhoş', 'sarhoşluk', 'ayyaş', 'ayyaşlık',
+  'mey', 'bade', 'ispirto', 'kokteyl',
+]);
+
+/** Kok ya da duzenli cogulu icki listesinde mi? */
+function ickiMi(k) {
+  if (ICKI_KOKLERI.has(k)) return true;
+  for (const ek of ['lar', 'ler']) {
+    if (k.endsWith(ek) && ICKI_KOKLERI.has(k.slice(0, -ek.length))) return true;
+  }
+  return false;
+}
+
+// Icki kokleri hem taninan hem yaygin listeden cikariliyor.
+for (const k of [...kokler]) {
+  if (ickiMi(k)) kokler.delete(k);
+}
+
 const tumu = new Set(kokler);
 for (const k of kokler) {
   const c = cogul(k);

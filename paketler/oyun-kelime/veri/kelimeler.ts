@@ -7,8 +7,8 @@
  * Lisans metni: veri/ZEMBEREK-LISANS.txt
  * Ureten betik: araclar/kelime-listesi-uret.mjs
  *
- * KELIME_METNI: 50129 kelime - oyuncunun cevabi buradan kabul edilir.
- * YAYGIN_METNI: 5018 kelime - havuzun cekirdegi ve 'en uzun kelime'
+ * KELIME_METNI: 50083 kelime - oyuncunun cevabi buradan kabul edilir.
+ * YAYGIN_METNI: 5010 kelime - havuzun cekirdegi ve 'en uzun kelime'
  *   bu listeden secilir; hedef gunluk hayatta var olan bir kelime olsun.
  */
 
@@ -1465,12 +1465,6 @@ alkışlamaklar
 alkışlar
 alkil
 alkiller
-alkol
-alkolik
-alkolikler
-alkolizm
-alkolizmler
-alkollar
 alkolmetre
 alkolmetreler
 alkolölçer
@@ -3551,8 +3545,6 @@ ayvaz
 ayvazlar
 ayyar
 ayyarlar
-ayyaş
-ayyaşlar
 ayyuk
 ayyuklar
 az
@@ -3698,10 +3690,8 @@ badas
 badaslar
 badat
 badatlar
-bade
 badehu
 badehular
-badeler
 badem
 badema
 bademalar
@@ -5886,12 +5876,8 @@ binyıllar
 biperva
 bipervalar
 bir
-bira
 birader
 biraderler
-birahane
-birahaneler
-biralar
 birara
 birarada
 biraradalar
@@ -19859,8 +19845,6 @@ içitim
 içitimler
 içitmek
 içitmekler
-içki
-içkiler
 içkin
 içkinler
 içlem
@@ -20988,8 +20972,6 @@ ispir
 ispiralya
 ispiralyalar
 ispirler
-ispirto
-ispirtolar
 ispit
 ispitler
 ispiyon
@@ -25311,8 +25293,6 @@ kokozlanmaklar
 kokozlar
 kokpit
 kokpitler
-kokteyl
-kokteyller
 koku
 kokular
 kokurdan
@@ -25803,8 +25783,6 @@ konveyör
 konveyörler
 konvoy
 konvoylar
-konyak
-konyaklar
 kooperatif
 kooperatifler
 koordinasyon
@@ -27749,8 +27727,6 @@ likit
 likitler
 likorinoz
 likorinozlar
-likör
-likörler
 lim
 limaki
 limakiler
@@ -29939,7 +29915,6 @@ mevzunlar
 mevzuubahis
 mevzuubahisler
 mevzuubahsetmek
-mey
 meyan
 meyane
 meyaneler
@@ -29950,11 +29925,8 @@ meydandalar
 meydani
 meydaniler
 meydanlar
-meyhane
-meyhaneler
 meyil
 meyiller
-meyler
 meyletmek
 meyletmekler
 meymenet
@@ -36971,8 +36943,6 @@ rakamlamaklar
 rakamlar
 raket
 raketler
-rakı
-rakılar
 rakım
 rakımlar
 rakibe
@@ -38496,8 +38466,6 @@ sargılamaklar
 sargılar
 sargın
 sargınlar
-sarhoş
-sarhoşlar
 sarı
 sarıağaç
 sarıağaçlar
@@ -41866,8 +41834,6 @@ süzüntüler
 şamdanlar
 şamil
 şamiller
-şampanya
-şampanyalar
 şampiyon
 şampiyona
 şampiyonalar
@@ -41940,10 +41906,6 @@ süzüntüler
 şapşallar
 şarampol
 şarampollar
-şarap
-şaraphane
-şaraphaneler
-şaraplar
 şarapnel
 şarapneller
 şarbon
@@ -44068,8 +44030,6 @@ tekgövdeler
 tekiden
 tekidenler
 tekil
-tekila
-tekilalar
 tekiller
 tekin
 tekinler
@@ -47531,8 +47491,6 @@ verkaç
 verkaçlar
 vermek
 vermekler
-vermut
-vermutlar
 vernik
 verniklemek
 verniklemekler
@@ -47704,8 +47662,6 @@ visal
 visallar
 visamiral
 visamirallar
-viski
-viskiler
 viskonsül
 viskonsüller
 viskoz
@@ -47804,8 +47760,6 @@ vombat
 vombatlar
 vonoz
 vonozlar
-votka
-votkalar
 voyvoda
 voyvodalar
 vuku
@@ -50300,8 +50254,6 @@ ali
 aliler
 alkış
 alkışlar
-alkol
-alkollar
 allar
 almak
 almaklar
@@ -50779,8 +50731,6 @@ binler
 binlerce
 binlerceler
 bir
-bira
-biralar
 biraz
 birazlar
 birçok
@@ -52243,8 +52193,6 @@ içinde
 içindekiler
 içindeler
 içinler
-içki
-içkiler
 içler
 içmek
 içmekler
@@ -54240,8 +54188,6 @@ sütler
 şampiyonlar
 şans
 şanslar
-şarap
-şaraplar
 şarj
 şarjlar
 şarkı

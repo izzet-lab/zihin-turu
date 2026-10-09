@@ -20,6 +20,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Istemci } from '../istemci.ts';
 import { macIlerlet, turSuresi, type Mac } from '../duello-ortak.ts';
 import type { Taraf } from '@tamisabet/cekirdek';
 
@@ -157,7 +158,7 @@ Deno.serve(async (req: Request) => {
  * ne kadar zorlu olduğunu söylüyor.
  */
 async function rakipBilgisi(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Istemci,
   mac: Record<string, unknown>,
   rakipTaraf: Taraf,
 ) {

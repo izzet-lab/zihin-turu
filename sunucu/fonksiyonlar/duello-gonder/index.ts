@@ -138,6 +138,15 @@ Deno.serve(async (req: Request) => {
       .eq('id', mac_id)
       .single();
 
+    /*
+     * Maç satırı bu arada kaybolabilir (silinme, geçici okuma hatası).
+     * Önceden bu durumda `son.aktif_tur` okunurken fonksiyon çöküyor
+     * ve istemciye anlamsız bir 500 dönüyordu. Cevap zaten
+     * gönderilmişti; oyuncuya bunu söyleyip tekrar denemesini istemek
+     * doğru davranış.
+     */
+    if (!son) return hata('Maç durumu okunamadı, tekrar dene.', 503);
+
     return ok({
       uzaklik: yeniUzaklik,
       skorA: durum.skor.a,

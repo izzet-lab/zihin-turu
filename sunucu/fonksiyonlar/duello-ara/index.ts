@@ -24,6 +24,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import type { Istemci } from '../istemci.ts';
 import {
   BASLANGIC_ELO,
   botaDusulsunMu,
@@ -242,7 +243,7 @@ Deno.serve(async (req: Request) => {
  * kaybettiğine göre değişmiyor.
  */
 async function ustUsteKayipSayisi(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Istemci,
   oyuncuId: string,
 ): Promise<number> {
   const { data: maclar } = await supabase
@@ -263,7 +264,7 @@ async function ustUsteKayipSayisi(
 }
 
 async function macKur(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Istemci,
   g: {
     oyun: string;
     seviye: string;

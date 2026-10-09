@@ -373,4 +373,5 @@ Ayrıntılar `CHANGELOG.md`'de.
 - `transform`/`opacity` dışında bir şeyi canlandırmak — ucuz telefonda kare düşer
 - Aynı kartı iki ekranda ayrı ayrı yazmak — seri/XP kartı tam bunu yaşadı
 - `deno check`'i depo kökünde çalıştırmak — `node_modules/.deno` açıp npm ağacını bozuyor
+- e2e koşarken başka bir önizleme sunucusu açık bırakmak — Playwright artık port doluysa hata veriyor, eskiden eski koda karşı sessizce yeşil veriyordu
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

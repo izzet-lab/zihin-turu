@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { zinciriBulVeOyna } from './oyun-yardimcilari';
+import { zinciriBulVeOyna, kutlamayiKapat } from './oyun-yardimcilari';
 import { girisYap, testHesabiVarMi, duelloyuTemizle,
   gercekDuelloKur, TEST_EPOSTALAR } from './duello-kimlik';
 
@@ -114,6 +114,9 @@ test.describe('rövanş, özel oda ve geri dönüş', () => {
 
     await expect(sayfa1.locator('[data-alan="duello-sonuc"]')).toBeVisible({ timeout: 120_000 });
     await expect(sayfa2.locator('[data-alan="duello-sonuc"]')).toBeVisible({ timeout: 120_000 });
+
+    // Maç bitti; ödül töreni çıkmış olabilir, önce o kapatılır.
+    await Promise.all([kutlamayiKapat(sayfa1), kutlamayiKapat(sayfa2)]);
 
     // İki taraf da rövanş diyor; aynı maça girmeliler.
     await sayfa1.locator('[data-alan="duello-revans"]').click();

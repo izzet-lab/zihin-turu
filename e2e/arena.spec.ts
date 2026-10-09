@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { girisYap, testHesabiVarMi, TEST_EPOSTALAR } from './duello-kimlik';
+import { kutlamayiKapat } from './oyun-yardimcilari';
 
 /*
   ARENA — 5 kişilik eşzamanlı yarış.
@@ -30,6 +31,8 @@ async function arenayiTemizle(sayfa: Page, seviye = 'cocuk', oyun = 'sayi'): Pro
     // kelime testi sayı arenası kurar.
     await sayfa.goto(`/arena?seviye=${seviye}&oyun=${oyun}`);
     await sayfa.waitForTimeout(1200);
+    // Açık ödül töreni ekranı kaplıyor; önce o kapatılır.
+    await kutlamayiKapat(sayfa);
     const gorunur = async (alan: string) =>
       sayfa.locator(`[data-alan="${alan}"]`).isVisible().catch(() => false);
 

@@ -86,3 +86,28 @@ export async function zinciriBulVeOyna(page: Page): Promise<{ hedef: number; zin
   }
   return { hedef, zincir };
 }
+
+/**
+ * Açık bir ödül töreni varsa kapatır.
+ *
+ * NEDEN GEREKLİ
+ * Kutlama katmanı ekranı kaplıyor ve üç saniye duruyor; o sırada
+ * altındaki düğmelere dokunulamıyor. Gerçek oyuncu için doğru
+ * davranış — kazandığını görmeden devam etmesin. Ama testler maç
+ * biter bitmez "Rövanş" ya da "Yeni arena"ya basıyor ve araya kutlama
+ * girince bekliyorlar.
+ *
+ * Test hesapları yüzlerce tur oynadığı için XP eşiklerini ara sıra
+ * geçiyorlar; kutlama seyrek ama kesinlikle çıkıyor. Tam takım
+ * koşusunda üç testin birden kırmızıya dönmesinin sebebi buydu.
+ *
+ * Kuyrukta birden fazla ödül olabilir; hepsi kapatılır.
+ */
+export async function kutlamayiKapat(sayfa: Page): Promise<void> {
+  const kutlama = sayfa.locator('[data-alan="kutlama"]');
+  for (let i = 0; i < 5; i++) {
+    if (!(await kutlama.isVisible().catch(() => false))) return;
+    await kutlama.click({ timeout: 2000 }).catch(() => {});
+    await sayfa.waitForTimeout(250);
+  }
+}

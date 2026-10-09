@@ -15,7 +15,8 @@ import { useState } from 'react';
 import Ikon from '../bilesenler/Ikon';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { girisDonusAdresi } from '../platform';
+import { girisDonusAdresi, nativeMi } from '../platform';
+import { Browser } from '@capacitor/browser';
 import { dogumYiliYaz, veliOnayiYaz } from '../depo';
 
 interface Props {
@@ -111,6 +112,37 @@ export default function Giris({ onAtla }: Props) {
     if (!yasDogrula()) return;
     setHata(null);
     yasBilgisiKaydet();
+    /*
+     * ANDROID'DE GOOGLE SAYFASI SİSTEM TARAYICISINDA AÇILIR.
+     *
+     * Önceden uygulamanın KENDİ web görünümü Google'a gidiyordu.
+     * Oyuncu onayı verdikten sonra Supabase `com.tamisabet.app://giris`
+     * adresine yönlendiriyor; ama bir web görünümü özel şemaları
+     * işletim sistemine devretmiyor. Sonuç: onay veriliyor, uygulamaya
+     * dönüş olmuyor, oyuncu bir web sayfasında kalıyor.
+     *
+     * Doğrusu: adresi sistem tarayıcısında aç, dönüşü derin bağlantı
+     * olarak yakala (bkz. derinBaglanti.ts), tarayıcıyı kapat.
+     * Google zaten gömülü web görünümünden girişi engelliyor.
+     */
+    if (nativeMi()) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: girisDonusAdresi(), skipBrowserRedirect: true },
+      });
+      if (error || !data?.url) {
+        setHata(`Google girişi başlatılamadı: ${error?.message ?? 'adres alınamadı'}`);
+        return;
+      }
+      try {
+        await Browser.open({ url: data.url });
+      } catch {
+        // Tarayıcı açılamazsa son çare: aynı pencerede git.
+        window.location.href = data.url;
+      }
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: girisDonusAdresi() },

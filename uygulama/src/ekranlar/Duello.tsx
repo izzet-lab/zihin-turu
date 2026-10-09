@@ -4,6 +4,7 @@ import { SEVIYE_LISTESI } from '@tamisabet/oyun-sayi';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
 import KelimeTahtasi from './KelimeTahtasi';
 import SayanSayi from '../bilesenler/SayanSayi';
+import Ikon from '../bilesenler/Ikon';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { titret } from '../titresim';
 import { acikSeviyeler } from '../depo';
@@ -553,7 +554,7 @@ export default function Duello({
                   }`}
                 >
                   <span className="block text-sm font-black">
-                    {kilitli && '🔒 '}
+                    {kilitli && <Ikon ad="kilit" boyut={13} className="mr-1 -mt-0.5" />}
                     {sv.etiket}
                   </span>
                   <span className="block text-[11px] opacity-70">{sv.altEtiket}</span>
@@ -823,7 +824,7 @@ export default function Duello({
           </div>
           <div className="mt-1 text-xs text-slate-400">
             {kilitliUzaklik === 0
-              ? 'hedefi tam tutturdun 🎯'
+              ? 'hedefi tam tutturdun'
               : kilitliAdimlar.length === 0
                 ? // Hiç işlem yapılmadığında uzaklık hedefin kendisine
                   // eşit çıkıyor; "665 fark · hedef 665" yanıltıcıydı.
@@ -858,7 +859,7 @@ export default function Duello({
                   {y.uzaklik == null
                     ? 'henüz bir şey yok'
                     : y.uzaklik === 0
-                      ? 'tam isabet 🎯'
+                      ? 'tam isabet'
                       : `${y.uzaklik} fark`}
                 </span>
               </div>

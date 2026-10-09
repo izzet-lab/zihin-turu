@@ -16,13 +16,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
 import SayfaSablonu from './SayfaSablonu';
 
 interface Satir {
   yol: string;
   ad: string;
   aciklama: string;
-  simge: string;
+  simge: IkonAdi;
   yalnizcaUye?: boolean;
   tehlikeli?: boolean;
 }
@@ -32,37 +33,37 @@ const SATIRLAR: Satir[] = [
     yol: '/gizlilik-ayarlari',
     ad: 'Gizlilik ayarları',
     aciklama: 'Analitik, çökme raporu, bildirim ve reklam onayı',
-    simge: '⚙️',
+    simge: 'ayar' as const,
   },
   {
     yol: '/yasal/kvkk',
     ad: 'KVKK Aydınlatma Metni',
     aciklama: 'Hangi veriyi neden topluyoruz',
-    simge: '📄',
+    simge: 'belge' as const,
   },
   {
     yol: '/yasal/gizlilik',
     ad: 'Gizlilik Politikası',
     aciklama: 'Verinin nasıl saklandığı ve korunduğu',
-    simge: '🔒',
+    simge: 'kalkan' as const,
   },
   {
     yol: '/yasal/cerez',
     ad: 'Çerez Politikası',
     aciklama: 'Tarayıcıda ve cihazda saklananlar',
-    simge: '🍪',
+    simge: 'cerez' as const,
   },
   {
     yol: '/yasal/kullanim-kosullari',
     ad: 'Kullanım Koşulları',
     aciklama: 'Oyunu kullanma şartları',
-    simge: '📋',
+    simge: 'liste' as const,
   },
   {
     yol: '/yasal/hesap-sil',
     ad: 'Hesabı sil',
     aciklama: 'Hesabın ve tüm verin kalıcı olarak silinir',
-    simge: '🗑️',
+    simge: 'cop' as const,
     yalnizcaUye: true,
     tehlikeli: true,
   },
@@ -101,9 +102,11 @@ export default function YasalIndeks({ onGeri }: Props) {
               }`}
               style={{ minHeight: 64 }}
             >
-              <span className="text-xl" aria-hidden="true">
-                {s.simge}
-              </span>
+              <Ikon
+                ad={s.simge}
+                boyut={22}
+                className={s.tehlikeli ? 'text-red-300' : 'text-cyan-300'}
+              />
               <span className="min-w-0">
                 <span
                   className={`block text-sm font-bold ${s.tehlikeli ? 'text-red-300' : 'text-slate-100'}`}

@@ -17,6 +17,7 @@ import { nativeMi } from '../platform';
 import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 import SayanSayi from '../bilesenler/SayanSayi';
+import Ikon from '../bilesenler/Ikon';
 import UyelikDaveti from '../bilesenler/UyelikDaveti';
 import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
@@ -355,7 +356,8 @@ export default function Sonuc({
             data-alan="yeni-seviye"
             className="mb-5 rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 py-3 text-center text-sm font-bold text-cyan-200"
           >
-            🎉 {yeniAcilanSeviyeEtiket} açıldı!
+            <Ikon ad="yildiz" boyut={16} className="zt-odul-yazi mr-1.5 -mt-0.5" />
+            {yeniAcilanSeviyeEtiket} açıldı!
           </div>
         )}
 
@@ -433,14 +435,22 @@ export default function Sonuc({
             className="mt-5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center"
           >
             <div className="text-sm text-amber-200">
-              🔥 {seriKorumaBilgi!.oncekiSeriGun} günlük serin kırıldı!
+              <Ikon ad="seri" boyut={16} className="mr-1.5 -mt-0.5" />
+              {seriKorumaBilgi!.oncekiSeriGun} günlük serin kırıldı!
             </div>
             <button
               onClick={reklamIzleSeriKoru}
               disabled={seriKorumaYukleniyor}
               className="mt-2 min-h-[40px] w-full rounded-lg bg-amber-400/20 text-sm font-bold text-amber-300 hover:bg-amber-400/30 disabled:opacity-50"
             >
-              {seriKorumaYukleniyor ? 'Yükleniyor…' : '🎬 Reklam izle, serini koru'}
+              {seriKorumaYukleniyor ? (
+                'Yükleniyor…'
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <Ikon ad="video" boyut={16} />
+                  Reklam izle, serini koru
+                </span>
+              )}
             </button>
           </div>
         )}

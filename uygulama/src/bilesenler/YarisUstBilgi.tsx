@@ -13,6 +13,8 @@
  * harfi seçtiği buraya hiç gelmiyor.
  */
 
+import Ikon from './Ikon';
+
 export interface DuelloUstBilgi {
   turNo: number;
   toplamTur: number;
@@ -57,7 +59,8 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
       {arena ? (
         <div data-alan="arena-gostergesi">
           <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-            ⚡ Arena
+            <Ikon ad="arena" boyut={13} className="mr-1 -mt-0.5" />
+            Arena
           </div>
           <div className="text-base font-black text-white">
             Tur{' '}
@@ -132,7 +135,10 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
           {duello.rakipUzaklik == null ? (
             <span className="text-slate-500">Henüz bir şey bulamadı</span>
           ) : duello.rakipUzaklik === 0 ? (
-            <span className="text-amber-300">Tam isabet yaptı 🎯</span>
+            <span className="zt-odul-yazi inline-flex items-center gap-1">
+                Tam isabet yaptı
+                <Ikon ad="hedef" boyut={13} />
+              </span>
           ) : (
             <span className="text-slate-300">Hedefe {duello.rakipUzaklik} kaldı</span>
           )}

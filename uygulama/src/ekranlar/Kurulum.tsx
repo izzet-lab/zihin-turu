@@ -37,6 +37,7 @@ import {
   sonAntrenmanAyariOku,
 } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
+import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
 import SeriVeXp from '../bilesenler/SeriVeXp';
 import KisaSiralama from '../bilesenler/KisaSiralama';
 
@@ -405,7 +406,7 @@ export default function Kurulum({
     anahtar: string;
     ad: string;
     not: string;
-    simge: string;
+    simge: IkonAdi;
     vurgulu?: boolean;
     kapali?: boolean;
     git?: () => void;
@@ -414,7 +415,7 @@ export default function Kurulum({
       anahtar: 'gunun',
       ad: 'Günün Turu',
       not: kilitli && !kelimeMi ? 'Bugünkü turunu oynadın' : 'Herkese aynı bulmaca',
-      simge: '📅',
+      simge: 'gunun',
       vurgulu: true,
       git: () => (kelimeMi ? onKelime?.('gunun') : setEkran('gunun')),
     },
@@ -422,14 +423,14 @@ export default function Kurulum({
       anahtar: 'antrenman',
       ad: 'Antrenman',
       not: 'İstediğin kadar oyna',
-      simge: '♾️',
+      simge: 'antrenman',
       git: () => (kelimeMi ? onKelime?.('antrenman') : setEkran('antrenman')),
     },
     {
       anahtar: 'duello',
       ad: 'Düello',
       not: 'Rakiple 5 tur',
-      simge: '⚔️',
+      simge: 'duello',
       kapali: !onDuello,
       git: () => onDuello?.(seviye, oyun),
     },
@@ -437,7 +438,7 @@ export default function Kurulum({
       anahtar: 'arena',
       ad: 'Arena',
       not: '5 kişi aynı anda',
-      simge: '⚡',
+      simge: 'arena',
       kapali: !onArena,
       git: () => onArena?.(seviye, oyun),
     },
@@ -458,8 +459,13 @@ export default function Kurulum({
       <div className="mt-7 grid grid-cols-2 gap-2.5" data-alan="oyun-secici">
         {(
           [
-            { k: 'sayi' as const, ad: 'Sayı Turu', not: 'Rakamlar, dört işlem', simge: '🔢' },
-            { k: 'kelime' as const, ad: 'Kelime Turu', not: 'Harflerden en uzun kelime', simge: '📖' },
+            { k: 'sayi' as const, ad: 'Sayı Turu', not: 'Rakamlar, dört işlem', simge: 'sayi' as IkonAdi },
+            {
+              k: 'kelime' as const,
+              ad: 'Kelime Turu',
+              not: 'Harflerden en uzun kelime',
+              simge: 'kelime' as IkonAdi,
+            },
           ]
         ).map((o) => (
           <button
@@ -481,9 +487,11 @@ export default function Kurulum({
                 ✓
               </span>
             )}
-            <span className="block text-2xl leading-none" aria-hidden="true">
-              {o.simge}
-            </span>
+            <Ikon
+              ad={o.simge}
+              boyut={26}
+              className={oyun === o.k ? 'text-cyan-300' : 'text-slate-400'}
+            />
             <span
               className={`mt-2 block font-black leading-tight ${
                 oyun === o.k ? 'text-cyan-100' : 'text-slate-100'
@@ -521,12 +529,13 @@ export default function Kurulum({
                   : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
             }`}
           >
-            <div
-              className={`text-xl leading-none ${m.kapali ? 'opacity-40' : ''}`}
-              aria-hidden="true"
-            >
-              {m.simge}
-            </div>
+            <Ikon
+              ad={m.simge}
+              boyut={24}
+              className={
+                m.kapali ? 'text-slate-700' : m.vurgulu ? 'text-cyan-300' : 'text-slate-400'
+              }
+            />
             <div
               className={`mt-2 font-black leading-tight ${
                 m.kapali ? 'text-slate-600' : m.vurgulu ? 'text-cyan-100' : 'text-slate-100'
@@ -552,7 +561,10 @@ export default function Kurulum({
             <span>Bugün {oyuncuSayilari.bugunOynayanlar} kişi oynadı</span>
           )}
           {oyuncuSayilari.bugunTamIsabet && (
-            <span>🎯 {oyuncuSayilari.bugunTamIsabet} kişi tam bildi</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Ikon ad="hedef" boyut={14} className="text-slate-500" />
+              {oyuncuSayilari.bugunTamIsabet} kişi tam bildi
+            </span>
           )}
         </div>
       )}

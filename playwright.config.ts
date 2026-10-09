@@ -26,7 +26,20 @@ export default defineConfig({
   webServer: {
     command: 'npm run insa && npm run onizle',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
+    /*
+     * ÇALIŞAN SUNUCU YENİDEN KULLANILMAZ.
+     *
+     * Önceden kullanılıyordu ve sessiz bir tuzaktı: ekran görüntüsü
+     * ya da elle deneme için açık bırakılmış ESKİ derlemeli bir
+     * sunucu varsa, bütün takım o eski koda karşı koşuyor ve yeşil
+     * veriyordu. Bir oturumda birkaç koşu tam bu yüzden anlamsız
+     * çıktı.
+     *
+     * Artık Playwright kendi sunucusunu kuruyor; 4173 doluysa
+     * gürültülü biçimde hata veriyor. Sessizce yanlış sonuç vermekten
+     * iyidir.
+     */
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

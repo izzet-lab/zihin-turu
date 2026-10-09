@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BrowserContext } from '@playwright/test';
+import { kutlamayiKapat } from './oyun-yardimcilari';
 
 /**
  * duello-kimlik.ts — e2e testleri için test hesabıyla giriş.
@@ -133,6 +134,10 @@ export async function duelloyuTemizle(
   for (let deneme = 0; deneme < 14; deneme++) {
     await sayfa.goto(`/duello?seviye=${seviye}&oyun=${oyun}`);
     await sayfa.waitForTimeout(1200);
+
+    // Açık bir ödül töreni varsa önce o kapatılır; ekranı kaplıyor ve
+    // altındaki düğmelere dokunulmasını engelliyor.
+    await kutlamayiKapat(sayfa);
 
     const gorunur = async (alan: string) =>
       sayfa.locator(`[data-alan="${alan}"]`).isVisible().catch(() => false);

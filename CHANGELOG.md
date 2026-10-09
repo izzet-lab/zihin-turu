@@ -3,6 +3,33 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Düello testlerindeki zamanlama kırılganlığı
+
+Takım tek tek koşturulunca hep yeşildi, tam koşuda arada üç test
+kırmızıya dönüyordu. Üç ayrı sebep bulundu; hiçbiri ürün hatası
+değildi ama ikisi gerçek bir tuzaktı.
+
+**1. Ödül töreni tıklamayı engelliyordu.** Kutlama katmanı ekranı
+kaplıyor ve üç saniye duruyor — gerçek oyuncu için doğru davranış.
+Ama testler maç biter bitmez "Rövanş"a basıyor. Test hesapları
+yüzlerce tur oynadığı için XP eşiklerini ara sıra geçiyorlar ve
+kutlama tam o anda çıkabiliyor. Temizleme adımları ve rövanş öncesi
+artık açık kutlamayı kapatıyor.
+
+**2. Çalışan sunucu yeniden kullanılıyordu.** Ekran görüntüsü için
+açık bırakılmış ESKİ derlemeli bir önizleme varsa bütün takım o eski
+koda karşı koşuyor ve yeşil veriyordu; bir oturumda birkaç koşu tam
+bu yüzden anlamsız çıktı. Playwright artık kendi sunucusunu kuruyor,
+port doluysa gürültülü hata veriyor.
+
+**3. Bot, iki test hesabının arasına giriyordu.** (Aynı gün daha önce
+düzeltildi.) İki hesap sırayla temizlenirken birinci oyuncu kuyrukta
+sekiz saniyeyi aşıyor ve bot devreye giriyordu; test "iki taraf aynı
+maçta mı?" sorusunu hiç soramıyordu. `gercekDuelloKur` eşleşmeyi
+doğruluyor, bota düşülürse yeniden deniyor.
+
+Üç tam takım koşusu arka arkaya yeşil.
+
 ## 2026-10-09 - Crashlytics eşleme dosyası yeniden yüklenebiliyor
 
 İki aydır yüklenemiyordu ve "yerel TLS sorunu" diye bekleyen işler

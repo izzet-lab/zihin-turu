@@ -3,6 +3,31 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-09 - Crashlytics eşleme dosyası yeniden yüklenebiliyor
+
+İki aydır yüklenemiyordu ve "yerel TLS sorunu" diye bekleyen işler
+arasında duruyordu. Sebep bulundu.
+
+Bu makinede Avast, trafiği kendi sertifikasıyla imzalayarak tarıyor.
+Ağustos 2026'da Java'nın güven deposunun bir kopyası alınıp Avast kökü
+o kopyaya eklenmişti. **Avast o kökü sonradan yeniledi**; depodaki
+kök eskidi ve Gradle hiçbir şey indiremez oldu. Hata mesajı aynı
+kaldığı için sorun "zaten biliniyor" sanıldı.
+
+`araclar/java-guven-deposu.sh` depoyu Windows'taki GÜNCEL kökten
+yeniden kuruyor ve Gradle sunucularını durduruyor (çalışan sunucu
+eski ayarla açıldığı için düzeltme ilk denemede işe yaramamıştı).
+Avast kökü yine değişirse aynı betik çalıştırılır.
+
+Doğrulandı: eşleme dosyası yüklendi, ağa açık tam paket derlemesi
+baştan sona geçti.
+
+**Yan düzeltme — `deno check` npm ağacını bozuyormuş.** Edge Function
+denetimi depo kökünde `node_modules/.deno` açıyor ve npm'in kurduğu
+ağacı yeniden düzenliyordu: Capacitor eklenti yolları o klasörün
+içine işaret etmeye başladı, `cap sync` ve Android derlemesi düştü.
+Denetim artık geçici bir klasörde koşuyor.
+
 ## 2026-10-09 - Çekimli biçimler: eksikler kapandı
 
 Çekim tanıma zaten vardı ("kitabı", "evde", "arabasını" kabul

@@ -15,8 +15,25 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+/*
+ * DENO KENDI node_modules'UNU AYRI BIR KLASORE KURSUN.
+ *
+ * `--node-modules-dir=auto` calistigi klasore `node_modules/.deno`
+ * aciyor. Depo kokunde calistirildiginda npm'in kurdugu agaci
+ * yeniden duzenliyor ve `npx cap sync` gibi araclar bozuluyor —
+ * Capacitor eklenti yollari `.deno` icine isaret etmeye basladi ve
+ * Android derlemesi dustu. Denetim artik gecici bir klasorde kosuyor;
+ * dosyalar mutlak yolla veriliyor.
+ */
 
 const ONEMLI = ['TS2304', 'TS2552', 'TS2307'];
+
+const kok = process.cwd();
+const gecici = mkdtempSync(join(tmpdir(), 'tamisabet-denetim-'));
 
 const sonuc = spawnSync(
   'npx',
@@ -26,10 +43,10 @@ const sonuc = spawnSync(
     'check',
     '--node-modules-dir=auto',
     '--import-map',
-    'sunucu/fonksiyonlar/import_map.json',
-    'sunucu/fonksiyonlar/*/index.ts',
+    JSON.stringify(resolve(kok, 'sunucu/fonksiyonlar/import_map.json')),
+    JSON.stringify(resolve(kok, 'sunucu/fonksiyonlar/*/index.ts')),
   ],
-  { encoding: 'utf8', shell: true },
+  { encoding: 'utf8', shell: true, cwd: gecici },
 );
 
 const cikti = `${sonuc.stdout ?? ''}${sonuc.stderr ?? ''}`.replace(

@@ -12,6 +12,7 @@
  */
 
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { supabase } from './supabase';
 import { nativeMi } from './platform';
 
@@ -24,6 +25,18 @@ export function derinBaglantiDinle(): void {
       await oturumKur(url);
     } catch (e) {
       console.error('[derinBaglanti] Oturum kurulamadı:', e);
+    } finally {
+      /*
+       * Google girişi sistem tarayıcısında açılıyor; dönüşte o sekme
+       * üstte kalıyor ve oyuncu uygulamayı görmüyor. Oturum kurulsa da
+       * kurulmasa da kapatılır — açık kalan tarayıcı "giriş olmadı"
+       * hissi veriyor.
+       */
+      try {
+        await Browser.close();
+      } catch {
+        // Tarayıcı zaten kapalıysa önemli değil.
+      }
     }
   });
 }

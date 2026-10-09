@@ -24,6 +24,28 @@ describe('Türkçe sözlük', () => {
     }
   });
 
+  it('alkollü içecekler listede yok', () => {
+    // Proje sahibinin kararı: bu kelimeler oyunda hiç geçmesin — ne
+    // cevap olarak kabul edilsin ne de hedef olarak gösterilsin.
+    for (const k of [
+      'alkol', 'bira', 'rakı', 'şarap', 'votka', 'viski', 'konyak',
+      'likör', 'şampanya', 'meyhane', 'içki', 'sarhoş', 'ayyaş',
+      'biralar', 'şaraplar',
+    ]) {
+      expect(sozluk.icerir(k), `${k} listede kalmamalı`).toBe(false);
+      expect(yaygin.icerir(k), `${k} hedef listesinde kalmamalı`).toBe(false);
+    }
+  });
+
+  it('eş anlamlısı olan kelimeler silinmedi', () => {
+    // "cin" peri, "bar" halk oyunu, "rom" Roman, "şarapnel" top
+    // mermisi. İçki ayıklaması bunlara dokunmamalı; dokunursa süzgeç
+    // tam kelime yerine parça eşleştiriyor demektir.
+    for (const k of ['cin', 'bar', 'rom', 'şarapnel', 'kadeh', 'şişe']) {
+      expect(sozluk.icerir(k), k).toBe(true);
+    }
+  });
+
   it('düzenli çoğullar da kabul ediliyor', () => {
     // Oyuncunun "kitaplar" yazıp reddedilmesi can sıkıcı olurdu.
     for (const k of ['kitaplar', 'denizler', 'elmalar', 'çiçekler']) {

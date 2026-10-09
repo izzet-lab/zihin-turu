@@ -322,12 +322,9 @@ kimliği iznini kaldırıyordu, bu yüzden kural 6'nın "18+ onay verirse
 kişiselleştirilmiş reklam" vaadi çalışmıyordu. İzin geri kondu; 18 altı
 yasağı `npa` bayrağıyla aynen sürüyor. Ayrıntı `CHANGELOG.md`'de.
 
-**Kalan iki iş:**
-1. Paket bir cihazda açılıp çalıştığı doğrulanmalı (R8'in bir şeyi
-   bozmadığından emin olmanın tek kesin yolu). Bu makinede telefon ve
-   emülatör yok.
-2. Yasal metinler avukat onayından geçmeli — reklam kimliği ifadeleri
-   değişti.
+**Kalan iş:** Yasal metinler avukat onayından geçmeli — reklam
+kimliği ifadeleri değişti. (Paketin cihazda çalıştığı doğrulandı:
+proje sahibi 9 Ekim 2026'da 2.x sürümlerini kurup oynadı.)
 
 ### ~~Faz 4 — Düello~~ — bitti (Eylül 2026)
 ### ~~Faz 5 — Arena~~ — bitti (7 Ekim 2026)
@@ -345,8 +342,11 @@ Ayrıntılar `CHANGELOG.md`'de.
 2. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
    test kullanıcısı, 14 günlük kapalı test. Proje sahibinin işi.
 3. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
-4. **Crashlytics eşleme dosyası** 1.8.0'dan beri yüklenmiyor (yerel
-   TLS sorunu). Dosya derlemede üretiliyor, elle yüklenebilir.
+4. ~~**Crashlytics eşleme dosyası** yüklenmiyor~~ — çözüldü
+   (9 Ekim 2026). Sebebi Avast'ın TLS tarama kökünü yenilemesiydi;
+   Java'nın güven deposu eski kökü tutuyordu. `bash
+   araclar/java-guven-deposu.sh` depoyu Windows'taki güncel kökten
+   yeniden kuruyor. Avast kökü yine değişirse aynı betik çalıştırılır.
 5. **Edge Function tip denetimi tam değil.** `npm run sunucu-denetle`
    yalnızca tanımsız isim ve bulunamayan dosya arıyor; tam denetim
    Supabase kütüphanesinin çözülen sürümünden onlarca sahte uyarı
@@ -372,4 +372,5 @@ Ayrıntılar `CHANGELOG.md`'de.
 - Ödül altını yerine uyarı sarısı kullanmak — iki anlam karışır
 - `transform`/`opacity` dışında bir şeyi canlandırmak — ucuz telefonda kare düşer
 - Aynı kartı iki ekranda ayrı ayrı yazmak — seri/XP kartı tam bunu yaşadı
+- `deno check`'i depo kökünde çalıştırmak — `node_modules/.deno` açıp npm ağacını bozuyor
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

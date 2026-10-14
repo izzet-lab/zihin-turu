@@ -503,7 +503,7 @@ export default function Kurulum({
             </span>
             <span
               className={`mt-0.5 block text-[11px] leading-snug ${
-                oyun === o.k ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
+                oyun === o.k ? 'zt-vurgu-metin' : 'zt-metin-soluk'
               }`}
             >
               {o.not}
@@ -547,7 +547,7 @@ export default function Kurulum({
             </div>
             <div
               className={`mt-0.5 text-[11px] leading-snug ${
-                m.kapali ? 'zt-metin-soluk' : m.vurgulu ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
+                m.kapali ? 'zt-metin-soluk' : m.vurgulu ? 'zt-vurgu-metin' : 'zt-metin-soluk'
               }`}
             >
               {m.not}

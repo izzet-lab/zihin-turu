@@ -67,7 +67,7 @@ export default function SeviyeIzgara({
               {seciliMi && (
                 <span
                   aria-hidden="true"
-                  className="absolute right-2 top-2 text-[11px] font-black zt-metin/60"
+                  className="absolute right-2 top-2 text-[11px] font-black zt-metin-soluk"
                 >
                   ✓
                 </span>

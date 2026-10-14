@@ -469,7 +469,7 @@ export default function Sonuc({
             gösterilmez: o an oturum toplamı tur puanının aynısı olur ve
             aynı sayıyı ikinci kez göstermek ekranı kalabalıklaştırır. */}
         {oturumGoster && (
-          <div className="mt-5 text-center text-sm zt-vurgu-metin/80" data-alan="oturum-ozet">
+          <div className="mt-5 text-center text-sm zt-vurgu-metin" data-alan="oturum-ozet">
             Bu oturum: <span className="font-bold tabular-nums">{oturumPuanSonrasi!.toplamPuan} puan</span> ·{' '}
             {oturumPuanSonrasi!.turSayisi}. tur
           </div>

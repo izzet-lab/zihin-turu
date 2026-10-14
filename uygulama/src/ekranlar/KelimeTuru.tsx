@@ -335,7 +335,7 @@ export default function KelimeTuru({
               </span>
               <span
                 className={`mt-0.5 block text-[11px] leading-snug ${
-                  mod === m.k ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
+                  mod === m.k ? 'zt-vurgu-metin' : 'zt-metin-soluk'
                 }`}
               >
                 {m.alt}

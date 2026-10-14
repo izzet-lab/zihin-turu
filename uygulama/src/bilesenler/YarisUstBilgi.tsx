@@ -176,7 +176,7 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
                 <span
                   aria-hidden="true"
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
-                    y.benMiyim ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
+                    y.benMiyim ? 'zt-vurgu-yuzey zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {y.ad.trim().charAt(0).toLocaleUpperCase('tr')}

@@ -244,7 +244,7 @@ export default function Giris({ onAtla }: Props) {
 
           {/* Veli onayı — 13-17 arası ise göster */}
           {veliOnayiGerekli && (
-            <label className="flex items-start gap-3 cursor-pointer rounded-xl border zt-odul-yuzey zt-sure-az/5 p-3">
+            <label className="flex items-start gap-3 cursor-pointer rounded-xl border zt-odul-yuzey zt-odul-yuzey p-3">
               <input
                 type="checkbox"
                 checked={veliOnayi}

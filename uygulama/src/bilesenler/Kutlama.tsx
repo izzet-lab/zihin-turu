@@ -93,7 +93,7 @@ export default function KutlamaKatmani() {
       // z-[60]: "Nasıl oynanır" penceresi ve menü z-50'de duruyor.
       // Aynı katmanda kalsaydı ilk turunu bitiren yeni oyuncunun
       // kutlaması yardım penceresinin ARKASINDA kalırdı.
-      className="zt-kutlama fixed inset-0 z-[60] flex flex-col items-center justify-center zt-kagit/[0.97] px-8 text-center"
+      className="zt-kutlama fixed inset-0 z-[60] flex flex-col items-center justify-center zt-perde-koyu px-8 text-center"
       onClick={sonraki}
       role="status"
       aria-live="polite"

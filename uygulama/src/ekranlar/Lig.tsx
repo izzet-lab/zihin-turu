@@ -334,7 +334,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 <span
                   aria-hidden="true"
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${
-                    s.benimMi ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
+                    s.benimMi ? 'zt-vurgu-yuzey zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {s.kullaniciAdi.trim().charAt(0).toLocaleUpperCase('tr')}
@@ -404,7 +404,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                   </div>
                   <span
                     aria-hidden="true"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full zt-dugme/25 text-sm font-black zt-vurgu-metin"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full zt-vurgu-yuzey text-sm font-black zt-vurgu-metin"
                   >
                     S
                   </span>

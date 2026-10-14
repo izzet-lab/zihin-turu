@@ -248,7 +248,7 @@ function JokerSatir({
           söylememek "3 puan mı kaybettim?" diye düşündürüyordu.
         */}
         <span className="ml-1.5 text-xs zt-odul-yazi">
-          −{bedel} <span className="zt-odul-yazi/60">(Günün Turu'nda −{bedel * 10})</span>
+          −{bedel} <span className="zt-odul-yazi">(Günün Turu'nda −{bedel * 10})</span>
         </span>
         <p className="text-xs zt-metin-soluk">{aciklama}</p>
       </div>

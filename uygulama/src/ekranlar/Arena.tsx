@@ -382,7 +382,7 @@ export default function Arena({
                 <span
                   aria-hidden="true"
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    y?.benMiyim ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
+                    y?.benMiyim ? 'zt-vurgu-yuzey zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {y ? y.ad.trim().charAt(0).toLocaleUpperCase('tr') : '·'}
@@ -593,7 +593,7 @@ export default function Arena({
           className="zt-sahne rounded-2xl border zt-vurgu-cizgi zt-vurgu-yuzey px-5 py-6"
           data-alan="arena-kilit-bekleme"
         >
-          <div className="text-[11px] font-bold uppercase tracking-widest zt-vurgu-metin/70">
+          <div className="text-[11px] font-bold uppercase tracking-widest zt-vurgu-metin">
             Cevabın kilitlendi
           </div>
           <div className="zt-rakam mt-1 text-5xl font-black leading-none zt-vurgu-metin">

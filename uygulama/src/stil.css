@@ -1185,3 +1185,12 @@ main {
   border-color: var(--soluk);
   color: var(--soluk);
 }
+
+/*
+ * Kutlama perdesi — kâğıdın neredeyse donuk hâli.
+ *
+ * Tailwind'in `/opaklik` sözdizimi yalnızca kendi renk sınıflarında
+ * çalışıyor; tema sınıfına eklenince sınıf tamamen geçersiz oluyor ve
+ * zemin kayboluyordu. Yarı saydam gerekiyorsa böyle ayrı bir sınıf.
+ */
+.zt-perde-koyu { background-color: color-mix(in srgb, var(--kagit) 97%, transparent); }

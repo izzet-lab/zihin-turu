@@ -443,7 +443,10 @@ export default function Oyun({
     // pt-16: sabit hamburger menü (top-4 + 44px) içeriğin üstüne
     // binmesin diye. Menü düğmesi artık başlığın üstünde duruyor.
     <main
-      className={`zt-ekran min-h-dvh zt-kagit px-5 pb-6 pt-16 zt-metin ${
+      // `--zt-ust`: sabit hamburger menü içeriğin üstüne binmesin diye
+      // geniş; güvenli alan bunun ÜSTÜNE ekleniyor (bkz. .zt-ust-bosluk).
+      style={{ ['--zt-ust' as string]: '4rem' }}
+      className={`zt-ekran zt-ust-bosluk min-h-dvh zt-kagit px-5 pb-6 zt-metin ${
         sarsinti ? 'zt-sarsinti' : ''
       }`}
     >
@@ -533,11 +536,22 @@ export default function Oyun({
                 className={`zt-dusen overflow-hidden rounded-xl border px-2 font-black tabular-nums leading-none ${
                   yaris ? 'min-h-[76px]' : 'min-h-[64px]'
                 } ${rakamBoyu(t.deger, !!yaris)} ${
+                  /*
+                   * TAŞA TEMA RENGİ SINIFI VERİLMEZ.
+                   *
+                   * Yüzeyi ve rakam rengi `[data-tas]` kuralında sabit
+                   * (fildişi + mürekkep). Buraya `zt-metin` yazıldığında
+                   * rakam temadan besleniyordu: gece temasında açık renk
+                   * oluyor ve fildişi taşın üstünde okunmuyordu.
+                   *
+                   * Seçili ve üretilmiş hâller yalnızca ÇERÇEVEYLE
+                   * anlatılıyor; taşın kendisi hiç değişmiyor.
+                   */
                   secili
-                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin ring-2 ring-cyan-300/60'
+                    ? 'zt-vurgu-cizgi'
                     : uretilmis
-                      ? 'zt-vurgu-cizgi zt-yuzey-2 zt-vurgu-metin'
-                      : 'zt-cizgi zt-yuzey-2 zt-metin'
+                      ? 'zt-vurgu-cizgi'
+                      : 'border-transparent'
                 }`}
               >
                 {t.deger}
@@ -604,24 +618,32 @@ export default function Oyun({
               }
 
               return (
-                <div key={j.tip} className="relative">
-                  <button
-                    data-joker={j.tip}
-                    onClick={() => jokerKullan(j.tip)}
-                    disabled={devreDisi}
-                    title={devreDisiNot ?? undefined}
-                    className="min-h-[52px] w-full rounded-lg border zt-cizgi zt-yuzey px-1 text-[11px] font-bold zt-metin transition active:scale-95 disabled:opacity-30"
-                  >
-                    <Ikon ad={j.simge} boyut={18} className="zt-vurgu-metin" />
-                    <div className="mt-1 leading-tight">{j.ad}</div>
-                    <div className="zt-metin-soluk">−{JOKER_MALIYET[j.tip]} puan</div>
-                  </button>
-                  {devreDisiNot && (
-                    <div className="mt-0.5 text-center text-[9px] leading-tight zt-metin-soluk">
+                /*
+                 * DEVRE DIŞI SEBEBİ JOKERİN KENDİ İÇİNDE.
+                 *
+                 * Önce notu düğmenin altına yazıyorduk; üç joker yan
+                 * yanayken not ortada asılı duruyor ve hangisine ait
+                 * olduğu anlaşılmıyordu. Artık sebep, o jokerin bedel
+                 * satırının yerine geçiyor — bağ tartışmasız.
+                 */
+                <button
+                  key={j.tip}
+                  data-joker={j.tip}
+                  onClick={() => jokerKullan(j.tip)}
+                  disabled={devreDisi}
+                  title={devreDisiNot ?? undefined}
+                  className="min-h-[52px] w-full rounded-lg border zt-cizgi zt-yuzey px-1 py-1.5 text-[11px] font-bold zt-metin transition active:scale-95 disabled:opacity-45"
+                >
+                  <Ikon ad={j.simge} boyut={18} className="zt-vurgu-metin" />
+                  <div className="mt-1 leading-tight">{j.ad}</div>
+                  {devreDisiNot ? (
+                    <div className="zt-metin-soluk mt-0.5 text-[9px] leading-tight" data-alan="joker-not">
                       {devreDisiNot}
                     </div>
+                  ) : (
+                    <div className="zt-metin-soluk">−{JOKER_MALIYET[j.tip]} puan</div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -639,7 +661,7 @@ export default function Oyun({
             <button
               onClick={reklamIzleJokerKazan}
               disabled={reklamYukleniyor}
-              className="mt-2 w-full rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs font-bold zt-odul-yazi transition hover:bg-amber-400/20 disabled:opacity-50"
+              className="mt-2 w-full rounded-lg border zt-odul-yuzey zt-odul-yuzey px-3 py-2 text-xs font-bold zt-odul-yazi transition disabled:opacity-50"
               data-alan="reklam-joker"
             >
               {reklamYukleniyor ? (
@@ -684,7 +706,7 @@ export default function Oyun({
             // Kip adını taşır: testler ve ekran okuyucular hangi
             // yarıştan çıkıldığını ayırt edebilsin.
             data-alan={arena ? 'arena-terk' : 'duello-terk'}
-            className="zt-dokunma-alani mt-3 self-center text-xs font-bold zt-metin-soluk hover:zt-metin-soluk"
+            className="zt-dokunma-alani mt-3 self-center text-xs font-bold zt-metin-soluk"
           >
             {arena ? 'Yarıştan çık' : 'Maçtan çık'}
           </button>

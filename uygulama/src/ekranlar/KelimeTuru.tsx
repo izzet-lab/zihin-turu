@@ -22,6 +22,7 @@ import { kelimeGonder } from '../kimlik';
 import { kutlamayiDenetle } from '../kutlama';
 import { titret } from '../titresim';
 import Ikon from '../bilesenler/Ikon';
+import ArkaPlan from '../bilesenler/ArkaPlan';
 import SayanSayi from '../bilesenler/SayanSayi';
 import { bugun, kelimeGunlukOynandiMi, kelimeGunlukIsaretle } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
@@ -42,7 +43,7 @@ type Asama = 'yukleniyor' | 'seviye' | 'oyun' | 'sonuc';
 type Mod = 'gunun' | 'antrenman';
 
 /** Rafa konan tek bir harf. Aynı harf havuzda birden çok kez olabilir,
- *  bu yüzden kimlik harfin kendisi değil sırası. */
+ * bu yüzden kimlik harfin kendisi değil sırası. */
 interface Tas {
   id: number;
   harf: string;
@@ -98,7 +99,7 @@ export default function KelimeTuru({
   );
 
   /* --------------------------------------------------------------- */
-  /* Sözlüğü yükle                                                     */
+  /* Sözlüğü yükle */
   /* --------------------------------------------------------------- */
 
   useEffect(() => {
@@ -122,7 +123,7 @@ export default function KelimeTuru({
   }, []);
 
   /* --------------------------------------------------------------- */
-  /* Tur akışı                                                         */
+  /* Tur akışı */
   /* --------------------------------------------------------------- */
 
   const turBaslat = useCallback(
@@ -224,7 +225,7 @@ export default function KelimeTuru({
   }, [asama, tur]);
 
   /* --------------------------------------------------------------- */
-  /* Harf seçimi                                                       */
+  /* Harf seçimi */
   /* --------------------------------------------------------------- */
 
   const harfTikla = (id: number) => {
@@ -248,21 +249,21 @@ export default function KelimeTuru({
     .join('');
 
   /* --------------------------------------------------------------- */
-  /* Ekranlar                                                          */
+  /* Ekranlar */
   /* --------------------------------------------------------------- */
 
   if (yuklemeHatasi) {
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-20 text-center">
-          <Ikon ad="kitap-kapali" boyut={44} className="text-slate-600" />
-          <h1 className="mt-4 text-xl font-black text-white">Sözlük yüklenemedi</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <Ikon ad="kitap-kapali" boyut={44} className="zt-metin-soluk" />
+          <h1 className="mt-4 text-xl font-black zt-metin">Sözlük yüklenemedi</h1>
+          <p className="mt-2 text-sm zt-metin-soluk">
             Kelime turu sözlüğe ihtiyaç duyuyor. Bağlantını kontrol edip tekrar dene.
           </p>
           <button
             onClick={onCik}
-            className="mt-6 min-h-[44px] rounded-xl bg-slate-800 px-6 font-bold text-slate-200"
+            className="mt-6 min-h-[44px] rounded-xl zt-ayirac px-6 font-bold zt-metin"
           >
             Geri dön
           </button>
@@ -275,8 +276,8 @@ export default function KelimeTuru({
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-24 text-center" data-alan="kelime-yukleniyor">
-          <Ikon ad="kelime" boyut={44} className="zt-nabiz text-slate-500" />
-          <p className="mt-4 text-sm font-bold text-slate-400">Sözlük hazırlanıyor…</p>
+          <Ikon ad="kelime" boyut={44} className="zt-nabiz zt-metin-soluk" />
+          <p className="mt-4 text-sm font-bold zt-metin-soluk">Sözlük hazırlanıyor…</p>
         </div>
       </Cerceve>
     );
@@ -285,8 +286,8 @@ export default function KelimeTuru({
   if (asama === 'seviye') {
     return (
       <Cerceve onCik={onCik}>
-        <h1 className="text-2xl font-black leading-none text-white">Kelime Turu</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <h1 className="text-2xl font-black leading-none zt-metin">Kelime Turu</h1>
+        <p className="mt-1 text-sm zt-metin-soluk">
           Verilen harflerden en uzun kelimeyi türet. Her harf bir kez kullanılır.
         </p>
 
@@ -316,25 +317,25 @@ export default function KelimeTuru({
               onClick={() => setMod(m.k)}
               className={`zt-secim min-h-[92px] rounded-xl border-2 px-3 py-3 text-left transition ${
                 mod === m.k
-                  ? 'zt-secim-acik border-cyan-300 bg-cyan-300/15'
-                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                  ? 'zt-secim-acik zt-vurgu-cizgi zt-vurgu-yuzey'
+                  : 'zt-cizgi zt-yuzey-2'
               }`}
             >
               <Ikon
                 ad={m.simge}
                 boyut={24}
-                className={mod === m.k ? 'text-cyan-300' : 'text-slate-400'}
+                className={mod === m.k ? 'zt-vurgu-metin' : 'zt-metin-soluk'}
               />
               <span
                 className={`mt-2 block font-black leading-tight ${
-                  mod === m.k ? 'text-cyan-100' : 'text-slate-100'
+                  mod === m.k ? 'zt-vurgu-metin' : 'zt-metin'
                 }`}
               >
                 {m.ad}
               </span>
               <span
                 className={`mt-0.5 block text-[11px] leading-snug ${
-                  mod === m.k ? 'text-cyan-200/70' : 'text-slate-400'
+                  mod === m.k ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
                 }`}
               >
                 {m.alt}
@@ -345,7 +346,7 @@ export default function KelimeTuru({
 
         {mod === 'gunun' && gunlukKilit && (
           <div
-            className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-sm text-slate-400"
+            className="mt-3 rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-sm zt-metin-soluk"
             data-alan="kelime-gunluk-kilit"
           >
             Günün kelime turunu bugün oynadın. Yarın yeni harfler gelecek —
@@ -372,7 +373,7 @@ export default function KelimeTuru({
           data-alan="kelime-basla"
           disabled={mod === 'gunun' && gunlukKilit}
           onClick={() => turBaslat(seviye, mod)}
-          className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition hover:bg-cyan-200 active:scale-[.99] disabled:opacity-40"
+          className="mt-8 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[.99] disabled:opacity-40"
         >
           {mod === 'gunun' ? 'Günün Kelime Turunu Oyna' : 'Başla'}
         </button>
@@ -398,15 +399,15 @@ export default function KelimeTuru({
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-6 text-center" data-alan="kelime-sonuc">
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">
             {sonuc.kelime ? 'Bulduğun kelime' : 'Kelime yazmadın'}
           </div>
           {sonuc.kelime && (
-            <div className="zt-rakam mt-2 break-all text-4xl font-black leading-none text-cyan-200">
+            <div className="zt-rakam mt-2 break-all text-4xl font-black leading-none zt-vurgu-metin">
               {turkceBuyult(sonuc.kelime)}
             </div>
           )}
-          <div className="mt-2 text-sm text-slate-400">
+          <div className="mt-2 text-sm zt-metin-soluk">
             {tamMi
               ? 'En uzun kelimeyi buldun'
               : sonuc.kelime
@@ -414,10 +415,10 @@ export default function KelimeTuru({
                 : 'Bu turdan puan çıkmadı'}
           </div>
 
-          <div className="zt-sahne mt-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Puan</div>
+          <div className="zt-sahne mt-6 rounded-2xl border zt-cizgi zt-yuzey p-5">
+            <div className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">Puan</div>
             {/* Puan sayarak çıkar: sonuca VARIŞ tatmin ediyor. */}
-            <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-300">
+            <div className="zt-rakam mt-1 text-5xl font-black leading-none zt-vurgu-metin">
               +<SayanSayi deger={sonuc.puan} />
             </div>
           </div>
@@ -428,11 +429,11 @@ export default function KelimeTuru({
               okunuyordu. Aynı uzunlukta birden çok çözüm olabilir. */}
           {cozumFarkli && (
           <div className="mt-5 text-left">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               {tamMi ? 'Aynı uzunlukta bir başka çözüm' : 'Bu harflerden çıkan en uzun kelime'}
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-              <span className="elyazisi text-lg text-cyan-100">{sonuc.enUzun}</span>
+            <div className="rounded-xl border zt-cizgi zt-yuzey p-4">
+              <span className="elyazisi text-lg zt-vurgu-metin">{sonuc.enUzun}</span>
             </div>
           </div>
           )}
@@ -440,27 +441,27 @@ export default function KelimeTuru({
           {/* LIGE ISLEDI MI — puani sunucu veriyor (kural 2). */}
           <div className="mt-4 text-xs" data-alan="kelime-lig-durumu">
             {mod === 'antrenman' ? (
-              <span className="text-slate-500">Antrenman turu lige işlemez.</span>
+              <span className="zt-metin-soluk">Antrenman turu lige işlemez.</span>
             ) : gonderiliyor ? (
-              <span className="text-slate-500">Sunucuya gönderiliyor…</span>
+              <span className="zt-metin-soluk">Sunucuya gönderiliyor…</span>
             ) : sunucuPuan != null ? (
-              <span className="text-cyan-300">Lige işlendi · sunucu {sunucuPuan} puan verdi</span>
+              <span className="zt-vurgu-metin">Lige işlendi · sunucu {sunucuPuan} puan verdi</span>
             ) : (
-              <span className="text-slate-500">
+              <span className="zt-metin-soluk">
                 Lige işlenmedi — puan için giriş yapmış olman gerekiyor.
               </span>
             )}
           </div>
 
           {oturum.turSayisi > 1 && (
-            <div className="mt-5 text-sm text-slate-400" data-alan="kelime-oturum">
+            <div className="mt-5 text-sm zt-metin-soluk" data-alan="kelime-oturum">
               Bu oturumda {oturum.turSayisi} turda {oturum.puan} puan topladın.
             </div>
           )}
 
           <button
             onClick={() => turBaslat(seviye, 'antrenman')}
-            className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition active:scale-[0.99]"
+            className="mt-6 min-h-[52px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[0.99]"
             data-alan="kelime-yeni-tur"
           >
             {/* Gunun turu gunde bir kez; "yeni tur" antrenmana gecirir. */}
@@ -468,7 +469,7 @@ export default function KelimeTuru({
           </button>
           <button
             onClick={() => setAsama('seviye')}
-            className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-500"
+            className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk"
           >
             Seviye değiştir
           </button>
@@ -481,44 +482,44 @@ export default function KelimeTuru({
   const sureYuzde = Math.max(0, (kalan / seviyeAyar.sure) * 100);
 
   return (
-    <Cerceve onCik={onCik}>
+    <Cerceve onCik={onCik} sessizArka>
       <div className="flex items-center justify-between pr-14">
-        <div className="text-xs font-bold text-slate-400" data-alan="kelime-gostergesi">
+        <div className="text-xs font-bold zt-metin-soluk" data-alan="kelime-gostergesi">
           <Ikon ad="kelime" boyut={15} className="mr-1.5 -mt-0.5" />
           Kelime Turu · {seviyeAyar.etiket}
         </div>
       </div>
 
       {/* Süre çubuğu */}
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-800">
+      <div className="mt-4 h-2 w-full overflow-hidden rounded-full zt-ayirac">
         <div
           className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${
-            sureYuzde < 25 ? 'bg-amber-400' : 'bg-cyan-300'
+            sureYuzde < 25 ? 'zt-sure-az' : 'zt-dugme'
           }`}
           style={{ width: `${sureYuzde}%` }}
           data-alan="kelime-sure-cubuk"
         />
       </div>
-      <div className="mt-1 text-right text-[11px] text-slate-500" data-alan="kelime-sure-kalan">
+      <div className="mt-1 text-right text-[11px] zt-metin-soluk" data-alan="kelime-sure-kalan">
         {kalan} sn
       </div>
 
       {/* Yazılan kelime — boşken ne yapılacağını söylüyor. */}
       <div
-        className="zt-sahne mt-5 flex min-h-[84px] items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/40 px-4"
+        className="zt-sahne mt-5 flex min-h-[84px] items-center justify-center rounded-2xl border zt-cizgi zt-yuzey px-4"
         data-alan="kelime-yazilan"
       >
         {yazilan ? (
-          <span className="zt-rakam break-all text-center text-3xl font-black leading-none text-cyan-100">
+          <span className="zt-rakam break-all text-center text-3xl font-black leading-none zt-vurgu-metin">
             {turkceBuyult(yazilan)}
           </span>
         ) : (
-          <span className="text-sm text-slate-600">Harflere dokunarak kelime kur</span>
+          <span className="text-sm zt-metin-soluk">Harflere dokunarak kelime kur</span>
         )}
       </div>
 
       {uyari && (
-        <div className="mt-2 text-center text-xs font-bold text-amber-300" data-alan="kelime-uyari">
+        <div className="mt-2 text-center text-xs font-bold zt-odul-yazi" data-alan="kelime-uyari">
           {uyari}
         </div>
       )}
@@ -536,10 +537,10 @@ export default function KelimeTuru({
               aria-pressed={secili}
               onClick={() => harfTikla(t.id)}
               style={{ ['--zt-sira' as string]: String(sira) }}
+              // Taşın yüzeyi ve harf rengi `[data-harf]` kuralında
+              // sabit; buraya tema sınıfı yazılmaz (bkz. Oyun.tsx).
               className={`zt-dusen min-h-[64px] rounded-xl border text-2xl font-black uppercase leading-none ${
-                secili
-                  ? 'border-cyan-300/60 bg-cyan-300/10 text-cyan-100'
-                  : 'border-slate-700 bg-slate-800/50 text-slate-100'
+                secili ? 'zt-vurgu-cizgi' : 'border-transparent'
               }`}
             >
               {turkceBuyult(t.harf)}
@@ -552,7 +553,7 @@ export default function KelimeTuru({
         <button
           onClick={sonHarfiSil}
           disabled={secilenler.length === 0}
-          className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-800/50 font-bold text-slate-200 disabled:opacity-40"
+          className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey-2 font-bold zt-metin disabled:opacity-40"
           data-alan="kelime-sil"
         >
           ← Sil
@@ -560,7 +561,7 @@ export default function KelimeTuru({
         <button
           onClick={temizle}
           disabled={secilenler.length === 0}
-          className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-800/50 font-bold text-slate-200 disabled:opacity-40"
+          className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey-2 font-bold zt-metin disabled:opacity-40"
           data-alan="kelime-temizle"
         >
           Temizle
@@ -569,7 +570,7 @@ export default function KelimeTuru({
 
       <button
         onClick={bitir}
-        className="mt-3 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition active:scale-[0.99]"
+        className="mt-3 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[0.99]"
         data-alan="kelime-bitir"
       >
         Bitir
@@ -586,14 +587,25 @@ export default function KelimeTuru({
  * üstüne biniyordu ve iki düğme birbirini yiyordu. Çıkış artık
  * uygulamanın her yerindeki gibi sol üstte "← Geri".
  */
-function Cerceve({ children, onCik }: { children: React.ReactNode; onCik: () => void }) {
+function Cerceve({
+  children,
+  onCik,
+  sessizArka = false,
+}: {
+  children: React.ReactNode;
+  onCik: () => void;
+  /** Oyun sürerken arka plan susturulur: dikkat dağıtmamalı. */
+  sessizArka?: boolean;
+}) {
   return (
-    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-8 text-slate-200">
-      <div className="mx-auto w-full max-w-md">
+    <main className="zt-ekran zt-ust-bosluk zt-kagit zt-metin relative min-h-dvh px-5 pb-6">
+      {/* Kelime turunda arka plan HARFLERLE. */}
+      <ArkaPlan oyun="kelime" sessiz={sessizArka} />
+      <div className="relative z-10 mx-auto w-full max-w-md">
         <button
           onClick={onCik}
           data-alan="kelime-cik"
-          className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
+          className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold zt-vurgu-metin"
         >
           ← Geri
         </button>

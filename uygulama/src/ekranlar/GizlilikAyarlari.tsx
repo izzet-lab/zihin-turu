@@ -96,9 +96,9 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
       alt="Hangi verilerin toplanacağına sen karar ver"
       onGeri={onGeri}
       cocuklar={
-        <div className="space-y-4 text-sm text-slate-300 leading-relaxed">
+        <div className="space-y-4 text-sm zt-metin leading-relaxed">
           {!nativeMi() && (
-            <div className="rounded-lg border border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+            <div className="rounded-lg border zt-cizgi zt-yuzey p-4 text-xs zt-metin-soluk">
               Tarayıcıdan oynuyorsun. Bu sürümde çökme raporu, kullanım olayı veya
               bildirim <strong>hiç toplanmıyor</strong> — aşağıdaki ayarlar yalnızca
               Android uygulamasında geçerli.
@@ -106,7 +106,7 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
           )}
 
           {/* Bildirim — saat seçici ile birlikte */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="rounded-xl border zt-cizgi zt-yuzey p-4">
             <label className="flex cursor-pointer items-start gap-3">
               <input
                 type="checkbox"
@@ -115,8 +115,8 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
                 className="mt-1 accent-cyan-400"
               />
               <span>
-                <span className="block font-bold text-slate-200">Günlük hatırlatma</span>
-                <span className="mt-1 block text-xs text-slate-400">
+                <span className="block font-bold zt-metin">Günlük hatırlatma</span>
+                <span className="mt-1 block text-xs zt-metin-soluk">
                   Her gün seçtiğin saatte "günün turu hazır" bildirimi alırsın.
                   O gün zaten oynadıysan bildirim gelmez.
                 </span>
@@ -126,12 +126,12 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
             {/* Saat seçici — bildirim açıkken göster */}
             {bAyar.acik && (
               <div className="mt-3 flex items-center gap-3 pl-7">
-                <span className="text-xs text-slate-400">Saat:</span>
+                <span className="text-xs zt-metin-soluk">Saat:</span>
                 <input
                   type="time"
                   value={saatDeger}
                   onChange={(e) => saatDegistir(e.target.value)}
-                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-200 accent-cyan-400"
+                  className="rounded-lg border zt-cizgi zt-ayirac px-3 py-1.5 text-sm zt-metin accent-cyan-400"
                 />
               </div>
             )}
@@ -144,7 +144,7 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
               kapatma yolu tamamen kapanırdı. */}
           <OyunAyarlari />
 
-          <div className="h-px bg-slate-800" />
+          <div className="h-px zt-ayirac" />
 
           <Anahtar
             baslik="Çökme raporları"
@@ -162,11 +162,11 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
 
           {/* Reklam kişiselleştirmesi — yalnızca 18+ Android kullanıcılarına */}
           {nativeMi() && !resinDegilMi() && (
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+            <div className="rounded-xl border zt-cizgi zt-yuzey p-4">
               <div className="flex items-start gap-3">
                 <span>
-                  <span className="block font-bold text-slate-200">Reklam kişiselleştirmesi</span>
-                  <span className="mt-1 block text-xs text-slate-400">
+                  <span className="block font-bold zt-metin">Reklam kişiselleştirmesi</span>
+                  <span className="mt-1 block text-xs zt-metin-soluk">
                     {kisiselReklamOnayliMi()
                       ? 'Reklamlar ilgi alanlarına göre kişiselleştiriliyor.'
                       : 'Reklamlar kişiselleştirilmiyor — yalnızca genel reklamlar gösteriliyor.'}
@@ -177,7 +177,7 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
                       // Bileşeni yeniden çiz — onay durumu değişmiş olabilir
                       setTercih({ ...tercih });
                     }}
-                    className="mt-2 rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-bold text-cyan-300 hover:bg-slate-800"
+                    className="mt-2 rounded-lg border zt-cizgi px-3 py-1.5 text-xs font-bold zt-vurgu-metin"
                   >
                     Reklam tercihlerini değiştir
                   </button>
@@ -188,19 +188,19 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
 
           {/* 18 altı kullanıcılar için bilgilendirme */}
           {nativeMi() && resinDegilMi() && (
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-              <span className="block font-bold text-slate-200">Reklamlar</span>
-              <span className="mt-1 block text-xs text-slate-400">
+            <div className="rounded-xl border zt-cizgi zt-yuzey p-4">
+              <span className="block font-bold zt-metin">Reklamlar</span>
+              <span className="mt-1 block text-xs zt-metin-soluk">
                 18 yaş altı kullanıcılara kişiselleştirilmiş reklam gösterilmez.
                 Yalnızca genel reklamlar görürsün.
               </span>
             </div>
           )}
 
-          <div className="mt-8 border-t border-slate-800 pt-6 text-xs text-slate-500">
+          <div className="mt-8 border-t zt-cizgi pt-6 text-xs zt-metin-soluk">
             {!nativeMi() && (
               <p className="mb-2">
-                <strong className="text-slate-400">Reklamlar hakkında:</strong> Tarayıcıdan
+                <strong className="zt-metin-soluk">Reklamlar hakkında:</strong> Tarayıcıdan
                 oynuyorsun — tarayıcı sürümünde reklam yoktur.
               </p>
             )}
@@ -228,7 +228,7 @@ function Anahtar({
   onDegis: (deger: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border zt-cizgi zt-yuzey p-4">
       <input
         type="checkbox"
         checked={acik}
@@ -236,8 +236,8 @@ function Anahtar({
         className="mt-1 accent-cyan-400"
       />
       <span>
-        <span className="block font-bold text-slate-200">{baslik}</span>
-        <span className="mt-1 block text-xs text-slate-400">{aciklama}</span>
+        <span className="block font-bold zt-metin">{baslik}</span>
+        <span className="mt-1 block text-xs zt-metin-soluk">{aciklama}</span>
       </span>
     </label>
   );

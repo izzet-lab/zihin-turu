@@ -13,6 +13,7 @@
  */
 
 import type { JokerTip } from '@tamisabet/oyun-sayi';
+import { etkinTema } from './tema';
 
 export const BOYUT = 1080;
 
@@ -94,14 +95,56 @@ function yuvarlakDikdortgen(c: Ctx, x: number, y: number, w: number, h: number, 
  * testte sahte bir bağlam olabilir. Sızıntı testi bu fonksiyonun
  * yazdığı metinleri denetler.
  */
-export function kartCiz(c: Ctx, k: Kayit): void {
+/**
+ * Kartın renkleri — oynanan temadan.
+ *
+ * Paylaşım kartı koyu/neon tasarımdaydı; oyun kareli kâğıda geçince
+ * kart tek başına eski dünyada kaldı. Kart artık HANGİ TEMADA
+ * oynandıysa o temada üretiliyor.
+ *
+ * Değerler burada yazılı çünkü tuval CSS değişkeni okuyamıyor; tek
+ * kaynak olsun diye tema jetonlarıyla birebir aynı tutuluyor.
+ */
+export interface KartPaleti {
+  kagit: string;
+  hat: string;
+  vurgu: string;
+  soluk: string;
+  murekkep: string;
+  odul: string;
+}
+
+const PALETLER: Record<'gunduz' | 'gece', KartPaleti> = {
+  gunduz: {
+    kagit: '#E2E7EF',
+    hat: '#CBD3E0',
+    vurgu: '#0D6F79',
+    soluk: '#5F7089',
+    murekkep: '#17283B',
+    odul: '#9C6E12',
+  },
+  gece: {
+    kagit: '#1B212D',
+    hat: '#333C4D',
+    vurgu: '#52BFC9',
+    soluk: '#8392A8',
+    murekkep: '#E3E8F0',
+    odul: '#DCA848',
+  },
+};
+
+export function kartPaleti(tema: 'gunduz' | 'gece' = etkinTema()): KartPaleti {
+  return PALETLER[tema];
+}
+
+export function kartCiz(c: Ctx, k: Kayit, palet: KartPaleti = kartPaleti()): void {
   const M = BOYUT;
-  // Zemin — koyu lacivert
-  c.fillStyle = '#0A0E1A';
+  // Zemin — oynanan temanın kâğıdı
+  c.fillStyle = palet.kagit;
   c.fillRect(0, 0, M, M);
 
   // İnce çerçeve kart
-  c.strokeStyle = '#1E293B';
+  c.strokeStyle = palet.hat;
   c.lineWidth = 4;
   yuvarlakDikdortgen(c, 70, 70, M - 140, M - 140, 48);
   c.stroke();
@@ -113,20 +156,20 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   // Oyunun kazanma mesajı da "tam isabet"; marka aynı puntoda
   // yazılsaydı kartta aynı söz iki kez bağırır, tekrar gibi dururdu.
   // Marka burada bir künye; asıl söz aşağıdaki sonuç.
-  c.fillStyle = '#4C8795';
+  c.fillStyle = palet.vurgu;
   c.font = '700 38px system-ui, sans-serif';
   c.fillText('Tam İsabet', 130, 186);
 
-  c.fillStyle = '#64748B';
+  c.fillStyle = palet.soluk;
   c.font = '500 34px system-ui, sans-serif';
   c.fillText(`Sayı Turu${k.gunluk ? ' · Günün Turu' : ''}`, 130, 240);
   c.fillText(`${tarihGoster(k.tarih)} · ${k.seviyeEtiket}`, 130, 288);
 
   // Hedef — büyük (bulmacanın sorusu)
-  c.fillStyle = '#94A3B8';
+  c.fillStyle = palet.soluk;
   c.font = '600 40px system-ui, sans-serif';
   c.fillText('HEDEF', 130, 430);
-  c.fillStyle = '#F1F5F9';
+  c.fillStyle = palet.murekkep;
   c.font = '800 200px system-ui, sans-serif';
   c.fillText(String(k.hedef), 130, 620);
 
@@ -134,11 +177,11 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   if (k.fark === 0) {
     // Marka adıyla birebir aynı sözü tekrarlamamak için "TAM İSABET"
     // yerine bu cümle: aynı şeyi söylüyor, kartta iki kez okunmuyor.
-    c.fillStyle = '#7CEDFB';
+    c.fillStyle = palet.vurgu;
     c.font = '800 72px system-ui, sans-serif';
     c.fillText('HEDEFİ TUTTURDUN 🎯', 130, 740);
   } else {
-    c.fillStyle = '#94A3B8';
+    c.fillStyle = palet.soluk;
     c.font = '700 64px system-ui, sans-serif';
     c.fillText(`${k.fark} FARK`, 130, 740);
   }
@@ -153,14 +196,14 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   const kutuY = 770;
   kutular.forEach((kt, i) => {
     const x = 130 + i * (kutuG + 24);
-    c.strokeStyle = '#1E293B';
+    c.strokeStyle = palet.hat;
     c.lineWidth = 3;
     yuvarlakDikdortgen(c, x, kutuY, kutuG, 150, 24);
     c.stroke();
-    c.fillStyle = '#64748B';
+    c.fillStyle = palet.soluk;
     c.font = '600 30px system-ui, sans-serif';
     c.fillText(kt.ust, x + 28, kutuY + 56);
-    c.fillStyle = '#E2E8F0';
+    c.fillStyle = palet.murekkep;
     c.font = '800 56px system-ui, sans-serif';
     c.fillText(kt.alt, x + 28, kutuY + 118);
   });
@@ -168,13 +211,13 @@ export function kartCiz(c: Ctx, k: Kayit): void {
   // Joker özeti (varsa) — yalnızca isim, çözüm içeriği yok.
   const joker = jokerOzeti(k.jokerler);
   if (joker) {
-    c.fillStyle = '#F59E0B';
+    c.fillStyle = palet.odul;
     c.font = '600 28px system-ui, sans-serif';
     c.fillText(`Joker: ${joker}`, 130, 955);
   }
 
   // Alt bilgi
-  c.fillStyle = '#475569';
+  c.fillStyle = palet.soluk;
   c.font = '500 30px system-ui, sans-serif';
   c.fillText('Herkes bugün aynı turu oynuyor.', 130, M - 95);
 }

@@ -112,7 +112,9 @@ export default function Menu() {
         data-alan="menu-ac"
         aria-label="Menü"
         aria-expanded={menuAcik}
-        className="zt-yuzey-2 zt-vurgu-metin min-h-[48px] min-w-[48px] rounded-full border shadow-lg"
+        // Zemin --yuzey, kenarlık --hat, çizgiler --soluk. Önceden
+        // koyu sayfada beyaz daire olarak duruyordu.
+        className="zt-yuzey zt-metin-soluk min-h-[48px] min-w-[48px] rounded-full border shadow-lg"
       >
         {/* Üç çizgi artık metin değil çizim: her telefonda aynı,
             kalınlığı ikon takımıyla aynı. */}
@@ -136,7 +138,7 @@ export default function Menu() {
                 <button
                   onClick={cikisYap}
                   data-alan="cikis"
-                  className="zt-dokunma-alani px-2 text-sm font-bold zt-metin-soluk hover:text-red-400"
+                  className="zt-dokunma-alani px-2 text-sm font-bold zt-metin-soluk"
                 >
                   Çık
                 </button>

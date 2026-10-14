@@ -20,23 +20,34 @@
  */
 
 import { nativeMi } from './platform';
+import { etkinTema } from './tema';
 
+/** Kâğıdın rengi — durum çubuğu arkası da aynı olmalı. */
+const KAGIT = { gunduz: '#E2E7EF', gece: '#1B212D' } as const;
+
+/**
+ * Durum çubuğunu temaya göre ayarlar.
+ *
+ * Tema değişince yeniden çağrılır: gündüz temada açık renkli saat
+ * okunmuyordu, çubuk hep koyu varsayılıyordu.
+ */
 export async function durumCubuguAyarla(): Promise<void> {
   if (!nativeMi()) return;
 
   try {
     const { StatusBar, Style } = await import('@capacitor/status-bar');
+    const tema = etkinTema();
 
-    // Koyu arka plan üstünde açık renkli simgeler (saat, pil, sinyal).
-    // Yeni ve eski Android sürümlerinin hepsinde geçerli olan tek ayar bu.
-    await StatusBar.setStyle({ style: Style.Dark });
+    // Gündüz: koyu simgeler (Style.Light = açık zemin üstünde koyu yazı).
+    // Gece: açık simgeler.
+    await StatusBar.setStyle({ style: tema === 'gunduz' ? Style.Light : Style.Dark });
 
     // Aşağıdaki ikisi yalnızca Android 14 ve altında iş görür; yeni
     // sürümlerde sessizce yok sayılır. Hata verirlerse akış bozulmasın
     // diye ayrı ayrı sarmalanır.
     try {
       await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setBackgroundColor({ color: '#0A0E1A' });
+      await StatusBar.setBackgroundColor({ color: KAGIT[tema] });
     } catch {
       // Yeni Android: bu ayarlar desteklenmiyor, tema hallediyor.
     }

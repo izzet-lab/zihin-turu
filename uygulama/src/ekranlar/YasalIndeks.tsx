@@ -98,22 +98,22 @@ export default function YasalIndeks({ onGeri }: Props) {
               className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                 s.tehlikeli
                   ? 'border-red-900/50 bg-red-950/20 hover:bg-red-950/40'
-                  : 'border-slate-800 bg-slate-900/50 hover:bg-slate-800/60'
+                  : 'zt-cizgi zt-yuzey'
               }`}
               style={{ minHeight: 64 }}
             >
               <Ikon
                 ad={s.simge}
                 boyut={22}
-                className={s.tehlikeli ? 'text-red-300' : 'text-cyan-300'}
+                className={s.tehlikeli ? 'zt-sure-metin' : 'zt-vurgu-metin'}
               />
               <span className="min-w-0">
                 <span
-                  className={`block text-sm font-bold ${s.tehlikeli ? 'text-red-300' : 'text-slate-100'}`}
+                  className={`block text-sm font-bold ${s.tehlikeli ? 'zt-sure-metin' : 'zt-metin'}`}
                 >
                   {s.ad}
                 </span>
-                <span className="block text-xs text-slate-500">{s.aciklama}</span>
+                <span className="block text-xs zt-metin-soluk">{s.aciklama}</span>
               </span>
             </button>
           ))}

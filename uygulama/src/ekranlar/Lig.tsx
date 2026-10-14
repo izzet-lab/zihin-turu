@@ -139,7 +139,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
   }, [sekme, seviye, oyun, oyuncuId]);
 
   return (
-    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+    <main className="zt-ekran min-h-dvh zt-kagit zt-metin px-5 py-8">
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık */}
         <header className="mb-8 pr-12">
@@ -150,14 +150,14 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
           <button
             onClick={() => gecis('/')}
             data-alan="geri"
-            className="mb-3 -ml-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold text-cyan-300 hover:bg-slate-800/60 hover:text-cyan-200"
+            className="mb-3 -ml-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold zt-vurgu-metin"
           >
             ← Geri
           </button>
-          <h1 className="text-2xl font-black text-white mb-1">Sıralamalar</h1>
+          <h1 className="text-2xl font-black zt-metin mb-1">Sıralamalar</h1>
           {/* Açıklama seçili sekmeye göre değişir. Antrenman'ın
               "çalışkanlık tablosu" notu yalnızca o sekmede geçerli. */}
-          <p className="text-xs text-slate-500" data-alan="sekme-aciklama">
+          <p className="text-xs zt-metin-soluk" data-alan="sekme-aciklama">
             {sekme === 'gunluk' && 'Bugünün turunda alınan en iyi puanlar.'}
             {sekme === 'haftalik' && 'Bu haftanın günlük en iyilerinin toplamı.'}
             {sekme === 'aylik' && 'Bu ayın günlük en iyilerinin toplamı.'}
@@ -202,8 +202,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               aria-pressed={sekme === s.k}
               className={`min-h-[48px] rounded-lg border px-2 py-2 text-sm font-bold transition ${
                 sekme === s.k
-                  ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                  : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                  ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                  : 'zt-cizgi zt-yuzey zt-metin'
               }`}
             >
               {'simge' in s && <Ikon ad={s.simge} boyut={14} className="mr-1.5 -mt-0.5" />}
@@ -217,7 +217,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             sekmelerde gösterilmiyor. */}
         {sekme !== 'duello' && sekme !== 'arena' && (
           <div className="mb-6" data-alan="oyun-secici">
-            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
               Oyun
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -234,8 +234,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                   aria-pressed={oyun === o.k}
                   className={`min-h-[48px] rounded-lg border px-2 text-sm font-bold transition ${
                     oyun === o.k
-                      ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                      : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                      ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                      : 'zt-cizgi zt-yuzey zt-metin'
                   }`}
                 >
                   {'simge' in o && <Ikon ad={o.simge} boyut={15} className="mr-1.5 -mt-0.5" />}
@@ -249,7 +249,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         {/* Seviye seçimi — düelloda yok: derece seviyeden bağımsız. */}
         {sekme !== 'duello' && sekme !== 'arena' && (
         <div className="mb-6" data-alan="seviye-secici">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Seviye</div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">Seviye</div>
           <div className="flex flex-wrap gap-2">
             {seviyeler.map((s) => (
               <button
@@ -258,8 +258,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 aria-pressed={seviye === s.anahtar}
                 className={`min-h-[40px] rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                   seviye === s.anahtar
-                    ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                    : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700'
+                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                    : 'zt-cizgi zt-yuzey zt-metin'
                 }`}
               >
                 {s.etiket}
@@ -275,8 +275,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             data-alan="kalan-sure"
             className={`mb-6 text-center text-xs ${
               sonGun && sekme !== 'gunluk'
-                ? 'font-bold text-amber-300'
-                : 'text-slate-500'
+                ? 'font-bold zt-odul-yazi'
+                : 'zt-metin-soluk'
             }`}
           >
             {sekme === 'gunluk' && 'Sıralama saat başında güncellenir'}
@@ -291,8 +291,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
 
         {/* Yükleniyor */}
         {yukleniyor && (
-          <div className="text-center text-slate-400 py-8">
-            <div className="inline-block w-4 h-4 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin" />
+          <div className="text-center zt-metin-soluk py-8">
+            <div className="inline-block w-4 h-4 border-2 zt-vurgu-cizgi border-t-transparent rounded-full animate-spin" />
             <p className="mt-2 text-sm">Sıralama yükleniyor...</p>
           </div>
         )}
@@ -312,8 +312,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 style={{ ['--zt-sira' as string]: String(Math.min(satirSira, 10)) }}
                 className={`zt-satir-gir flex items-center gap-3 rounded-lg border px-4 py-3 ${
                   s.benimMi
-                    ? 'border-cyan-300/50 bg-cyan-300/10 ring-1 ring-cyan-300/30'
-                    : 'border-slate-800 bg-slate-900/40'
+                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey ring-1 ring-cyan-300/30'
+                    : 'zt-cizgi zt-yuzey'
                 }`}
               >
                 {/* İlk üçte madalya, sonrasında sıra numarası */}
@@ -324,7 +324,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
                     s.sira <= 3
                       ? ['zt-metal-altin', 'zt-metal-gumus', 'zt-metal-bronz'][s.sira - 1]!
-                      : 'text-sm font-bold text-slate-500'
+                      : 'text-sm font-bold zt-metin-soluk'
                   }`}
                 >
                   {s.sira}
@@ -334,7 +334,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 <span
                   aria-hidden="true"
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${
-                    s.benimMi ? 'bg-cyan-300/25 text-cyan-100' : 'bg-slate-700 text-slate-200'
+                    s.benimMi ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {s.kullaniciAdi.trim().charAt(0).toLocaleUpperCase('tr')}
@@ -342,13 +342,13 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
 
                 <div className="min-w-0 flex-1">
                   <div
-                    className={`truncate font-bold ${s.benimMi ? 'text-cyan-100' : 'text-slate-200'}`}
+                    className={`truncate font-bold ${s.benimMi ? 'zt-vurgu-metin' : 'zt-metin'}`}
                   >
                     {s.kullaniciAdi}
-                    {s.benimMi && <span className="ml-1 text-xs text-cyan-300">(sen)</span>}
+                    {s.benimMi && <span className="ml-1 text-xs zt-vurgu-metin">(sen)</span>}
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
-                    <span className="rounded bg-slate-800 px-1.5 py-0.5 font-bold text-slate-400">
+                  <div className="flex flex-wrap items-center gap-x-2 text-[11px] zt-metin-soluk">
+                    <span className="rounded zt-ayirac px-1.5 py-0.5 font-bold zt-metin-soluk">
                       Lv.{sv.seviye} {sv.unvan}
                     </span>
                     {sekme === 'duello' && s.galibiyet !== undefined && (
@@ -382,12 +382,12 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <div className="font-bold text-cyan-300">{s.puan}</div>
+                  <div className="font-bold zt-vurgu-metin">{s.puan}</div>
                   {sekme === 'duello' && (
-                    <div className="text-[10px] text-slate-600">derece</div>
+                    <div className="text-[10px] zt-metin-soluk">derece</div>
                   )}
                   {sekme === 'arena' && (
-                    <div className="text-[10px] text-slate-600">puan</div>
+                    <div className="text-[10px] zt-metin-soluk">puan</div>
                   )}
                 </div>
               </div>
@@ -397,24 +397,24 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             {/* Kendi sırası */}
             {oyuncuId && kendi && kendi.sira > satirlar.length && (
               <>
-                <div className="text-center text-xs text-slate-600 py-2">⋮</div>
-                <div className="flex items-center gap-3 rounded-lg border border-cyan-300/30 bg-cyan-300/5 px-4 py-3 ring-1 ring-cyan-300/20">
-                  <div className="w-8 text-center font-bold text-cyan-300 text-sm">
+                <div className="text-center text-xs zt-metin-soluk py-2">⋮</div>
+                <div className="flex items-center gap-3 rounded-lg border zt-vurgu-cizgi zt-vurgu-yuzey px-4 py-3 ring-1 ring-cyan-300/20">
+                  <div className="w-8 text-center font-bold zt-vurgu-metin text-sm">
                     {kendi.sira}
                   </div>
                   <span
                     aria-hidden="true"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-300/25 text-sm font-black text-cyan-100"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full zt-dugme/25 text-sm font-black zt-vurgu-metin"
                   >
                     S
                   </span>
                   <div className="flex-1">
-                    <div className="font-bold text-cyan-200">Sen</div>
-                    <div className="text-[11px] text-slate-500">listenin dışındasın</div>
+                    <div className="font-bold zt-vurgu-metin">Sen</div>
+                    <div className="text-[11px] zt-metin-soluk">listenin dışındasın</div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="font-bold text-cyan-300">{kendi.puan}</div>
-                    {sekme === 'duello' && <div className="text-[10px] text-slate-600">derece</div>}
+                    <div className="font-bold zt-vurgu-metin">{kendi.puan}</div>
+                    {sekme === 'duello' && <div className="text-[10px] zt-metin-soluk">derece</div>}
                   </div>
                 </div>
               </>
@@ -430,7 +430,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             gösteriyor. */}
         {!yukleniyor && satirlar.length === 0 && (
           <div
-            className="rounded-2xl border border-slate-800 bg-slate-900/40 px-5 py-8 text-center"
+            className="rounded-2xl border zt-cizgi zt-yuzey px-5 py-8 text-center"
             data-alan="bos-durum"
           >
             <Ikon
@@ -444,16 +444,16 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                       : 'bayrak'
               }
               boyut={34}
-              className="text-slate-600"
+              className="zt-metin-soluk"
             />
-            <p className="mt-3 text-sm font-bold text-slate-200">
+            <p className="mt-3 text-sm font-bold zt-metin">
               {sekme === 'duello' && 'Henüz düello oynanmamış.'}
               {sekme === 'arena' && 'Henüz arena oynanmamış.'}
               {sekme === 'antrenman' && 'Bu hafta bu seviyede kimse antrenman yapmadı.'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Bu seviyede ilk sen ol.'}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs zt-metin-soluk">
               {sekme === 'duello' && 'İlk maçı sen yap.'}
               {sekme === 'arena' && 'İlk podyum senin olsun.'}
               {sekme === 'antrenman' && 'İlk turu sen oyna, tablo seninle açılsın.'}
@@ -472,7 +472,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 else if (sekme === 'antrenman') gecis('/?mod=antrenman');
                 else gecis('/?mod=gunun');
               }}
-              className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-sm font-black text-slate-900 hover:bg-cyan-200"
+              className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-sm font-black zt-metin "
             >
               {sekme === 'duello' && 'Düello başlat'}
               {sekme === 'arena' && 'Arena başlat'}

@@ -73,7 +73,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
           <button
             onClick={() => onGirisAc?.()}
             data-alan="seri-misafir-notu"
-            className="zt-dokunma-alani mt-3 block w-full text-left text-[11px] zt-odul-yazi hover:zt-odul-yazi"
+            className="zt-dokunma-alani mt-3 block w-full text-left text-[11px] zt-odul-yazi"
           >
             {seri > 0
               ? `${seri} günlük serin kaydedilmiyor — üye ol.`
@@ -91,7 +91,9 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
             return (
               <>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="zt-nadir-yazi text-sm font-bold">
+                  {/* Seviye rozeti ÖDÜL renginde: kazanılmış bir unvan.
+                      XP çubuğu vurgu renginde: devam eden ilerleme. */}
+                  <span className="zt-odul-yazi text-sm font-bold">
                     Lv.{sv.seviye} {sv.unvan}
                   </span>
                   <span className="text-xs zt-metin-soluk">{ilerleme.xp} XP</span>

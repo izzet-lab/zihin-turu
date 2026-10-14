@@ -3,6 +3,52 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 - Tema her yere ulaştı
+
+İlk turda üç ekran dönüştürülmüştü; geri kalan ekranlar sabit renk
+değerleri kullandığı için tema değişince onlar değişmiyordu. Sonuç:
+yarısı bir temada, yarısı diğerinde bir uygulama. Bütün proje literal
+renk için tarandı.
+
+**Menü artık temayı izliyor.** En görünür hata buydu: koyu bir ekranda
+menü açık renkte açılıyordu. Menü paneli, görünüm seçicisi, ikonlar ve
+ayırıcı çizgiler jetonlardan besleniyor.
+
+**Gece temasında taş rakamları okunmuyordu.** Taşa `zt-metin` sınıfı
+verilmişti ve rakam temadan besleniyordu; gece temasında açık renk
+olup fildişi taşın üstünde kayboluyordu. Taşa artık tema rengi sınıfı
+verilmiyor — yüzey ve rakam `[data-tas]` kuralında sabit, seçili hâl
+yalnızca çerçeveyle anlatılıyor.
+
+**Kelime turu ve paylaşım kartı da geçti.** Kart tuval üzerine
+çiziliyor ve CSS değişkeni okuyamıyor; renkler bir palet nesnesinde ve
+kart artık HANGİ TEMADA oynandıysa o temada üretiliyor.
+
+**Mor paletten çıktı.** XP çubuğu vurgu renginde (devam eden ilerleme),
+seviye rozeti ödül renginde (kazanılmış unvan).
+
+**Güvenli alan boşluğu gövdeden içeriğe taşındı.** Gövdeye verilen üst
+dolgu kaydırılabilir ekranlarda yetmiyordu; içerik durum çubuğunun
+altına giriyordu. Her ekran kendi üst dolgusunu veriyor, güvenli alan
+onun üstüne ekleniyor.
+
+**Seri şeridi pirinç tonuna döndü** (parlak sarı uyarı rengine
+benziyordu), **rozetlerde fark dolgu/kontur farkıyla anlatılıyor**
+(kazanılmamış rozetler soluklaştırmayla neredeyse görünmez oluyordu),
+**joker sebebi kendi kartının içine alındı** (üç jokerin altında ortada
+asılı duruyordu), **hamburger düğmesi** yüzey/hat/soluk jetonlarına
+bağlandı.
+
+**Sol üstteki koyu dikdörtgen** eski PNG logosuydu: koyu zemin için
+çizilmiş bir resimdi ve açık temada kâğıdın üstünde koyu bir blok gibi
+duruyordu. Giriş ve "yakında" ekranlarında da çizime çevrildi.
+
+**Durum çubuğu temayı izliyor:** gündüz koyu simgeler, gece açık.
+Tema değişince anında güncelleniyor.
+
+Kural eklendi (CLAUDE.md 11): arayüzde sabit renk değeri
+kullanılmaz; tek istisna taş yüzeyi.
+
 ## 2026-10-14 - Kareli kâğıt teması; gündüz ve gece
 
 Oyun neon bir arayüzdü: siyaha yakın zemin, tek cyan vurgu. Yeni fikir

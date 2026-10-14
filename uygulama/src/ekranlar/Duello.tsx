@@ -429,12 +429,12 @@ export default function Duello({
 
   const odaAc = useCallback(async () => {
     try {
-      const sonuc = await odaKur(seviye);
+      const sonuc = await odaKur(seviye, oyun);
       setOdaKodu(sonuc.kod);
     } catch (e) {
       setHata((e as Error).message);
     }
-  }, [seviye]);
+  }, [seviye, oyun]);
 
   const odayaGir = useCallback(async () => {
     try {

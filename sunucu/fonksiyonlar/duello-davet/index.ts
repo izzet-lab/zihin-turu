@@ -69,6 +69,8 @@ Deno.serve(async (req: Request) => {
       eylem: string;
       mac_id?: string;
       seviye?: string;
+      /** Oda hangi oyun için kuruluyor. Verilmezse sayı turu. */
+      oyun?: string;
       kod?: string;
     };
 
@@ -101,6 +103,8 @@ Deno.serve(async (req: Request) => {
       // A tarafı, tam isabet eşitliğinde ilk bildirdiği için avantajlı
       // sayılabilir; sırayla oynanınca bu avantaj dengelenir.
       const yeni = await macKur(supabase, {
+        // Rövanş eski maçın oyununu sürdürür.
+        oyun: eski.oyun ?? 'sayi',
         seviye: eski.seviye,
         oyuncuA: eski.oyuncu_b ?? eski.oyuncu_a,
         oyuncuB: eski.oyuncu_b ? eski.oyuncu_a : null,
@@ -130,6 +134,8 @@ Deno.serve(async (req: Request) => {
       if (!SEVIYE_LISTESI.some((s) => s.anahtar === seviye)) {
         return hata('Bilinmeyen seviye.', 400);
       }
+      const oyun = govde.oyun ?? 'sayi';
+      if (oyun !== 'sayi' && oyun !== 'kelime') return hata('Bilinmeyen oyun.', 400);
 
       // Eskiyen odaları temizle; kod havuzu dolmasın.
       await supabase
@@ -143,10 +149,10 @@ Deno.serve(async (req: Request) => {
         const kod = kodUret();
         const { data, error } = await supabase
           .from('duello_oda')
-          .insert({ kod, kuran: benId, seviye })
-          .select('kod, seviye')
+          .insert({ kod, kuran: benId, seviye, oyun })
+          .select('kod, seviye, oyun')
           .single();
-        if (!error && data) return ok({ kod: data.kod, seviye: data.seviye });
+        if (!error && data) return ok({ kod: data.kod, seviye: data.seviye, oyun: data.oyun });
       }
       return hata('Oda kurulamadı, tekrar dene.', 500);
     }
@@ -181,6 +187,8 @@ Deno.serve(async (req: Request) => {
       if (oda.kuran === benId) return hata('Kendi odana katılamazsın.', 409);
 
       const mac = await macKur(supabase, {
+        // Oda hangi oyun için kurulduysa maç da o oyun.
+        oyun: oda.oyun ?? 'sayi',
         seviye: oda.seviye,
         oyuncuA: oda.kuran,
         oyuncuB: benId,
@@ -266,6 +274,15 @@ Deno.serve(async (req: Request) => {
 async function macKur(
   supabase: Istemci,
   g: {
+    /*
+     * HANGİ OYUN — VERİLMEK ZORUNDA
+     *
+     * Burada 'sayi' sabit yazılıydı. Sonuç: kelime turu düellosunda
+     * rövanşa basan oyuncu sayı turuna düşüyordu; özel oda da aynı
+     * şeyi yapıyordu (14 Ekim 2026). Varsayılan bırakılmadı — bir
+     * sonraki oyunda aynı hata sessizce geri gelsin istemiyoruz.
+     */
+    oyun: string;
     seviye: string;
     oyuncuA: string;
     oyuncuB: string | null;
@@ -279,7 +296,7 @@ async function macKur(
   const { data, error } = await supabase
     .from('duello_mac')
     .insert({
-      oyun: 'sayi',
+      oyun: g.oyun,
       seviye: g.seviye,
       tohum,
       oyuncu_a: g.oyuncuA,

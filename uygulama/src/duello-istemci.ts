@@ -237,10 +237,13 @@ export function duelloRevans(macId: string): Promise<{ mac: DuelloMac }> {
 }
 
 /** Özel oda kurar; dönen kod arkadaşa verilir. */
-export function odaKur(seviye: string): Promise<{ kod: string; seviye: string }> {
+export function odaKur(seviye: string, oyun: string): Promise<{ kod: string; seviye: string }> {
   return cagir<{ kod: string; seviye: string }>('duello-davet', {
     eylem: 'oda-kur',
     seviye,
+    // Oyun gönderilmezse sunucu sayı turu varsayıyordu: kelime turundan
+    // kurulan oda arkadaş katılınca sayı maçı açıyordu.
+    oyun,
   });
 }
 

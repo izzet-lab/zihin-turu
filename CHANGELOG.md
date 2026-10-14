@@ -3,6 +3,26 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Rövanş ve özel oda oyunu taşıyor
+
+**Kelime turu düellosunda rövanşa basınca sayı turu açılıyordu.**
+Proje sahibi cihazda buldu. Sebep sunucudaydı: yeni maç kurulurken
+oyun bilgisi hiç taşınmıyor, maç satırına her zaman "sayı" yazılıyordu.
+Rövanş artık eski maçın oyununu sürdürüyor.
+
+**Aynı kusur özel odada da vardı.** Kelime turundan kurulan bir oda,
+arkadaş katıldığında sayı turu maçı açıyordu. Oda tablosu seviyeyi
+saklıyordu ama oyunu saklamıyordu; göç 015 o sütunu ekledi
+(göç 014 aynı sütunu kuyruk tablosuna aynı sebeple eklemişti).
+
+Yeni maç kuran fonksiyon artık oyunu zorunlu parametre olarak istiyor —
+varsayılan bırakılmadı ki bir sonraki oyunda aynı hata sessizce geri
+gelmesin.
+
+**Kelime düellosunda rövanş testle korunuyor.** Maç bota karşı sonuna
+kadar oynanıyor, rövanş isteniyor ve yeni maçta harf rafının geldiği
+doğrulanıyor.
+
 ## 2026-10-14 — Tarayıcı testleri sağlamlaştı
 
 **Düello eşleşme yardımcısı pes etmeden önce gerçekten deniyordu.**

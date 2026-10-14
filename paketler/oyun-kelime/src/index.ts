@@ -21,8 +21,8 @@ import type {
   TurSaglayici,
 } from '@tamisabet/cekirdek';
 import {
+  bulunabilirKelimeler,
   dogrulaKelime,
-  enUzunKelime,
   havuzUret,
   puanlaKelime,
   type KelimeVeri,
@@ -101,15 +101,30 @@ export function kelimeTuruKur(sozluk: Sozluk, yaygin: Sozluk = sozluk): TurSagla
 
     cozumBul(tur: Tur, sinirMs?: number): Cozum {
       const veri = tur.veri as KelimeVeri;
-      // Çözüm de yaygın listeden: oyuncuya "en uzunu BİRSAM'dı" demek
-      // öğretici değil, moral bozucu.
-      const kelime = enUzunKelime(veri.harfler, yaygin, sinirMs);
-      if (!kelime) {
+      /*
+       * ÇÖZÜM ARTIK TEK KELİME DEĞİL, BİR LİSTE
+       *
+       * Sayı turunda tur bitince çözüm zinciri yazılıyor. Kelime
+       * turunda yalnızca en uzun kelime yazıyordu; oyuncu "bu
+       * harflerden başka ne çıkarmışım?" sorusunun cevabını hiç
+       * göremiyordu. Artık uzundan kısaya doğru bir liste dönüyor ve
+       * bu listeyi gösteren her ekran (antrenman, günün turu, düello
+       * ve arena özetleri) kendiliğinden güncelleniyor — hepsi aynı
+       * `satirlar` alanını basıyor.
+       *
+       * Liste YAYGIN sözlükten: oyuncuya "en uzunu BİRSAM'dı" demek
+       * öğretici değil, moral bozucu.
+       *
+       * İlk satır en uzun kelime olmak zorunda — sonuç ekranı ilk
+       * satırı "en uzun kelime" diye kullanıyor.
+       */
+      const kelimeler = bulunabilirKelimeler(veri.harfler, yaygin, 8, sinirMs);
+      if (kelimeler.length === 0) {
         return { uzaklik: veri.enUzunUzunluk, satirlar: ['Kelime bulunamadı'] };
       }
       return {
         uzaklik: 0,
-        satirlar: [`${turkceBuyult(kelime)} — ${kelime.length} harf`],
+        satirlar: kelimeler.map((k) => `${turkceBuyult(k)} — ${k.length} harf`),
       };
     },
 

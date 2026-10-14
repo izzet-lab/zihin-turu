@@ -126,6 +126,56 @@ export function enUzunKelime(
 }
 
 /**
+ * Havuzdan türetilebilen kelimeleri uzundan kısaya doğru toplar.
+ *
+ * NEDEN VAR
+ * Tur bitince oyuncuya yalnızca EN UZUN kelime gösteriliyordu. Sayı
+ * turunda tur sonunda bir çözüm zinciri yazılıyor; kelime turunun
+ * karşılığı buydu ve eksikti. Oyuncu "başka ne çıkarmışım?" sorusunun
+ * cevabını hiç göremiyordu (proje sahibi istedi, 14 Ekim 2026).
+ *
+ * `enCok` ile sınırlı: havuzdan çoğu zaman yüzlerce kelime çıkıyor ve
+ * hepsini basmak listeyi okunmaz yapardı. Uzun olanlar önce geliyor —
+ * oyuncunun merak ettiği onlar.
+ *
+ * `sinirMs` verilirse arama orada kesilir ve O ANA KADAR bulunanlar
+ * döner. Yarım liste, boş listeden iyidir: düello özetinde beş turun
+ * çözümü arka arkaya hesaplanıyor ve ekranın beklememesi gerekiyor.
+ */
+export function bulunabilirKelimeler(
+  havuz: readonly string[],
+  sozluk: Sozluk,
+  enCok = 8,
+  sinirMs?: number,
+): string[] {
+  const baslangic = Date.now();
+  const bulunan: string[] = [];
+
+  const havuzSayim = new Map<string, number>();
+  for (const h of havuz) {
+    const k = turkceKucult(h);
+    havuzSayim.set(k, (havuzSayim.get(k) ?? 0) + 1);
+  }
+
+  // Saat her kelimede değil, 512 kelimede bir okunuyor — `enUzunKelime`
+  // ile aynı sebep: `Date.now()` aramanın kendisinden pahalı.
+  let sayac = 0;
+
+  for (let uzunluk = havuz.length; uzunluk >= EN_KISA_KELIME; uzunluk--) {
+    for (const kelime of sozluk.uzunluktakiler(uzunluk)) {
+      if (sinirMs != null && (sayac++ & 511) === 0 && Date.now() - baslangic > sinirMs) {
+        return bulunan;
+      }
+      if (sayimdanYazilabilir(havuzSayim, kelime)) {
+        bulunan.push(kelime);
+        if (bulunan.length >= enCok) return bulunan;
+      }
+    }
+  }
+  return bulunan;
+}
+
+/**
  * Hazır harf sayımına göre kontrol — ara bellek ayırmaz.
  *
  * Kullanılan harfleri sayımdan düşüp sonunda geri koyuyor; böylece

@@ -3,6 +3,31 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Tur bitince çıkan kelimeler listeleniyor
+
+**Kelime turunda tur bitince artık bir liste gösteriliyor.** Sayı
+turunda tur sonunda çözüm zinciri yazılıyor; kelime turunda yalnızca en
+uzun kelime yazıyordu ve oyuncu "bu harflerden başka ne çıkarmışım?"
+sorusunun cevabını hiç göremiyordu. Artık uzundan kısaya doğru sekiz
+kelimeye kadar listeleniyor. Liste yaygın kelime listesinden geliyor —
+oyuncuya kimsenin bilmediği bir kelimeyi göstermek öğretici değil.
+
+Listeyi üreten kod oyun paketinde ve çözüm alanı tek yerden geldiği
+için antrenman, Günün Turu, düello ve arena özetleri birlikte değişti.
+
+**Aynı harflerden türeyen kelimeler zaten aynı puanı alıyordu.** Proje
+sahibinin sorusu üzerine ölçüldü: puan belli bir kelimeye değil,
+yazılan kelimenin uzunluğuna bakıyor. "icra", "rica" ve "cari" aynı
+uzunlukta oldukları için üçü de tam isabet sayılıyor. Davranış artık
+testle sabit.
+
+**Sözlükte özel ad yok — süzgeç zaten vardı, artık sınanıyor.** Üretim
+betiği özel adları büyük harfle başladıkları için eliyordu ama bu
+hiçbir yerde doğrulanmıyordu. "ilhan", "ordu", "ufuk", "mersin",
+"batman" gibi maddeler özel ad değil, sıradan kelime (hükümdar,
+silahlı kuvvet, gökle yerin birleştiği yer, bir ağaç, eski bir ağırlık
+ölçüsü); bunlar bilerek duruyor ve test onları da koruyor.
+
 ## 2026-10-14 — Rövanş ve özel oda oyunu taşıyor
 
 **Kelime turu düellosunda rövanşa basınca sayı turu açılıyordu.**

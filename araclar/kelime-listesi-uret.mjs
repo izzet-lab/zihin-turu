@@ -102,7 +102,20 @@ for (const satir of satirlar) {
   // Çok kelimeli maddeler ("ön yargı") oyunda yazılamaz.
   if (/\s/.test(kelime)) { elenen++; continue; }
 
-  // Özel adlar büyük harfle başlıyor; oyuna girmemeli.
+  /*
+   * OZEL ADLAR
+   *
+   * Kaynak sozlukte ozel adlar buyuk harfle basliyor; suzgec bu.
+   * Kucuk harfle yazilmis "ilhan", "ordu", "melek", "mersin",
+   * "batman" gibi maddeler ozel ad DEGIL: hukumdar, silahli
+   * kuvvet, gokten gelen varlik, bir agac, eski bir agirlik olcusu.
+   * Ayni kelimenin ad olarak da kullanilmasi onu sozlukten
+   * atmaz - icki suzgecinde "cin", "bar", "rom" icin yazilan
+   * gerekceyle ayni.
+   *
+   * Bu suzgeci `testler/kelime-ozel-ad.test.ts` koruyor: liste
+   * yeniden uretilirken suzgec bozulursa test kirilir.
+   */
   if (kelime[0] !== kelime[0].toLocaleLowerCase('tr')) { elenen++; continue; }
 
   const k = kelime.toLocaleLowerCase('tr');

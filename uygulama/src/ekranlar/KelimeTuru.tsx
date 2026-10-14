@@ -88,6 +88,8 @@ export default function KelimeTuru({
     uzaklik: number;
     puan: number;
     enUzun: string;
+    /** Bu harflerden çıkan kelimeler, uzundan kısaya. İlki `enUzun`. */
+    cikanlar: string[];
   } | null>(null);
 
   const [oturum, setOturum] = useState({ turSayisi: 0, puan: 0 });
@@ -204,6 +206,7 @@ export default function KelimeTuru({
       uzaklik: d.uzaklik ?? 0,
       puan: p.toplam,
       enUzun: cozum.satirlar[0] ?? '',
+      cikanlar: cozum.satirlar,
     });
     setOturum((o) => ({ turSayisi: o.turSayisi + 1, puan: o.puan + p.toplam }));
     // En uzun kelime bulunduysa tam isabet: çift titreşim.
@@ -425,17 +428,17 @@ export default function KelimeTuru({
 
   if (asama === 'sonuc' && sonuc) {
     const tamMi = sonuc.uzaklik === 0;
-    // Çözüm oyuncunun kendi kelimesiyse göstermenin anlamı yok.
-    const cozumKelimesi = sonuc.enUzun.split(' ')[0]?.toLocaleLowerCase('tr') ?? '';
     const benimKelime = sonuc.kelime.toLocaleLowerCase('tr');
+    // Oyuncunun kendi kelimesi listede tekrar edilmiyor; onu zaten
+    // ekranın üstünde görüyor.
+    //
     // Çekimli biçimler sözlük listesinde yok ama kabul ediliyor
     // (bkz. oyun-kelime/cekim.ts); oyuncunun kelimesi listedeki en
-    // uzundan DAHA uzun olabiliyor. Böyle bir durumda "en uzun kelime"
-    // diye daha kısa bir şey göstermek saçma olurdu.
-    const cozumFarkli =
-      !!cozumKelimesi &&
-      cozumKelimesi !== benimKelime &&
-      cozumKelimesi.length >= benimKelime.length;
+    // uzundan DAHA uzun olabiliyor. Liste yine de doğru: "bu
+    // harflerden çıkan kelimeler" diyor, "senden iyisi" demiyor.
+    const digerCozumler = sonuc.cikanlar.filter(
+      (s) => (s.split(' ')[0] ?? '').toLocaleLowerCase('tr') !== benimKelime,
+    );
     return (
       <Cerceve onCik={onCik}>
         <div className="mt-6 text-center" data-alan="kelime-sonuc">
@@ -467,14 +470,28 @@ export default function KelimeTuru({
               Oyuncu en uzunu bulduysa başlık değişiyor: "en uzun kelime"
               deyip başka bir kelime göstermek "demek ki bulamadım" gibi
               okunuyordu. Aynı uzunlukta birden çok çözüm olabilir. */}
-          {cozumFarkli && (
-          <div className="mt-5 text-left">
+          {/* BU HARFLERDEN ÇIKAN KELİMELER
+              Önce yalnızca en uzun kelime yazıyordu. Sayı turunda tur
+              bitince bir çözüm zinciri gösteriliyor; buranın karşılığı
+              oydu ve eksikti — oyuncu "başka ne çıkarmışım?" sorusunun
+              cevabını göremiyordu.
+              Oyuncunun kendi kelimesi listeden düşülüyor; onu zaten
+              yukarıda görüyor. */}
+          {digerCozumler.length > 0 && (
+          <div className="mt-5 text-left" data-alan="kelime-cozumler">
             <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
-              {tamMi ? 'Aynı uzunlukta bir başka çözüm' : 'Bu harflerden çıkan en uzun kelime'}
+              Bu harflerden çıkan kelimeler
             </div>
             <div className="rounded-xl border zt-cizgi zt-yuzey p-4">
-              <span className="elyazisi text-lg zt-vurgu-metin">{sonuc.enUzun}</span>
+              <ul className="elyazisi space-y-1 text-lg zt-cozum-yazi">
+                {digerCozumler.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
+              </ul>
             </div>
+            <p className="mt-2 text-[11px] zt-metin-soluk">
+              Hepsi değil, en uzunlardan birkaçı.
+            </p>
           </div>
           )}
 

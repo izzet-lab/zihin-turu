@@ -113,7 +113,15 @@ test('lig: misafire "bu listede yoksun" daveti çıkar, kapatılınca susar', as
   await page.goto('/lig');
 
   const davet = page.locator('[data-alan="uyelik-daveti"]');
-  await expect(davet).toBeVisible({ timeout: 10_000 });
+  /*
+   * Davet, sıralama SUNUCUDAN DÖNDÜKTEN sonra çiziliyor. On saniyelik
+   * bekleme tek başına çalışırken yetiyordu ama tüm takım koşarken
+   * sunucu yavaşlayınca yetmiyor ve test ara sıra kırılıyordu
+   * (14 Ekim 2026). Önce yüklemenin bittiği, sonra davetin çıktığı
+   * bekleniyor; süre de gerçek ağ gecikmesine göre açıldı.
+   */
+  await expect(page.locator('text=Sıralama yükleniyor')).toHaveCount(0, { timeout: 30_000 });
+  await expect(davet).toBeVisible({ timeout: 30_000 });
   await expect(davet).toContainText('Sen bu listede yoksun');
 
   await page.locator('[data-alan="davet-kapat"]').click();

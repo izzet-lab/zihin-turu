@@ -3,6 +3,24 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Tarayıcı testleri sağlamlaştı
+
+**Düello eşleşme yardımcısı pes etmeden önce gerçekten deniyordu.**
+Üç deneme hakkı vardı ama tahtayı bekleyen satır hata verince bu hata
+döngünün dışına kaçıyor, deneme hakları hiç kullanılmadan test
+kırılıyordu. Artık her deneme kendi içinde kapalı: herhangi bir adım
+takılırsa sıradaki deneme her şeyi baştan kuruyor. Deneme sayısı dörde
+çıktı, takılan denemenin beklemesi altmış saniyeden otuza indi —
+bekleyerek kalan hakları yemek işe yaramıyordu.
+
+**Misafir daveti testi sunucuyu bekliyor.** Davet, sıralama sunucudan
+döndükten sonra çiziliyor; on saniyelik bekleme tek başına koşarken
+yetiyordu ama tüm takım koşarken yetmiyordu. Önce yüklemenin bitmesi
+bekleniyor.
+
+Düello takımı üst üste iki kez, tüm takım üst üste iki kez temiz
+geçti.
+
 ## 2026-10-14 — Menüde giriş, sözlük yeniden deniyor
 
 **Menüdeki "Giriş yap" görünmüyordu.** Satırın ikonu yoktu; menüdeki

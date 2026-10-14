@@ -20,6 +20,8 @@ import KelimeTuru from './ekranlar/KelimeTuru';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
 import Menu from './bilesenler/Menu';
 import KutlamaKatmani from './bilesenler/Kutlama';
+import HedefHalkasi from './bilesenler/HedefHalkasi';
+import { kutlamaSesleriniYukle } from './ses-kutlama';
 import { ilkFotografiAl } from './kutlama';
 import YasalIndeks from './ekranlar/YasalIndeks';
 import GizlilikAyarlari from './ekranlar/GizlilikAyarlari';
@@ -57,12 +59,31 @@ export default function Ana() {
     void ilkFotografiAl(kullanici?.id);
   }, [kullanici?.id]);
 
+  /*
+   * Kutlama sesleri önceden indirilir.
+   *
+   * Tam isabet anında indirilmeye başlasaydı ses yarım saniye geç
+   * çalar ve kutlama sonradan yapıştırılmış gibi dururdu. Ses bağlamı
+   * ilk dokunuşla açıldığı için indirme de o ana bağlanıyor.
+   */
+  useEffect(() => {
+    const yukle = () => void kutlamaSesleriniYukle();
+    window.addEventListener('pointerdown', yukle, { once: true });
+    window.addEventListener('keydown', yukle, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', yukle);
+      window.removeEventListener('keydown', yukle);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Menu />
       {/* Ödül töreni tek yerde: tur hangi ekranda biterse bitsin
           kutlama buradan çıkıyor. */}
       <KutlamaKatmani />
+      {/* Tam isabet töreninin halkaları — ekranı kapatmaz, üstüne biner. */}
+      <HedefHalkasi />
       <Routes>
         {/* Oyun rotaları — Uygulama bileşeni; içinde: kurulum/oyun/sonuc/giris */}
         <Route path="/" element={<Uygulama />} />

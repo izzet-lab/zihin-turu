@@ -40,6 +40,17 @@ const KALIN_TONLAR = new Set<OscillatorType>(['sine', 'triangle']);
 
 let baglam: AudioContext | null = null;
 
+/**
+ * Ses bağlamı dışarıya da açılıyor.
+ *
+ * Kutlama sesleri DOSYADAN geliyor (bkz. `ses-kutlama.ts`) ama aynı
+ * bağlamı kullanmak zorundalar: ikinci bir AudioContext açmak mobil
+ * tarayıcıda ikinci bir kilit demek ve o kilit asla açılmıyor.
+ */
+export function sesBaglamiAl(): AudioContext | null {
+  return baglamAl();
+}
+
 function baglamAl(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   const Ctor =

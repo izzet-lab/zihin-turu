@@ -5,6 +5,7 @@ import KelimeTahtasi from './KelimeTahtasi';
 import TurCevaplari from '../bilesenler/TurCevaplari';
 import SayanSayi from '../bilesenler/SayanSayi';
 import { kutlamayiDenetle } from '../kutlama';
+import { kutlamaAni } from '../kutlama-ani';
 import Ikon from '../bilesenler/Ikon';
 import { useTurCevaplari } from '../tur-cevaplari';
 import { oyunAdiCevir, useOyunSaglayici, type OyunAdi } from '../oyun-saglayici';
@@ -94,10 +95,14 @@ export default function Arena({
    * ondan sonra çıkıyor.
    */
   const arenaBittiMi = durum?.durum === 'bitti';
+  /** Podyumun tepesi — yalnızca birincilik tören hak ediyor. */
+  const birinciMiyim =
+    durum?.podyum?.find((p) => Number(p.koltuk) === durum.benimKoltuk)?.sira === 1;
   useEffect(() => {
     if (!arenaBittiMi) return;
+    if (birinciMiyim) kutlamaAni({ olay: 'arenaBirinciligi' });
     void kutlamayiDenetle();
-  }, [arenaBittiMi]);
+  }, [arenaBittiMi, birinciMiyim]);
 
   const turCevaplari = useTurCevaplari(
     durum?.durum === 'bitti' ? saglayici : null,

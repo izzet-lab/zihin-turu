@@ -279,6 +279,17 @@ verir, `Kutlama.tsx` gösterir). Bütün animasyonlar yalnızca
 `transform`/`opacity` ve `prefers-reduced-motion` ile tek yerden
 kapanıyor.
 
+**Tam isabet kutlaması iki katmanlı** (14 Ekim 2026). Her isabette
+kısa vuruş; Günün Turu, düello galibiyeti, arena birinciliği, Zor/Usta
+isabeti ve seri kilometre taşında uzun jingle + "Tam isabet!"
+seslendirmesi + hedef halkaları. **Rutin antrenman isabetinde tören
+çalmaz** ve iki tören arasında en az bir dakika vardır — yoksa ses
+yıpranır, oyuncu da sesi tamamen kapatır. Karar
+`kutlama-sesi-karar.ts` içinde saf. Ses dosyaları
+`varliklar/ses-kaynak/` altında durur ve `araclar/ses-uret.sh` ile
+yayına üretilir (60 KB bütçesi betikte denetleniyor); elle
+dönüştürülmez.
+
 **Ses ve titreşim** oyuncunun kendi profilinde, ortak bir "Oyun
 ayarları" bloğunda. Aynı blok gizlilik ayarlarında da duruyor —
 misafirin profil sayfası yok, yoksa sesi kapatamazdı.
@@ -371,6 +382,8 @@ Ayrıntılar `CHANGELOG.md`'de.
 - Veritabanı göçünden önce push etmek — canlı site hata verir
 - `<a href>` ile gezinmek — Android'de 404
 - Kelime listesini elle düzenlemek — betikle üretiliyor, elle değişiklik ilk üretimde kaybolur
+- Ses dosyasını doğrudan `public/ses/` içine koymak — `araclar/ses-uret.sh` ile üretiliyor, bütçe orada denetleniyor
+- Her tam isabette uzun jingle çalmak — ses yıpranır, oyuncu sesi tamamen kapatır
 - Sözlüğü değiştirip Edge Function'ları dağıtmamak — aynı tohum iki tarafta farklı tur üretir
 - Arayüze emoji koymak — her telefonda başka çiziliyor, `bilesenler/Ikon.tsx` var
 - Ödül altını yerine uyarı sarısı kullanmak — iki anlam karışır

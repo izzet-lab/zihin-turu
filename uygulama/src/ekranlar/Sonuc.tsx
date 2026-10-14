@@ -349,7 +349,7 @@ export default function Sonuc({
   }
 
   return (
-    <main className="zt-ekran zt-kagit zt-metin relative min-h-dvh px-5 py-8">
+    <main className="zt-ekran zt-kagit zt-metin zt-ust-bosluk relative min-h-dvh px-5 pb-8">
       <ArkaPlan />
       <div className="relative z-10 mx-auto w-full max-w-md">
         {/* Yeni seviye açıldı */}
@@ -434,7 +434,7 @@ export default function Sonuc({
         {seriKorumaGosterilebilir && (
           <div
             data-alan="seri-koruma"
-            className="mt-5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center"
+            className="mt-5 rounded-xl border zt-odul-yuzey zt-odul-yuzey px-4 py-3 text-center"
           >
             <div className="text-sm zt-odul-yazi">
               <Ikon ad="seri" boyut={16} className="mr-1.5 -mt-0.5" />
@@ -443,7 +443,7 @@ export default function Sonuc({
             <button
               onClick={reklamIzleSeriKoru}
               disabled={seriKorumaYukleniyor}
-              className="mt-2 min-h-[40px] w-full rounded-lg bg-amber-400/20 text-sm font-bold zt-odul-yazi hover:bg-amber-400/30 disabled:opacity-50"
+              className="mt-2 min-h-[40px] w-full rounded-lg zt-odul-yuzey text-sm font-bold zt-odul-yazi disabled:opacity-50"
             >
               {seriKorumaYukleniyor ? (
                 'Yükleniyor…'
@@ -599,7 +599,7 @@ export default function Sonuc({
                 data-alan="reklam-tekrar"
                 onClick={reklamIzleTekrarOyna}
                 disabled={reklamYukleniyor}
-                className="mt-3 min-h-[44px] w-full rounded-xl border zt-cizgi text-sm font-medium zt-metin-soluk hover:zt-metin disabled:opacity-50"
+                className="mt-3 min-h-[44px] w-full rounded-xl border zt-cizgi text-sm font-medium zt-metin-soluk disabled:opacity-50"
               >
                 {reklamYukleniyor ? 'Yükleniyor…' : 'Reklam izle, tekrar oyna'}
               </button>
@@ -607,7 +607,7 @@ export default function Sonuc({
             <button
               data-alan="ayarlar"
               onClick={onAyarlar}
-              className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk hover:zt-metin"
+              className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk"
             >
               Seviye değiştir
             </button>

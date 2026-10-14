@@ -50,18 +50,18 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
   }
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-5">
+    <main className="min-h-dvh zt-kagit zt-metin flex items-center justify-center px-5">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Ikon ad="etiket" boyut={44} className="mb-3 text-cyan-300" />
-          <h1 className="text-2xl font-black text-white">Kullanıcı adın ne olsun?</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <Ikon ad="etiket" boyut={44} className="mb-3 zt-vurgu-metin" />
+          <h1 className="text-2xl font-black zt-metin">Kullanıcı adın ne olsun?</h1>
+          <p className="mt-2 text-sm zt-metin-soluk">
             Lig tablosunda bu ad görünür. Sonradan değiştirilemez — dikkatli seç.
           </p>
         </div>
 
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <span className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">
             Kullanıcı adı
           </span>
           <input
@@ -74,7 +74,7 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
             autoFocus
             autoCapitalize="none"
             autoCorrect="off"
-            className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-base text-slate-200 placeholder-slate-600 outline-none focus:border-cyan-400"
+            className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin placeholder-slate-600 outline-none focus:border-cyan-400"
           />
         </label>
 
@@ -84,32 +84,32 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
         )}
         {/* Kayıt/benzersizlik hatası */}
         {hata && !anlikHata && (
-          <p className="mt-2 text-sm text-red-400">{hata}</p>
+          <p className="mt-2 text-sm zt-sure-metin">{hata}</p>
         )}
 
-        <p className="mt-2 text-xs text-slate-600">
+        <p className="mt-2 text-xs zt-metin-soluk">
           3–16 karakter · Harf, rakam, _ ve - kullanılabilir · Türkçe harf tamam
         </p>
 
         <button
           onClick={kaydet}
           disabled={yukleniyor || !!anlikHata || ad.trim().length < 3}
-          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200 disabled:opacity-40"
+          className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin disabled:opacity-40"
         >
           {yukleniyor ? 'Kaydediliyor…' : 'Devam et'}
         </button>
 
         {/* Misafir geçmişi notu */}
-        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-xs text-slate-500">
-          <strong className="text-slate-400">Geçmişin taşınıyor.</strong>{' '}
+        <div className="mt-5 rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-xs zt-metin-soluk">
+          <strong className="zt-metin-soluk">Geçmişin taşınıyor.</strong>{' '}
           Seriderin, tam isabet sayın ve oyun geçmişin hesabına aktarılır.
           Lig puanların bugünden itibaren birikmeye başlar.
         </div>
 
         {/* Profil linki */}
-        <p className="mt-6 text-center text-xs text-slate-600">
+        <p className="mt-6 text-center text-xs zt-metin-soluk">
           Seçtiğin adla profil sayfan açılacak:{' '}
-          <span className="text-cyan-300">tamisabet.tr/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
+          <span className="zt-vurgu-metin">tamisabet.tr/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
         </p>
       </div>
     </main>

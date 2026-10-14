@@ -257,13 +257,13 @@ export default function Arena({
   if (!girisYapildiMi) {
     return (
       <Cerceve baslik="Arena">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm zt-metin-soluk">
           Arena için üye olman gerekiyor — yarıştığın kişiler ve sıralaman hesabına bağlı.
         </p>
         <button
           onClick={onGirisAc}
           data-alan="arena-giris"
-          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Üye ol / giriş yap
         </button>
@@ -275,7 +275,7 @@ export default function Arena({
   if (hata) {
     return (
       <Cerceve baslik="Bir şey ters gitti">
-        <p className="text-sm text-amber-300" data-alan="arena-hata">
+        <p className="text-sm zt-odul-yazi" data-alan="arena-hata">
           {hata}
         </p>
         <button
@@ -284,7 +284,7 @@ export default function Arena({
             setAcilisKontrolu(false);
           }}
           data-alan="arena-tekrar-dene"
-          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Tekrar dene
         </button>
@@ -297,12 +297,12 @@ export default function Arena({
   if (!macId && acilisKontrolu) {
     return (
       <Cerceve baslik="Arena">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm zt-metin-soluk">
           Beş kişi, aynı anda, beş tur. Tam isabeti ilk bulan turu alır.
         </p>
 
         <div className="mt-5 text-left">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
             Seviye
           </div>
           <div className="grid grid-cols-2 gap-2.5" data-alan="arena-seviyeler">
@@ -318,10 +318,10 @@ export default function Arena({
                   aria-pressed={secili}
                   className={`min-h-[56px] rounded-xl border-2 px-3 py-2 text-left transition ${
                     kilitli
-                      ? 'border-slate-800 bg-slate-900/40 text-slate-600'
+                      ? 'zt-cizgi zt-yuzey zt-metin-soluk'
                       : secili
-                        ? 'border-cyan-300 bg-cyan-300/15 text-cyan-100'
-                        : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:border-slate-600'
+                        ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                        : 'zt-cizgi zt-yuzey-2 zt-metin'
                   }`}
                 >
                   <span className="block text-sm font-black">
@@ -338,11 +338,11 @@ export default function Arena({
         <button
           onClick={katil}
           data-alan="arena-katil"
-          className="mt-5 min-h-[56px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[56px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Arenaya katıl
         </button>
-        <p className="mt-2 text-xs text-slate-600">
+        <p className="mt-2 text-xs zt-metin-soluk">
           {seviyeEtiket} seviyesinde. Boş koltuklar kısa sürede dolar.
         </p>
         <GeriDugmesi onCik={onCik} />
@@ -353,7 +353,7 @@ export default function Arena({
   if (!durum) {
     return (
       <Cerceve baslik="Arena hazırlanıyor">
-        <p className="text-sm text-slate-400" data-alan="arena-hazirlaniyor">
+        <p className="text-sm zt-metin-soluk" data-alan="arena-hazirlaniyor">
           Yarış kuruluyor…
         </p>
         <GeriDugmesi onCik={onCik} />
@@ -366,7 +366,7 @@ export default function Arena({
     const dolu = durum.yarisanlar.length;
     return (
       <Cerceve baslik="Yarışçılar bekleniyor">
-        <p className="text-sm text-slate-400" data-alan="arena-bekleme">
+        <p className="text-sm zt-metin-soluk" data-alan="arena-bekleme">
           {dolu}/{ARENA_KOLTUK} koltuk doldu. Boş kalanlara rakip atanacak.
         </p>
         <div className="mt-5 space-y-2 text-left">
@@ -376,18 +376,18 @@ export default function Arena({
               <div
                 key={i}
                 className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
-                  y ? 'border-slate-700 bg-slate-900/60' : 'border-dashed border-slate-800'
+                  y ? 'zt-cizgi zt-yuzey' : 'border-dashed zt-cizgi'
                 }`}
               >
                 <span
                   aria-hidden="true"
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    y?.benMiyim ? 'bg-cyan-300/25 text-cyan-100' : 'bg-slate-700 text-slate-300'
+                    y?.benMiyim ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {y ? y.ad.trim().charAt(0).toLocaleUpperCase('tr') : '·'}
                 </span>
-                <span className={`text-sm ${y ? 'text-slate-200' : 'text-slate-600'}`}>
+                <span className={`text-sm ${y ? 'zt-metin' : 'zt-metin-soluk'}`}>
                   {y ? (y.benMiyim ? 'Sen' : y.ad) : 'bekleniyor…'}
                 </span>
               </div>
@@ -397,7 +397,7 @@ export default function Arena({
         <button
           onClick={yaristanCik}
           data-alan="arena-bekleme-cik"
-          className="zt-dokunma-alani mt-6 w-full text-sm font-bold text-slate-400 hover:text-slate-200"
+          className="zt-dokunma-alani mt-6 w-full text-sm font-bold zt-metin-soluk"
         >
           Vazgeç
         </button>
@@ -447,7 +447,7 @@ export default function Arena({
                       yukarı büyür. Sıra numarası gecikmeyi veriyor. */}
                   <span
                     className={`zt-madalya-dus flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${
-                      p.madalya ? metalSinif[p.madalya] : 'bg-slate-800 text-slate-500'
+                      p.madalya ? metalSinif[p.madalya] : 'zt-ayirac zt-metin-soluk'
                     }`}
                     style={{ ['--zt-sira' as string]: String(gorunenSira) }}
                   >
@@ -455,14 +455,14 @@ export default function Arena({
                   </span>
                   <span
                     className={`mt-1 w-full truncate text-center text-[11px] font-bold ${
-                      benim ? 'text-cyan-200' : 'text-slate-400'
+                      benim ? 'zt-vurgu-metin' : 'zt-metin-soluk'
                     }`}
                   >
                     {benim ? 'Sen' : (y?.ad ?? '—')}
                   </span>
                   <div
                     className={`zt-basamak zt-basamak-cik mt-1 w-full rounded-t-lg border-x border-t ${yukseklik} ${basamakRengi} ${
-                      benim ? 'border-cyan-300/40' : 'border-slate-700'
+                      benim ? 'zt-vurgu-cizgi' : 'zt-cizgi'
                     }`}
                     style={{ ['--zt-sira' as string]: String(gorunenSira) }}
                   />
@@ -476,30 +476,30 @@ export default function Arena({
           <div
             className={`zt-sahne rounded-2xl border px-5 py-5 ${
               benimSira.madalya
-                ? 'border-cyan-300/40 bg-cyan-300/10'
-                : 'border-slate-700 bg-slate-900/60'
+                ? 'zt-vurgu-cizgi zt-vurgu-yuzey'
+                : 'zt-cizgi zt-yuzey'
             }`}
           >
-            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+            <div className="text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Senin sıran
             </div>
             <div
               className={`zt-rakam mt-1 inline-flex min-w-[4.5rem] items-center justify-center rounded-2xl px-4 py-2 text-5xl font-black leading-none ${
-                benimSira.madalya ? metalSinif[benimSira.madalya] : 'text-cyan-200'
+                benimSira.madalya ? metalSinif[benimSira.madalya] : 'zt-vurgu-metin'
               }`}
               data-alan="arena-sonuc"
             >
               {benimSira.sira}.
             </div>
-            <div className="mt-1 text-xs text-slate-400">
-              <SayanSayi deger={benimSira.puan} className="zt-rakam font-black text-slate-200" />{' '}
+            <div className="mt-1 text-xs zt-metin-soluk">
+              <SayanSayi deger={benimSira.puan} className="zt-rakam font-black zt-metin" />{' '}
               puan
             </div>
           </div>
         )}
 
         <ul
-          className="mt-6 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-900/40 text-left"
+          className="mt-6 divide-y divide-slate-800 rounded-xl border zt-cizgi zt-yuzey text-left"
           data-alan="arena-podyum"
         >
           {(durum.podyum ?? []).map((p, satirSira) => {
@@ -511,25 +511,25 @@ export default function Arena({
                 // Satırlar sırayla belirir: liste "sayılıyormuş" gibi gelsin.
                 style={{ ['--zt-sira' as string]: String(satirSira) }}
                 className={`zt-satir-gir flex items-center gap-3 px-3 py-2.5 text-sm ${
-                  benim ? 'bg-cyan-300/10' : ''
+                  benim ? 'zt-vurgu-yuzey' : ''
                 }`}
               >
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    p.madalya ? metalSinif[p.madalya] : 'text-slate-500'
+                    p.madalya ? metalSinif[p.madalya] : 'zt-metin-soluk'
                   }`}
                 >
                   {p.sira}
                 </span>
                 <span
                   className={`min-w-0 flex-1 truncate font-bold ${
-                    benim ? 'text-cyan-200' : 'text-slate-300'
+                    benim ? 'zt-vurgu-metin' : 'zt-metin'
                   }`}
                 >
                   {benim ? 'Sen' : (y?.ad ?? 'Yarışçı')}
-                  {y?.ayrildi && <span className="ml-1 text-xs text-slate-600">(çıktı)</span>}
+                  {y?.ayrildi && <span className="ml-1 text-xs zt-metin-soluk">(çıktı)</span>}
                 </span>
-                <span className="shrink-0 font-bold tabular-nums text-cyan-300">
+                <span className="shrink-0 font-bold tabular-nums zt-vurgu-metin">
                   {p.puan} puan
                 </span>
               </li>
@@ -549,7 +549,7 @@ export default function Arena({
             setKilitliTur(null);
           }}
           data-alan="arena-yeni"
-          className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-6 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Yeni arena
         </button>
@@ -562,20 +562,20 @@ export default function Arena({
   if (cikisSoruluyor) {
     return (
       <Cerceve baslik="Yarıştan çıkılsın mı?">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm zt-metin-soluk">
           Çıkarsan podyumda en sona yazılırsın; yarış kalanlarla sürer.
         </p>
         <button
           onClick={yaristanCik}
           data-alan="arena-terk-onay"
-          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold text-amber-300 hover:bg-amber-400/10"
+          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold zt-odul-yazi"
         >
           Evet, çık
         </button>
         <button
           onClick={() => setCikisSoruluyor(false)}
           data-alan="arena-terk-vazgec"
-          className="mt-3 min-h-[48px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-3 min-h-[48px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Yarışa dön
         </button>
@@ -590,23 +590,23 @@ export default function Arena({
         {/* SAHNE — kilitlenen cevap, oyunun diliyle. Önce bu ekran düz
             metin satırlarıydı ve bildirim gibi duruyordu. */}
         <div
-          className="zt-sahne rounded-2xl border border-cyan-300/30 bg-cyan-300/5 px-5 py-6"
+          className="zt-sahne rounded-2xl border zt-vurgu-cizgi zt-vurgu-yuzey px-5 py-6"
           data-alan="arena-kilit-bekleme"
         >
-          <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-300/70">
+          <div className="text-[11px] font-bold uppercase tracking-widest zt-vurgu-metin/70">
             Cevabın kilitlendi
           </div>
-          <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200">
+          <div className="zt-rakam mt-1 text-5xl font-black leading-none zt-vurgu-metin">
             {benimUzaklik === 0 ? 'TAM' : (benimUzaklik ?? '—')}
           </div>
-          <div className="mt-1 text-xs text-slate-400">
+          <div className="mt-1 text-xs zt-metin-soluk">
             {benimUzaklik === 0
               ? 'hedefi tam tutturdun'
               : kilitliAdimlar.length === 0
                 ? 'hiç işlem yapmadın'
                 : `fark · hedef ${arenaHedef}`}
           </div>
-          <div className="zt-nabiz mt-4 text-xs font-bold text-slate-400">
+          <div className="zt-nabiz mt-4 text-xs font-bold zt-metin-soluk">
             Diğerleri oynuyor…
           </div>
         </div>
@@ -621,10 +621,10 @@ export default function Arena({
             .map((y) => (
               <li key={y.koltuk} className={y.ayrildi ? 'opacity-40' : ''}>
                 <div className="flex items-baseline justify-between text-xs">
-                  <span className={y.benMiyim ? 'font-bold text-cyan-200' : 'text-slate-400'}>
+                  <span className={y.benMiyim ? 'font-bold zt-vurgu-metin' : 'zt-metin-soluk'}>
                     {y.benMiyim ? 'Sen' : y.ad}
                   </span>
-                  <span className="font-bold text-slate-300">
+                  <span className="font-bold zt-metin">
                     {y.ayrildi
                       ? 'çıktı'
                       : y.uzaklik == null
@@ -649,11 +649,11 @@ export default function Arena({
         {/* SENİN YOLUN — tahtaya el yazısıyla. */}
         {kilitliAdimlar.length > 0 && (
           <div className="mt-5 text-left" data-alan="arena-kilit-zincir">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Senin yolun
             </div>
-            <div className="zt-sahne rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-              <ul className="elyazisi space-y-1.5 text-lg text-cyan-100">
+            <div className="zt-sahne rounded-xl border zt-cizgi zt-yuzey p-4">
+              <ul className="elyazisi space-y-1.5 text-lg zt-vurgu-metin">
                 {kilitliAdimlar.map((ad, i) => (
                   <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
                     {ad.a} {ad.islem} {ad.b} = {ad.sonuc}
@@ -669,7 +669,7 @@ export default function Arena({
             oyunu öğretiyor. Sunucudan gelmiyor, tohumdan üretiliyor. */}
         {turCozumu && turCozumu.satirlar.length > 0 && (
           <div className="mt-5 text-left" data-alan="arena-kilit-cozum">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Bu turun bir çözümü
             </div>
             <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
@@ -681,13 +681,13 @@ export default function Arena({
                 ))}
               </ul>
             </div>
-            <p className="mt-1.5 text-[11px] text-slate-600">Tek yol değil.</p>
+            <p className="mt-1.5 text-[11px] zt-metin-soluk">Tek yol değil.</p>
           </div>
         )}
         <button
           onClick={() => setCikisSoruluyor(true)}
           data-alan="arena-terk"
-          className="zt-dokunma-alani mt-6 w-full text-xs font-bold text-slate-600 hover:text-slate-400"
+          className="zt-dokunma-alani mt-6 w-full text-xs font-bold zt-metin-soluk"
         >
           Yarıştan çık
         </button>
@@ -698,7 +698,7 @@ export default function Arena({
   if (!saglayici) {
     return (
       <Cerceve baslik="Arena">
-        <p className="zt-nabiz text-sm text-slate-400">Sözlük hazırlanıyor…</p>
+        <p className="zt-nabiz text-sm zt-metin-soluk">Sözlük hazırlanıyor…</p>
       </Cerceve>
     );
   }
@@ -759,9 +759,9 @@ export default function Arena({
 
 function Cerceve({ baslik, children }: { baslik: string; children: React.ReactNode }) {
   return (
-    <main className="zt-ekran flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran flex min-h-dvh flex-col justify-center zt-kagit px-5 pb-6 pt-16 zt-metin">
       <div className="mx-auto w-full max-w-md text-center">
-        <h1 className="text-2xl font-black text-white">{baslik}</h1>
+        <h1 className="text-2xl font-black zt-metin">{baslik}</h1>
         <div className="mt-4">{children}</div>
       </div>
     </main>
@@ -773,7 +773,7 @@ function GeriDugmesi({ onCik }: { onCik: () => void }) {
     <button
       onClick={onCik}
       data-alan="arena-cik"
-      className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-400 hover:text-slate-200"
+      className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk"
     >
       Vazgeç
     </button>

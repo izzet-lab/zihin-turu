@@ -478,7 +478,7 @@ export default function Kurulum({
             className={`zt-secim relative min-h-[96px] rounded-xl border-2 px-3 py-3 text-left transition active:scale-[.99] ${
               oyun === o.k
                 ? 'zt-secim-acik zt-vurgu-cizgi zt-vurgu-yuzey'
-                : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi'
+                : 'zt-cizgi zt-yuzey-2'
             }`}
           >
             {oyun === o.k && (
@@ -527,8 +527,8 @@ export default function Kurulum({
               m.kapali
                 ? 'cursor-not-allowed zt-cizgi zt-yuzey opacity-60'
                 : m.vurgulu
-                  ? 'border-2 zt-vurgu-cizgi zt-vurgu-yuzey hover:zt-vurgu-yuzey'
-                  : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi hover:zt-yuzey-2'
+                  ? 'border-2 zt-vurgu-cizgi zt-vurgu-yuzey'
+                  : 'zt-cizgi zt-yuzey-2'
             }`}
           >
             <Ikon
@@ -612,7 +612,7 @@ export default function Kurulum({
  */
 function Kabuk({ children, oyun }: { children: React.ReactNode; oyun?: 'sayi' | 'kelime' }) {
   return (
-    <main className="zt-ekran zt-kagit zt-metin relative min-h-dvh px-5 py-8">
+    <main className="zt-ekran zt-kagit zt-metin zt-ust-bosluk relative min-h-dvh px-5 pb-8">
       <ArkaPlan oyun={oyun} />
       <div className="relative z-10 mx-auto w-full max-w-md">{children}</div>
     </main>
@@ -624,7 +624,7 @@ function GeriDugmesi({ onGeri }: { onGeri: () => void }) {
     <button
       onClick={onGeri}
       data-alan="geri"
-      className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold zt-vurgu-metin hover:zt-yuzey-2"
+      className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold zt-vurgu-metin"
     >
       ← Geri
     </button>

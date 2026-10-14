@@ -55,8 +55,23 @@ body {
    * birincil çözüm. Capacitor, kendisi boşluk bıraktığı durumlarda
    * env() değerlerini sıfırlıyor, o yüzden çift boşluk oluşmaz.
    */
-  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/*
+ * GÜVENLİ ALAN ÜST BOŞLUĞU — GÖVDEDE DEĞİL, İÇERİKTE
+ *
+ * Önceden `body`'ye üst dolgu veriliyordu. Kaydırılabilir ekranlarda
+ * bu yetmiyor: gövde dolgusu bir kez uygulanıyor, içerik kayınca
+ * durum çubuğunun altına giriyor ve saat/pil göstergesi başlığın
+ * üstüne biniyordu. Ana ekrandaki kartlar ve sonuç ekranındaki
+ * "ÇÖZÜM" başlığı tam bu yüzden kesiliyordu.
+ *
+ * Boşluk artık her ekranın KENDİ üst dolgusunda. Ekranın istediği
+ * dolgu `--zt-ust` ile veriliyor, güvenli alan onun üstüne ekleniyor.
+ */
+.zt-ust-bosluk {
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--zt-ust, 1.5rem));
 }
 :focus-visible { outline: 3px solid var(--vurgu); outline-offset: 2px; }
 
@@ -608,13 +623,23 @@ main {
 
 :root {
   --zt-marka: var(--vurgu);
-  --zt-odul: #F7D774;
-  --zt-odul-koyu: #D9A42B;
+  /*
+   * Eski renk sisteminin ödül jetonları artık TEMA jetonundan
+   * besleniyor. İki ayrı sarı vardı: biri burada (parlak), biri
+   * temada (pirinç). Aynı anlamın iki rengi olması kafa karıştırıyor.
+   */
+  --zt-odul: var(--odul);
+  --zt-odul-koyu: color-mix(in srgb, var(--odul) 75%, #000);
   --zt-uyari: #FBBF24;
   /* Soğuk kırmızı: turuncuya değil ahududuya çalıyor — uyarı sarısıyla
      ve ödül altınıyla hiçbir noktada karışmıyor. */
-  --zt-kayip: #FF7A93;
-  --zt-nadir: #B794F6;
+  --zt-kayip: var(--sure);
+  /*
+   * MOR PALETTEN ÇIKARILDI. Kareli kâğıt paletinde mor yok; XP
+   * göstergesi vurgu renginden, seviye rozeti ödül renginden
+   * besleniyor.
+   */
+  --zt-nadir: var(--vurgu);
 }
 
 .zt-odul-yazi { color: var(--zt-odul); }
@@ -641,9 +666,14 @@ main {
 
 /* Dolgular: seri kareleri, XP çubuğu, tam isabet süre çubuğu. */
 .zt-odul-dolgu { background: linear-gradient(90deg, var(--zt-odul), var(--zt-odul-koyu)); }
-.zt-nadir-dolgu { background: linear-gradient(90deg, #D6BCFA, #9F7AEA); }
-.zt-odul-kare { background-color: var(--zt-odul); }
-.zt-odul-kare-soluk { background-color: rgb(247 215 116 / 0.4); }
+.zt-nadir-dolgu { background: var(--vurgu); }
+/*
+ * Seri kareleri ÖDÜL jetonundan besleniyor (pirinç), parlak sarıdan
+ * değil. Parlak sarı uyarı rengine benziyordu; ödül ile uyarının aynı
+ * renk olması ikisini de anlamsız yapar.
+ */
+.zt-odul-kare { background-color: var(--odul); }
+.zt-odul-kare-soluk { background-color: color-mix(in srgb, var(--odul) 40%, transparent); }
 
 /* ================================================================== */
 /* HAREKET KATMANI                                                     */
@@ -1132,3 +1162,26 @@ main {
 .zt-sure-oluk { background-color: var(--hat); }
 .zt-sure-dolgu { background-color: var(--vurgu); }
 .zt-sure-az { background-color: var(--sure); }
+
+/* Modal perdesi — kutlama ve yardım pencerelerinin arkası. */
+.zt-perde { background-color: color-mix(in srgb, var(--kagit) 82%, #000); }
+
+/*
+ * ROZETLER
+ *
+ * Kazanılmış rozet DOLU, kazanılmamış rozet KONTUR. Önceden ikisi de
+ * dolguydu ve fark yalnızca soluklaştırmayla anlatılıyordu;
+ * kazanılmamış rozetler neredeyse görünmüyordu. Kilitli bir rozet de
+ * okunabilmeli — oyuncuya hedef gösteriyor.
+ */
+.zt-rozet-dolu {
+  background-color: var(--vurgu);
+  border-color: var(--vurgu);
+  color: var(--kagit);
+}
+
+.zt-rozet-bos {
+  background-color: transparent;
+  border-color: var(--soluk);
+  color: var(--soluk);
+}

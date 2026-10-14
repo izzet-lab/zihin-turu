@@ -8,9 +8,9 @@
  *
  * NASIL DAVRANIR
  * - Birden fazla kutlama varsa sırayla gösterir (önce seviye, sonra
- *   rozetler, sonra seri).
+ * rozetler, sonra seri).
  * - Dokununca ya da üç saniye sonra sıradakine geçer; oyuncuyu
- *   bekletmez.
+ * bekletmez.
  * - Kazanılan şey büyüyerek gelir, konfeti düşer, telefon titrer.
  *
  * NEREDE DURUYOR
@@ -93,7 +93,7 @@ export default function KutlamaKatmani() {
       // z-[60]: "Nasıl oynanır" penceresi ve menü z-50'de duruyor.
       // Aynı katmanda kalsaydı ilk turunu bitiren yeni oyuncunun
       // kutlaması yardım penceresinin ARKASINDA kalırdı.
-      className="zt-kutlama fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#0A0E1A]/[0.97] px-8 text-center"
+      className="zt-kutlama fixed inset-0 z-[60] flex flex-col items-center justify-center zt-kagit/[0.97] px-8 text-center"
       onClick={sonraki}
       role="status"
       aria-live="polite"
@@ -109,14 +109,14 @@ export default function KutlamaKatmani() {
       </div>
 
       <div className="zt-kutlama-yazi mt-6">
-        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <div className="text-[11px] font-bold uppercase tracking-[0.2em] zt-metin-soluk">
           {i.ustBaslik}
         </div>
-        <div className="zt-rakam mt-1 text-3xl font-black text-white">{i.baslik}</div>
-        <p className="mt-2 max-w-xs text-sm text-slate-400">{i.alt}</p>
+        <div className="zt-rakam mt-1 text-3xl font-black zt-metin">{i.baslik}</div>
+        <p className="mt-2 max-w-xs text-sm zt-metin-soluk">{i.alt}</p>
       </div>
 
-      <div className="mt-8 text-[11px] text-slate-600">Devam etmek için dokun</div>
+      <div className="mt-8 text-[11px] zt-metin-soluk">Devam etmek için dokun</div>
     </div>
   );
 }

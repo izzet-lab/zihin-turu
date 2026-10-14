@@ -61,10 +61,10 @@ export default function ProfilSayfasi() {
 
   if (yukleniyor) {
     return (
-      <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+      <main className="min-h-dvh zt-kagit zt-metin px-5 py-8">
         <div className="mx-auto w-full max-w-md text-center py-12">
-          <div className="inline-block w-4 h-4 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin" />
-          <p className="mt-2 text-sm text-slate-400">Yükleniyor...</p>
+          <div className="inline-block w-4 h-4 border-2 zt-vurgu-cizgi border-t-transparent rounded-full animate-spin" />
+          <p className="mt-2 text-sm zt-metin-soluk">Yükleniyor...</p>
         </div>
       </main>
     );
@@ -72,10 +72,10 @@ export default function ProfilSayfasi() {
 
   if (hata || !profil) {
     return (
-      <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+      <main className="min-h-dvh zt-kagit zt-metin px-5 py-8">
         <div className="mx-auto w-full max-w-md py-12">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-6 text-center">
-            <p className="text-sm text-slate-400">{hata || 'Kullanıcı bulunamadı.'}</p>
+          <div className="rounded-lg border zt-cizgi zt-yuzey p-6 text-center">
+            <p className="text-sm zt-metin-soluk">{hata || 'Kullanıcı bulunamadı.'}</p>
           </div>
         </div>
       </main>
@@ -87,47 +87,47 @@ export default function ProfilSayfasi() {
   const kalanGun = Math.floor((Date.now() - katilma.getTime()) / 86_400_000) + 1;
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
+    <main className="min-h-dvh zt-kagit zt-metin px-5 py-8">
       <div className="mx-auto w-full max-w-2xl">
         {/* Başlık ve kullanıcı adı */}
         <header className="mb-8">
-          <h1 className="text-3xl font-black text-white mb-2">{profil.kullaniciAdi}</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-3xl font-black zt-metin mb-2">{profil.kullaniciAdi}</h1>
+          <p className="text-xs zt-metin-soluk">
             {kalanGun} gün önce katıldı
           </p>
         </header>
 
         {/* İstatistikler kartı */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4 text-center">
-            <div className="text-2xl font-black text-cyan-300">{profil.toplamTurSayisi}</div>
-            <div className="text-xs text-slate-500 mt-1">Toplam tur</div>
+          <div className="rounded-lg border zt-cizgi zt-yuzey p-4 text-center">
+            <div className="text-2xl font-black zt-vurgu-metin">{profil.toplamTurSayisi}</div>
+            <div className="text-xs zt-metin-soluk mt-1">Toplam tur</div>
           </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4 text-center">
-            <div className="text-2xl font-black text-cyan-300">{profil.tamIsabetSayisi}</div>
-            <div className="text-xs text-slate-500 mt-1">Tam isabet</div>
+          <div className="rounded-lg border zt-cizgi zt-yuzey p-4 text-center">
+            <div className="text-2xl font-black zt-vurgu-metin">{profil.tamIsabetSayisi}</div>
+            <div className="text-xs zt-metin-soluk mt-1">Tam isabet</div>
           </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4 text-center">
-            <div className="text-2xl font-black text-cyan-300">
+          <div className="rounded-lg border zt-cizgi zt-yuzey p-4 text-center">
+            <div className="text-2xl font-black zt-vurgu-metin">
               {profil.toplamTurSayisi > 0 ? Math.round((profil.tamIsabetSayisi / profil.toplamTurSayisi) * 100) : 0}%
             </div>
-            <div className="text-xs text-slate-500 mt-1">Başarı oranı</div>
+            <div className="text-xs zt-metin-soluk mt-1">Başarı oranı</div>
           </div>
         </div>
 
         {/* Seviye bazlı en iyi puanlar */}
         {profil.enIyiPuanlar.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-widest zt-metin-soluk mb-4">
               Seviye bazlı en iyi puanlar
             </h2>
             <div className="space-y-2">
               {profil.enIyiPuanlar
                 .sort((a, b) => b.puan - a.puan)
                 .map((s) => (
-                  <div key={s.seviye} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3">
-                    <span className="font-bold text-slate-200">{seviyeEtiketi(s.seviye)}</span>
-                    <span className="font-bold text-cyan-300">{s.puan}</span>
+                  <div key={s.seviye} className="flex items-center justify-between rounded-lg border zt-cizgi zt-yuzey px-4 py-3">
+                    <span className="font-bold zt-metin">{seviyeEtiketi(s.seviye)}</span>
+                    <span className="font-bold zt-vurgu-metin">{s.puan}</span>
                   </div>
                 ))}
             </div>
@@ -136,7 +136,7 @@ export default function ProfilSayfasi() {
 
         {/* Son 28 günlük aktivite */}
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-widest zt-metin-soluk mb-4">
             Son 28 günlük aktivite
           </h2>
           <div className="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1">
@@ -145,12 +145,12 @@ export default function ProfilSayfasi() {
                 key={g.tarih}
                 title={g.tarih}
                 className={`h-6 rounded-sm ${
-                  g.var ? 'bg-cyan-300' : 'bg-slate-800'
+                  g.var ? 'zt-dugme' : 'zt-ayirac'
                 }`}
               />
             ))}
           </div>
-          <p className="text-xs text-slate-500 mt-3 text-center">
+          <p className="text-xs zt-metin-soluk mt-3 text-center">
             İki hafta / sol = daha eski
           </p>
         </div>
@@ -159,26 +159,26 @@ export default function ProfilSayfasi() {
             Başkasının profilinde ses anahtarı göstermek anlamsız. */}
         {kendiProfili && (
           <div className="mt-10 space-y-2">
-            <div className="my-2 h-px bg-slate-800" />
+            <div className="my-2 h-px zt-ayirac" />
             <OyunAyarlari />
-            <div className="my-3 h-px bg-slate-800" />
+            <div className="my-3 h-px zt-ayirac" />
             <button
               onClick={() => navigate('/gizlilik-ayarlari')}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold zt-metin"
             >
               <Ikon ad="ayar" boyut={16} className="mr-2 -mt-0.5" />
             Gizlilik ayarları
             </button>
             <button
               onClick={() => navigate('/yasal/kvkk')}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold zt-metin"
             >
               <Ikon ad="belge" boyut={16} className="mr-2 -mt-0.5" />
             Yasal metinler
             </button>
             <button
               onClick={() => navigate('/yasal/hesap-sil')}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-red-400/80 hover:bg-slate-800/60 hover:text-red-400"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-bold zt-sure-metin"
             >
               <Ikon ad="cop" boyut={16} className="mr-2 -mt-0.5" />
             Hesabımı sil

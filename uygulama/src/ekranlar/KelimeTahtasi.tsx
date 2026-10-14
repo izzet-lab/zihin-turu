@@ -104,7 +104,7 @@ export default function KelimeTahtasi({
   }, [saglayici, tur, yazilan, onIlerleme]);
 
   return (
-    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran min-h-dvh zt-kagit px-5 pb-6 pt-16 zt-metin">
       <Parcaciklar />
       {/* relative z-10: parçacık katmanının üstünde. */}
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-col">
@@ -113,20 +113,20 @@ export default function KelimeTahtasi({
 
         {/* Yazılan kelime */}
         <div
-          className="zt-sahne mt-5 flex min-h-[84px] items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/40 px-4"
+          className="zt-sahne mt-5 flex min-h-[84px] items-center justify-center rounded-2xl border zt-cizgi zt-yuzey px-4"
           data-alan="kelime-yazilan"
         >
           {yazilan ? (
-            <span className="zt-rakam break-all text-center text-3xl font-black leading-none text-cyan-100">
+            <span className="zt-rakam break-all text-center text-3xl font-black leading-none zt-vurgu-metin">
               {turkceBuyult(yazilan)}
             </span>
           ) : (
-            <span className="text-sm text-slate-600">Harflere dokunarak kelime kur</span>
+            <span className="text-sm zt-metin-soluk">Harflere dokunarak kelime kur</span>
           )}
         </div>
 
         {uyari && (
-          <div className="mt-2 text-center text-xs font-bold text-amber-300" data-alan="kelime-uyari">
+          <div className="mt-2 text-center text-xs font-bold zt-odul-yazi" data-alan="kelime-uyari">
             {uyari}
           </div>
         )}
@@ -146,10 +146,10 @@ export default function KelimeTahtasi({
                 onClick={() => harfTikla(t.id)}
                 // Yeni turda harfler sırayla düşsün.
                 style={{ ['--zt-sira' as string]: String(sira) }}
+                // Taşın yüzeyi ve harf rengi `[data-harf]` kuralında
+                // sabit; buraya tema sınıfı yazılmaz (bkz. Oyun.tsx).
                 className={`zt-dusen min-h-[76px] rounded-xl border px-2 text-2xl font-black uppercase leading-none ${
-                  secili
-                    ? 'border-cyan-300/60 bg-cyan-300/10 text-cyan-100'
-                    : 'border-slate-700 bg-slate-800/50 text-slate-100'
+                  secili ? 'zt-vurgu-cizgi' : 'border-transparent'
                 }`}
               >
                 {turkceBuyult(t.harf)}
@@ -165,7 +165,7 @@ export default function KelimeTahtasi({
               setSecilenler((s) => s.slice(0, -1));
             }}
             disabled={secilenler.length === 0}
-            className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-800/50 font-bold text-slate-200 disabled:opacity-40"
+            className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey-2 font-bold zt-metin disabled:opacity-40"
             data-alan="kelime-sil"
           >
             ← Sil
@@ -176,7 +176,7 @@ export default function KelimeTahtasi({
               setSecilenler([]);
             }}
             disabled={secilenler.length === 0}
-            className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-800/50 font-bold text-slate-200 disabled:opacity-40"
+            className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey-2 font-bold zt-metin disabled:opacity-40"
             data-alan="kelime-temizle"
           >
             Temizle
@@ -185,7 +185,7 @@ export default function KelimeTahtasi({
 
         <button
           onClick={kilitle}
-          className="mt-3 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition active:scale-[0.99]"
+          className="mt-3 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[0.99]"
           data-alan="kelime-bitir"
         >
           Cevabı kilitle
@@ -195,7 +195,7 @@ export default function KelimeTahtasi({
           <button
             onClick={onCik}
             data-alan={arena ? 'arena-terk' : 'duello-terk'}
-            className="zt-dokunma-alani mt-4 min-h-[44px] w-full text-sm font-bold text-slate-600 hover:text-slate-400"
+            className="zt-dokunma-alani mt-4 min-h-[44px] w-full text-sm font-bold zt-metin-soluk"
           >
             Yarıştan çık
           </button>

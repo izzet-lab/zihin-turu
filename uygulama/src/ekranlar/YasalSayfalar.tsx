@@ -23,7 +23,7 @@
  * - 13–17 arası kullanıcılar için veli onayı zorunlu hale getirildi
  * - Doğum yılının toplandığı ve neden toplandığı eklendi
  * - Reklam kişiselleştirmesi: 18+ kullanıcılara UMP ile onay sorulur;
- *   onay vermeyene kişiselleştirilmemiş reklam gösterilir
+ * onay vermeyene kişiselleştirilmemiş reklam gösterilir
  * - 18 altına kişiselleştirilmiş reklam gösterilmez
  * - UMP üzerinden Google'a aktarılan veriler açıklandı
  * - maxAdContentRating: General → Teen
@@ -36,11 +36,11 @@ import { hesapSil } from '../kimlik';
 import SayfaSablonu from './SayfaSablonu';
 
 /* ── Ortak stil sınıfları ── */
-const h2 = 'text-base font-bold text-white mt-6';
-const icerik = 'space-y-4 text-sm text-slate-300 leading-relaxed';
+const h2 = 'text-base font-bold zt-metin mt-6';
+const icerik = 'space-y-4 text-sm zt-metin leading-relaxed';
 
 /* ========================================================================== */
-/*  KVKK AYDINLATMA METNİ                                                     */
+/* KVKK AYDINLATMA METNİ */
 /* ========================================================================== */
 export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
   return (
@@ -58,7 +58,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             <strong>Son güncelleme:</strong> 8 Ekim 2026
           </p>
-          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+          <p className="rounded-lg border zt-cizgi zt-yuzey-2 px-4 py-3 text-sm">
             <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
             işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
             önceki adres zihin.artei.net idi.
@@ -71,12 +71,12 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           </p>
 
           <h2 className={h2}>2. Toplanan Kişisel Veriler</h2>
-          <table className="w-full text-xs border border-slate-700 rounded-lg overflow-hidden">
+          <table className="w-full text-xs border zt-cizgi rounded-lg overflow-hidden">
             <thead>
-              <tr className="bg-slate-800/60">
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Veri</th>
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Amaç</th>
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Zorunlu mu?</th>
+              <tr className="zt-yuzey-2">
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Veri</th>
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Amaç</th>
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Zorunlu mu?</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -86,14 +86,14 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               <tr><td className="px-3 py-2">Oyun sonuçları</td><td className="px-3 py-2">Puan, süre, seviye, adım sayısı — ilerleme takibi ve lig sıralaması</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">IP adresi</td><td className="px-3 py-2">Supabase altyapısı tarafından sunucu günlüklerinde otomatik kaydedilir</td><td className="px-3 py-2">Otomatik</td></tr>
               <tr><td className="px-3 py-2">Tarayıcı/cihaz bilgisi</td><td className="px-3 py-2">Supabase oturum yönetimi (user-agent)</td><td className="px-3 py-2">Otomatik</td></tr>
-              <tr><td className="px-3 py-2">Bildirim tercihi <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde yerel bildirim; sunucuya veri gönderilmez</td><td className="px-3 py-2">Kapatılabilir</td></tr>
-              <tr><td className="px-3 py-2">Çökme kayıtları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
-              <tr><td className="px-3 py-2">Kullanım olayları <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
-              <tr><td className="px-3 py-2">Reklam onayı <span className="text-slate-500">(Android, 18+)</span></td><td className="px-3 py-2">Kişiselleştirilmiş reklam onay durumu — Google UMP SDK</td><td className="px-3 py-2">Kapatılabilir</td></tr>
-              <tr><td className="px-3 py-2">Reklam kimliği (AAID) <span className="text-slate-500">(Android)</span></td><td className="px-3 py-2">Google AdMob'a iletilir. 18 yaş üstü onay verirse reklam kişiselleştirmesi; onay yoksa ve 18 altında yalnızca reklam sayımı ve sahtecilik denetimi</td><td className="px-3 py-2">Onay geri alınabilir</td></tr>
+              <tr><td className="px-3 py-2">Bildirim tercihi <span className="zt-metin-soluk">(Android)</span></td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde yerel bildirim; sunucuya veri gönderilmez</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Çökme kayıtları <span className="zt-metin-soluk">(Android)</span></td><td className="px-3 py-2">Uygulama çöktüğünde hata izi, cihaz modeli, Android sürümü — Firebase Crashlytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Kullanım olayları <span className="zt-metin-soluk">(Android)</span></td><td className="px-3 py-2">Hangi ekran açıldı, tur bitti mi gibi oyun olayları — Firebase Analytics</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Reklam onayı <span className="zt-metin-soluk">(Android, 18+)</span></td><td className="px-3 py-2">Kişiselleştirilmiş reklam onay durumu — Google UMP SDK</td><td className="px-3 py-2">Kapatılabilir</td></tr>
+              <tr><td className="px-3 py-2">Reklam kimliği (AAID) <span className="zt-metin-soluk">(Android)</span></td><td className="px-3 py-2">Google AdMob'a iletilir. 18 yaş üstü onay verirse reklam kişiselleştirmesi; onay yoksa ve 18 altında yalnızca reklam sayımı ve sahtecilik denetimi</td><td className="px-3 py-2">Onay geri alınabilir</td></tr>
             </tbody>
           </table>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs zt-metin-soluk">
             Telefon numarası, adres, TC kimlik numarası gibi veriler <strong>toplanmaz</strong>.
             Doğum yılı yalnızca cihazda saklanır; tam doğum tarihi istenmez (veri minimizasyonu).
             Son dört satır yalnızca <strong>Android uygulamasında</strong> geçerlidir.
@@ -225,7 +225,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
 }
 
 /* ========================================================================== */
-/*  GİZLİLİK POLİTİKASI                                                       */
+/* GİZLİLİK POLİTİKASI */
 /* ========================================================================== */
 export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
   return (
@@ -243,7 +243,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             <strong>Son güncelleme:</strong> 8 Ekim 2026
           </p>
-          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+          <p className="rounded-lg border zt-cizgi zt-yuzey-2 px-4 py-3 text-sm">
             <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
             işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
             önceki adres zihin.artei.net idi.
@@ -274,12 +274,12 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
             <strong>Android uygulamasında</strong> ek olarak Google hizmetleri
             kullanılır:
           </p>
-          <table className="w-full text-xs border border-slate-700 rounded-lg overflow-hidden">
+          <table className="w-full text-xs border zt-cizgi rounded-lg overflow-hidden">
             <thead>
-              <tr className="bg-slate-800/60">
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Hizmet</th>
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Ne için</th>
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Kapatılabilir mi?</th>
+              <tr className="zt-yuzey-2">
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Hizmet</th>
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Ne için</th>
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Kapatılabilir mi?</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -378,7 +378,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 }
 
 /* ========================================================================== */
-/*  ÇEREZ POLİTİKASI                                                          */
+/* ÇEREZ POLİTİKASI */
 /* ========================================================================== */
 export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
   return (
@@ -395,7 +395,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             <strong>Son güncelleme:</strong> 8 Ekim 2026
           </p>
-          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+          <p className="rounded-lg border zt-cizgi zt-yuzey-2 px-4 py-3 text-sm">
             <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
             işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
             önceki adres zihin.artei.net idi.
@@ -415,18 +415,18 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
             kişiselleştirilmez.
           </p>
           <p>
-            Supabase kimlik doğrulaması için tarayıcının <code className="text-xs bg-slate-800 px-1 rounded">localStorage</code> alanında
+            Supabase kimlik doğrulaması için tarayıcının <code className="text-xs zt-ayirac px-1 rounded">localStorage</code> alanında
             oturum bilgisi saklanır. Bu, hesabınıza giriş yapmanızı sağlayan
             zorunlu bir teknik mekanizmadır.
           </p>
 
           <h2 className={h2}>2. Yerel Depolama (localStorage)</h2>
           <p>Aşağıdaki veriler tarayıcınızda yerel olarak saklanır:</p>
-          <table className="w-full text-xs border border-slate-700 rounded-lg overflow-hidden">
+          <table className="w-full text-xs border zt-cizgi rounded-lg overflow-hidden">
             <thead>
-              <tr className="bg-slate-800/60">
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Veri</th>
-                <th className="text-left px-3 py-2 text-slate-400 font-bold">Amaç</th>
+              <tr className="zt-yuzey-2">
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Veri</th>
+                <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Amaç</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -466,7 +466,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
 }
 
 /* ========================================================================== */
-/*  KULLANIM KOŞULLARI                                                         */
+/* KULLANIM KOŞULLARI */
 /* ========================================================================== */
 export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
   return (
@@ -483,7 +483,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             <strong>Son güncelleme:</strong> 8 Ekim 2026
           </p>
-          <p className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm">
+          <p className="rounded-lg border zt-cizgi zt-yuzey-2 px-4 py-3 text-sm">
             <strong>Bu sürümde yalnızca marka adı ve alan adı değişti;</strong> veri
             işleme, haklar ve yükümlülükler aynıdır. Önceki ad &ldquo;Zihin Turu&rdquo;,
             önceki adres zihin.artei.net idi.
@@ -596,7 +596,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
 }
 
 /* ========================================================================== */
-/*  HESAP SİLME                                                                */
+/* HESAP SİLME */
 /* ========================================================================== */
 export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
   const [onayli, setOnayli] = useState(false);
@@ -645,9 +645,9 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
             kalıcı olarak yok edilir.
           </p>
 
-          <div className="mt-6 p-4 rounded-lg border border-slate-700 bg-slate-900/40">
+          <div className="mt-6 p-4 rounded-lg border zt-cizgi zt-yuzey">
             {hata && (
-              <p className="mb-4 text-sm text-red-400">{hata}</p>
+              <p className="mb-4 text-sm zt-sure-metin">{hata}</p>
             )}
 
             <label className="flex items-start gap-3 cursor-pointer">
@@ -658,7 +658,7 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
                 disabled={yukleniyor}
                 className="mt-1 accent-red-500"
               />
-              <span className="text-xs text-slate-300">
+              <span className="text-xs zt-metin">
                 Hesabımı ve tüm verilerimi kalıcı olarak silmek istiyorum.
                 Bu işlemin geri alınamayacağını anlıyorum.
               </span>
@@ -669,8 +669,8 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
               disabled={!onayli || yukleniyor}
               className={`mt-4 w-full py-3 rounded-lg font-bold transition ${
                 onayli && !yukleniyor
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  ? 'bg-red-600 zt-metin hover:bg-red-700'
+                  : 'zt-ayirac zt-metin-soluk cursor-not-allowed'
               }`}
             >
               {yukleniyor ? 'Siliniyor…' : 'Hesabımı kalıcı olarak sil'}

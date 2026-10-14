@@ -47,18 +47,18 @@ function Satir({
       // inline-block'a çeviriyor ve satırın flex dizilişini bozuyor —
       // anahtar sağda duracakken metnin altına düşüyordu. Satır zaten
       // 44 pikselin çok üstünde.
-      className="flex min-h-[60px] w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-left hover:bg-slate-800/50"
+      className="flex min-h-[60px] w-full items-center gap-3 rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-left"
     >
-      <Ikon ad={simge} boyut={20} className={acik ? 'text-cyan-300' : 'text-slate-600'} />
+      <Ikon ad={simge} boyut={20} className={acik ? 'zt-vurgu-metin' : 'zt-metin-soluk'} />
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-slate-200">{baslik}</span>
-        <span className="mt-0.5 block text-xs text-slate-500">{aciklama}</span>
+        <span className="block text-sm font-bold zt-metin">{baslik}</span>
+        <span className="mt-0.5 block text-xs zt-metin-soluk">{aciklama}</span>
       </span>
       {/* Anahtar görüntüsü: açık/kapalı tek bakışta anlaşılsın. */}
       <span
         aria-hidden="true"
         className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-          acik ? 'bg-cyan-300' : 'bg-slate-700'
+          acik ? 'zt-dugme' : 'zt-ayirac'
         }`}
       >
         <span
@@ -77,7 +77,7 @@ export default function OyunAyarlari() {
 
   return (
     <div className="space-y-2" data-alan="oyun-ayarlari">
-      <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+      <div className="text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
         Oyun ayarları
       </div>
 

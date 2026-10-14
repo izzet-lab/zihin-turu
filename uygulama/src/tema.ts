@@ -31,6 +31,19 @@ export function temaOku(): TemaSecimi {
   }
 }
 
+/**
+ * Tema değişince haber verilecek yerler.
+ *
+ * Şimdilik tek dinleyici var: Android durum çubuğu. Gündüz temada
+ * açık renkli saat okunmuyordu.
+ */
+const dinleyiciler = new Set<() => void>();
+
+export function temaDegisimiDinle(kanca: () => void): () => void {
+  dinleyiciler.add(kanca);
+  return () => dinleyiciler.delete(kanca);
+}
+
 /** Seçimi uygular ve saklar. */
 export function temaYaz(secim: TemaSecimi): void {
   try {
@@ -40,6 +53,7 @@ export function temaYaz(secim: TemaSecimi): void {
     // Depo yazılamıyorsa seçim oturumluk kalır.
   }
   temayiUygula(secim);
+  for (const k of dinleyiciler) k();
 }
 
 /** Seçimi `<html>` üstüne yazar. "Sistem" ise özniteliği siler. */

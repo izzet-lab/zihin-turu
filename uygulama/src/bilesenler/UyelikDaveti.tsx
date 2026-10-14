@@ -41,22 +41,22 @@ export default function UyelikDaveti({
       data-alan={alan}
       className={`mt-6 rounded-2xl border px-5 py-4 ${
         vurgulu
-          ? 'border-cyan-300/50 bg-cyan-300/10'
-          : 'border-slate-700 bg-slate-900/60'
+          ? 'zt-vurgu-cizgi zt-vurgu-yuzey'
+          : 'zt-cizgi zt-yuzey'
       }`}
     >
-      <div className={`text-base font-black ${vurgulu ? 'text-cyan-200' : 'text-slate-100'}`}>
+      <div className={`text-base font-black ${vurgulu ? 'zt-vurgu-metin' : 'zt-metin'}`}>
         {baslik}
       </div>
-      <p className="mt-1 text-sm leading-snug text-slate-400">{aciklama}</p>
+      <p className="mt-1 text-sm leading-snug zt-metin-soluk">{aciklama}</p>
       <div className={`mt-3 ${onKapat ? 'grid grid-cols-2 gap-2.5' : ''}`}>
         <button
           onClick={onEylem}
           data-alan="davet-eylem"
           className={`min-h-[48px] w-full rounded-xl text-sm font-black ${
             vurgulu
-              ? 'bg-cyan-300 text-slate-900 hover:bg-cyan-200'
-              : 'bg-slate-200 text-slate-900 hover:bg-white'
+              ? 'zt-dugme '
+              : 'bg-slate-200 zt-metin hover:bg-white'
           }`}
         >
           {eylemMetni}
@@ -65,7 +65,7 @@ export default function UyelikDaveti({
           <button
             onClick={onKapat}
             data-alan="davet-kapat"
-            className="min-h-[48px] w-full rounded-xl border border-slate-700 text-sm font-bold text-slate-400 hover:text-slate-200"
+            className="min-h-[48px] w-full rounded-xl border zt-cizgi text-sm font-bold zt-metin-soluk"
           >
             Şimdi değil
           </button>

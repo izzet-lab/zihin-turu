@@ -38,12 +38,18 @@ function Rozet({ r, kazanildi }: { r: RozetTanim; kazanildi: boolean }) {
     >
       {/* Aile ikonla, basamak metal yüzükle anlatılıyor. */}
       <span
-        className={`flex h-9 w-9 items-center justify-center rounded-full ${
+        /*
+          KAZANILMIŞ İLE KAZANILMAMIŞ ARASINDAKİ FARK DOLGU/KONTUR.
+          Önceden ikisi de dolguydu ve fark soluklaştırmayla
+          anlatılıyordu; kazanılmamış rozetler neredeyse görünmüyordu.
+          Kilitli rozet de okunabilmeli — oyuncuya hedef gösteriyor.
+        */
+        className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${
           kazanildi
             ? r.kademe
-              ? METAL[r.kademe]
-              : 'zt-vurgu-yuzey zt-vurgu-metin'
-            : 'zt-yuzey-2 zt-metin-soluk'
+              ? `${METAL[r.kademe]} border-transparent`
+              : 'zt-rozet-dolu'
+            : 'zt-rozet-bos'
         }`}
       >
         <Ikon ad={r.simge} boyut={18} />

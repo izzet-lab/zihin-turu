@@ -103,14 +103,25 @@ Proje sahibi kod yazmıyor ve okumuyor. Bu şu demek:
     Dokunma hedefleri en az 44px. Güvenli alan (`env(safe-area-inset-*)`)
     tek yerde çözülür, ekran başına boşluk eklenmez.
 
-11. **Türkçe.** Kod içindeki isimler, yorumlar ve arayüz metinleri
+11. **Arayüzde sabit renk değeri kullanılmaz.** Her renk tema
+    jetonundan gelir (`--kagit`, `--yuzey`, `--murekkep`, `--soluk`,
+    `--hat`, `--vurgu`, `--odul`, `--sure`) ya da onlara bağlı
+    `zt-*` sınıflarından. `bg-slate-900`, `text-cyan-300`, `#0A0E1A`
+    gibi yazımlar tema değişince DEĞİŞMEZ ve ekranın yarısı bir
+    temada, yarısı diğerinde kalır — 14 Ekim 2026'da tam bu oldu.
+    **Tek istisna taş yüzeyi:** fildişi zemin ve `#1F2A37` rakam
+    bilerek sabittir, çünkü taş bir arayüz öğesi değil fiziksel bir
+    nesnedir (bkz. `[data-tas]`). Marka logoları da (Google gibi)
+    kendi renklerinde kalır.
+
+12. **Türkçe.** Kod içindeki isimler, yorumlar ve arayüz metinleri
     Türkçe. Değişken adlarında Türkçe karakter yok (`buyukSayi`,
     `büyükSayı` değil).
 
-12. **Capacitor'da SPA yedeği yok.** `<a href>` ile tam sayfa geçişi
+13. **Capacitor'da SPA yedeği yok.** `<a href>` ile tam sayfa geçişi
     Android'de 404 verir. Tüm gezinme router üzerinden.
 
-13. **Yeşil takımdan başla.** Her işe başlamadan **önce** `npm test`,
+14. **Yeşil takımdan başla.** Her işe başlamadan **önce** `npm test`,
     `npm run tip` ve `npm run e2e` çalıştır. Sunucu kodu değiştiyse
     `npm run sunucu-denetle` de — `sunucu/` klasörü tsconfig'in dışında,
     eksik bir import satırı `npm run tip`'ten geçip canlıda 500 verir.
@@ -386,6 +397,9 @@ Ayrıntılar `CHANGELOG.md`'de.
 - Her tam isabette uzun jingle çalmak — ses yıpranır, oyuncu sesi tamamen kapatır
 - Sözlüğü değiştirip Edge Function'ları dağıtmamak — aynı tohum iki tarafta farklı tur üretir
 - Arayüze emoji koymak — her telefonda başka çiziliyor, `bilesenler/Ikon.tsx` var
+- Sabit renk yazmak — tema değişince değişmiyor, ekranın yarısı öbür temada kalıyor
+- Taşa tema rengi sınıfı vermek — gece temasında rakam fildişi taşın üstünde okunmuyor
+- Güvenli alan boşluğunu gövdeye vermek — kaydırılabilir ekranda içerik durum çubuğunun altına giriyor
 - Ödül altını yerine uyarı sarısı kullanmak — iki anlam karışır
 - `transform`/`opacity` dışında bir şeyi canlandırmak — ucuz telefonda kare düşer
 - Aynı kartı iki ekranda ayrı ayrı yazmak — seri/XP kartı tam bunu yaşadı

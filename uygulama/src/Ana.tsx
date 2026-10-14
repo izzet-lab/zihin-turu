@@ -190,11 +190,11 @@ function KelimeRota({ kullanici }: { kullanici: User | null }) {
 
 function Div404() {
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8 flex items-center justify-center">
+    <main className="min-h-dvh zt-kagit zt-metin px-5 py-8 flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-4xl font-black text-white mb-2">404</h1>
-        <p className="text-slate-400 mb-6">Sayfa bulunamadı</p>
-        <Link to="/" className="inline-block px-6 py-2 rounded-lg bg-cyan-300 text-slate-900 font-bold hover:bg-cyan-200">
+        <h1 className="text-4xl font-black zt-metin mb-2">404</h1>
+        <p className="zt-metin-soluk mb-6">Sayfa bulunamadı</p>
+        <Link to="/" className="inline-block px-6 py-2 rounded-lg zt-dugme font-bold ">
           Ana sayfaya dön
         </Link>
       </div>

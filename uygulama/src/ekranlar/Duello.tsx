@@ -472,13 +472,13 @@ export default function Duello({
   if (!girisYapildiMi) {
     return (
       <Cerceve baslik="Düello">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm zt-metin-soluk">
           Düello için üye olman gerekiyor — rakiplerin ve derecen hesabına bağlı.
         </p>
         <button
           onClick={onGirisAc}
           data-alan="duello-giris"
-          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Üye ol / giriş yap
         </button>
@@ -490,7 +490,7 @@ export default function Duello({
   if (hata) {
     return (
       <Cerceve baslik="Bir şey ters gitti">
-        <p className="text-sm text-amber-300" data-alan="duello-hata">
+        <p className="text-sm zt-odul-yazi" data-alan="duello-hata">
           {hata}
         </p>
         <button
@@ -501,7 +501,7 @@ export default function Duello({
             setAcilisKontrolu(false);
           }}
           data-alan="duello-tekrar-dene"
-          className="mt-5 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Tekrar dene
         </button>
@@ -514,14 +514,14 @@ export default function Duello({
   if (!mac && odaKodu) {
     return (
       <Cerceve baslik="Arkadaşın bekleniyor">
-        <p className="text-sm text-slate-400">Bu kodu arkadaşına ver:</p>
+        <p className="text-sm zt-metin-soluk">Bu kodu arkadaşına ver:</p>
         <div
-          className="zt-rakam mt-3 rounded-xl border border-cyan-300/40 bg-cyan-300/10 py-4 text-4xl font-black tracking-[0.3em] text-cyan-200"
+          className="zt-rakam mt-3 rounded-xl border zt-vurgu-cizgi zt-vurgu-yuzey py-4 text-4xl font-black tracking-[0.3em] zt-vurgu-metin"
           data-alan="oda-kodu"
         >
           {odaKodu}
         </div>
-        <p className="mt-3 text-xs text-slate-600">
+        <p className="mt-3 text-xs zt-metin-soluk">
           Arkadaşın kodu girer girmez maç başlar. {seviyeEtiket} seviyesi.
         </p>
         <GeriDugmesi onCik={onCik} />
@@ -537,7 +537,7 @@ export default function Duello({
             Kilitli seviyeler burada da kilitli: düello, tek kişilik
             ilerlemeyi atlamanın yolu olmamalı. */}
         <div className="text-left">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
             Seviye
           </div>
           <div className="grid grid-cols-2 gap-2.5" data-alan="duello-seviyeler">
@@ -553,10 +553,10 @@ export default function Duello({
                   aria-pressed={secili}
                   className={`min-h-[56px] rounded-xl border-2 px-3 py-2 text-left transition ${
                     kilitli
-                      ? 'border-slate-800 bg-slate-900/40 text-slate-600'
+                      ? 'zt-cizgi zt-yuzey zt-metin-soluk'
                       : secili
-                        ? 'border-cyan-300 bg-cyan-300/15 text-cyan-100'
-                        : 'border-slate-700 bg-slate-800/50 text-slate-200 hover:border-slate-600'
+                        ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                        : 'zt-cizgi zt-yuzey-2 zt-metin'
                   }`}
                 >
                   <span className="block text-sm font-black">
@@ -573,20 +573,20 @@ export default function Duello({
         <button
           onClick={() => setKip('rastgele')}
           data-alan="duello-rastgele"
-          className="mt-5 min-h-[56px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-5 min-h-[56px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Rakip bul
         </button>
-        <p className="mt-2 text-xs text-slate-600">
+        <p className="mt-2 text-xs zt-metin-soluk">
           {seviyeEtiket} seviyesinde, derecene yakın bir rakip aranır.
         </p>
 
-        <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-          <div className="text-sm font-bold text-slate-300">Arkadaşınla oyna</div>
+        <div className="mt-6 rounded-xl border zt-cizgi zt-yuzey p-4">
+          <div className="text-sm font-bold zt-metin">Arkadaşınla oyna</div>
           <button
             onClick={odaAc}
             data-alan="oda-kur"
-            className="mt-3 min-h-[48px] w-full rounded-xl border border-slate-700 text-sm font-bold text-slate-200 hover:bg-slate-800/60"
+            className="mt-3 min-h-[48px] w-full rounded-xl border zt-cizgi text-sm font-bold zt-metin"
           >
             Oda kur, kodu paylaş
           </button>
@@ -596,13 +596,13 @@ export default function Duello({
               onChange={(e) => setKatilKodu(e.target.value.toUpperCase().slice(0, 5))}
               placeholder="KOD"
               data-alan="oda-kod-girdi"
-              className="zt-rakam min-h-[48px] w-full rounded-xl border border-slate-700 bg-slate-900/60 px-3 text-center text-lg font-black tracking-[0.2em] text-slate-100 placeholder:text-slate-600"
+              className="zt-rakam min-h-[48px] w-full rounded-xl border zt-cizgi zt-yuzey px-3 text-center text-lg font-black tracking-[0.2em] zt-metin placeholder:zt-metin-soluk"
             />
             <button
               onClick={odayaGir}
               disabled={katilKodu.length !== 5}
               data-alan="oda-katil"
-              className="min-h-[48px] shrink-0 rounded-xl border border-slate-700 px-4 text-sm font-bold text-slate-200 disabled:opacity-40"
+              className="min-h-[48px] shrink-0 rounded-xl border zt-cizgi px-4 text-sm font-bold zt-metin disabled:opacity-40"
             >
               Katıl
             </button>
@@ -616,10 +616,10 @@ export default function Duello({
   if (!mac) {
     return (
       <Cerceve baslik="Rakip aranıyor">
-        <p className="text-sm text-slate-400" data-alan="duello-ariyor">
+        <p className="text-sm zt-metin-soluk" data-alan="duello-ariyor">
           {seviyeEtiket} seviyesinde rakip aranıyor… {bekleyenSn > 0 && `${bekleyenSn} sn`}
         </p>
-        <p className="mt-2 text-xs text-slate-600">
+        <p className="mt-2 text-xs zt-metin-soluk">
           Sekiz saniyede rakip bulunmazsa bir rakip atanır, beklemezsin.
         </p>
         <GeriDugmesi onCik={onCik} />
@@ -637,28 +637,28 @@ export default function Duello({
             nasıl bittiği renkten anlaşılmıyordu. */}
         <div
           className={`text-4xl font-black ${
-            berabere ? 'text-slate-200' : kazandim ? 'zt-odul-yazi' : 'zt-kayip-yazi'
+            berabere ? 'zt-metin' : kazandim ? 'zt-odul-yazi' : 'zt-kayip-yazi'
           }`}
           data-alan="duello-sonuc"
         >
           {berabere ? 'Berabere' : kazandim ? 'Kazandın' : 'Kaybettin'}
         </div>
         {/* Skor sayarak çıkar: sonucun kendisi değil, sonuca varış tatmin ediyor. */}
-        <div className="zt-rakam mt-2 text-2xl font-black text-slate-300" data-alan="duello-skor">
-          <SayanSayi deger={benim === 'a' ? mac.skorA : mac.skorB} className="text-cyan-300" /> —{' '}
+        <div className="zt-rakam mt-2 text-2xl font-black zt-metin" data-alan="duello-skor">
+          <SayanSayi deger={benim === 'a' ? mac.skorA : mac.skorB} className="zt-vurgu-metin" /> —{' '}
           <SayanSayi deger={benim === 'a' ? mac.skorB : mac.skorA} />
         </div>
         {/* Kaybedince "Kaybettin" tek başına soğuk duruyor. Oyuncunun
             en çok yaklaştığı anı hatırlatmak, maçı "hiç şansım yoktu"
             değil "az kalmıştı" diye hatırlatıyor. */}
         {!kazandim && enYakinAn && (
-          <p className="mt-2 text-sm text-slate-400" data-alan="duello-teselli">
+          <p className="mt-2 text-sm zt-metin-soluk" data-alan="duello-teselli">
             {enYakinAn}
           </p>
         )}
 
         {mac.botMu && (
-          <p className="mt-3 text-xs text-slate-600">
+          <p className="mt-3 text-xs zt-metin-soluk">
             Bu maç bir rakip atanarak oynandı; derecen değişmedi.
           </p>
         )}
@@ -669,7 +669,7 @@ export default function Duello({
             sunucudan yalnızca uzaklıklar geliyor. */}
         {turOzetSatirlari.length > 0 && (
           <div className="mt-6 text-left" data-alan="duello-tur-ozeti">
-            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
               Turlar
             </div>
             {/* Her tur bir kart: solda turu kimin aldığını söyleyen
@@ -681,18 +681,18 @@ export default function Duello({
                   key={t.turNo}
                   className={`zt-sahne flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
                     t.kazanan === 'ben'
-                      ? 'border-cyan-300/30 bg-cyan-300/5'
-                      : 'border-slate-800 bg-slate-900/40'
+                      ? 'zt-vurgu-cizgi zt-vurgu-yuzey'
+                      : 'zt-cizgi zt-yuzey'
                   }`}
                 >
                   <span
                     aria-hidden="true"
                     className={`zt-rakam flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
                       t.kazanan === 'ben'
-                        ? 'bg-cyan-300 text-slate-900'
+                        ? 'zt-dugme'
                         : t.kazanan === 'rakip'
-                          ? 'bg-slate-700 text-slate-300'
-                          : 'bg-slate-800 text-slate-500'
+                          ? 'zt-ayirac zt-metin'
+                          : 'zt-ayirac zt-metin-soluk'
                     }`}
                   >
                     {t.turNo}
@@ -700,14 +700,14 @@ export default function Duello({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-300">{t.tanim}</span>
+                      <span className="text-xs font-bold zt-metin">{t.tanim}</span>
                       <span
                         className={`shrink-0 text-[11px] font-bold ${
                           t.kazanan === 'ben'
-                            ? 'text-cyan-300'
+                            ? 'zt-vurgu-metin'
                             : t.kazanan === 'rakip'
-                              ? 'text-slate-500'
-                              : 'text-slate-600'
+                              ? 'zt-metin-soluk'
+                              : 'zt-metin-soluk'
                         }`}
                       >
                         {t.kazanan === 'ben'
@@ -717,7 +717,7 @@ export default function Duello({
                             : 'berabere'}
                       </span>
                     </div>
-                    <div className="mt-0.5 text-[11px] text-slate-500">
+                    <div className="mt-0.5 text-[11px] zt-metin-soluk">
                       {t.benimMetin} · {t.rakipMetin}
                     </div>
                     {/* DOĞRU CEVAP — maç bitti, çözümü göstermek serbest. */}
@@ -743,11 +743,11 @@ export default function Duello({
         <button
           onClick={revansIste}
           data-alan="duello-revans"
-          className="mt-6 min-h-[52px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-6 min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Rövanş
         </button>
-        <p className="mt-1 text-[11px] text-slate-600">
+        <p className="mt-1 text-[11px] zt-metin-soluk">
           Aynı rakiple yeniden — bu kez taraflar yer değiştirir.
         </p>
         <button
@@ -757,7 +757,7 @@ export default function Duello({
             setKip('secim');
           }}
           data-alan="duello-yeni"
-          className="mt-3 min-h-[48px] w-full rounded-xl border border-slate-700 text-sm font-bold text-slate-300 hover:bg-slate-800/60"
+          className="mt-3 min-h-[48px] w-full rounded-xl border zt-cizgi text-sm font-bold zt-metin"
         >
           Başka rakip
         </button>
@@ -775,20 +775,20 @@ export default function Duello({
   if (cikisSoruluyor) {
     return (
       <Cerceve baslik="Maçtan çıkılsın mı?">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm zt-metin-soluk">
           Çıkarsan maçı kaybedersin ve derecen buna göre değişir.
         </p>
         <button
           onClick={maciTerkEt}
           data-alan="duello-terk-onay"
-          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold text-amber-300 hover:bg-amber-400/10"
+          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold zt-odul-yazi"
         >
           Evet, çık
         </button>
         <button
           onClick={() => setCikisSoruluyor(false)}
           data-alan="duello-terk-vazgec"
-          className="mt-3 min-h-[48px] w-full rounded-xl bg-cyan-300 text-base font-black text-slate-900 hover:bg-cyan-200"
+          className="mt-3 min-h-[48px] w-full rounded-xl zt-dugme text-base font-black zt-metin "
         >
           Maça dön
         </button>
@@ -819,16 +819,16 @@ export default function Duello({
             büyük rakam, hedefin altında. Önce bu ekran düz metin
             satırlarından oluşuyordu ve bildirim ekranı gibi duruyordu. */}
         <div
-          className="zt-sahne rounded-2xl border border-cyan-300/30 bg-cyan-300/5 px-5 py-6"
+          className="zt-sahne rounded-2xl border zt-vurgu-cizgi zt-vurgu-yuzey px-5 py-6"
           data-alan="duello-kilit-bekleme"
         >
-          <div className="text-[11px] font-bold uppercase tracking-widest text-cyan-300/70">
+          <div className="text-[11px] font-bold uppercase tracking-widest zt-vurgu-metin/70">
             Cevabın kilitlendi
           </div>
-          <div className="zt-rakam mt-1 text-5xl font-black leading-none text-cyan-200">
+          <div className="zt-rakam mt-1 text-5xl font-black leading-none zt-vurgu-metin">
             {kilitliUzaklik === 0 ? 'TAM' : (kilitliUzaklik ?? '—')}
           </div>
-          <div className="mt-1 text-xs text-slate-400">
+          <div className="mt-1 text-xs zt-metin-soluk">
             {kilitliUzaklik === 0
               ? 'hedefi tam tutturdun'
               : kilitliAdimlar.length === 0
@@ -838,7 +838,7 @@ export default function Duello({
                 : `fark · hedef ${hedef}`}
           </div>
 
-          <div className="zt-nabiz mt-4 text-xs font-bold text-slate-400">
+          <div className="zt-nabiz mt-4 text-xs font-bold zt-metin-soluk">
             Rakip oynuyor…
           </div>
         </div>
@@ -855,11 +855,11 @@ export default function Duello({
           ].map((y) => (
             <div key={y.ad}>
               <div className="flex items-baseline justify-between text-xs">
-                <span className={y.benim ? 'font-bold text-cyan-200' : 'text-slate-400'}>
+                <span className={y.benim ? 'font-bold zt-vurgu-metin' : 'zt-metin-soluk'}>
                   {y.ad}
                 </span>
                 <span
-                  className="font-bold text-slate-300"
+                  className="font-bold zt-metin"
                   data-alan={y.benim ? 'kilit-benim' : 'kilit-rakip'}
                 >
                   {y.uzaklik == null
@@ -884,11 +884,11 @@ export default function Duello({
         {/* SENİN YOLUN — tahtaya el yazısıyla, sonuç ekranındaki gibi. */}
         {kilitliAdimlar.length > 0 && (
           <div className="mt-5 text-left" data-alan="kilit-zincir">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Senin yolun
             </div>
-            <div className="zt-sahne rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-              <ul className="elyazisi space-y-1.5 text-lg text-cyan-100">
+            <div className="zt-sahne rounded-xl border zt-cizgi zt-yuzey p-4">
+              <ul className="elyazisi space-y-1.5 text-lg zt-vurgu-metin">
                 {kilitliAdimlar.map((ad, i) => (
                   <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
                     {ad.a} {ad.islem} {ad.b} = {ad.sonuc}
@@ -905,7 +905,7 @@ export default function Duello({
             Çözüm sunucudan GELMİYOR — tohumdan burada üretiliyor. */}
         {turCozumu && turCozumu.satirlar.length > 0 && (
           <div className="mt-4 text-left" data-alan="kilit-cozum">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Bu turun bir çözümü
             </div>
             <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
@@ -917,7 +917,7 @@ export default function Duello({
                 ))}
               </ul>
             </div>
-            <p className="mt-1.5 text-[11px] text-slate-600">Tek yol değil.</p>
+            <p className="mt-1.5 text-[11px] zt-metin-soluk">Tek yol değil.</p>
           </div>
         )}
 
@@ -932,7 +932,7 @@ export default function Duello({
             />
           </div>
           <div
-            className="mt-1 flex items-center justify-between text-[11px] text-slate-500"
+            className="mt-1 flex items-center justify-between text-[11px] zt-metin-soluk"
             data-alan="kilit-sayac"
           >
             <span>
@@ -945,7 +945,7 @@ export default function Duello({
         <button
           onClick={() => setCikisSoruluyor(true)}
           data-alan="duello-terk"
-          className="zt-dokunma-alani mt-6 w-full text-xs font-bold text-slate-600 hover:text-slate-400"
+          className="zt-dokunma-alani mt-6 w-full text-xs font-bold zt-metin-soluk"
         >
           Maçtan çık
         </button>
@@ -969,7 +969,7 @@ export default function Duello({
     if (!saglayici || !tur) {
       return (
         <Cerceve baslik="Kelime Turu">
-          <p className="zt-nabiz text-sm text-slate-400">Sözlük hazırlanıyor…</p>
+          <p className="zt-nabiz text-sm zt-metin-soluk">Sözlük hazırlanıyor…</p>
         </Cerceve>
       );
     }
@@ -1020,9 +1020,9 @@ function Cerceve({ baslik, children }: { baslik: string; children: React.ReactNo
   return (
     // İçerik dikeyde ortalanır: bekleme ve sonuç ekranlarında az
     // içerik vardı ve ekranın altı kapkara kalıyordu.
-    <main className="zt-ekran flex min-h-dvh flex-col justify-center bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200">
+    <main className="zt-ekran flex min-h-dvh flex-col justify-center zt-kagit px-5 pb-6 pt-16 zt-metin">
       <div className="mx-auto w-full max-w-md text-center">
-        <h1 className="text-2xl font-black text-white">{baslik}</h1>
+        <h1 className="text-2xl font-black zt-metin">{baslik}</h1>
         <div className="mt-4">{children}</div>
       </div>
     </main>
@@ -1034,7 +1034,7 @@ function GeriDugmesi({ onCik }: { onCik: () => void }) {
     <button
       onClick={onCik}
       data-alan="duello-cik"
-      className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-400 hover:text-slate-200"
+      className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk"
     >
       Vazgeç
     </button>

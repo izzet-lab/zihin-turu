@@ -58,41 +58,41 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
           beyaz, yanındaki ayrıntı küçük kalıyor. */}
       {arena ? (
         <div data-alan="arena-gostergesi">
-          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             <Ikon ad="arena" boyut={13} className="mr-1 -mt-0.5" />
             Arena
           </div>
-          <div className="text-base font-black text-white">
+          <div className="text-base font-black zt-metin">
             Tur{' '}
             <span className="zt-rakam text-xl">
               {arena.turNo}
-              <span className="text-sm font-bold text-slate-500">/{arena.toplamTur}</span>
+              <span className="text-sm font-bold zt-metin-soluk">/{arena.toplamTur}</span>
             </span>
           </div>
         </div>
       ) : duello ? (
         <div data-alan="duello-gostergesi">
-          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             Düello
           </div>
-          <div className="flex items-baseline gap-2.5 text-base font-black text-white">
+          <div className="flex items-baseline gap-2.5 text-base font-black zt-metin">
             <span>
               Tur{' '}
               <span className="zt-rakam text-xl">
                 {duello.turNo}
-                <span className="text-sm font-bold text-slate-500">/{duello.toplamTur}</span>
+                <span className="text-sm font-bold zt-metin-soluk">/{duello.toplamTur}</span>
               </span>
             </span>
             <span className="zt-rakam text-lg">
-              <span className="text-cyan-300">{duello.skorBen}</span>
-              <span className="text-slate-600">—</span>
-              <span className="text-slate-300">{duello.skorRakip}</span>
+              <span className="zt-vurgu-metin">{duello.skorBen}</span>
+              <span className="zt-metin-soluk">—</span>
+              <span className="zt-metin">{duello.skorRakip}</span>
             </span>
           </div>
         </div>
       ) : mod === 'antrenman' && oturumPuan ? (
-        <div className="text-xs font-bold text-slate-500" data-alan="oturum-gostergesi">
-          Oturum: <span className="text-slate-300">{oturumPuan.toplamPuan} puan</span> ·{' '}
+        <div className="text-xs font-bold zt-metin-soluk" data-alan="oturum-gostergesi">
+          Oturum: <span className="zt-metin">{oturumPuan.toplamPuan} puan</span> ·{' '}
           {oturumPuan.turSayisi + 1}. tur
         </div>
       ) : (
@@ -109,22 +109,22 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
         altta durum — kesilmeden sığıyor. */}
     {duello && (
       <div
-        className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2.5"
+        className="mt-3 rounded-xl border zt-cizgi zt-yuzey px-3 py-2.5"
         data-alan="rakip-durumu"
       >
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-black text-slate-200"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full zt-ayirac text-sm font-black zt-metin"
           >
             {duello.rakipAd.trim().charAt(0).toLocaleUpperCase('tr')}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold text-slate-200" data-alan="rakip-ad">
+            <div className="truncate text-sm font-bold zt-metin" data-alan="rakip-ad">
               {duello.rakipAd}
             </div>
             {duello.rakipElo != null && (
-              <div className="text-[11px] text-slate-500" data-alan="rakip-guc">
+              <div className="text-[11px] zt-metin-soluk" data-alan="rakip-guc">
                 {duello.rakipElo} puan
                 {duello.rakipGalibiyet != null && ` · ${duello.rakipGalibiyet} galibiyet`}
               </div>
@@ -133,14 +133,14 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
         </div>
         <div className="mt-1.5 text-xs font-bold" data-alan="rakip-uzaklik">
           {duello.rakipUzaklik == null ? (
-            <span className="text-slate-500">Henüz bir şey bulamadı</span>
+            <span className="zt-metin-soluk">Henüz bir şey bulamadı</span>
           ) : duello.rakipUzaklik === 0 ? (
             <span className="zt-odul-yazi inline-flex items-center gap-1">
                 Tam isabet yaptı
                 <Ikon ad="hedef" boyut={13} />
               </span>
           ) : (
-            <span className="text-slate-300">Hedefe {duello.rakipUzaklik} kaldı</span>
+            <span className="zt-metin">Hedefe {duello.rakipUzaklik} kaldı</span>
           )}
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
         önde, bir bakışta görünsün. */}
     {arena && (
       <div
-        className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"
+        className="mt-3 rounded-xl border zt-cizgi zt-yuzey px-3 py-2"
         data-alan="arena-yarisanlar"
       >
         <ul className="space-y-1.5">
@@ -176,28 +176,28 @@ export default function YarisUstBilgi({ duello, arena, oturumPuan, mod }: Props)
                 <span
                   aria-hidden="true"
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
-                    y.benMiyim ? 'bg-cyan-300/25 text-cyan-100' : 'bg-slate-700 text-slate-200'
+                    y.benMiyim ? 'zt-dugme/25 zt-vurgu-metin' : 'zt-ayirac zt-metin'
                   }`}
                 >
                   {y.ad.trim().charAt(0).toLocaleUpperCase('tr')}
                 </span>
                 <span
                   className={`min-w-0 flex-1 truncate font-bold ${
-                    y.benMiyim ? 'text-cyan-200' : 'text-slate-300'
+                    y.benMiyim ? 'zt-vurgu-metin' : 'zt-metin'
                   }`}
                 >
                   {y.benMiyim ? 'Sen' : y.ad}
                 </span>
-                <span className="shrink-0 tabular-nums text-slate-500">{y.puan} puan</span>
+                <span className="shrink-0 tabular-nums zt-metin-soluk">{y.puan} puan</span>
                 <span className="w-24 shrink-0 text-right font-bold">
                   {y.ayrildi ? (
-                    <span className="text-slate-600">çıktı</span>
+                    <span className="zt-metin-soluk">çıktı</span>
                   ) : y.uzaklik == null ? (
-                    <span className="text-slate-600">—</span>
+                    <span className="zt-metin-soluk">—</span>
                   ) : y.uzaklik === 0 ? (
-                    <span className="text-amber-300">tam isabet</span>
+                    <span className="zt-odul-yazi">tam isabet</span>
                   ) : (
-                    <span className="text-slate-300">{y.uzaklik} fark</span>
+                    <span className="zt-metin">{y.uzaklik} fark</span>
                   )}
                 </span>
               </li>
@@ -232,7 +232,7 @@ export function SureCubugu({
         data-alan="sure-cubuk"
       />
     </div>
-    <div className="mt-1 text-right text-[11px] text-slate-500" data-alan="sure-kalan" data-toplam-sure={toplamSure}>
+    <div className="mt-1 text-right text-[11px] zt-metin-soluk" data-alan="sure-kalan" data-toplam-sure={toplamSure}>
       {toplamSure > 0 ? `${kalan} sn` : 'süresiz'}
     </div>
     </>

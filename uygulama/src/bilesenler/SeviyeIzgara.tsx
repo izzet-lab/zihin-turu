@@ -61,7 +61,7 @@ export default function SeviyeIzgara({
                   ? 'cursor-not-allowed zt-cizgi zt-yuzey opacity-60'
                   : seciliMi
                     ? 'zt-secim-acik zt-vurgu-cizgi zt-dugme'
-                    : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi hover:zt-yuzey-2'
+                    : 'zt-cizgi zt-yuzey-2'
               }`}
             >
               {seciliMi && (

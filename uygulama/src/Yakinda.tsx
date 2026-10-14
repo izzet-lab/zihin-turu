@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Logo from './bilesenler/Logo';
 
 /**
  * Faz 0 — "Yakında" sayfası.
@@ -23,18 +24,18 @@ export default function Yakinda() {
   }, []);
 
   return (
-    <main className="min-h-dvh bg-[#0A0E1A] text-slate-200 flex items-center justify-center px-6 py-16">
+    <main className="min-h-dvh zt-kagit zt-metin flex items-center justify-center px-6 py-16">
       <div
         className={`w-full max-w-md transition-all duration-700 ${
           gorunur ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
         }`}
       >
-        <img src="/ikon/ikon-192.png" alt="" className="mb-7 h-16 w-16 rounded-xl" />
+        <Logo boyut={64} className="zt-vurgu-metin mb-7" />
 
-        <h1 className="text-4xl font-black tracking-tight text-white leading-none">
+        <h1 className="text-4xl font-black tracking-tight zt-metin leading-none">
           Tam İsabet
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-slate-400">
+        <p className="mt-3 text-base leading-relaxed zt-metin-soluk">
           Türkçe zihin oyunu. Tek başına, karşılıklı ya da arenada.
           Her gün herkese aynı bulmaca.
         </p>
@@ -43,17 +44,17 @@ export default function Yakinda() {
           {OYUNLAR.map((o) => (
             <div
               key={o.ad}
-              className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3.5"
+              className="flex items-center justify-between gap-4 rounded-xl border zt-cizgi zt-yuzey px-4 py-3.5"
             >
               <div>
-                <div className="font-bold text-slate-100">{o.ad}</div>
-                <div className="text-sm text-slate-500">{o.aciklama}</div>
+                <div className="font-bold zt-metin">{o.ad}</div>
+                <div className="text-sm zt-metin-soluk">{o.aciklama}</div>
               </div>
               <span
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${
                   o.hazir
-                    ? 'bg-cyan-300/15 text-cyan-300'
-                    : 'bg-slate-800 text-slate-500'
+                    ? 'zt-vurgu-yuzey zt-vurgu-metin'
+                    : 'zt-ayirac zt-metin-soluk'
                 }`}
               >
                 {o.hazir ? 'Yakında' : 'Sırada'}
@@ -62,11 +63,11 @@ export default function Yakinda() {
           ))}
         </div>
 
-        <p className="mt-9 text-sm text-slate-500 leading-relaxed">
+        <p className="mt-9 text-sm zt-metin-soluk leading-relaxed">
           Üye olmadan da oynanacak. Reklam olmayacak.
         </p>
 
-        <footer className="mt-14 border-t border-slate-800 pt-5 text-xs text-slate-600">
+        <footer className="mt-14 border-t zt-cizgi pt-5 text-xs zt-metin-soluk">
           © {new Date().getFullYear()} Tam İsabet
         </footer>
       </div>

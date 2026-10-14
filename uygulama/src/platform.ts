@@ -23,3 +23,23 @@ export function nativeMi(): boolean {
 export function girisDonusAdresi(): string {
   return nativeMi() ? 'com.tamisabet.app://giris' : window.location.origin;
 }
+
+/**
+ * Güvenli alanı `<html>` üstüne işaretler.
+ *
+ * NEDEN GEREKLİ
+ * Android WebView, `env(safe-area-inset-top)` değerini YALNIZCA ekran
+ * çentiği için bildiriyor; durum çubuğunun yüksekliğini bildirmiyor.
+ * Android 15'ten beri pencere baştan sona kapladığı için sonuç şu:
+ * tarayıcı "üstte boşluk yok" diyor ama saatin arkasında uygulamanın
+ * kendisi duruyor. Aşağı kaydırılan içerik saatin altına giriyordu
+ * (14 Ekim 2026 ekran görüntüsü).
+ *
+ * İşaret konunca CSS, güvenli alanı en az bir durum çubuğu kadar
+ * sayıyor. Fazladan ayrılan birkaç piksel görünmez — şerit zaten kâğıt
+ * renginde; eksik ayrılan piksel ise okunmayan bir saat demek.
+ */
+export function guvenliAlaniIsaretle(): void {
+  if (typeof document === 'undefined') return;
+  if (nativeMi()) document.documentElement.setAttribute('data-native', '1');
+}

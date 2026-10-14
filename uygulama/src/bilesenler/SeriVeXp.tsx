@@ -63,7 +63,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                   : g.durum === 'yakin'
                     ? 'zt-odul-kare-soluk'
                     : g.durum === 'uzak'
-                      ? 'bg-slate-600'
+                      ? 'zt-gun-uzak'
                       : 'zt-ayirac'
               }`}
             />

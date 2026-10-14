@@ -97,7 +97,7 @@ export default function YasalIndeks({ onGeri }: Props) {
               data-alan={`yasal-${s.yol.split('/').pop()}`}
               className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                 s.tehlikeli
-                  ? 'border-red-900/50 bg-red-950/20 hover:bg-red-950/40'
+                  ? 'zt-tehlike-yuzey'
                   : 'zt-cizgi zt-yuzey'
               }`}
               style={{ minHeight: 64 }}

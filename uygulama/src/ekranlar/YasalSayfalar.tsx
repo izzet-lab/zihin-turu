@@ -79,7 +79,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
                 <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Zorunlu mu?</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="zt-ayrim">
               <tr><td className="px-3 py-2">E-posta adresi</td><td className="px-3 py-2">Hesap oluşturma ve giriş (sihirli bağlantı / Google OAuth)</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Doğum yılı</td><td className="px-3 py-2">Yaş doğrulaması (asgari yaş kontrolü ve reklam kişiselleştirme kararı)</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Kullanıcı adı</td><td className="px-3 py-2">Sıralama tablosunda ve profilde gösterim</td><td className="px-3 py-2">Evet</td></tr>
@@ -175,7 +175,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
           <p>
             UMP onay akışında Google'a aktarılan bilgiler: onay durumu (verildi/verilmedi),
             cihaz tanımlayıcısı ve reklam tercihi. Bu bilgiler Google'ın{' '}
-            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="zt-vurgu-metin underline">
               gizlilik politikasına
             </a>{' '}
             tabidir.
@@ -251,7 +251,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>1. Toplanan Veriler</h2>
           <p>
-            Ayrıntılı liste için <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ne
+            Ayrıntılı liste için <Link to="/yasal/kvkk" className="zt-vurgu-metin underline">KVKK Aydınlatma Metni</Link>'ne
             bakınız. Özetle: e-posta, doğum yılı (yalnızca yıl), kullanıcı adı, oyun
             sonuçları ve teknik bağlantı bilgileri (IP, user-agent).
           </p>
@@ -282,7 +282,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
                 <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Kapatılabilir mi?</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="zt-ayrim">
               <tr><td className="px-3 py-2">Yerel bildirim</td><td className="px-3 py-2">Günlük hatırlatma — cihaz üstünde planlanır, sunucuya veri gitmez</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Crashlytics</td><td className="px-3 py-2">Çökme raporları</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Firebase Analytics</td><td className="px-3 py-2">Kullanım olayları</td><td className="px-3 py-2">Evet</td></tr>
@@ -345,7 +345,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
 
           <h2 className={h2}>7. Reklamlar ve Kişiselleştirme</h2>
           <p>
-            Ayrıntılı bilgi için <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK
+            Ayrıntılı bilgi için <Link to="/yasal/kvkk" className="zt-vurgu-metin underline">KVKK
             Aydınlatma Metni</Link>'nin "Reklamlar ve Kişiselleştirme" bölümüne bakınız.
           </p>
           <p>
@@ -429,7 +429,7 @@ export function CerezSayfasi({ onGeri }: { onGeri?: () => void }) {
                 <th className="text-left px-3 py-2 zt-metin-soluk font-bold">Amaç</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="zt-ayrim">
               <tr><td className="px-3 py-2">Oturum token'ı</td><td className="px-3 py-2">Giriş durumunuzu korumak (Supabase Auth)</td></tr>
               <tr><td className="px-3 py-2">Doğum yılı</td><td className="px-3 py-2">Yaş doğrulaması ve reklam kişiselleştirme kararı</td></tr>
               <tr><td className="px-3 py-2">Ses tercihi</td><td className="px-3 py-2">Ses açık/kapalı ayarınızı hatırlamak</td></tr>
@@ -501,7 +501,7 @@ export function KullanimKosullariSayfasi({ onGeri }: { onGeri?: () => void }) {
             kişiselleştirilmiş reklam gösterilmez. 18 yaş ve üzeri kullanıcılara
             reklam kişiselleştirmesi için onay sorulur; onay istediğiniz zaman
             Gizlilik Ayarları'ndan geri alınabilir. Ayrıntı için{' '}
-            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma
+            <Link to="/yasal/kvkk" className="zt-vurgu-metin underline">KVKK Aydınlatma
             Metni</Link>'ne bakınız.
           </p>
 
@@ -624,7 +624,7 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
       onGeri={onGeri}
       cocuklar={
         <div className={icerik}>
-          <div className="rounded-lg border border-red-800 bg-red-900/20 p-4 text-red-200 text-xs">
+          <div className="rounded-lg border zt-tehlike-yuzey p-4 zt-kayip-yazi text-xs">
             <Ikon ad="uyari" boyut={15} className="mr-1.5 -mt-0.5" />
             <strong>Geri alınamaz:</strong> Hesabınızı sildiğinizde tüm verileriniz
             kalıcı olarak kaldırılır ve bu işlem geri alınamaz.
@@ -656,7 +656,7 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
                 checked={onayli}
                 onChange={(e) => setOnayli(e.target.checked)}
                 disabled={yukleniyor}
-                className="mt-1 accent-red-500"
+                className="mt-1 zt-onay-tehlike"
               />
               <span className="text-xs zt-metin">
                 Hesabımı ve tüm verilerimi kalıcı olarak silmek istiyorum.
@@ -669,7 +669,7 @@ export function HesapSilSayfasi({ onGeri }: { onGeri?: () => void }) {
               disabled={!onayli || yukleniyor}
               className={`mt-4 w-full py-3 rounded-lg font-bold transition ${
                 onayli && !yukleniyor
-                  ? 'bg-red-600 zt-metin hover:bg-red-700'
+                  ? 'zt-tehlike-dugme'
                   : 'zt-ayirac zt-metin-soluk cursor-not-allowed'
               }`}
             >

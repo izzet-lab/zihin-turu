@@ -724,7 +724,7 @@ export default function Duello({
                     {(turCevaplari.find((c) => c.turNo === t.turNo)?.satirlar ?? []).length >
                       0 && (
                       <ul
-                        className="elyazisi mt-1 space-y-0.5 text-base text-amber-100/90"
+                        className="elyazisi mt-1 space-y-0.5 text-base zt-cozum-yazi"
                         data-alan="tur-cevabi"
                       >
                         {turCevaplari
@@ -781,7 +781,7 @@ export default function Duello({
         <button
           onClick={maciTerkEt}
           data-alan="duello-terk-onay"
-          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold zt-odul-yazi"
+          className="mt-5 min-h-[52px] w-full rounded-xl border zt-odul-yuzey text-base font-bold zt-odul-yazi"
         >
           Evet, çık
         </button>
@@ -908,8 +908,8 @@ export default function Duello({
             <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Bu turun bir çözümü
             </div>
-            <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
-              <ul className="elyazisi space-y-1.5 text-lg text-amber-100">
+            <div className="zt-sahne rounded-xl border zt-odul-yuzey p-4">
+              <ul className="elyazisi space-y-1.5 text-lg zt-cozum-yazi">
                 {turCozumu.satirlar.map((satir, i) => (
                   <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
                     {satir}

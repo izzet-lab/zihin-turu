@@ -459,7 +459,7 @@ export default function Sonuc({
         {seriKorumaTamamlandi && (
           <div
             data-alan="seri-koruma-basarili"
-            className="mt-5 rounded-xl border border-green-400/30 bg-green-400/10 px-4 py-3 text-center text-sm text-green-300"
+            className="mt-5 rounded-xl border zt-vurgu-cizgi zt-vurgu-yuzey px-4 py-3 text-center text-sm zt-vurgu-metin"
           >
             ✅ Serin korundu! {seri} gün devam ediyor.
           </div>

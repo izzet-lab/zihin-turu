@@ -114,6 +114,23 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
   // Bot pas geçtiyse bir şey yazma; turu süre kapatır.
   if (!plan.cevap) return;
 
+  /*
+   * BOTUN TABAN GECİKMESİ (14 Ekim 2026)
+   *
+   * Arenada vardı, düelloda yoktu. Güçlü profilin gecikmesi 5–11
+   * saniye; tam isabet bulduğunda tur ANINDA kapanıyordu. Oyuncu
+   * tahtaya daha ikinci işlemini yapmadan "rakip aldı" görüyor,
+   * maçı 0–5 kaybediyor ve haklı olarak "süre çok kısa" diyordu.
+   *
+   * Taban, tur süresinin yarısı: bot ne kadar hızlı çözerse çözsün
+   * oyuncu süresinin yarısını kullanabiliyor. Botu zayıflatmıyor —
+   * oyuncu o yarıda tam isabet bulursa turu kendisi kapatıyor.
+   */
+  const gecikmeMs = Math.max(
+    plan.gecikmeMs,
+    saglayici.bot.botGecikmeTabaniMs(turSuresi(mac.oyun, mac.seviye)),
+  );
+
   // Botun cevabı da doğrulanır. Bot ayrıcalıklı değil: geçersiz bir
   // cevap üretirse turu kaybeder.
   const uzaklik = uzaklikHesapla(mac, turNo, plan.cevap);
@@ -141,7 +158,7 @@ async function botuOynat(db: Db, mac: Mac, turNo: number, simdiMs: number) {
       // iyileştirmiyor. Böylece insan oyuncu cevabını kilitlediğinde
       // beklenecek kimse kalmıyor ve tur hemen kapanıyor.
       kilitli: true,
-      bildirildi: new Date(Date.parse(mac.tur_basladi) + plan.gecikmeMs).toISOString(),
+      bildirildi: new Date(Date.parse(mac.tur_basladi) + gecikmeMs).toISOString(),
     },
     { onConflict: 'mac_id,tur_no,taraf' },
   );

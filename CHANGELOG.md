@@ -3,6 +3,39 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Düello süresi, hayalet arena, son sabit renkler
+
+**Düelloda bot artık turu anında kapatamıyor.** Güçlü botun gecikmesi
+5–11 saniyeydi ve tam isabet bulduğu an tur bitiyordu: oyuncu ikinci
+işlemini yapmadan  görüyor, maçı 0–5 kaybediyordu. Arenada
+zaten olan taban kural düelloya da kondu — bot ne kadar hızlı çözerse
+çözsün tur süresinin yarısı geçmeden cevabı sayılmıyor. Bot
+zayıflamadı; oyuncu o yarıda tam isabet bulursa turu kendi kapatıyor.
+
+**Terk edilmiş arenaya oturulmuyor.** Bekleyen arenayı başlatan şey
+içerideki oyuncunun yoklamasıydı; oyuncu on saniye dolmadan çıkarsa
+arena sonsuza kadar  kalıyordu. Sonra gelen gerçek oyuncu bu
+ölü arenaya oturuyor, yanında beş tur boyunca hiç oynamayan hesaplar
+sıfır puanla podyuma çıkıyordu. Bekleme süresinin üç katını geçmiş
+arena terk edilmiş sayılıyor.
+
+**Geriye kalan kırk sekiz sabit renk jetona çevrildi.** En görünür
+sonucu maç sonu çözüm satırlarıydı: gece temasının fildişi tonuyla
+yazılıyorlardı ve gündüz temasında kâğıt zeminde okunmuyorlardı.
+Çözüm yazısı artık mürekkebe karıştırılmış altın — iki temada da
+okunuyor. Ayırıcı çizgi, odak çerçevesi, yer tutucu yazı, onay kutusu
+dolgusu ve hesap silme düğmesi de jetonlara bağlandı.
+
+**Sabit renk artık testle tutuluyor** ().
+Gözle arayarak bulunmuyordu: ekranın yanlış kalan yarısı ancak o
+temaya geçen oyuncunun başına geliyor.
+
+**Durum çubuğu boşluğu Android'de gerçekten ayrılıyor.** Android
+WebView  ile yalnızca ekran çentiğini
+bildiriyor, durum çubuğunu bildirmiyor; pencere baştan sona kapladığı
+için kaydırılan içerik saatin altına giriyordu. Paket içinde çalışırken
+en az bir durum çubuğu kadar yer ayrılıyor.
+
 ## 2026-10-14 — Hangi sayı hangi oyundan
 
 Sıralamalar, rozetler ve istatistikler iki oyunu yan yana gösteriyordu

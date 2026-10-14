@@ -343,7 +343,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 style={{ ['--zt-sira' as string]: String(Math.min(satirSira, 10)) }}
                 className={`zt-satir-gir flex items-center gap-3 rounded-lg border px-4 py-3 ${
                   s.benimMi
-                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey ring-1 ring-cyan-300/30'
+                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-halka'
                     : 'zt-cizgi zt-yuzey'
                 }`}
               >
@@ -429,7 +429,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             {oyuncuId && kendi && kendi.sira > satirlar.length && (
               <>
                 <div className="text-center text-xs zt-metin-soluk py-2">⋮</div>
-                <div className="flex items-center gap-3 rounded-lg border zt-vurgu-cizgi zt-vurgu-yuzey px-4 py-3 ring-1 ring-cyan-300/20">
+                <div className="flex items-center gap-3 rounded-lg border zt-vurgu-cizgi zt-vurgu-yuzey px-4 py-3 zt-vurgu-halka">
                   <div className="w-8 text-center font-bold zt-vurgu-metin text-sm">
                     {kendi.sira}
                   </div>

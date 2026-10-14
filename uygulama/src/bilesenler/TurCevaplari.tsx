@@ -38,7 +38,7 @@ export default function TurCevaplari({
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-xs font-bold tracking-wide zt-metin">{c.tanim}</div>
-              <ul className="elyazisi mt-1 space-y-0.5 text-base text-amber-100/90">
+              <ul className="elyazisi mt-1 space-y-0.5 text-base zt-cozum-yazi">
                 {c.satirlar.map((satir, i) => (
                   <li key={i}>{satir}</li>
                 ))}

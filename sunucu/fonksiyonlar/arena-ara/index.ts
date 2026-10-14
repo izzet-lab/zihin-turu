@@ -101,6 +101,25 @@ Deno.serve(async (req: Request) => {
       .limit(5);
 
     for (const arena of (bekleyenler ?? []) as ArenaMac[]) {
+      /*
+       * TERK EDİLMİŞ ARENAYA OTURMA (14 Ekim 2026)
+       *
+       * Bekleyen arena, bekleme süresi dolunca başlar — ama başlatma
+       * işini içerideki oyuncunun yoklaması tetikliyor. Oyuncu o on
+       * saniye dolmadan sekmeyi kapatırsa arenayı kimse başlatmıyor ve
+       * satır sonsuza kadar "bekliyor" kalıyor.
+       *
+       * Sonra gelen gerçek oyuncu bu ölü arenaya oturuyordu: yanında
+       * çoktan gitmiş bir hesap, beş tur boyunca hiç oynamıyor ve
+       * podyumda sıfır puanla duruyor. Yarış beş kişilik görünüyor ama
+       * aslında iki kişilik.
+       *
+       * Bekleme süresinin üç katını geçmiş bir arena terk edilmiş
+       * sayılıyor; yenisi açılıyor.
+       */
+      const yasSn = (Date.now() - Date.parse(arena.olusturuldu)) / 1000;
+      if (yasSn > ARENA_BEKLEME_SN * 3) continue;
+
       const { data: doluKoltuklar } = await supabase
         .from('arena_koltuk')
         .select('koltuk')

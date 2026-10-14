@@ -112,7 +112,7 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
                 type="checkbox"
                 checked={bAyar.acik}
                 onChange={(e) => bildirimDegistir(e.target.checked)}
-                className="mt-1 accent-cyan-400"
+                className="mt-1 zt-onay"
               />
               <span>
                 <span className="block font-bold zt-metin">Günlük hatırlatma</span>
@@ -131,7 +131,7 @@ export default function GizlilikAyarlari({ onGeri }: { onGeri?: () => void }) {
                   type="time"
                   value={saatDeger}
                   onChange={(e) => saatDegistir(e.target.value)}
-                  className="rounded-lg border zt-cizgi zt-ayirac px-3 py-1.5 text-sm zt-metin accent-cyan-400"
+                  className="rounded-lg border zt-cizgi zt-ayirac px-3 py-1.5 text-sm zt-metin zt-onay"
                 />
               </div>
             )}
@@ -233,7 +233,7 @@ function Anahtar({
         type="checkbox"
         checked={acik}
         onChange={(e) => onDegis(e.target.checked)}
-        className="mt-1 accent-cyan-400"
+        className="mt-1 zt-onay"
       />
       <span>
         <span className="block font-bold zt-metin">{baslik}</span>

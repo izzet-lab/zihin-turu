@@ -70,8 +70,19 @@ body {
  * Boşluk artık her ekranın KENDİ üst dolgusunda. Ekranın istediği
  * dolgu `--zt-ust` ile veriliyor, güvenli alan onun üstüne ekleniyor.
  */
+
+/*
+ * GÜVENLİ ÜST ALAN — TEK KAYNAK
+ *
+ * Android WebView durum çubuğunun yüksekliğini env() ile bildirmiyor
+ * (yalnızca çentiği bildiriyor). Paket içinde çalışırken en az bir
+ * durum çubuğu kadar yer ayrılıyor; webde env() ne diyorsa o.
+ */
+:root { --zt-guvenli-ust: env(safe-area-inset-top, 0px); }
+:root[data-native] { --zt-guvenli-ust: max(env(safe-area-inset-top, 0px), 32px); }
+
 .zt-ust-bosluk {
-  padding-top: calc(env(safe-area-inset-top, 0px) + var(--zt-ust, 1.5rem));
+  padding-top: calc(var(--zt-guvenli-ust) + var(--zt-ust, 1.5rem));
 }
 
 /*
@@ -91,7 +102,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: env(safe-area-inset-top, 0px);
+  height: var(--zt-guvenli-ust);
   background-color: var(--kagit);
   z-index: 60;
   pointer-events: none;
@@ -153,11 +164,11 @@ body.reklam-alt {
  * reklamın altında kalır.
  */
 body.reklam-ust {
-  padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  padding-top: calc(60px + var(--zt-guvenli-ust));
 }
 
 body.reklam-ust .zt-menu {
-  top: calc(76px + env(safe-area-inset-top, 0px));
+  top: calc(76px + var(--zt-guvenli-ust));
 }
 
 /*
@@ -172,7 +183,7 @@ body.reklam-ust .zt-menu {
  * daha ozgul oldugu icin sirasi onemli degil.
  */
 .zt-menu {
-  top: calc(16px + env(safe-area-inset-top, 0px));
+  top: calc(16px + var(--zt-guvenli-ust));
 }
 
 /*
@@ -1223,3 +1234,67 @@ main {
  * zemin kayboluyordu. Yarı saydam gerekiyorsa böyle ayrı bir sınıf.
  */
 .zt-perde-koyu { background-color: color-mix(in srgb, var(--kagit) 97%, transparent); }
+
+/* ------------------------------------------------------------------ *
+ * SON SABİT RENKLER (14 Ekim 2026)
+ *
+ * Tema dönüşümünden geriye kırk iki yerde literal Tailwind rengi
+ * kalmıştı. En görünür sonucu şuydu: maç sonunda çözüm satırları
+ * `text-amber-100` ile yazılıyordu — gece temasının fildişi tonu.
+ * Gündüz temasında kâğıt zeminin üstünde neredeyse hiç okunmuyordu.
+ *
+ * Aşağıdakiler o dönüşümün karşılığı olmayan son birkaç kalıbı
+ * karşılıyor: ayırıcı çizgi, odak çerçevesi, yer tutucu yazı,
+ * vurgu halkası ve tehlike düğmesi.
+ * ------------------------------------------------------------------ */
+
+/* Tailwind'in `divide-y` sınıfı çizgiyi çocuklara koyuyor ama rengi
+   kendi paletinden alıyordu. Bu sınıf ikisini birden yapıyor. */
+.zt-ayrim > :not([hidden]) ~ :not([hidden]) {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--hat);
+}
+
+/* Yazı alanına odaklanınca çerçeve vurgu rengine döner. */
+.zt-odak-cizgi:focus { border-color: var(--vurgu); }
+
+/* Boş yazı alanındaki ipucu yazısı. */
+.zt-yer-tutucu::placeholder { color: var(--soluk); }
+
+/* "Bu satır sensin" halkası — kenarlığın üstüne ince bir iz. */
+.zt-vurgu-halka { box-shadow: 0 0 0 1px color-mix(in srgb, var(--vurgu) 30%, transparent); }
+
+/* Geri alınamaz işlem düğmesi (hesap silme). Dolu kayıp rengi; yazı
+   bilerek sabit beyaz, çünkü zemin iki temada da koyu kırmızı. */
+/* Kayıp rengi doğrudan kullanılınca beyaz yazı gece temasında zayıf
+   kalıyordu (kontrast 3,6). Siyaha doğru karıştırılıyor. */
+.zt-tehlike-dugme { background-color: color-mix(in srgb, var(--sure) 80%, #000); color: #fff; }
+.zt-tehlike-dugme:hover { background-color: color-mix(in srgb, var(--sure) 65%, #000); }
+
+/* Kaydı silme gibi tehlikeli satırın soluk zemini. */
+.zt-tehlike-yuzey {
+  border-color: color-mix(in srgb, var(--sure) 40%, transparent);
+  background-color: color-mix(in srgb, var(--sure) 8%, transparent);
+}
+.zt-tehlike-yuzey:hover { background-color: color-mix(in srgb, var(--sure) 16%, transparent); }
+
+/* Seri şeridinde "oynadı ama uzak kaldı" günü. Hiç oynanmamış günden
+   (zt-ayirac) ayrılmak zorunda — yoksa şerit bilgi vermez. */
+.zt-gun-uzak { background-color: var(--soluk); }
+
+/*
+ * MAÇ SONU ÇÖZÜM YAZISI
+ *
+ * "Senin yolun" vurgu renginde, "bu turun bir çözümü" ödül renginde —
+ * ikisi birbirinden ayrılsın diye. Ama saf ödül altını gündüz temasında
+ * kâğıt zeminde zayıf kalıyordu (kontrast 3,95). Mürekkebe doğru
+ * karıştırılıyor: gündüzde koyulaşıyor, gecede açılıyor; her iki
+ * temada da okunuyor ve hâlâ altın.
+ */
+.zt-cozum-yazi { color: color-mix(in srgb, var(--odul) 72%, var(--murekkep)); }
+
+/* Onay kutusunun dolu rengi. `accent-*` sınıfları da sabit renkti. */
+.zt-onay { accent-color: var(--vurgu); }
+/* Geri alınamaz işlemin onay kutusu — kayıp renginde. */
+.zt-onay-tehlike { accent-color: var(--sure); }

@@ -585,7 +585,7 @@ export default function Oyun({
         </div>
 
         {/* Hata */}
-        <div className="mt-2 h-5 text-center text-xs text-amber-400" role="status" data-alan="hata">
+        <div className="mt-2 h-5 text-center text-xs zt-kayip-yazi" role="status" data-alan="hata">
           {durum.hata ?? ''}
         </div>
 

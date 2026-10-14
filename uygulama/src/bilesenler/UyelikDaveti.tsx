@@ -56,7 +56,7 @@ export default function UyelikDaveti({
           className={`min-h-[48px] w-full rounded-xl text-sm font-black ${
             vurgulu
               ? 'zt-dugme '
-              : 'bg-slate-200 zt-metin hover:bg-white'
+              : 'border zt-cizgi zt-yuzey zt-metin'
           }`}
         >
           {eylemMetni}

@@ -56,7 +56,7 @@ export default function SayfaSablonu({ baslik, alt, cocuklar, onGeri }: Props) {
               <li key={s.yol}>
                 <Link
                   to={s.yol}
-                  className="text-sm text-cyan-400 hover:underline"
+                  className="text-sm zt-vurgu-metin hover:underline"
                 >
                   {s.ad}
                 </Link>

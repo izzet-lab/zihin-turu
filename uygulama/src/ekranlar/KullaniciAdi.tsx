@@ -74,13 +74,13 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
             autoFocus
             autoCapitalize="none"
             autoCorrect="off"
-            className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin placeholder-slate-600 outline-none focus:border-cyan-400"
+            className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin zt-yer-tutucu zt-odak-cizgi outline-none"
           />
         </label>
 
         {/* Anlık format hatası */}
         {anlikHata && (
-          <p className="mt-2 text-sm text-amber-400">{anlikHata}</p>
+          <p className="mt-2 text-sm zt-kayip-yazi">{anlikHata}</p>
         )}
         {/* Kayıt/benzersizlik hatası */}
         {hata && !anlikHata && (

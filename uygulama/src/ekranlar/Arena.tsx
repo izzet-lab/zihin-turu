@@ -499,7 +499,7 @@ export default function Arena({
         )}
 
         <ul
-          className="mt-6 divide-y divide-slate-800 rounded-xl border zt-cizgi zt-yuzey text-left"
+          className="mt-6 zt-ayrim rounded-xl border zt-cizgi zt-yuzey text-left"
           data-alan="arena-podyum"
         >
           {(durum.podyum ?? []).map((p, satirSira) => {
@@ -568,7 +568,7 @@ export default function Arena({
         <button
           onClick={yaristanCik}
           data-alan="arena-terk-onay"
-          className="mt-5 min-h-[52px] w-full rounded-xl border border-amber-400/40 text-base font-bold zt-odul-yazi"
+          className="mt-5 min-h-[52px] w-full rounded-xl border zt-odul-yuzey text-base font-bold zt-odul-yazi"
         >
           Evet, çık
         </button>
@@ -672,8 +672,8 @@ export default function Arena({
             <div className="mb-2 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
               Bu turun bir çözümü
             </div>
-            <div className="zt-sahne rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
-              <ul className="elyazisi space-y-1.5 text-lg text-amber-100">
+            <div className="zt-sahne rounded-xl border zt-odul-yuzey p-4">
+              <ul className="elyazisi space-y-1.5 text-lg zt-cozum-yazi">
                 {turCozumu.satirlar.map((satir, i) => (
                   <li key={i} className="tahta-satir" style={{ animationDelay: `${i * 180}ms` }}>
                     {satir}

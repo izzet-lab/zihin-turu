@@ -235,7 +235,7 @@ export default function Giris({ onAtla }: Props) {
                 setHata(null);
               }}
               placeholder="Örn: 2010"
-              className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin placeholder-slate-600 outline-none focus:border-cyan-400"
+              className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin zt-yer-tutucu zt-odak-cizgi outline-none"
             />
             <span className="mt-1 block text-xs zt-metin-soluk">
               Yalnızca yaş doğrulaması için kullanılır.
@@ -252,12 +252,12 @@ export default function Giris({ onAtla }: Props) {
                   setVeliOnayi(e.target.checked);
                   if (e.target.checked) setHata(null);
                 }}
-                className="mt-0.5 accent-amber-400"
+                className="mt-0.5 zt-onay"
               />
               <span className="text-xs zt-metin leading-relaxed">
                 <strong className="zt-odul-yazi">Veli onayı:</strong> 18 yaşından küçüğüm.
                 Velim bu uygulamayı kullanmama izin veriyor ve{' '}
-                <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ni
+                <Link to="/yasal/kvkk" className="zt-vurgu-metin underline">KVKK Aydınlatma Metni</Link>'ni
                 okumuştur.
               </span>
             </label>
@@ -274,7 +274,7 @@ export default function Giris({ onAtla }: Props) {
               onChange={(e) => setEposta(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sihirliGonder()}
               placeholder="ornek@mail.com"
-              className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin placeholder-slate-600 outline-none focus:border-cyan-400"
+              className="mt-1 w-full rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-base zt-metin zt-yer-tutucu zt-odak-cizgi outline-none"
             />
           </label>
 
@@ -327,12 +327,12 @@ export default function Giris({ onAtla }: Props) {
               setKosullarKabul(e.target.checked);
               if (e.target.checked) setHata(null);
             }}
-            className="mt-0.5 accent-cyan-400"
+            className="mt-0.5 zt-onay"
           />
           <span className="text-xs zt-metin-soluk leading-relaxed">
-            <Link to="/yasal/kvkk" className="text-cyan-400 underline">KVKK Aydınlatma Metni</Link>'ni
+            <Link to="/yasal/kvkk" className="zt-vurgu-metin underline">KVKK Aydınlatma Metni</Link>'ni
             okudum ve{' '}
-            <Link to="/yasal/kullanim-kosullari" className="text-cyan-400 underline">Kullanım Koşulları</Link>'nı
+            <Link to="/yasal/kullanim-kosullari" className="zt-vurgu-metin underline">Kullanım Koşulları</Link>'nı
             kabul ediyorum.
           </span>
         </label>

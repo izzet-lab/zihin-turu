@@ -3,6 +3,26 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Hangi sayı hangi oyundan
+
+Sıralamalar, rozetler ve istatistikler iki oyunu yan yana gösteriyordu
+ama hangi sayının hangi oyundan geldiği yazmıyordu.
+
+**Sıralama başlığının altında künye var.** "Sayı Turu · Normal" gibi;
+düello ve arena sekmelerinde "Sayı ve Kelime birlikte".
+
+**Düello ve arena tabloları iki oyunu birlikte sayıyor.** Derece ve
+madalya oyuna göre ayrılmıyor; bu artık tablonun üstünde açıklanıyor.
+
+**Her rozetin üstünde tek kelimelik künye var:** Sayı, Kelime ya da
+İkisi.
+
+**İstatistik kartı ikiye bölündü:** "Tüm oyunlar" ve "Oyun başına".
+Düello ve arena başlıkları "iki oyun birlikte" diyor.
+
+**Durum çubuğu artık şeritle kapatılıyor** — kaydırılan içerik saatin
+altına giriyordu. XP kartının mor zemini de jetona bağlandı.
+
 ## 2026-10-14 - Tema her yere ulaştı
 
 İlk turda üç ekran dönüştürülmüştü; geri kalan ekranlar sabit renk

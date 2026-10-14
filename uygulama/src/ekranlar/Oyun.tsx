@@ -15,6 +15,7 @@ import {
 import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
 import { titret } from '../titresim';
+import { kutlamaAni } from '../kutlama-ani';
 import Parcaciklar from '../bilesenler/Parcaciklar';
 import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
 import YarisUstBilgi, { SureCubugu } from '../bilesenler/YarisUstBilgi';
@@ -402,7 +403,15 @@ export default function Oyun({
   const [sarsinti, setSarsinti] = useState(false);
   useEffect(() => {
     if (!tamIsabet) return;
-    sesTamIsabet();
+    /*
+     * Marka kutlaması. Rutin antrenman isabetinde kısa bir vuruş,
+     * Günün Turu'nda ya da Zor/Usta seviyede tören (uzun jingle +
+     * seslendirme + hedef halkaları) — kararı `kutlama-ani` veriyor.
+     * Düelloda ve arenada tur kutlaması çalmaz; orada kazanma anı
+     * kutlanıyor, her turda değil.
+     */
+    if (yaris) sesTamIsabet();
+    else kutlamaAni({ olay: 'tamIsabet', mod, seviye });
     titret('basari');
     setSarsinti(true);
     setKonfetiGoster(true);

@@ -26,6 +26,7 @@ import { METAL } from './RozetSeridi';
 import { kutlamaDinle } from '../kutlama';
 import type { Kutlama as KutlamaTuru } from '../kutlama-karar';
 import { titret } from '../titresim';
+import { kutlamaAni } from '../kutlama-ani';
 import { sesTamIsabet } from '../ses';
 
 /** Gösterim süresi; oyuncu daha erken dokunursa hemen geçilir. */
@@ -70,7 +71,13 @@ export default function KutlamaKatmani() {
 
   useEffect(() => {
     if (!simdiki) return;
-    sesTamIsabet();
+    /*
+     * Seri kilometre taşı marka töreniyle kutlanıyor; seviye atlama ve
+     * rozet için kodla üretilen ses yeterli. Üçünü de törenle
+     * kutlamak, töreni sıradanlaştırırdı.
+     */
+    if (simdiki.tur === 'seri') kutlamaAni({ olay: 'seriKilometre' });
+    else sesTamIsabet();
     titret('basari');
     const z = setTimeout(sonraki, SURE_MS);
     return () => clearTimeout(z);

@@ -3,6 +3,55 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 - Tam isabete markalı kutlama
+
+Tam isabet anı artık markanın kendi sesiyle kutlanıyor. **İki katman**,
+çünkü tek katman olsaydı ses birkaç turda yıpranır ve oyuncu en kolay
+çözüme giderdi: sesi tamamen kapatmak.
+
+**Katman 1 — her tam isabette:** kısa vuruş (0,78 sn) + mevcut konfeti
++ çift titreşim. Hafif, tekrar edecek.
+
+**Katman 2 — yalnızca özel anlarda:** uzun jingle, peşinden "Tam
+isabet!" seslendirmesi ve ekranın ortasında dışa doğru açılan hedef
+halkaları. Hak eden anlar: Günün Turu tam isabeti, düello galibiyeti,
+arena birinciliği, Zor/Usta seviyede tam isabet, seri kilometre taşı.
+**Rutin antrenman isabetinde çalmıyor** — gün içinde onlarca kez olabilen
+bir şey tören olamaz.
+
+**Asgari aralık bir dakika.** Üst üste gelen iki özel an (arena
+birinciliğinin hemen ardından Zor seviyede isabet gibi) ikinciyi katman
+1'e düşürüyor. Töreni seyrek yapan şey onu tören yapıyor. Aralık
+dolmadıysa sessiz kalınmıyor, kısa vuruş çalıyor.
+
+**Karar saf bir fonksiyonda** (`kutlama-sesi-karar.ts`), on iki birim
+testi var. "Hangi an töreni hak ediyor" bir arayüz sorusu değil.
+
+**Ses dosyaları:**
+- Önceden indiriliyor (ilk dokunuşta); tam isabet anında indirilmeye
+  başlasaydı yarım saniye geç çalar ve kutlama sonradan yapıştırılmış
+  gibi dururdu.
+- Üst üste binmiyor: çalan ses varken yenisi başlamıyor. Seslendirme
+  jingle'ın üstüne değil peşine geliyor.
+- Mevcut ses anahtarı ikisini de yönetiyor; ayrı ayar yok.
+- MP3 ve OGG olarak duruyor ama tarayıcı yalnızca desteklediğini
+  indiriyor.
+
+**Boyut bütçesi (60 KB) zorladı.** Ham dosyalar tek başına 71 KB
+tutuyordu, üstelik OGG henüz yoktu. Kaynaklar `varliklar/ses-kaynak/`
+altına alındı (yayınlanmıyor) ve yayın sürümleri
+`araclar/ses-uret.sh` ile üretiliyor: mono, 32 kHz, MP3 56 kbps ve OGG
+q1. Toplam 48 KB; betik bütçe aşılırsa derlemeyi düşürüyor. Dördüncü
+ses dosyası (A-arpej-fanfar) bilerek yayınlanmadı — brief iki jingle
+istiyor, üçüncüsü bütçeden yiyordu.
+
+**Halka animasyonu** oyun ekranını kapatmıyor, üstüne biniyor:
+tıklama geçiyor, oyuncu kutlama sürerken oynamaya devam edebiliyor.
+İlk denemede çizgiler fazla kalındı — halka `scale` ile büyüyor ve
+kenarlık da onunla kalınlaşıyor, 2 piksellik çizgi sonunda 11 piksel
+oluyordu. "Hareketi azalt" açıkken halkalar genişlemiyor, yerinde kısa
+bir parlama oluyor.
+
 ## 2026-10-09 - Edge Function tip denetimi tamamlandı
 
 Sunucu kodu `npm run tip`'in dışında (Deno'ya ait); eksik bir import

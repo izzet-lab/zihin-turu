@@ -818,3 +818,58 @@ main {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* HEDEF HALKALARI — tam isabet töreninin görüntüsü                    */
+/*                                                                     */
+/* Markanın iç içe halkaları merkezden dışa doğru dalga hâlinde        */
+/* genişler. Üç halka 160 ms arayla çıkar; tek halka "bir şey oldu"    */
+/* der, üçü "dalga yayıldı" der.                                       */
+/*                                                                     */
+/* Oyun ekranını KAPATMAZ: zemin yok, tıklama geçiyor.                 */
+/* ------------------------------------------------------------------ */
+
+.zt-halka {
+  width: 120px;
+  height: 120px;
+  /*
+   * ÇİZGİ İNCE OLMALI.
+   *
+   * Halka `transform: scale` ile büyüyor ve kenarlık da onunla
+   * birlikte kalınlaşıyor: 2 piksellik çizgi sonunda 11 piksel oluyor
+   * ve ekranın ortasına kalın sarı bir çember çiziliyor. 1 piksel
+   * başlayınca dalga sonuna kadar ince kalıyor.
+   */
+  border-width: 1px;
+  border-color: var(--zt-odul);
+  animation: zt-halka-yayil 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: calc(var(--zt-sira, 0) * 160ms);
+  will-change: transform, opacity;
+}
+
+@keyframes zt-halka-yayil {
+  from { transform: scale(0.25); opacity: 0; }
+  22% { opacity: 0.55; }
+  to { transform: scale(4.6); opacity: 0; }
+}
+
+/*
+ * HAREKETİ AZALT
+ *
+ * Halkalar genişlemiyor; yerinde kısa bir parlama oluyor. Kutlama yok
+ * olmuyor, sadeleşiyor — hareketi kapatan oyuncu da bir şey kazandığını
+ * görmeli.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .zt-halka {
+    animation: zt-halka-parla 900ms ease-out backwards;
+    animation-delay: 0ms;
+  }
+  .zt-halka:not(:first-child) { display: none; }
+}
+
+@keyframes zt-halka-parla {
+  from { opacity: 0; transform: scale(2); }
+  30% { opacity: 0.85; }
+  to { opacity: 0; transform: scale(2); }
+}

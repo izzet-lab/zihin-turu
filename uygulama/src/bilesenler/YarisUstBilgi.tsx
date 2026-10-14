@@ -223,11 +223,11 @@ export function SureCubugu({
   const kritik = toplamSure > 0 && kalan <= 10 && kalan > 0;
   return (
     <>
-    <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-800">
+    <div className="zt-sure-oluk mt-4 h-2 w-full overflow-hidden rounded-full">
       <div
         className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${
           kritik ? 'zt-sure-kritik' : ''
-        } ${sureYuzde < 25 ? 'bg-amber-400' : 'bg-cyan-300'}`}
+        } ${sureYuzde < 25 ? 'zt-sure-az' : 'zt-sure-dolgu'}`}
         style={{ width: `${sureYuzde}%` }}
         data-alan="sure-cubuk"
       />

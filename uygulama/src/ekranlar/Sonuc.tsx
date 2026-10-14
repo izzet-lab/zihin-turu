@@ -18,6 +18,7 @@ import type { Mod } from './Kurulum';
 import type { OyunSonuc } from './Oyun';
 import SayanSayi from '../bilesenler/SayanSayi';
 import Ikon from '../bilesenler/Ikon';
+import ArkaPlan from '../bilesenler/ArkaPlan';
 import UyelikDaveti from '../bilesenler/UyelikDaveti';
 import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
@@ -47,11 +48,11 @@ function hukumMetni(seviye: string, fark: number): string {
  * Bunun yerine tek cümle kurulur:
  *
  * - Çarpan 1'in üstündeyse övgü: "Kısa süre seçtin, puanın 2.5 katına
- *   çıktı."
+ * çıktı."
  * - Değilse üst seviyeye davet: "Zor seviyede aynı sonuç 12 puan
- *   ederdi." Alternatif puan tahmin edilmez, aynı girdilerle oyun
- *   paketine yeniden hesaplatılır — çarpan tablosunun kopyası burada
- *   yaşamaz.
+ * ederdi." Alternatif puan tahmin edilmez, aynı girdilerle oyun
+ * paketine yeniden hesaplatılır — çarpan tablosunun kopyası burada
+ * yaşamaz.
  */
 function carpanCumlesi(g: {
   seviye: string;
@@ -348,13 +349,14 @@ export default function Sonuc({
   }
 
   return (
-    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] text-slate-200 px-5 py-8">
-      <div className="mx-auto w-full max-w-md">
+    <main className="zt-ekran zt-kagit zt-metin relative min-h-dvh px-5 py-8">
+      <ArkaPlan />
+      <div className="relative z-10 mx-auto w-full max-w-md">
         {/* Yeni seviye açıldı */}
         {yeniAcilanSeviyeEtiket && (
           <div
             data-alan="yeni-seviye"
-            className="mb-5 rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 py-3 text-center text-sm font-bold text-cyan-200"
+            className="mb-5 rounded-xl border zt-vurgu-cizgi zt-vurgu-yuzey px-4 py-3 text-center text-sm font-bold zt-vurgu-metin"
           >
             <Ikon ad="yildiz" boyut={16} className="zt-odul-yazi mr-1.5 -mt-0.5" />
             {yeniAcilanSeviyeEtiket} açıldı!
@@ -364,44 +366,44 @@ export default function Sonuc({
         {/* 1) Sonuç — insan diliyle. Rakam ("3 fark") başlıkta değil,
             altında küçük gri açıklamada durur. */}
         <div className="text-center">
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">
             {mod === 'gunun' ? 'Günün Turu' : 'Antrenman'} · {seviyeEtiket}
           </div>
           <div
             data-alan="hukum"
             // Tam isabet bir ÖDÜLDÜR: altın. Marka cyan'ı eylemlere ayrıldı.
-            className={`mt-2 text-4xl font-black ${tam ? 'zt-odul-yazi' : 'text-slate-200'}`}
+            className={`mt-2 text-4xl font-black ${tam ? 'zt-odul-yazi' : 'zt-metin'}`}
           >
             {hukumMetni(seviye, sonuc.fark)}
           </div>
           {!tam && (
-            <div className="mt-1 text-sm text-slate-500" data-alan="fark-notu">
+            <div className="mt-1 text-sm zt-metin-soluk" data-alan="fark-notu">
               hedefe {sonuc.fark} kaldı
             </div>
           )}
           {!tam && (
-            <div className="mt-3 text-sm text-slate-400" data-alan="motivasyon">
+            <div className="mt-3 text-sm zt-metin-soluk" data-alan="motivasyon">
               {motivasyonSecimi(veri.hedef, sonuc.fark, sonuc.adimlar.length, sonuc.kalan, sure)}
             </div>
           )}
 
           {/* 2) Puan — TEK YER. Tur puanı ekranda başka hiçbir yerde
               tekrar edilmez. */}
-          <div className="mt-6 text-5xl font-black text-white">
+          <div className="mt-6 text-5xl font-black zt-metin">
             +
-            <SayanSayi deger={sonuc.puan} className="zt-rakam font-black text-white" data-alan="puan" />{' '}
-            <span className="text-2xl text-slate-400">puan</span>
+            <SayanSayi deger={sonuc.puan} className="zt-rakam font-black zt-metin" data-alan="puan" />{' '}
+            <span className="text-2xl zt-metin-soluk">puan</span>
           </div>
 
           {/* 3) Çarpan, sayı olarak değil cümle olarak. */}
           {mod === 'antrenman' && sonuc.carpan != null && carpanNotu && (
-            <div className="mt-2 text-sm text-slate-400" data-alan="carpan-cumle">
+            <div className="mt-2 text-sm zt-metin-soluk" data-alan="carpan-cumle">
               {carpanNotu}
             </div>
           )}
 
           {sonuc.jokerler.length > 0 && (
-            <div className="mt-2 text-xs text-amber-300" data-alan="kullanilan-jokerler">
+            <div className="mt-2 text-xs zt-odul-yazi" data-alan="kullanilan-jokerler">
               Joker: {jokerOzeti(sonuc.jokerler)}
             </div>
           )}
@@ -412,15 +414,15 @@ export default function Sonuc({
           {ligDurumu && ligDurumu !== 'misafir' && (
             <div className="mt-3 text-xs" data-alan="lig-durumu">
               {ligDurumu === 'bekliyor' && (
-                <span className="text-slate-500">Sunucuya gönderiliyor…</span>
+                <span className="zt-metin-soluk">Sunucuya gönderiliyor…</span>
               )}
               {ligDurumu === 'islendi' && (
-                <span className="text-slate-500">
+                <span className="zt-metin-soluk">
                   {mod === 'antrenman' ? 'Çalışkanlık tablosuna işlendi' : 'Lige işlendi'}
                 </span>
               )}
               {ligDurumu === 'basarisiz' && (
-                <span className="text-amber-300">
+                <span className="zt-odul-yazi">
                   Puanın kaydedilemedi — bağlantını kontrol edip tekrar dene.
                 </span>
               )}
@@ -434,14 +436,14 @@ export default function Sonuc({
             data-alan="seri-koruma"
             className="mt-5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center"
           >
-            <div className="text-sm text-amber-200">
+            <div className="text-sm zt-odul-yazi">
               <Ikon ad="seri" boyut={16} className="mr-1.5 -mt-0.5" />
               {seriKorumaBilgi!.oncekiSeriGun} günlük serin kırıldı!
             </div>
             <button
               onClick={reklamIzleSeriKoru}
               disabled={seriKorumaYukleniyor}
-              className="mt-2 min-h-[40px] w-full rounded-lg bg-amber-400/20 text-sm font-bold text-amber-300 hover:bg-amber-400/30 disabled:opacity-50"
+              className="mt-2 min-h-[40px] w-full rounded-lg bg-amber-400/20 text-sm font-bold zt-odul-yazi hover:bg-amber-400/30 disabled:opacity-50"
             >
               {seriKorumaYukleniyor ? (
                 'Yükleniyor…'
@@ -467,7 +469,7 @@ export default function Sonuc({
             gösterilmez: o an oturum toplamı tur puanının aynısı olur ve
             aynı sayıyı ikinci kez göstermek ekranı kalabalıklaştırır. */}
         {oturumGoster && (
-          <div className="mt-5 text-center text-sm text-cyan-200/80" data-alan="oturum-ozet">
+          <div className="mt-5 text-center text-sm zt-vurgu-metin/80" data-alan="oturum-ozet">
             Bu oturum: <span className="font-bold tabular-nums">{oturumPuanSonrasi!.toplamPuan} puan</span> ·{' '}
             {oturumPuanSonrasi!.turSayisi}. tur
           </div>
@@ -508,9 +510,9 @@ export default function Sonuc({
 
         {/* Çözümün tahtaya el yazısıyla yazılması */}
         <div className="mt-7">
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Çözüm</div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4" data-alan="tahta">
-            <ul className="elyazisi space-y-1.5 text-xl text-cyan-100">
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">Çözüm</div>
+          <div className="rounded-xl border zt-cizgi zt-yuzey p-4" data-alan="tahta">
+            <ul className="elyazisi space-y-1.5 text-xl zt-vurgu-metin">
               {cozum.satirlar.map((s, i) => (
                 <li
                   key={i}
@@ -522,16 +524,16 @@ export default function Sonuc({
               ))}
             </ul>
           </div>
-          <p className="mt-2 text-[11px] text-slate-600">Bu bulmacanın bir çözümü. Tek yol değil.</p>
+          <p className="mt-2 text-[11px] zt-metin-soluk">Bu bulmacanın bir çözümü. Tek yol değil.</p>
         </div>
 
         {/* Paylaşım kartı — yalnızca Günün Turu */}
         {mod === 'gunun' && (
           <div className="mt-7" data-alan="paylasim">
-            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Paylaş</div>
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">Paylaş</div>
             <pre
               data-alan="pay-metin"
-              className="whitespace-pre-wrap rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-300"
+              className="whitespace-pre-wrap rounded-xl border zt-cizgi zt-yuzey p-4 text-sm zt-metin"
             >
               {metin}
             </pre>
@@ -541,14 +543,14 @@ export default function Sonuc({
                 src={gorselUrl}
                 alt="Paylaşım kartı önizlemesi"
                 data-alan="pay-gorsel"
-                className="mt-3 w-full rounded-xl border border-slate-800"
+                className="mt-3 w-full rounded-xl border zt-cizgi"
               />
             )}
 
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
                 onClick={kopyala}
-                className="min-h-[48px] rounded-xl border border-slate-700 bg-slate-900/60 text-sm font-bold text-slate-200"
+                className="min-h-[48px] rounded-xl border zt-cizgi zt-yuzey text-sm font-bold zt-metin"
               >
                 {kopyalandi ? 'Kopyalandı ✓' : 'Metni kopyala'}
               </button>
@@ -556,7 +558,7 @@ export default function Sonuc({
                 <a
                   href={gorselUrl}
                   download={`sayi-turu-${tarih}.png`}
-                  className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-700 bg-slate-900/60 text-sm font-bold text-slate-200"
+                  className="flex min-h-[48px] items-center justify-center rounded-xl border zt-cizgi zt-yuzey text-sm font-bold zt-metin"
                 >
                   Görseli indir
                 </a>
@@ -571,14 +573,14 @@ export default function Sonuc({
             <button
               data-alan="yeniden"
               onClick={onAnaSayfa}
-              className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
+              className="mt-8 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin "
             >
               Ana sayfaya dön
             </button>
             <button
               data-alan="antrenmanda-oyna"
               onClick={onAntrenmandaOyna}
-              className="mt-3 min-h-[44px] w-full text-sm font-bold text-cyan-300 hover:underline"
+              className="mt-3 min-h-[44px] w-full text-sm font-bold zt-vurgu-metin hover:underline"
             >
               Antrenmanda oyna
             </button>
@@ -588,7 +590,7 @@ export default function Sonuc({
             <button
               data-alan="yeni-tur"
               onClick={onYeniTur}
-              className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 hover:bg-cyan-200"
+              className="mt-8 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin "
             >
               Yeni tur
             </button>
@@ -597,7 +599,7 @@ export default function Sonuc({
                 data-alan="reklam-tekrar"
                 onClick={reklamIzleTekrarOyna}
                 disabled={reklamYukleniyor}
-                className="mt-3 min-h-[44px] w-full rounded-xl border border-slate-800 text-sm font-medium text-slate-400 hover:text-slate-200 disabled:opacity-50"
+                className="mt-3 min-h-[44px] w-full rounded-xl border zt-cizgi text-sm font-medium zt-metin-soluk hover:zt-metin disabled:opacity-50"
               >
                 {reklamYukleniyor ? 'Yükleniyor…' : 'Reklam izle, tekrar oyna'}
               </button>
@@ -605,7 +607,7 @@ export default function Sonuc({
             <button
               data-alan="ayarlar"
               onClick={onAyarlar}
-              className="mt-3 min-h-[44px] w-full text-sm font-bold text-slate-400 hover:text-slate-200"
+              className="mt-3 min-h-[44px] w-full text-sm font-bold zt-metin-soluk hover:zt-metin"
             >
               Seviye değiştir
             </button>

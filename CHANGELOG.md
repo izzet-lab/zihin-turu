@@ -3,6 +3,50 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 - Kareli kâğıt teması; gündüz ve gece
+
+Oyun neon bir arayüzdü: siyaha yakın zemin, tek cyan vurgu. Yeni fikir
+bir masa — kareli kâğıt, üstünde fildişi taşlar.
+
+**Üç seçim:** Gündüz, Gece, Sistem. Varsayılan Sistem; telefon ayarı
+değişince uygulama kendiliğinden uyuyor. Oyuncunun seçimi kalıcı
+saklanıyor ve menüden değiştiriliyor.
+
+**Tema ilk boyamadan ÖNCE uygulanıyor.** `index.html` içinde küçük bir
+betik tercihi okuyup `<html>` üstüne yazıyor. React'i beklemek, gece
+modunda bir anlık beyaz çakma demekti.
+
+**Taşlar temayla DEĞİŞMİYOR** — temanın ana fikri bu. Her iki temada da
+aynı fildişi yüzey, aynı mürekkep rakam. Taş bir arayüz öğesi değil,
+masanın üstündeki fiziksel nesne: ışık değişince eşyanın rengi değil
+GÖLGESİ değişir. Gecede gölge daha derin, hepsi o. Bir e2e testi bunu
+koruyor.
+
+**Kareli ızgara** 23 piksellik karelerle, hatırlatacak kadar belirgin,
+okumayı engellemeyecek kadar soluk. **Arka plan rakamları** büyük ve
+sabit: sayı turunda rakam, kelime turunda harf. Oyun ekranında opaklık
+%40'a iniyor — süre işlerken arkada dikkat çeken hiçbir şey olmamalı.
+Daha önce orada süzülen parçacıklar vardı; kareli kâğıt fikriyle
+birlikte kaldırıldı, defterin üstündeki yazı yüzmez.
+
+**Yazı tipi Archivo** (değişken genişlik ekseni var): hedef sayısı
+genişletilmiş ve kalın, etiketler daraltılmış — yan yana durduklarında
+hangisinin asıl olduğu puntodan önce anlaşılıyor. Arayüz metni
+Instrument Sans. İkisinin de Türkçe kapsaması doğrulandı.
+
+**Logo artık çizim.** Başlıkta cyan halkalı bir PNG duruyordu ve açık
+temada kâğıdın üstünde okunmuyordu; bir resmin rengi de
+değiştirilemiyor. Yeni logo rengini bulunduğu yerden alıyor, yani
+temadan.
+
+**Renkler artık ekranlarda yazılı değil.** Üç ekran ve on paylaşılan
+bileşen tema jetonlarına bağlandı; sabit renk yazılan bir yer gündüz
+temasında okunmuyordu.
+
+**Düello, arena ve kelime turu bu turda dönüştürülmedi** (proje
+sahibinin sırası). O ekranlar gece temasında doğru görünüyor, gündüz
+temasında koyu kalıyor — sıradaki iş.
+
 ## 2026-10-14 - Tam isabete markalı kutlama
 
 Tam isabet anı artık markanın kendi sesiyle kutlanıyor. **İki katman**,

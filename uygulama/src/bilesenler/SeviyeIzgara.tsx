@@ -40,8 +40,8 @@ export default function SeviyeIzgara({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-bold text-slate-300">{baslik}</span>
-        {ilkKezMi && <span className="text-[11px] text-cyan-300">Isınma ile başlıyorsun</span>}
+        <span className="text-sm font-bold zt-metin">{baslik}</span>
+        {ilkKezMi && <span className="text-[11px] zt-vurgu-metin">Isınma ile başlıyorsun</span>}
       </div>
 
       <div className="grid grid-cols-2 gap-2.5" data-alan="seviyeler">
@@ -58,16 +58,16 @@ export default function SeviyeIzgara({
               aria-disabled={kilitliMi}
               className={`zt-secim relative min-h-[60px] rounded-xl border-2 px-3 py-2.5 text-left transition ${
                 kilitliMi
-                  ? 'cursor-not-allowed border-slate-800 bg-slate-900/30'
+                  ? 'cursor-not-allowed zt-cizgi zt-yuzey opacity-60'
                   : seciliMi
-                    ? 'zt-secim-acik border-cyan-300 bg-cyan-300'
-                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
+                    ? 'zt-secim-acik zt-vurgu-cizgi zt-dugme'
+                    : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi hover:zt-yuzey-2'
               }`}
             >
               {seciliMi && (
                 <span
                   aria-hidden="true"
-                  className="absolute right-2 top-2 text-[11px] font-black text-slate-900/60"
+                  className="absolute right-2 top-2 text-[11px] font-black zt-metin/60"
                 >
                   ✓
                 </span>
@@ -75,7 +75,7 @@ export default function SeviyeIzgara({
               {/* pr-6: seçili rozetiyle çakışmasın. */}
               <span
                 className={`block pr-6 font-black ${
-                  kilitliMi ? 'text-slate-600' : seciliMi ? 'text-slate-900' : 'text-slate-100'
+                  kilitliMi ? 'zt-metin-soluk' : seciliMi ? 'zt-metin' : 'zt-metin'
                 }`}
               >
                 {kilitliMi && <Ikon ad="kilit" boyut={14} className="mr-1.5 -mt-0.5" />}
@@ -83,7 +83,7 @@ export default function SeviyeIzgara({
               </span>
               <span
                 className={`mt-0.5 block text-[11px] ${
-                  kilitliMi ? 'text-slate-700' : seciliMi ? 'text-slate-900/65' : 'text-slate-400'
+                  kilitliMi ? 'zt-metin-soluk' : seciliMi ? 'zt-metin-soluk' : 'zt-metin-soluk'
                 }`}
               >
                 {s.altEtiket}
@@ -94,12 +94,12 @@ export default function SeviyeIzgara({
       </div>
 
       {ilkKezMi && !kilitAciklama && (
-        <p className="mt-2 text-[11px] text-slate-500">
+        <p className="mt-2 text-[11px] zt-metin-soluk">
           Isınma'da tam isabet yaptığında bir sonraki seviye açılır.
         </p>
       )}
       {kilitAciklama && (
-        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-300/80">
+        <p className="mt-2 flex items-center gap-1.5 text-[11px] zt-odul-yazi">
           <Ikon ad="kilit" boyut={13} />
           {kilitAciklama}
         </p>

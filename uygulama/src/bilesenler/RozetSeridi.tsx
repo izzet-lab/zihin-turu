@@ -32,8 +32,8 @@ function Rozet({ r, kazanildi }: { r: RozetTanim; kazanildi: boolean }) {
       title={r.nasil}
       className={`flex min-h-[72px] flex-col items-center justify-center rounded-lg border px-1 py-2 text-center ${
         kazanildi
-          ? 'border-cyan-300/40 bg-cyan-300/10'
-          : 'border-slate-800 bg-slate-900/40'
+          ? 'zt-vurgu-cizgi zt-vurgu-yuzey'
+          : 'zt-cizgi zt-yuzey'
       }`}
     >
       {/* Aile ikonla, basamak metal yüzükle anlatılıyor. */}
@@ -42,15 +42,15 @@ function Rozet({ r, kazanildi }: { r: RozetTanim; kazanildi: boolean }) {
           kazanildi
             ? r.kademe
               ? METAL[r.kademe]
-              : 'bg-cyan-300/15 text-cyan-200'
-            : 'bg-slate-800/60 text-slate-700'
+              : 'zt-vurgu-yuzey zt-vurgu-metin'
+            : 'zt-yuzey-2 zt-metin-soluk'
         }`}
       >
         <Ikon ad={r.simge} boyut={18} />
       </span>
       <span
         className={`mt-1 text-[10px] font-bold leading-tight ${
-          kazanildi ? 'text-cyan-200' : 'text-slate-600'
+          kazanildi ? 'zt-vurgu-metin' : 'zt-metin-soluk'
         }`}
       >
         {r.ad}
@@ -88,19 +88,19 @@ export default function RozetSeridi({ oyuncuId }: Props) {
 
   return (
     <div
-      className="mb-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+      className="mb-6 rounded-xl border zt-cizgi zt-yuzey p-4"
       data-alan="rozet-seridi"
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-bold text-slate-300">Rozetler</span>
-        <span className="text-xs tabular-nums text-slate-500">
+        <span className="text-sm font-bold zt-metin">Rozetler</span>
+        <span className="text-xs tabular-nums zt-metin-soluk">
           {kazanilan}/{ROZETLER.length}
         </span>
       </div>
 
       {gruplar.map((g) => (
         <div key={g} className="mb-3 last:mb-0">
-          <div className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="mb-1.5 text-[10px] font-bold uppercase tracking-widest zt-metin-soluk">
             {ROZET_GRUP_ADI[g]}
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -111,7 +111,7 @@ export default function RozetSeridi({ oyuncuId }: Props) {
         </div>
       ))}
 
-      <p className="mt-2 text-[11px] text-slate-600">
+      <p className="mt-2 text-[11px] zt-metin-soluk">
         Soluk rozetlerin üstüne gelince nasıl kazanılacağı yazıyor.
       </p>
     </div>

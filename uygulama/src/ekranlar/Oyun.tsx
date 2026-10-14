@@ -16,7 +16,7 @@ import { baslat, ilerle, enYakinTas, enYakinFark, type Tas } from '../motor';
 import { sesTasSec, sesBirlestir, sesHata, sesTamIsabet, sesJoker, sesGeriSayim } from '../ses';
 import { titret } from '../titresim';
 import { kutlamaAni } from '../kutlama-ani';
-import Parcaciklar from '../bilesenler/Parcaciklar';
+import ArkaPlan from '../bilesenler/ArkaPlan';
 import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
 import YarisUstBilgi, { SureCubugu } from '../bilesenler/YarisUstBilgi';
 import { odulluReklamHazirla, odulluReklamGoster } from '../reklam';
@@ -443,11 +443,13 @@ export default function Oyun({
     // pt-16: sabit hamburger menü (top-4 + 44px) içeriğin üstüne
     // binmesin diye. Menü düğmesi artık başlığın üstünde duruyor.
     <main
-      className={`zt-ekran min-h-dvh bg-[#0A0E1A] px-5 pb-6 pt-16 text-slate-200 ${
+      className={`zt-ekran min-h-dvh zt-kagit px-5 pb-6 pt-16 zt-metin ${
         sarsinti ? 'zt-sarsinti' : ''
       }`}
     >
-      <Parcaciklar />
+      {/* Oyun ekranında arka plan susturulur: süre işlerken dikkat
+          çeken hiçbir şey olmamalı (opaklık %40). */}
+      <ArkaPlan oyun={tur.oyun === 'kelime' ? 'kelime' : 'sayi'} sessiz />
       {konfetiGoster && <Konfeti />}
       {/* Düelloda joker paneli yok; boşalan yer taşlara ve işlemlere
           dağıtılsın diye kapsayıcı ekran yüksekliğini dolduruyor. */}
@@ -470,32 +472,32 @@ export default function Oyun({
             gap: yan yana sıkışıp üst üste binmesinler. */}
         <div className="mt-1 flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Hedef</div>
+            <div className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">Hedef</div>
             <div
-              className={`font-black leading-none tabular-nums text-white ${basligBoyu(hedef)}`}
+              className={`font-black leading-none tabular-nums zt-metin ${basligBoyu(hedef)}`}
               data-alan="hedef"
             >
               {hedef}
             </div>
           </div>
           <div className="min-w-0 text-right">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">En yakın</div>
+            <div className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">En yakın</div>
             {durum.gecmis.length === 0 ? (
               <>
-                <div data-alan="en-yakin" className="text-3xl font-black leading-none text-slate-600">—</div>
-                <div className="text-[11px] text-slate-600">bir işlem yap</div>
+                <div data-alan="en-yakin" className="text-3xl font-black leading-none zt-metin-soluk">—</div>
+                <div className="text-[11px] zt-metin-soluk">bir işlem yap</div>
               </>
             ) : (
               <>
                 <div
                   data-alan="en-yakin"
                   className={`font-black leading-none tabular-nums ${
-                    tamIsabet ? 'text-3xl text-cyan-300' : `${rakamBoyu(yakinTas.deger, true)} text-slate-300`
+                    tamIsabet ? 'text-3xl zt-vurgu-metin' : `${rakamBoyu(yakinTas.deger, true)} zt-metin`
                   }`}
                 >
                   {tamIsabet ? 'Tam!' : yakinTas.deger}
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] zt-metin-soluk">
                   {tamIsabet ? 'hedefe ulaştın' : `${yakinFark} fark`}
                 </div>
               </>
@@ -532,10 +534,10 @@ export default function Oyun({
                   yaris ? 'min-h-[76px]' : 'min-h-[64px]'
                 } ${rakamBoyu(t.deger, !!yaris)} ${
                   secili
-                    ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100 ring-2 ring-cyan-300/60'
+                    ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin ring-2 ring-cyan-300/60'
                     : uretilmis
-                      ? 'border-cyan-300/25 bg-slate-800/70 text-cyan-100'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-100'
+                      ? 'zt-vurgu-cizgi zt-yuzey-2 zt-vurgu-metin'
+                      : 'zt-cizgi zt-yuzey-2 zt-metin'
                 }`}
               >
                 {t.deger}
@@ -559,8 +561,8 @@ export default function Oyun({
                 duello ? 'min-h-[64px]' : 'min-h-[52px]'
               } ${
                 durum.islem === i.op
-                  ? 'border-cyan-300 bg-cyan-300/20 text-cyan-100'
-                  : 'border-slate-700 bg-slate-900/60 text-slate-200'
+                  ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                  : 'zt-cizgi zt-yuzey zt-metin'
               }`}
             >
               {i.op}
@@ -575,10 +577,10 @@ export default function Oyun({
 
         {/* Joker — düelloda yok (rekabet adaleti) */}
         {jokerVarMi && (
-        <div className="mt-1 rounded-xl border border-slate-800 bg-slate-900/30 p-3" data-alan="jokerler">
+        <div className="mt-1 rounded-xl border zt-cizgi zt-yuzey p-3" data-alan="jokerler">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Joker</span>
-            <span className="text-xs text-slate-400" data-alan="joker-hak">
+            <span className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">Joker</span>
+            <span className="text-xs zt-metin-soluk" data-alan="joker-hak">
               {jokerHakki} hak kaldı
             </span>
           </div>
@@ -608,14 +610,14 @@ export default function Oyun({
                     onClick={() => jokerKullan(j.tip)}
                     disabled={devreDisi}
                     title={devreDisiNot ?? undefined}
-                    className="min-h-[52px] w-full rounded-lg border border-slate-700 bg-slate-900/60 px-1 text-[11px] font-bold text-slate-200 transition active:scale-95 disabled:opacity-30"
+                    className="min-h-[52px] w-full rounded-lg border zt-cizgi zt-yuzey px-1 text-[11px] font-bold zt-metin transition active:scale-95 disabled:opacity-30"
                   >
-                    <Ikon ad={j.simge} boyut={18} className="text-cyan-300" />
+                    <Ikon ad={j.simge} boyut={18} className="zt-vurgu-metin" />
                     <div className="mt-1 leading-tight">{j.ad}</div>
-                    <div className="text-slate-500">−{JOKER_MALIYET[j.tip]} puan</div>
+                    <div className="zt-metin-soluk">−{JOKER_MALIYET[j.tip]} puan</div>
                   </button>
                   {devreDisiNot && (
-                    <div className="mt-0.5 text-center text-[9px] leading-tight text-slate-600">
+                    <div className="mt-0.5 text-center text-[9px] leading-tight zt-metin-soluk">
                       {devreDisiNot}
                     </div>
                   )}
@@ -624,7 +626,7 @@ export default function Oyun({
             })}
           </div>
           {acikAdimlar.length > 0 && (
-            <ul className="mt-2 space-y-1 text-sm text-amber-200" data-alan="joker-ipucu">
+            <ul className="mt-2 space-y-1 text-sm zt-odul-yazi" data-alan="joker-ipucu">
               {acikAdimlar.map((m, i) => (
                 <li key={i}>{m}</li>
               ))}
@@ -637,7 +639,7 @@ export default function Oyun({
             <button
               onClick={reklamIzleJokerKazan}
               disabled={reklamYukleniyor}
-              className="mt-2 w-full rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/20 disabled:opacity-50"
+              className="mt-2 w-full rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs font-bold zt-odul-yazi transition hover:bg-amber-400/20 disabled:opacity-50"
               data-alan="reklam-joker"
             >
               {reklamYukleniyor ? (
@@ -655,18 +657,18 @@ export default function Oyun({
 
         {/* İşlem geçmişi */}
         <div
-          className={`mt-1 rounded-xl border border-slate-800 bg-slate-900/30 p-3 ${
+          className={`mt-1 rounded-xl border zt-cizgi zt-yuzey p-3 ${
             duello ? 'flex-1 min-h-[84px]' : 'min-h-[64px]'
           }`}
           data-alan="gecmis"
         >
           {durum.gecmis.length === 0 ? (
-            <div className="text-center text-xs text-slate-600">İki taş ve bir işlem seç.</div>
+            <div className="text-center text-xs zt-metin-soluk">İki taş ve bir işlem seç.</div>
           ) : (
-            <ul className="space-y-1 text-sm text-slate-300">
+            <ul className="space-y-1 text-sm zt-metin">
               {durum.gecmis.map((a, i) => (
                 <li key={i} className="tabular-nums">
-                  {a.a} {a.islem} {a.b} = <span className="font-bold text-slate-100">{a.sonuc}</span>
+                  {a.a} {a.islem} {a.b} = <span className="font-bold zt-metin">{a.sonuc}</span>
                 </li>
               ))}
             </ul>
@@ -682,7 +684,7 @@ export default function Oyun({
             // Kip adını taşır: testler ve ekran okuyucular hangi
             // yarıştan çıkıldığını ayırt edebilsin.
             data-alan={arena ? 'arena-terk' : 'duello-terk'}
-            className="zt-dokunma-alani mt-3 self-center text-xs font-bold text-slate-600 hover:text-slate-400"
+            className="zt-dokunma-alani mt-3 self-center text-xs font-bold zt-metin-soluk hover:zt-metin-soluk"
           >
             {arena ? 'Yarıştan çık' : 'Maçtan çık'}
           </button>
@@ -693,20 +695,20 @@ export default function Oyun({
           <button
             onClick={() => gonder({ t: 'geriAl' })}
             disabled={durum.yigin.length === 0}
-            className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-900/60 text-sm font-bold text-slate-200 disabled:opacity-40"
+            className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey text-sm font-bold zt-metin disabled:opacity-40"
           >
             Geri al
           </button>
           <button
             onClick={() => gonder({ t: 'sifirla' })}
-            className="min-h-[52px] rounded-xl border border-slate-700 bg-slate-900/60 text-sm font-bold text-slate-200"
+            className="min-h-[52px] rounded-xl border zt-cizgi zt-yuzey text-sm font-bold zt-metin"
           >
             Sıfırla
           </button>
           <button
             data-alan="bitir"
             onClick={bitir}
-            className="min-h-[52px] rounded-xl bg-cyan-300 text-sm font-black text-slate-900 hover:bg-cyan-200"
+            className="min-h-[52px] rounded-xl zt-dugme text-sm font-black zt-metin "
           >
             {/* Düelloda "Bitir" yanıltıcıydı: tur senin bitirmenle
                 kapanmıyor, iki taraf da cevabını verince ya da süre

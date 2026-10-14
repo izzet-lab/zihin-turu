@@ -16,6 +16,7 @@ import { profilOku, type OyuncuProfil } from '../kimlik';
 import { nativeMi } from '../platform';
 import { Browser } from '@capacitor/browser';
 import Ikon from './Ikon';
+import { temaOku, temaYaz, type TemaSecimi } from '../tema';
 
 export default function Menu() {
   const gecis = useNavigate();
@@ -35,6 +36,7 @@ export default function Menu() {
   }
 
   const [menuAcik, setMenuAcik] = useState(false);
+  const [tema, setTema] = useState<TemaSecimi>(() => temaOku());
   const [kullanici, setKullanici] = useState<User | null>(null);
   const [profil, setProfil] = useState<OyuncuProfil | null>(null);
 
@@ -110,9 +112,11 @@ export default function Menu() {
         data-alan="menu-ac"
         aria-label="Menü"
         aria-expanded={menuAcik}
-        className="min-h-[48px] min-w-[48px] rounded-full border border-slate-700 bg-slate-900/85 text-xl text-cyan-200 shadow-lg backdrop-blur-sm"
+        className="zt-yuzey-2 zt-vurgu-metin min-h-[48px] min-w-[48px] rounded-full border shadow-lg"
       >
-        ☰
+        {/* Üç çizgi artık metin değil çizim: her telefonda aynı,
+            kalınlığı ikon takımıyla aynı. */}
+        <Ikon ad="menu" boyut={20} etiket="Menü" className="mx-auto" />
       </button>
 
       {menuAcik && (
@@ -121,18 +125,18 @@ export default function Menu() {
           <div className="fixed inset-0 -z-10" onClick={() => setMenuAcik(false)} />
           <div
             data-alan="menu"
-            className="zt-menu-panel absolute right-0 top-14 z-20 rounded-2xl border border-slate-700 bg-[#0F1424] p-2 shadow-2xl"
+            className="zt-menu-panel zt-yuzey absolute right-0 top-14 z-20 rounded-2xl border p-2 shadow-2xl"
           >
             {/* Kimlik satırı */}
             {kullanici && profil ? (
               <div className="mb-1 flex items-center justify-between rounded-lg px-4 py-2">
-                <span data-alan="username" className="truncate text-sm font-bold text-slate-300" title={profil.kullaniciAdi}>
+                <span data-alan="username" className="truncate text-sm font-bold zt-metin" title={profil.kullaniciAdi}>
                   {profil.kullaniciAdi}
                 </span>
                 <button
                   onClick={cikisYap}
                   data-alan="cikis"
-                  className="zt-dokunma-alani px-2 text-sm font-bold text-slate-400 hover:text-red-400"
+                  className="zt-dokunma-alani px-2 text-sm font-bold zt-metin-soluk hover:text-red-400"
                 >
                   Çık
                 </button>
@@ -144,13 +148,13 @@ export default function Menu() {
                   anaSayfayaIstek('giris');
                 }}
                 data-alan="giris-ac"
-                className="zt-menu-oge text-cyan-300"
+                className="zt-menu-oge zt-vurgu-metin"
               >
                 Giriş yap
               </button>
             )}
 
-            <div className="my-1 h-px bg-slate-800" />
+            <div className="my-1 h-px zt-ayirac" />
 
             {/* ANA SAYFA
                 Yalnızca `gecis('/')` yetmiyordu: oyun ve sonuç ekranları
@@ -164,7 +168,7 @@ export default function Menu() {
                 anaSayfayaIstek('ana');
               }}
               data-alan="ana-sayfa"
-              className="zt-menu-oge text-slate-200"
+              className="zt-menu-oge zt-metin"
             >
               <Ikon ad="ana-sayfa" className="mr-2.5 -mt-0.5" />
               Ana sayfa
@@ -173,7 +177,7 @@ export default function Menu() {
             <button
               onClick={() => git('/lig')}
               data-alan="lig-ac"
-              className="zt-menu-oge text-slate-200"
+              className="zt-menu-oge zt-metin"
             >
               <Ikon ad="siralama" className="mr-2.5 -mt-0.5" />
               Sıralamalar
@@ -182,7 +186,7 @@ export default function Menu() {
             {kullanici && profil && (
               <button
                 onClick={() => git(`/o/${profil.kullaniciAdi}`)}
-                className="zt-menu-oge text-slate-200"
+                className="zt-menu-oge zt-metin"
               >
                 <Ikon ad="profil" className="mr-2.5 -mt-0.5" />
                 Profil
@@ -194,7 +198,43 @@ export default function Menu() {
                 Artık titreşimle birlikte tek yerde: kendi profilinde ve
                 gizlilik ayarlarında. Menüde ayrı durduğu sürece ikisi
                 birbirinden habersiz iki ayardı. */}
-            <div className="my-1 h-px bg-slate-800" />
+            <div className="my-1 h-px zt-ayirac" />
+
+            {/* TEMA SEÇİCİ
+                Üç seçenek: Gündüz, Gece, Sistem. "Sistem" telefonun
+                ayarını izliyor ve ayar değişince uygulama kendiliğinden
+                uyuyor. */}
+            <div className="px-2 pb-1 pt-2" data-alan="tema-secici">
+              <div className="zt-etiket zt-metin-soluk mb-1.5 text-[10px]">Görünüm</div>
+              <div className="grid grid-cols-3 gap-1">
+                {(
+                  [
+                    { k: 'gunduz' as const, ad: 'Gündüz' },
+                    { k: 'gece' as const, ad: 'Gece' },
+                    { k: 'sistem' as const, ad: 'Sistem' },
+                  ]
+                ).map((t) => (
+                  <button
+                    key={t.k}
+                    data-tema-secim={t.k}
+                    aria-pressed={tema === t.k}
+                    onClick={() => {
+                      setTema(t.k);
+                      temaYaz(t.k);
+                    }}
+                    className={`min-h-[36px] rounded-lg border px-1 text-[11px] font-bold ${
+                      tema === t.k
+                        ? 'zt-vurgu-yuzey zt-vurgu-metin'
+                        : 'zt-cizgi zt-yuzey-2 zt-metin-soluk'
+                    }`}
+                  >
+                    {t.ad}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="my-1 h-px zt-ayirac" />
 
             <button
               onClick={() => {
@@ -202,7 +242,7 @@ export default function Menu() {
                 anaSayfayaIstek('yardim');
               }}
               data-alan="yardim-ac"
-              className="zt-menu-oge text-slate-200"
+              className="zt-menu-oge zt-metin"
             >
               <Ikon ad="soru" className="mr-2.5 -mt-0.5" />
               Nasıl oynanır
@@ -219,18 +259,18 @@ export default function Menu() {
             <button
               onClick={() => git('/yasal')}
               data-alan="yasal-ac"
-              className="zt-menu-oge text-slate-200"
+              className="zt-menu-oge zt-metin"
             >
               <Ikon ad="kalkan" className="mr-2.5 -mt-0.5" />
               Gizlilik ve yasal
             </button>
 
             {/* Sosyal */}
-            <div className="my-1 h-px bg-slate-800" />
+            <div className="my-1 h-px zt-ayirac" />
             <button
               onClick={instagramAc}
               data-alan="instagram"
-              className="zt-menu-oge text-slate-400"
+              className="zt-menu-oge zt-metin-soluk"
             >
               <Ikon ad="kamera" className="mr-2.5 -mt-0.5" />
               Instagram'da takip et

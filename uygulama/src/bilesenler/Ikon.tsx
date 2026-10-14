@@ -60,7 +60,8 @@ export type IkonAdi =
   | 'uyari'
   | 'tac'
   | 'madalya'
-  | 'titresim';
+  | 'titresim'
+  | 'menu';
 
 /** Her ikonun gövdesi; ortak sarmalayıcı aşağıda. */
 const CIZIMLER: Record<IkonAdi, JSX.Element> = {
@@ -284,6 +285,7 @@ const CIZIMLER: Record<IkonAdi, JSX.Element> = {
       <path d="M18.8 9.4a5.6 5.6 0 0 1 0 5.2M21.2 7.6a9 9 0 0 1 0 8.8" />
     </>
   ),
+  menu: <path d="M4.5 7h15M4.5 12h15M4.5 17h15" />,
   tac: (
     <>
       <path d="M4 17.5 5.2 7.4l4.3 3.6L12 5.2l2.5 5.8 4.3-3.6L20 17.5H4Z" />

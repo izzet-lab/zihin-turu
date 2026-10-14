@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tam İsabet — Türkçe zihin oyunu</title>
 <meta name="description" content="Türkçe zihin oyunu platformu. Sayı turu ve kelime turu; tek başına, karşılıklı ya da arenada. Her gün herkese aynı bulmaca.">
-<meta name="theme-color" content="#0A0E1A">
+<!-- Tarayıcı çubuğunun rengi temayla değişir; ikisi de yazılı,
+     telefon hangisini destekliyorsa onu kullanır. -->
+<meta name="theme-color" content="#E2E7EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1B212D" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/ikon/apple-touch-icon.png">
@@ -20,6 +23,24 @@
 <meta property="og:locale" content="tr_TR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://tamisabet.tr/og-gorsel.png">
+  <script>
+    /*
+     * TEMA İLK BOYAMADAN ÖNCE UYGULANIR.
+     *
+     * React yüklenene kadar beklenseydi ekran bir an yanlış temada
+     * yanıp sönerdi — gece modunda beyaz bir çakma, en kötü karşılama.
+     * Bu yüzden burada, küçük ve senkron.
+     *
+     * "Sistem" seçiliyse hiçbir şey yazılmaz; kararı CSS'teki medya
+     * sorgusu verir.
+     */
+    try {
+      var t = localStorage.getItem('tamisabet.tema.v1');
+      if (t === 'gunduz' || t === 'gece') {
+        document.documentElement.setAttribute('data-tema', t);
+      }
+    } catch (e) { /* depo kapalıysa sistem ayarı geçerli */ }
+  </script>
 </head>
 <body>
 <div id="kok"></div>

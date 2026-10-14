@@ -19,11 +19,11 @@ interface Props {
 
 function Kutu({ ust, alt, vurgu }: { ust: string; alt: string; vurgu?: boolean }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2.5">
-      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{ust}</div>
+    <div className="rounded-lg border zt-cizgi zt-yuzey px-3 py-2.5">
+      <div className="text-[10px] font-bold uppercase tracking-widest zt-metin-soluk">{ust}</div>
       <div
         className={`mt-0.5 text-lg font-black leading-none tabular-nums ${
-          vurgu ? 'text-cyan-300' : 'text-slate-100'
+          vurgu ? 'zt-vurgu-metin' : 'zt-metin'
         }`}
       >
         {alt}
@@ -58,7 +58,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
   if (!oyuncuId) return null;
   if (yukleniyor && !ist) {
     return (
-      <div className="mb-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-xs text-slate-600">
+      <div className="mb-6 rounded-xl border zt-cizgi zt-yuzey p-4 text-xs zt-metin-soluk">
         İstatistiklerin yükleniyor…
       </div>
     );
@@ -71,10 +71,10 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
 
   return (
     <div
-      className="mb-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+      className="mb-6 rounded-xl border zt-cizgi zt-yuzey p-4"
       data-alan="istatistik-karti"
     >
-      <div className="mb-3 text-sm font-bold text-slate-300">Senin istatistiklerin</div>
+      <div className="mb-3 text-sm font-bold zt-metin">Senin istatistiklerin</div>
 
       <div className="grid grid-cols-3 gap-2">
         <Kutu ust="Tur" alt={String(ist.toplamTur)} />
@@ -90,7 +90,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
 
       {ist.duelloMac > 0 && (
         <>
-          <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             <Ikon ad="duello" boyut={14} className="mr-1.5 -mt-0.5" />
             Düello
           </div>
@@ -99,7 +99,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
             <Kutu ust="Derece" alt={String(ist.duelloElo)} />
             <Kutu ust="Galibiyet" alt={`${ist.duelloGalibiyet}–${ist.duelloMaglubiyet}`} />
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-1 text-[11px] zt-metin-soluk">
             {ist.duelloMac} maç · %{kazanmaYuzde} kazanma
           </div>
         </>
@@ -107,7 +107,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
 
       {ist.arenaSayisi > 0 && (
         <>
-          <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             <Ikon ad="arena" boyut={14} className="mr-1.5 -mt-0.5" />
             Arena
           </div>
@@ -117,7 +117,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
             <Kutu ust="Arena" alt={String(ist.arenaSayisi)} />
           </div>
           {/* Madalya dökümü: emoji yerine metal noktalar. */}
-          <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500">
+          <div className="mt-1 flex items-center gap-3 text-[11px] zt-metin-soluk">
             {(
               [
                 ['zt-metal-altin', ist.altin, 'altın'],
@@ -135,7 +135,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
       )}
 
       {ist.duelloMac === 0 && ist.arenaSayisi === 0 && (
-        <p className="mt-3 text-[11px] text-slate-500">
+        <p className="mt-3 text-[11px] zt-metin-soluk">
           Henüz düello ya da arena oynamadın; oynadığında dereceler burada görünecek.
         </p>
       )}

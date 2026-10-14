@@ -5,8 +5,11 @@
  * alt kümesinde; toplu dosya unicode-range ile geldiği için tarayıcı
  * yalnızca gereken parçayı indirir.
  */
-import '@fontsource/space-grotesk/500.css';
-import '@fontsource/space-grotesk/700.css';
+// Archivo'nun GENİŞLİK ekseni de gerekli (wdth 62–125): hedef sayısı
+// hafif genişletilmiş, etiketler daraltılmış yazılıyor. `wdth.css`
+// hem ağırlık hem genişlik eksenini taşıyor.
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/instrument-sans/index.css';
 import '@fontsource/caveat/600.css';
 
 import { StrictMode } from 'react';

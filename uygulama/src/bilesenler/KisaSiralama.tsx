@@ -50,14 +50,14 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
 
   return (
     <div
-      className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+      className="mt-6 rounded-xl border zt-cizgi zt-yuzey p-4"
       data-alan="kisa-siralama"
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-bold text-slate-300">İlk 10</span>
+        <span className="text-sm font-bold zt-metin">İlk 10</span>
         <button
           onClick={() => onTumu(sekme)}
-          className="zt-dokunma-satirici text-xs font-bold text-cyan-300 hover:underline"
+          className="zt-dokunma-satirici text-xs font-bold zt-vurgu-metin hover:underline"
           data-alan="kisa-siralama-tumu"
         >
           Tümü →
@@ -78,8 +78,8 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
             aria-pressed={sekme === s.k}
             className={`min-h-[40px] rounded-lg border text-xs font-bold transition ${
               sekme === s.k
-                ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                : 'border-slate-800 bg-slate-900/40 text-slate-300'
+                ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                : 'zt-cizgi zt-yuzey zt-metin'
             }`}
           >
             <Ikon ad={s.simge} boyut={14} className="mr-1.5 -mt-0.5" />
@@ -89,9 +89,9 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
       </div>
 
       {satirlar === null ? (
-        <p className="py-3 text-center text-xs text-slate-600">Yükleniyor…</p>
+        <p className="py-3 text-center text-xs zt-metin-soluk">Yükleniyor…</p>
       ) : satirlar.length === 0 ? (
-        <p className="py-3 text-center text-xs text-slate-500">
+        <p className="py-3 text-center text-xs zt-metin-soluk">
           {sekme === 'duello' ? 'Henüz düello oynanmamış — ilk sen ol.' : 'Henüz arena oynanmamış — ilk podyum senin olsun.'}
         </p>
       ) : (
@@ -103,7 +103,7 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
               data-ben={s.benimMi ? '1' : undefined}
               style={{ ['--zt-sira' as string]: String(satirSira) }}
               className={`zt-satir-gir flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs ${
-                s.benimMi ? 'bg-cyan-300/10' : ''
+                s.benimMi ? 'zt-vurgu-yuzey' : ''
               }`}
             >
               {/* İlk üç metal madeni para; gerisi sade numara. */}
@@ -111,19 +111,19 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black tabular-nums ${
                   s.sira <= 3
                     ? ['zt-metal-altin', 'zt-metal-gumus', 'zt-metal-bronz'][s.sira - 1]!
-                    : 'text-slate-500'
+                    : 'zt-metin-soluk'
                 }`}
               >
                 {s.sira}
               </span>
               <span
                 className={`min-w-0 flex-1 truncate font-bold ${
-                  s.benimMi ? 'text-cyan-200' : 'text-slate-300'
+                  s.benimMi ? 'zt-vurgu-metin' : 'zt-metin'
                 }`}
               >
                 {s.kullaniciAdi}
               </span>
-              <span className="shrink-0 tabular-nums text-slate-400">
+              <span className="shrink-0 tabular-nums zt-metin-soluk">
                 {sekme === 'duello'
                   ? `${s.puan} derece`
                   : null}
@@ -140,7 +140,7 @@ export default function KisaSiralama({ oyuncuId, onTumu }: Props) {
                   ).map(([sinif, adet]) => (
                     <span key={sinif} className="flex items-center gap-0.5">
                       <span className={`${sinif} h-2.5 w-2.5 rounded-full`} aria-hidden="true" />
-                      <span className="text-slate-400">{adet}</span>
+                      <span className="zt-metin-soluk">{adet}</span>
                     </span>
                   ))}
                 </span>

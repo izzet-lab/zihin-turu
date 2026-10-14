@@ -8,12 +8,12 @@
  * ALTINDA duruyordu; oyuncu hangi ayarın neye ait olduğunu anlayamıyordu.
  *
  * Yeni yapı:
- *   1. Günün Turu — tek baskın kart. Günlük ritüel, ana eylem.
- *   2. 2×2 ızgara — Antrenman, Düello, Arena, Kelime Turu. Hepsi aynı
- *      görsel ağırlıkta ve TEK vurgu renginde. Üç ayrı renk (cyan, sarı,
- *      yeşil) kullanılmıyor: sarı bu uygulamada uyarı ve reklam rengi,
- *      mod kartında kullanmak o anlamı bozuyor.
- *   3. Seri şeridi ve XP kartı en altta.
+ * 1. Günün Turu — tek baskın kart. Günlük ritüel, ana eylem.
+ * 2. 2×2 ızgara — Antrenman, Düello, Arena, Kelime Turu. Hepsi aynı
+ * görsel ağırlıkta ve TEK vurgu renginde. Üç ayrı renk (cyan, sarı,
+ * yeşil) kullanılmıyor: sarı bu uygulamada uyarı ve reklam rengi,
+ * mod kartında kullanmak o anlamı bozuyor.
+ * 3. Seri şeridi ve XP kartı en altta.
  *
  * Zorluk ve süre ana ekrandan kalktı. Her mod kendi seviyesini KENDİ
  * ekranında seçiyor — Düello ve Arena zaten öyle yapıyordu; Günün Turu
@@ -38,6 +38,8 @@ import {
 } from '../depo';
 import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
 import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
+import ArkaPlan from '../bilesenler/ArkaPlan';
+import Logo from '../bilesenler/Logo';
 import SeriVeXp from '../bilesenler/SeriVeXp';
 import KisaSiralama from '../bilesenler/KisaSiralama';
 
@@ -188,7 +190,7 @@ export default function Kurulum({
   }
 
   /* ----------------------------------------------------------------- */
-  /* Her ekranın altında duran ortak parçalar                           */
+  /* Her ekranın altında duran ortak parçalar */
   /* ----------------------------------------------------------------- */
 
   /*
@@ -204,35 +206,35 @@ export default function Kurulum({
   const xpKarti = null;
 
   const kaliciUyarisi = !kaliciMi() ? (
-    <p className="mt-4 text-center text-xs text-amber-400/80">
+    <p className="mt-4 text-center text-xs zt-odul-yazi">
       Not: Bu tarayıcıda ilerleme kaydedilemiyor; sonuçların bu oturumla sınırlı kalabilir.
     </p>
   ) : null;
 
   /* ----------------------------------------------------------------- */
-  /* Alt ekran: Günün Turu                                              */
+  /* Alt ekran: Günün Turu */
   /* ----------------------------------------------------------------- */
 
   if (ekran === 'gunun') {
     return (
-      <Kabuk>
+      <Kabuk oyun={oyun}>
         <GeriDugmesi
           onGeri={() => {
             setKilitAciklama(null);
             setEkran('ana');
           }}
         />
-        <h1 className="text-2xl font-black leading-none text-white">Günün Turu</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <h1 className="text-2xl font-black leading-none zt-metin">Günün Turu</h1>
+        <p className="mt-1 text-sm zt-metin-soluk">
           Herkes bugün aynı bulmacayı oynuyor. Seviye başına günde bir hak.
         </p>
 
         {kilitli ? (
           <div
             data-alan="kilit"
-            className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-4 text-center text-sm text-slate-400"
+            className="mt-6 rounded-xl border zt-cizgi zt-yuzey px-4 py-4 text-center text-sm zt-metin-soluk"
           >
-            Bugünün turu <span className="font-bold text-slate-200">tamamlandı</span>. Yarın yeni tur.
+            Bugünün turu <span className="font-bold zt-metin">tamamlandı</span>. Yarın yeni tur.
           </div>
         ) : (
           <>
@@ -248,12 +250,12 @@ export default function Kurulum({
             </div>
 
             {!kullanici && (
-              <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-center">
-                <p className="text-xs text-slate-400">
+              <div className="mt-6 rounded-lg border zt-cizgi zt-yuzey px-4 py-2.5 text-center">
+                <p className="text-xs zt-metin-soluk">
                   Giriş yaparsan bugünkü turun lige işler.{' '}
                   <button
                     onClick={() => onGirisAc?.()}
-                    className="zt-dokunma-satirici font-bold text-cyan-300 hover:underline"
+                    className="zt-dokunma-satirici font-bold zt-vurgu-metin hover:underline"
                   >
                     Giriş yap →
                   </button>
@@ -264,7 +266,7 @@ export default function Kurulum({
             <button
               data-alan="basla"
               onClick={() => basla('gunun')}
-              className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition hover:bg-cyan-200 active:scale-[.99]"
+              className="mt-8 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[.99]"
             >
               Günün Turunu Oyna
             </button>
@@ -279,7 +281,7 @@ export default function Kurulum({
   }
 
   /* ----------------------------------------------------------------- */
-  /* Alt ekran: Antrenman                                               */
+  /* Alt ekran: Antrenman */
   /* ----------------------------------------------------------------- */
 
   if (ekran === 'antrenman') {
@@ -291,8 +293,8 @@ export default function Kurulum({
             setEkran('ana');
           }}
         />
-        <h1 className="text-2xl font-black leading-none text-white">Antrenman</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <h1 className="text-2xl font-black leading-none zt-metin">Antrenman</h1>
+        <p className="mt-1 text-sm zt-metin-soluk">
           İstediğin kadar oyna. Beceri ligine işlemez, çalışkanlık tablosuna işler.
         </p>
 
@@ -309,8 +311,8 @@ export default function Kurulum({
 
         <div className="mt-6 space-y-5" data-alan="antrenman-ayar">
           <div>
-            <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
-              Süre <span className="normal-case text-slate-600">— kısa süre daha çok puan getirir</span>
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
+              Süre <span className="normal-case zt-metin-soluk">— kısa süre daha çok puan getirir</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {SURE_SECENEK.map((s) => (
@@ -321,12 +323,12 @@ export default function Kurulum({
                   aria-pressed={sure === s}
                   className={`min-h-[44px] rounded-lg border px-3 text-sm transition ${
                     sure === s
-                      ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                      : 'border-slate-800 bg-slate-900/40 text-slate-300'
+                      ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                      : 'zt-cizgi zt-yuzey zt-metin'
                   }`}
                 >
                   <span className="font-bold">{s} sn</span>
-                  <span className="ml-1.5 text-[11px] text-slate-500">×{antrenmanCarpani(s)}</span>
+                  <span className="ml-1.5 text-[11px] zt-metin-soluk">×{antrenmanCarpani(s)}</span>
                 </button>
               ))}
               {secili.antrenmanSuresiz && (
@@ -336,8 +338,8 @@ export default function Kurulum({
                   aria-pressed={sure === 0}
                   className={`min-h-[44px] rounded-lg border px-4 text-sm transition ${
                     sure === 0
-                      ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                      : 'border-slate-800 bg-slate-900/40 text-slate-300'
+                      ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                      : 'zt-cizgi zt-yuzey zt-metin'
                   }`}
                 >
                   Süresiz
@@ -350,7 +352,7 @@ export default function Kurulum({
               şu an bunun dışında kalan tek seviye Isınma. */}
           {secili.anahtar !== 'cocuk' && (
             <div>
-              <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+              <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
                 Büyük sayı (25/50/75/100)
               </div>
               <div className="flex gap-2">
@@ -361,8 +363,8 @@ export default function Kurulum({
                     aria-pressed={buyukAdet === n}
                     className={`min-h-[44px] w-14 rounded-lg border text-sm transition ${
                       buyukAdet === n
-                        ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-200'
-                        : 'border-slate-800 bg-slate-900/40 text-slate-300'
+                        ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                        : 'zt-cizgi zt-yuzey zt-metin'
                     }`}
                   >
                     {n}
@@ -376,7 +378,7 @@ export default function Kurulum({
         <button
           data-alan="basla"
           onClick={() => basla('antrenman')}
-          className="mt-8 min-h-[56px] w-full rounded-xl bg-cyan-300 text-lg font-black text-slate-900 transition hover:bg-cyan-200 active:scale-[.99]"
+          className="mt-8 min-h-[56px] w-full rounded-xl zt-dugme text-lg font-black zt-metin transition active:scale-[.99]"
         >
           Başla
         </button>
@@ -388,7 +390,7 @@ export default function Kurulum({
   }
 
   /* ----------------------------------------------------------------- */
-  /* ANA EKRAN                                                          */
+  /* ANA EKRAN */
   /* ----------------------------------------------------------------- */
 
   const kelimeMi = oyun === 'kelime';
@@ -445,13 +447,13 @@ export default function Kurulum({
   ];
 
   return (
-    <Kabuk>
+    <Kabuk oyun={oyun}>
       {/* pr-12: sabit hamburger menü sağ üstte duruyor. */}
       <header className="relative flex items-center gap-3 pr-12">
-        <img src="/ikon/ikon-192.png" alt="" className="h-9 w-9 rounded-lg" />
+        <Logo boyut={38} className="zt-vurgu-metin" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-black leading-none text-white">Tam İsabet</h1>
-          <p className="text-xs text-slate-500">Türkçe zihin oyunları — sayılar ve kelimeler.</p>
+          <h1 className="text-2xl font-black leading-none zt-metin">Tam İsabet</h1>
+          <p className="text-xs zt-metin-soluk">Türkçe zihin oyunları — sayılar ve kelimeler.</p>
         </div>
       </header>
 
@@ -475,14 +477,14 @@ export default function Kurulum({
             aria-pressed={oyun === o.k}
             className={`zt-secim relative min-h-[96px] rounded-xl border-2 px-3 py-3 text-left transition active:scale-[.99] ${
               oyun === o.k
-                ? 'zt-secim-acik border-cyan-300 bg-cyan-300/15'
-                : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                ? 'zt-secim-acik zt-vurgu-cizgi zt-vurgu-yuzey'
+                : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi'
             }`}
           >
             {oyun === o.k && (
               <span
                 aria-hidden="true"
-                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-300 text-[11px] font-black text-slate-900"
+                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full zt-dugme text-[11px] font-black zt-metin"
               >
                 ✓
               </span>
@@ -490,18 +492,18 @@ export default function Kurulum({
             <Ikon
               ad={o.simge}
               boyut={26}
-              className={oyun === o.k ? 'text-cyan-300' : 'text-slate-400'}
+              className={oyun === o.k ? 'zt-vurgu-metin' : 'zt-metin-soluk'}
             />
             <span
               className={`mt-2 block font-black leading-tight ${
-                oyun === o.k ? 'text-cyan-100' : 'text-slate-100'
+                oyun === o.k ? 'zt-vurgu-metin' : 'zt-metin'
               }`}
             >
               {o.ad}
             </span>
             <span
               className={`mt-0.5 block text-[11px] leading-snug ${
-                oyun === o.k ? 'text-cyan-200/70' : 'text-slate-400'
+                oyun === o.k ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
               }`}
             >
               {o.not}
@@ -511,7 +513,7 @@ export default function Kurulum({
       </div>
 
       {/* 2) MOD SEÇİMİ — seçili oyunun modları. */}
-      <div className="mb-2 mt-5 text-sm font-bold text-slate-300">
+      <div className="mb-2 mt-5 text-sm font-bold zt-metin">
         {kelimeMi ? 'Kelime Turu' : 'Sayı Turu'} — nasıl oynayalım?
       </div>
       <div className="grid grid-cols-2 gap-2.5" data-alan="modlar">
@@ -523,29 +525,29 @@ export default function Kurulum({
             onClick={m.git}
             className={`zt-secim min-h-[92px] rounded-xl border px-3 py-3 text-left transition active:scale-[.99] ${
               m.kapali
-                ? 'cursor-not-allowed border-slate-800 bg-slate-900/30'
+                ? 'cursor-not-allowed zt-cizgi zt-yuzey opacity-60'
                 : m.vurgulu
-                  ? 'border-2 border-cyan-300 bg-cyan-300/15 hover:bg-cyan-300/20'
-                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80'
+                  ? 'border-2 zt-vurgu-cizgi zt-vurgu-yuzey hover:zt-vurgu-yuzey'
+                  : 'zt-cizgi zt-yuzey-2 hover:zt-cizgi hover:zt-yuzey-2'
             }`}
           >
             <Ikon
               ad={m.simge}
               boyut={24}
               className={
-                m.kapali ? 'text-slate-700' : m.vurgulu ? 'text-cyan-300' : 'text-slate-400'
+                m.kapali ? 'zt-metin-soluk' : m.vurgulu ? 'zt-vurgu-metin' : 'zt-metin-soluk'
               }
             />
             <div
               className={`mt-2 font-black leading-tight ${
-                m.kapali ? 'text-slate-600' : m.vurgulu ? 'text-cyan-100' : 'text-slate-100'
+                m.kapali ? 'zt-metin-soluk' : m.vurgulu ? 'zt-vurgu-metin' : 'zt-metin'
               }`}
             >
               {m.ad}
             </div>
             <div
               className={`mt-0.5 text-[11px] leading-snug ${
-                m.kapali ? 'text-slate-700' : m.vurgulu ? 'text-cyan-200/70' : 'text-slate-400'
+                m.kapali ? 'zt-metin-soluk' : m.vurgulu ? 'zt-vurgu-metin/70' : 'zt-metin-soluk'
               }`}
             >
               {m.not}
@@ -556,13 +558,13 @@ export default function Kurulum({
 
       {/* Gerçek oyuncu sayıları — eşik üstündeyse gösterilir */}
       {oyuncuSayilari && (oyuncuSayilari.bugunOynayanlar || oyuncuSayilari.bugunTamIsabet) && (
-        <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs text-slate-500">
+        <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs zt-metin-soluk">
           {oyuncuSayilari.bugunOynayanlar && (
             <span>Bugün {oyuncuSayilari.bugunOynayanlar} kişi oynadı</span>
           )}
           {oyuncuSayilari.bugunTamIsabet && (
             <span className="inline-flex items-center gap-1.5">
-              <Ikon ad="hedef" boyut={14} className="text-slate-500" />
+              <Ikon ad="hedef" boyut={14} className="zt-metin-soluk" />
               {oyuncuSayilari.bugunTamIsabet} kişi tam bildi
             </span>
           )}
@@ -577,13 +579,13 @@ export default function Kurulum({
       {!kullanici && il.seri.gun === 0 && Object.keys(il.gunluk).length === 0 && (
         <div
           data-alan="marka-tasima-notu"
-          className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-xs leading-relaxed text-slate-400"
+          className="mt-4 rounded-xl border zt-cizgi zt-yuzey px-4 py-3 text-xs leading-relaxed zt-metin-soluk"
         >
-          <strong className="text-slate-300">Serin sıfır mı görünüyor?</strong> Uygulamanın adı ve
+          <strong className="zt-metin">Serin sıfır mı görünüyor?</strong> Uygulamanın adı ve
           adresi yakında değişti; tarayıcı eski ilerlemeyi yeni adrese taşıyamıyor.{' '}
           <button
             onClick={() => onGirisAc?.()}
-            className="zt-dokunma-satirici font-bold text-cyan-300 hover:underline"
+            className="zt-dokunma-satirici font-bold zt-vurgu-metin hover:underline"
           >
             Giriş yaparsan
           </button>{' '}
@@ -603,11 +605,16 @@ export default function Kurulum({
   );
 }
 
-/** Ortak dış kabuk — arka plan ve genişlik sınırı. */
-function Kabuk({ children }: { children: React.ReactNode }) {
+/**
+ * Ortak dış kabuk — kareli kâğıt, arka plan rakamları, genişlik sınırı.
+ *
+ * `relative z-10`: içerik arka plan katmanının üstünde dursun.
+ */
+function Kabuk({ children, oyun }: { children: React.ReactNode; oyun?: 'sayi' | 'kelime' }) {
   return (
-    <main className="zt-ekran min-h-dvh bg-[#0A0E1A] px-5 py-8 text-slate-200">
-      <div className="mx-auto w-full max-w-md">{children}</div>
+    <main className="zt-ekran zt-kagit zt-metin relative min-h-dvh px-5 py-8">
+      <ArkaPlan oyun={oyun} />
+      <div className="relative z-10 mx-auto w-full max-w-md">{children}</div>
     </main>
   );
 }
@@ -617,7 +624,7 @@ function GeriDugmesi({ onGeri }: { onGeri: () => void }) {
     <button
       onClick={onGeri}
       data-alan="geri"
-      className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold text-cyan-300 hover:bg-slate-800/60"
+      className="zt-dokunma-alani -ml-2 mb-3 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 text-sm font-bold zt-vurgu-metin hover:zt-yuzey-2"
     >
       ← Geri
     </button>

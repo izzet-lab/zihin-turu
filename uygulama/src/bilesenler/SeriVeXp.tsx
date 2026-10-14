@@ -38,19 +38,19 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
           değil. Marka cyan'ı düğmelere ve vurguya ayrıldı. */}
       <div
         className={`mt-6 rounded-xl border p-4 ${
-          seri > 0 ? 'zt-odul-yuzey' : 'border-slate-800 bg-slate-900/40'
+          seri > 0 ? 'zt-odul-yuzey' : 'zt-cizgi zt-yuzey'
         }`}
         data-alan="seri"
       >
         <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-400">
+          <div className="text-sm zt-metin-soluk">
             Kesintisiz seri:{' '}
             <span className="zt-odul-yazi font-bold" data-alan="seri-gun">
               {seri}
             </span>{' '}
             gün
           </div>
-          <div className="text-xs text-slate-500">Son 28 gün</div>
+          <div className="text-xs zt-metin-soluk">Son 28 gün</div>
         </div>
         <div className="mt-3 grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1" aria-hidden="true">
           {seritler.map((g) => (
@@ -64,7 +64,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                     ? 'zt-odul-kare-soluk'
                     : g.durum === 'uzak'
                       ? 'bg-slate-600'
-                      : 'bg-slate-800'
+                      : 'zt-ayirac'
               }`}
             />
           ))}
@@ -73,7 +73,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
           <button
             onClick={() => onGirisAc?.()}
             data-alan="seri-misafir-notu"
-            className="zt-dokunma-alani mt-3 block w-full text-left text-[11px] text-amber-300/80 hover:text-amber-200"
+            className="zt-dokunma-alani mt-3 block w-full text-left text-[11px] zt-odul-yazi hover:zt-odul-yazi"
           >
             {seri > 0
               ? `${seri} günlük serin kaydedilmiyor — üye ol.`
@@ -94,10 +94,10 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                   <span className="zt-nadir-yazi text-sm font-bold">
                     Lv.{sv.seviye} {sv.unvan}
                   </span>
-                  <span className="text-xs text-slate-500">{ilerleme.xp} XP</span>
+                  <span className="text-xs zt-metin-soluk">{ilerleme.xp} XP</span>
                 </div>
                 {sv.sonrakiXp && (
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-2 overflow-hidden rounded-full zt-ayirac">
                     <div
                       className="zt-nadir-dolgu h-full rounded-full transition-all"
                       style={{ width: `${sv.ilerlemeYuzdesi}%` }}
@@ -105,7 +105,7 @@ export default function SeriVeXp({ kullanici, onGirisAc }: Props) {
                   </div>
                 )}
                 {sv.sonrakiXp && (
-                  <div className="mt-1 text-[11px] text-slate-600">
+                  <div className="mt-1 text-[11px] zt-metin-soluk">
                     Sonraki seviye: {sv.sonrakiXp} XP
                   </div>
                 )}

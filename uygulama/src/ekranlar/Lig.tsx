@@ -168,6 +168,20 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             {sekme === 'antrenman' &&
               'Çalışkanlık tablosu — ne kadar çalıştığını gösterir, ne kadar iyi olduğunu değil.'}
           </p>
+
+          {/*
+            HANGİ TABLOYA BAKIYORUM?
+            Oyun ve seviye seçicileri aşağıda ayrı ayrı duruyordu;
+            listeye bakarken hangi oyunun tablosu olduğu görünmüyordu.
+            Başlığın hemen altında tek satırlık bir künye var artık.
+          */}
+          <p className="zt-etiket zt-vurgu-metin mt-2 text-[11px]" data-alan="tablo-kunyesi">
+            {sekme === 'duello' || sekme === 'arena'
+              ? 'Sayı ve Kelime birlikte'
+              : `${oyun === 'kelime' ? 'Kelime Turu' : 'Sayı Turu'} · ${
+                  seviyeler.find((s) => s.anahtar === seviye)?.etiket ?? seviye
+                }`}
+          </p>
         </header>
 
         {/* ÖNCE KENDİ SAYILARIN — "kim önde" tablolarından önce "ben ne
@@ -215,6 +229,23 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         {/* OYUN SEÇİCİ — iki oyunun tabloları ayrı.
             Düello ve arena yalnızca sayı turunda olduğu için o
             sekmelerde gösterilmiyor. */}
+        {/*
+          DÜELLO VE ARENA İKİ OYUNU BİRLİKTE SAYIYOR.
+          Derece ve madalya tabloları oyuna göre ayrılmıyor: aynı
+          oyuncunun kelime maçı da sayı maçı da aynı dereceye işliyor.
+          Önceden burada hiçbir şey yazmıyordu ve oyuncu hangi oyunun
+          tablosuna baktığını bilmiyordu.
+        */}
+        {(sekme === 'duello' || sekme === 'arena') && (
+          <p
+            className="zt-yuzey zt-cizgi zt-metin-soluk mb-6 rounded-xl border px-4 py-3 text-xs"
+            data-alan="ortak-tablo-notu"
+          >
+            Bu tablo <strong className="zt-metin">iki oyunu birlikte</strong> sayar: sayı turu
+            düellosu da kelime turu düellosu da aynı dereceye işler.
+          </p>
+        )}
+
         {sekme !== 'duello' && sekme !== 'arena' && (
           <div className="mb-6" data-alan="oyun-secici">
             <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">

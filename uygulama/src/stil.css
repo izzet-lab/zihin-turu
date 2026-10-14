@@ -73,6 +73,29 @@ body {
 .zt-ust-bosluk {
   padding-top: calc(env(safe-area-inset-top, 0px) + var(--zt-ust, 1.5rem));
 }
+
+/*
+ * DURUM ÇUBUĞUNUN ARKASI OPAK OLMALI
+ *
+ * Üst dolgu yalnızca SAYFANIN BAŞINI aşağı itiyor; oyuncu aşağı
+ * kaydırınca içerik durum çubuğunun altından geçip saatin arkasında
+ * görünüyordu (Android'de pencere baştan sona kaplıyor). Ekranın en
+ * üstüne kâğıt renginde opak bir şerit konuyor: kaydırılan içerik
+ * oraya girince kayboluyor, saat ve pil okunur kalıyor.
+ *
+ * Yüksekliği sıfırsa (tarayıcıda, çentiksiz cihazda) şerit hiç
+ * görünmüyor.
+ */
+.zt-durum-seridi {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background-color: var(--kagit);
+  z-index: 60;
+  pointer-events: none;
+}
 :focus-visible { outline: 3px solid var(--vurgu); outline-offset: 2px; }
 
 /* Sonuç ekranında çözümün "el yazısıyla" tahtaya yazılması. Yazı tipi
@@ -1147,9 +1170,15 @@ main {
   background-color: color-mix(in srgb, var(--sure) 8%, transparent);
 }
 
+/*
+ * XP KARTI — MOR DEĞİL VURGU RENGİ.
+ *
+ * Burada `--nadir` diye tanımsız bir değişken kullanılıyordu ve yedek
+ * değeri mordu; palette mor yok, kart gerçek cihazda leylak görünüyordu.
+ */
 .zt-nadir-yuzey {
-  border-color: color-mix(in srgb, var(--nadir, #b794f6) 40%, transparent);
-  background-color: color-mix(in srgb, var(--nadir, #b794f6) 10%, transparent);
+  border-color: color-mix(in srgb, var(--vurgu) 35%, transparent);
+  background-color: color-mix(in srgb, var(--vurgu) 8%, transparent);
 }
 
 /*

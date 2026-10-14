@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { ROZETLER, ROZET_GRUP_ADI, type RozetTanim } from '../rozetler';
+import { ROZETLER, ROZET_GRUP_ADI, ROZET_OYUN_ADI, type RozetTanim } from '../rozetler';
 import Ikon from './Ikon';
 
 /** Rozet kademesinin metal yüzüğü. */
@@ -54,8 +54,17 @@ function Rozet({ r, kazanildi }: { r: RozetTanim; kazanildi: boolean }) {
       >
         <Ikon ad={r.simge} boyut={18} />
       </span>
+      {/*
+        HANGİ OYUNDAN GELİYOR?
+        "Bu rozet kelimeden mi sayıdan mı?" sorusunun cevabı yoktu.
+        Artık her rozetin üstünde tek kelimelik künye var; "İkisi"
+        hangi oyun oynanırsa oynansın sayıldığı anlamına geliyor.
+      */}
+      <span className="zt-metin-soluk mt-1 text-[9px] font-bold uppercase tracking-wider">
+        {ROZET_OYUN_ADI[r.oyun]}
+      </span>
       <span
-        className={`mt-1 text-[10px] font-bold leading-tight ${
+        className={`mt-0.5 text-[10px] font-bold leading-tight ${
           kazanildi ? 'zt-vurgu-metin' : 'zt-metin-soluk'
         }`}
       >
@@ -98,7 +107,10 @@ export default function RozetSeridi({ oyuncuId }: Props) {
       data-alan="rozet-seridi"
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-bold zt-metin">Rozetler</span>
+        <span className="text-sm font-bold zt-metin">
+          Rozetler
+          <span className="zt-metin-soluk ml-1.5 text-[11px] font-normal">iki oyun birlikte</span>
+        </span>
         <span className="text-xs tabular-nums zt-metin-soluk">
           {kazanilan}/{ROZETLER.length}
         </span>

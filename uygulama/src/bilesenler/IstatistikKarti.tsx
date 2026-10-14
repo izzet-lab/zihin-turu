@@ -76,13 +76,21 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
     >
       <div className="mb-3 text-sm font-bold zt-metin">Senin istatistiklerin</div>
 
+      {/*
+        BAŞLIKLAR HANGİ OYUNU SAYDIĞINI SÖYLÜYOR.
+        Önceden sekiz kutu arka arkaya diziliydi; hangisinin kelimeye,
+        hangisinin sayıya, hangisinin ikisine ait olduğu anlaşılmıyordu.
+        Artık her blok kendi künyesiyle açılıyor.
+      */}
+      <div className="zt-etiket zt-metin-soluk mb-1.5 text-[10px]">Tüm oyunlar</div>
       <div className="grid grid-cols-3 gap-2">
         <Kutu ust="Tur" alt={String(ist.toplamTur)} />
         <Kutu ust="Tam isabet" alt={String(ist.tamIsabet)} vurgu />
         <Kutu ust="İsabet" alt={`%${isabetYuzde}`} />
       </div>
 
-      <div className="mt-2 grid grid-cols-3 gap-2">
+      <div className="zt-etiket zt-metin-soluk mb-1.5 mt-4 text-[10px]">Oyun başına</div>
+      <div className="grid grid-cols-3 gap-2">
         <Kutu ust="Sayı turu" alt={String(ist.sayiTur)} />
         <Kutu ust="Kelime turu" alt={String(ist.kelimeTur)} />
         <Kutu ust="En iyi puan" alt={String(ist.enIyiPuan)} />
@@ -92,7 +100,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
         <>
           <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             <Ikon ad="duello" boyut={14} className="mr-1.5 -mt-0.5" />
-            Düello
+            Düello — iki oyun birlikte
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Kutu ust="Sıra" alt={ist.duelloSira ? `${ist.duelloSira}.` : '—'} vurgu />
@@ -109,7 +117,7 @@ export default function IstatistikKarti({ oyuncuId }: Props) {
         <>
           <div className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest zt-metin-soluk">
             <Ikon ad="arena" boyut={14} className="mr-1.5 -mt-0.5" />
-            Arena
+            Arena — iki oyun birlikte
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Kutu ust="Sıra" alt={ist.arenaSira ? `${ist.arenaSira}.` : '—'} vurgu />

@@ -78,6 +78,9 @@ export default function Ana() {
 
   return (
     <BrowserRouter>
+      {/* Durum çubuğunun arkası: kaydırılan içerik saatin arkasında
+          görünmesin diye opak şerit. */}
+      <div className="zt-durum-seridi" aria-hidden="true" />
       <Menu />
       {/* Ödül töreni tek yerde: tur hangi ekranda biterse bitsin
           kutlama buradan çıkıyor. */}

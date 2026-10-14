@@ -132,8 +132,11 @@ export default function Menu() {
             {/* Kimlik satırı */}
             {kullanici && profil ? (
               <div className="mb-1 flex items-center justify-between rounded-lg px-4 py-2">
-                <span data-alan="username" className="truncate text-sm font-bold zt-metin" title={profil.kullaniciAdi}>
-                  {profil.kullaniciAdi}
+                <span className="flex min-w-0 items-center zt-metin">
+                  <Ikon ad="profil" className="mr-2.5 -mt-0.5 shrink-0" />
+                  <span data-alan="username" className="truncate text-sm font-bold" title={profil.kullaniciAdi}>
+                    {profil.kullaniciAdi}
+                  </span>
                 </span>
                 <button
                   onClick={cikisYap}
@@ -152,7 +155,13 @@ export default function Menu() {
                 data-alan="giris-ac"
                 className="zt-menu-oge zt-vurgu-metin"
               >
-                Giriş yap
+                {/* İKONSUZ DURAMAZ.
+                    Menüdeki her satırın ikonu var; bu tek başına düz
+                    yazıydı ve bir menü öğesi gibi değil, menünün
+                    başlığı gibi duruyordu — oyuncu "menüde giriş yok"
+                    diye okudu (14 Ekim 2026). */}
+                <Ikon ad="profil" className="mr-2.5 -mt-0.5" />
+                Giriş yap / Üye ol
               </button>
             )}
 

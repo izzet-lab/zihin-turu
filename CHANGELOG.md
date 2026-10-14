@@ -3,6 +3,19 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-14 — Menüde giriş, sözlük yeniden deniyor
+
+**Menüdeki "Giriş yap" görünmüyordu.** Satırın ikonu yoktu; menüdeki
+her öğenin ikonu olduğu için bu tek başına düz yazı menünün başlığı
+gibi duruyordu. Artık ikonu var ve "Giriş yap / Üye ol" diyor. Giriş
+yapmış oyuncunun kullanıcı adı satırına da profil ikonu kondu.
+
+**Kelime turu sözlüğü tek denemede pes etmiyor.** Sözlük ayrı bir
+parça olarak iniyor ve büyük; tek bir başarısız indirme ekranı kalıcı
+olarak "Sözlük yüklenemedi" durumunda bırakıyordu. Oyuncunun elindeki
+tek seçenek geri dönüp tekrar girmekti. Artık arası açılarak üç kez
+deneniyor, üçü de olmazsa hata ekranında "Tekrar dene" düğmesi var.
+
 ## 2026-10-14 — Düello süresi, hayalet arena, son sabit renkler
 
 **Düelloda bot artık turu anında kapatamıyor.** Güçlü botun gecikmesi

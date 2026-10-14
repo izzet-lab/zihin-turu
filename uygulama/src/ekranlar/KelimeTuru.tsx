@@ -70,6 +70,8 @@ export default function KelimeTuru({
   const [asama, setAsama] = useState<Asama>('yukleniyor');
   const [saglayici, setSaglayici] = useState<TurSaglayici | null>(null);
   const [yuklemeHatasi, setYuklemeHatasi] = useState(false);
+  /** Artırılınca sözlük yükleme etkisi baştan çalışır (Tekrar dene). */
+  const [yuklemeDeneme, setYuklemeDeneme] = useState(0);
   const [seviye, setSeviye] = useState(baslangicSeviye ?? 'normal');
   const [mod, setMod] = useState<Mod>(baslangicMod ?? 'gunun');
   const [gunlukKilit, setGunlukKilit] = useState(() => kelimeGunlukOynandiMi());
@@ -102,25 +104,54 @@ export default function KelimeTuru({
   /* Sözlüğü yükle */
   /* --------------------------------------------------------------- */
 
+  /*
+   * SÖZLÜK TEK DENEMEDE PES ETMİYOR
+   *
+   * Sözlük ayrı bir parça olarak indiriliyor ve epey büyük. Tek bir
+   * başarısız indirme — zayıf bağlantı, uygulama açılırken aynı anda
+   * giden başka istekler — ekranı kalıcı olarak "Sözlük yüklenemedi"
+   * durumunda bırakıyordu. Oyuncunun elinde tek seçenek geri dönüp
+   * tekrar girmekti; çoğu kişi bunu oyunun bozuk olduğu diye okur.
+   *
+   * Artık üç kez, arası açılarak deneniyor. Üçü de başarısız olursa
+   * hata ekranında "Tekrar dene" düğmesi var — sayaç artınca bu etki
+   * baştan çalışıyor.
+   */
   useEffect(() => {
     let iptal = false;
-    import('@tamisabet/oyun-kelime/sozluk-verisi')
-      .then(({ KELIME_METNI, YAYGIN_METNI, GOVDE_METNI }) => {
-        if (iptal) return;
-        // İki liste: geniş olan cevabı KABUL eder, yaygın olan HEDEFİ
-        // belirler (bkz. oyun-kelime/kelimeTuruKur).
-        setSaglayici(
-          kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI)),
-        );
-        setAsama('seviye');
-      })
-      .catch(() => {
-        if (!iptal) setYuklemeHatasi(true);
-      });
+
+    async function yukle() {
+      for (let deneme = 0; deneme < 3; deneme++) {
+        try {
+          const { KELIME_METNI, YAYGIN_METNI, GOVDE_METNI } = await import(
+            '@tamisabet/oyun-kelime/sozluk-verisi'
+          );
+          if (iptal) return;
+          // İki liste: geniş olan cevabı KABUL eder, yaygın olan HEDEFİ
+          // belirler (bkz. oyun-kelime/kelimeTuruKur).
+          setSaglayici(
+            kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI)),
+          );
+          setYuklemeHatasi(false);
+          setAsama('seviye');
+          return;
+        } catch {
+          if (iptal) return;
+          // Son denemeden sonra beklemenin anlamı yok.
+          if (deneme < 2) await new Promise((b) => setTimeout(b, 400 * (deneme + 1)));
+        }
+      }
+      if (!iptal) setYuklemeHatasi(true);
+    }
+
+    setYuklemeHatasi(false);
+    setAsama('yukleniyor');
+    void yukle();
+
     return () => {
       iptal = true;
     };
-  }, []);
+  }, [yuklemeDeneme]);
 
   /* --------------------------------------------------------------- */
   /* Tur akışı */
@@ -261,9 +292,18 @@ export default function KelimeTuru({
           <p className="mt-2 text-sm zt-metin-soluk">
             Kelime turu sözlüğe ihtiyaç duyuyor. Bağlantını kontrol edip tekrar dene.
           </p>
+          {/* Önce yalnızca "Geri dön" vardı: oyuncu ekrandan çıkıp
+              yeniden girmeden tekrar deneyemiyordu. */}
+          <button
+            onClick={() => setYuklemeDeneme((d) => d + 1)}
+            data-alan="sozluk-tekrar-dene"
+            className="mt-6 min-h-[48px] w-full rounded-xl zt-dugme px-6 font-black zt-metin"
+          >
+            Tekrar dene
+          </button>
           <button
             onClick={onCik}
-            className="mt-6 min-h-[44px] rounded-xl zt-ayirac px-6 font-bold zt-metin"
+            className="mt-3 min-h-[44px] rounded-xl zt-ayirac px-6 font-bold zt-metin"
           >
             Geri dön
           </button>

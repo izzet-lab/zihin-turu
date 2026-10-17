@@ -14,7 +14,24 @@
  */
 
 import Ikon, { type IkonAdi } from '../bilesenler/Ikon';
+import { sayiTuru } from '@tamisabet/oyun-sayi';
+import { genelSeviyeAgirligi } from '@tamisabet/cekirdek';
 import { ROZETLER } from '../rozetler';
+
+
+/**
+ * Genel sıralamanın seviye ağırlıkları.
+ *
+ * Değerler çekirdek paketteki `lig.ts` dosyasından geliyor; burada elle
+ * yazılsaydı yardım sayfası ile tablo ayrışabilirdi — oyuncuya söylenen
+ * hesapla tabloya yazılan hesabın farklı olması, puanı yanlış
+ * hesaplamaktan daha kötü. Sıralama (Isınma'dan Usta'ya) sayı turunun
+ * seviye listesinden okunuyor.
+ */
+const GENEL_AGIRLIKLAR = sayiTuru.seviyeler.map((s) => ({
+  ad: s.etiket,
+  carpan: String(genelSeviyeAgirligi(s.anahtar)).replace('.', ','),
+}));
 
 interface Props {
   acik: boolean;
@@ -241,6 +258,48 @@ export default function Yardim({ acik, kapat }: Props) {
               <JokerSatir simge="silgi" ad="Yanlışı sil" bedel={2} aciklama="Çözümde kullanılmayan bir taşı siler." />
               <JokerSatir simge="kronometre" ad="Süre ekle" bedel={2} aciklama="+15 saniye ek süre verir." />
             </div>
+          </div>
+        </Bolum>
+
+        {/* GENEL SIRALAMA */}
+        <Bolum baslik="Genel Sıralama" simge="kupa">
+          <div className="space-y-2 text-sm zt-metin">
+            <p>
+              Platformun ana tablosu. <b>İki oyunun toplamını</b> sayar: o günün Sayı Turu puanı
+              artı o günün Kelime Turu puanı. Tek alanda iyi olmak değil, iki alanda birden iyi
+              olmak kazandırır.
+            </p>
+            <p className="text-xs zt-metin-soluk">
+              Seviyeden bağımsızdır — Usta oynayanla Isınma oynayan aynı listededir. Bu yüzden
+              burada (ve yalnızca burada) seviye ağırlığı uygulanır:
+            </p>
+            <div className="overflow-hidden rounded-lg border zt-cizgi">
+              {GENEL_AGIRLIKLAR.map((a, i) => (
+                <div
+                  key={a.ad}
+                  className={`flex items-center justify-between px-3 py-1.5 text-sm ${
+                    i > 0 ? 'border-t zt-cizgi' : ''
+                  }`}
+                >
+                  <span className="zt-metin">{a.ad}</span>
+                  <span className="zt-rakam font-bold zt-vurgu-metin">×{a.carpan}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2">
+              <b className="zt-odul-yazi">Çifte tur bonusu:</b> aynı gün hem Sayı hem Kelime Günün
+              Turu'nu bitirirsen o günün toplamına <b>%25</b> eklenir. Tek oyun oynayan ceza
+              almaz; ikisini birden oynayan ödüllendirilir.
+            </p>
+            <p className="text-xs zt-metin-soluk">
+              Örnek: Zor seviyede 150 puanlık bir sayı turu (×1,4 = 210) ve Normal seviyede 150
+              puanlık bir kelime turu (×1 = 150) toplam 360 eder; çifte tur bonusuyla
+              <b className="zt-metin"> 450</b>.
+            </p>
+            <p className="text-xs zt-metin-soluk">
+              Haftalık ve aylık genel puan, günlük genel puanların toplamıdır. Antrenman genel
+              tabloya işlemez.
+            </p>
           </div>
         </Bolum>
 

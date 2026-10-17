@@ -3,6 +3,67 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-17 — Genel sıralama: iki oyunun toplamı
+
+Sıralamalar oyun ve seviye başına ayrıydı. İyi bir sayı oyuncusu ile
+iyi bir kelime oyuncusu hiçbir tabloda karşılaşmıyordu ve iki alanda
+birden iyi olmak hiçbir şey kazandırmıyordu. Genel tablo bunu ölçüyor.
+
+**Önce ölçek düzeldi.** Sayı turunun Günün Turu puanı ×10 ile
+büyütülüyordu, kelime turunun puanı ham yazılıyordu: sayıda tam isabet
+~150, kelimede en uzun kelime ~15 ediyordu. Toplasaydık kelime turu
+hiçbir şey katmazdı. İki oyun artık aynı çarpanı kullanıyor; kelime
+turunda en uzun kelimeyi bulmak da ~150 ediyor, kısa kelimeler oranla
+düşüyor. Çarpan oyun paketinde tek yerde; hem arayüz hem Edge Function
+aynı fonksiyonu çağırıyor.
+
+**Genel tablo seviyeden bağımsız ama seviye ağırlıklı.** Isınma ×0,6 ·
+Normal ×1 · Zor ×1,4 · Usta ×1,8. Ağırlıksız bıraksaydık Isınma'da
+oynamak en kârlı strateji olurdu. Seviye bazlı tablolar ağırlıksız
+kalmaya devam ediyor — orada zaten herkes aynı seviyede.
+
+**Çifte tur bonusu.** Aynı gün iki turu da bitirene o günün toplamına
+%25. Tek oyun oynayan ceza almıyor; ikisini birden oynayan
+ödüllendiriliyor. Bonus satırda ayrıca yazıyor.
+
+**Satır dağılımı gösteriyor.** Her satırda toplamın altında iki parçalı
+bir çubuk ve rakamla "Sayı 228 · Kelime 47". Dengeli oyuncu bir bakışta
+ayırt ediliyor — tablonun bütün amacı o.
+
+**Tek oyun oynayana çağrı.** Kendi satırında bir oyunun payı sıfırsa
+altında o oyuna götüren bir düğme çıkıyor ve kaç puan kazanacağını
+rakamla söylüyor. Her iki yön de geçerli.
+
+**Yeni tablolar `lig_genel_gunluk` ve `lig_genel_donem`** (göç 016).
+Mevcut lig tetikleyicisi dönem toplamını fark ekleyerek güncelliyor;
+bonus devreye girince bu yöntem kırılıyor, çünkü ikinci oyun
+oynandığında o günün bonusu da değişiyor. Genel satır bu yüzden her
+seferinde `lig_gunluk`'tan sıfırdan kuruluyor: kendi kendini
+düzeltiyor, yanlış bir ara durum kalıcı olamıyor. Geçmiş veri göç
+sırasında dolduruldu.
+
+**Sekme sırası değişti:** Genel · Günlük · Haftalık · Aylık · Düello ·
+Arena · Antrenman. Genel başa geldi; platformun ana sıralaması o.
+Kendi dönem seçicisi var (Bugün / Bu hafta / Bu ay), yoksa sekme
+çubuğu on bire çıkıyordu.
+
+**Profil sayfasında genel toplam ve dağılım var.** Sayfa uzun süre
+yalnızca sayı turunu anlatıyordu.
+
+**"Çift Yönlü" rozeti** (göç 017): yedi gün üst üste iki turu da
+tamamlayana. Genel sıralamanın hedeflediği davranışı doğrudan
+ödüllendiriyor. "O gün iki oyun da oynandı mı?" bilgisi zaten genel
+tabloda duruyor; ayrı bir sayaç tutulmadı.
+
+**Yardım sayfasına genel sıralama bölümü eklendi:** nasıl hesaplandığı,
+ağırlık tablosu, çifte tur bonusu ve sayısal bir örnek. Ağırlıklar elle
+yazılmıyor, hesabın geldiği yerden okunuyor.
+
+**Bilinen eksik:** ölçek düzeltmesi geriye dönük değil. Ölçek
+değişmeden önce yazılan kelime Günün Turu puanları ham ölçekte kayıtlı,
+bu yüzden ekim ayının genel tablosunda kelime payı olması gerekenden
+küçük görünüyor. Geçmiş lig sonuçlarını değiştirmek ayrı bir karar.
+
 ## 2026-10-14 — Tur bitince çıkan kelimeler listeleniyor
 
 **Kelime turunda tur bitince artık bir liste gösteriliyor.** Sayı

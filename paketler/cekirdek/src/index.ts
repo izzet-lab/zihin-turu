@@ -238,3 +238,6 @@ export * from './duello.ts';
 
 /* Arena: 5 kişilik eşzamanlı yarış (oyundan bağımsız). */
 export * from './arena.ts';
+
+/** Genel sıralama kuralları — iki oyunun toplamı, seviye ağırlıkları. */
+export * from './lig.ts';

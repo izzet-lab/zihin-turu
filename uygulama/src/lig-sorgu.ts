@@ -75,6 +75,11 @@ export interface LigSatiri {
   gumus?: number;
   bronz?: number;
   arenaSayisi?: number;
+  /* Genel sıralamaya özgü dağılım — satırdaki iki parçalı çubuk.
+     Toplam tek başına kimin dengeli olduğunu söylemiyor. */
+  sayiPuan?: number;
+  kelimePuan?: number;
+  bonus?: number;
 }
 
 export interface KendiDurumu {
@@ -146,6 +151,141 @@ export async function gunlukLig(
   }
 
   return { satirlar, kendi };
+}
+
+/* ---------------------------------------------------------------------------
+ * GENEL SIRALAMA — iki oyunun toplamı
+ *
+ * Seviyeden bağımsız: Usta oynayan ile Isınma oynayan aynı listede.
+ * Seviye ağırlığı ve çifte tur bonusu VERİTABANINDA uygulanıyor
+ * (göç 016); burası yalnızca hazır satırları okuyor. Hesabı istemciye
+ * taşımak kural 2'yi deler.
+ *
+ * Günlük ayrı tablodan, haftalık ve aylık dönem tablosundan geliyor;
+ * ikisinin sütun adları farklı olduğu için tek bir fonksiyon yerine
+ * ortak bir eşleyici kullanılıyor.
+ * ------------------------------------------------------------------------- */
+
+interface GenelHamSatir {
+  oyuncu_id: string;
+  sayi_puan: number;
+  kelime_puan: number;
+  bonus: number;
+  toplam_puan: number;
+  gun_sayisi?: number;
+  oyuncu: { kullanici_adi: string; xp: number } | null;
+}
+
+function genelSatirlar(ham: GenelHamSatir[], oyuncuId?: string): LigSatiri[] {
+  return ham.map((r, i) => ({
+    sira: i + 1,
+    kullaniciAdi: r.oyuncu?.kullanici_adi ?? '?',
+    puan: r.toplam_puan,
+    gunSayisi: r.gun_sayisi,
+    xp: r.oyuncu?.xp ?? 0,
+    benimMi: !!oyuncuId && r.oyuncu_id === oyuncuId,
+    sayiPuan: r.sayi_puan,
+    kelimePuan: r.kelime_puan,
+    bonus: r.bonus,
+  }));
+}
+
+/** Genel sıralama — günlük. */
+export async function genelGunlukLig(
+  tarih: string,
+  oyuncuId?: string,
+): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
+  const { data, error } = await supabase
+    .from('lig_genel_gunluk')
+    .select('oyuncu_id, sayi_puan, kelime_puan, bonus, toplam_puan, oyuncu:oyuncu_id(kullanici_adi, xp)')
+    .eq('tarih', tarih)
+    .order('toplam_puan', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return { satirlar: [] };
+  const satirlar = genelSatirlar(data as unknown as GenelHamSatir[], oyuncuId);
+
+  let kendi: KendiDurumu | undefined;
+  if (oyuncuId) {
+    const { data: kData } = await supabase
+      .from('lig_genel_gunluk')
+      .select('toplam_puan')
+      .eq('tarih', tarih)
+      .eq('oyuncu_id', oyuncuId)
+      .maybeSingle();
+    if (kData) {
+      const { count } = await supabase
+        .from('lig_genel_gunluk')
+        .select('*', { count: 'exact', head: true })
+        .eq('tarih', tarih)
+        .gt('toplam_puan', kData.toplam_puan);
+      kendi = { sira: (count ?? 0) + 1, puan: kData.toplam_puan };
+    }
+  }
+  return { satirlar, kendi };
+}
+
+/** Genel sıralama — haftalık veya aylık. */
+export async function genelDonemLig(
+  donemTipi: 'hafta' | 'ay',
+  donemAnahtar: string,
+  oyuncuId?: string,
+): Promise<{ satirlar: LigSatiri[]; kendi?: KendiDurumu }> {
+  const { data, error } = await supabase
+    .from('lig_genel_donem')
+    .select('oyuncu_id, sayi_puan, kelime_puan, bonus, toplam_puan, gun_sayisi, oyuncu:oyuncu_id(kullanici_adi, xp)')
+    .eq('donem_tipi', donemTipi)
+    .eq('donem_anahtar', donemAnahtar)
+    .order('toplam_puan', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return { satirlar: [] };
+  const satirlar = genelSatirlar(data as unknown as GenelHamSatir[], oyuncuId);
+
+  let kendi: KendiDurumu | undefined;
+  if (oyuncuId) {
+    const { data: kData } = await supabase
+      .from('lig_genel_donem')
+      .select('toplam_puan')
+      .eq('donem_tipi', donemTipi)
+      .eq('donem_anahtar', donemAnahtar)
+      .eq('oyuncu_id', oyuncuId)
+      .maybeSingle();
+    if (kData) {
+      const { count } = await supabase
+        .from('lig_genel_donem')
+        .select('*', { count: 'exact', head: true })
+        .eq('donem_tipi', donemTipi)
+        .eq('donem_anahtar', donemAnahtar)
+        .gt('toplam_puan', kData.toplam_puan);
+      kendi = { sira: (count ?? 0) + 1, puan: kData.toplam_puan };
+    }
+  }
+  return { satirlar, kendi };
+}
+
+/**
+ * Oyuncunun BUGÜNKÜ genel dağılımı — çifte tur çağrısı için.
+ *
+ * Tabloda kendi satırını bulmak yetmiyor: hiç oynamamış oyuncunun
+ * satırı yok ama ona da "iki oyunu da oyna" demek gerekiyor.
+ */
+export async function genelBugunDagilim(
+  oyuncuId: string,
+  tarih: string,
+): Promise<{ sayiPuan: number; kelimePuan: number; bonus: number; toplam: number }> {
+  const { data } = await supabase
+    .from('lig_genel_gunluk')
+    .select('sayi_puan, kelime_puan, bonus, toplam_puan')
+    .eq('tarih', tarih)
+    .eq('oyuncu_id', oyuncuId)
+    .maybeSingle();
+  return {
+    sayiPuan: data?.sayi_puan ?? 0,
+    kelimePuan: data?.kelime_puan ?? 0,
+    bonus: data?.bonus ?? 0,
+    toplam: data?.toplam_puan ?? 0,
+  };
 }
 
 /** Dönem lig sorgular (haftalık veya aylık). */
@@ -287,6 +427,14 @@ export interface ProfilIstatistik {
   tamIsabetSayisi: number;
   toplamTurSayisi: number;
   son28Gun: { tarih: string; var: boolean }[];
+  /**
+   * Genel sıralamadaki bu ayki toplam ve dağılım.
+   *
+   * Profil sayfası uzun süre yalnızca sayı turunu anlatıyordu; kelime
+   * turu oynayan biri kendi sayfasında görünmüyordu bile. Genel toplam
+   * iki oyunu birden gösteren tek sayı.
+   */
+  genelAylik: { sayiPuan: number; kelimePuan: number; bonus: number; toplam: number } | null;
 }
 
 /** Herkese açık profil verisi — kullanıcı adına göre. */
@@ -353,6 +501,15 @@ export async function profilIstatistikOku(kullaniciAdi: string): Promise<ProfilI
     son28Gun.push({ tarih, var: aktifSet.has(tarih) });
   }
 
+  // 5. Genel sıralamadaki bu ayki toplam.
+  const { data: genel } = await supabase
+    .from('lig_genel_donem')
+    .select('sayi_puan, kelime_puan, bonus, toplam_puan')
+    .eq('donem_tipi', 'ay')
+    .eq('donem_anahtar', aylikAnahtar())
+    .eq('oyuncu_id', oyuncu.id)
+    .maybeSingle();
+
   return {
     kullaniciAdi: oyuncu.kullanici_adi,
     olusturuldu: oyuncu.olusturuldu,
@@ -360,6 +517,14 @@ export async function profilIstatistikOku(kullaniciAdi: string): Promise<ProfilI
     tamIsabetSayisi: tamIsabetSayisi ?? 0,
     toplamTurSayisi: toplamTurSayisi ?? 0,
     son28Gun,
+    genelAylik: genel
+      ? {
+          sayiPuan: genel.sayi_puan,
+          kelimePuan: genel.kelime_puan,
+          bonus: genel.bonus,
+          toplam: genel.toplam_puan,
+        }
+      : null,
   };
 }
 

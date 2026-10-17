@@ -12,6 +12,7 @@ import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
 import { profilOku } from '../kimlik';
 import { supabase } from '../supabase';
 import { bannerGoster, bannerKaldir } from '../reklam';
+import GenelDagilim from '../bilesenler/GenelDagilim';
 
 export default function ProfilSayfasi() {
   const { kullaniciAdi } = useParams<{ kullaniciAdi: string }>();
@@ -114,6 +115,29 @@ export default function ProfilSayfasi() {
             <div className="text-xs zt-metin-soluk mt-1">Başarı oranı</div>
           </div>
         </div>
+
+        {/* GENEL TOPLAM — iki oyun birlikte.
+            Sayfa uzun süre yalnızca sayı turunu anlatıyordu; kelime
+            turu oynayan biri kendi profilinde görünmüyordu bile. */}
+        {profil.genelAylik && profil.genelAylik.toplam > 0 && (
+          <div className="mb-8 rounded-xl border zt-cizgi zt-yuzey p-4" data-alan="profil-genel">
+            <div className="mb-2 flex items-baseline justify-between">
+              <span className="text-sm font-bold zt-metin">Genel sıralama — bu ay</span>
+              <span className="zt-rakam text-2xl font-black zt-vurgu-metin">
+                {profil.genelAylik.toplam}
+              </span>
+            </div>
+            <GenelDagilim
+              sayiPuan={profil.genelAylik.sayiPuan}
+              kelimePuan={profil.genelAylik.kelimePuan}
+              bonus={profil.genelAylik.bonus}
+            />
+            <p className="mt-2 text-[11px] zt-metin-soluk">
+              İki oyunun toplamı, seviye ağırlıklı. Aynı gün iki turu da bitirmek %25 bonus
+              getiriyor.
+            </p>
+          </div>
+        )}
 
         {/* Seviye bazlı en iyi puanlar */}
         {profil.enIyiPuanlar.length > 0 && (

@@ -391,3 +391,44 @@ export function puanlaKelime(
   const ilk = taban > 0 && ilkBulanMi ? 2 : 0;
   return { taban, hiz, ilk, toplam: taban + hiz + ilk };
 }
+
+/* ------------------------------------------------------------------ *
+ * Günün Turu puan çarpanı
+ *
+ * NEDEN VAR (17 Ekim 2026)
+ * Sayı turunun Günün Turu puanı ×10 ile büyütülüyordu; kelime turunun
+ * puanı ham haliyle yazılıyordu. Sonuç: sayı turunda tam isabet ~150,
+ * kelime turunda en uzun kelime ~15. Aradaki on kat fark iki tabloyu
+ * kıyaslanamaz yapıyordu ve toplamları alınınca kelime turu hiçbir şey
+ * katmıyordu.
+ *
+ * İki oyunun MÜKEMMEL sonucu eşit değerde olmalı: artık ikisi de aynı
+ * çarpanı kullanıyor ve kelime turunda en uzun kelimeyi bulmak da ~150
+ * ediyor. Kısa kelimeler oranla düşüyor — oran mantığı değişmedi,
+ * yalnızca ölçek büyüdü.
+ *
+ * Sayı turundaki `GUNUN_TURU_CARPANI` ile aynı sayı olmak ZORUNDA;
+ * ayrışırlarsa genel sıralama yine tek oyunun tablosu olur.
+ * `testler/kelime-puan-olcegi.test.ts` ikisinin eşitliğini sınıyor.
+ * ------------------------------------------------------------------ */
+
+export const KELIME_GUNUN_TURU_CARPANI = 10;
+
+/**
+ * Turun nihai puanı — moda göre çarpan uygulanmış hali.
+ *
+ * Sayı turundaki `nihaiPuanHesap`'ın karşılığı. Çarpan YALNIZCA Günün
+ * Turu'na uygulanıyor: düello ve arena ham puanla çalışıyor (maç içi
+ * skorlar kendi arasında kıyaslanıyor, ligle değil) ve antrenman da
+ * olduğu gibi kalıyor.
+ *
+ * Hem arayüz hem Edge Function bunu çağırır (kural 1 ve 2): puanı
+ * sunucu veriyor ama ikisi aynı sayıyı bulmak zorunda, yoksa oyuncu
+ * ekranda başka bir puan görüp ligde başkasını bulur.
+ */
+export function kelimeNihaiPuan(
+  temel: Puan,
+  mod: 'gunun' | 'antrenman' | 'duello' | 'arena',
+): number {
+  return mod === 'gunun' ? temel.toplam * KELIME_GUNUN_TURU_CARPANI : temel.toplam;
+}

@@ -151,6 +151,10 @@ test('sıralamalarda oyun seçici var; boş kelime tablosu kelime turuna götür
   }
 
   await page.goto('/lig');
+  // Ekran artık GENEL sekmesiyle açılıyor (iki oyunun toplamı) ve orada
+  // oyun seçici yok — tablo zaten iki oyunu birlikte sayıyor. Oyun
+  // başına tabloya geçmek için önce Günlük sekmesi seçiliyor.
+  await page.locator('[data-sekme="gunluk"]').click();
   await expect(page.locator('[data-alan="oyun-secici"]')).toBeVisible();
   await page.locator('[data-oyun="kelime"]').click();
 

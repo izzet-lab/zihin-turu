@@ -10,12 +10,18 @@ import { ROZETLER, ROZET_GRUP_ADI, rozetBul } from '../uygulama/src/rozetler';
   veritabanı rozet veriyordu, hiçbir ekran göstermiyordu.
 */
 
-/** Göç 013'te verilen kodlar. Buradaki liste elle güncellenir. */
+/**
+ * Veritabanının verdiği kodlar. Buradaki liste elle güncellenir.
+ *
+ * Göç 013 ilk takımı veriyor; 'cift_yonlu' göç 017 ile eklendi
+ * (yedi gün üst üste iki turu da tamamlamak).
+ */
 const VERITABANI_KODLARI = [
   'seri_3',
   'seri_7',
   'seri_30',
   'seri_100',
+  'cift_yonlu',
   'tam_ilk',
   'tam_10',
   'tam_100',

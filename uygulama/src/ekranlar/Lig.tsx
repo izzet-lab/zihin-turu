@@ -11,12 +11,16 @@ import { useNavigate } from 'react-router-dom';
 import { sayiTuru } from '@tamisabet/oyun-sayi';
 import IstatistikKarti from '../bilesenler/IstatistikKarti';
 import RozetSeridi from '../bilesenler/RozetSeridi';
+import GenelDagilim from '../bilesenler/GenelDagilim';
 import {
   haftalikAnahtar,
   aylikAnahtar,
   donemKalanSn,
   kalanSureMetin,
   gunlukLig,
+  genelGunlukLig,
+  genelDonemLig,
+  genelBugunDagilim,
   donemLig,
   antrenmanLig,
   duelloLig,
@@ -24,13 +28,23 @@ import {
   type LigSatiri,
   type KendiDurumu,
 } from '../lig-sorgu';
+import { ikinciTurKazanci } from '@tamisabet/cekirdek';
 import { bugun } from '../depo';
 import { xpSeviyeHesapla } from '../kimlik';
 import { bannerGoster, bannerKaldir } from '../reklam';
 import UyelikDaveti from '../bilesenler/UyelikDaveti';
 import { davetGosterilsinMi, davetKapat, davetKapatildiMi } from '../uyelik-daveti';
 
-type Sekme = 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'arena' | 'antrenman';
+type Sekme = 'genel' | 'gunluk' | 'haftalik' | 'aylik' | 'duello' | 'arena' | 'antrenman';
+
+/**
+ * Genel sekmesinin kendi dönem seçicisi var.
+ *
+ * Günlük/Haftalık/Aylık zaten ayrı sekmeler ama onlar OYUN BAŞINA
+ * tablolar. Genel sekmesine de üç sekme daha eklemek sekme çubuğunu
+ * on bire çıkarırdı; dönem seçimi sekmenin içinde duruyor.
+ */
+type GenelDonem = 'gunluk' | 'haftalik' | 'aylik';
 
 interface Props {
   oyuncuId?: string; // null = misafir; kendi sırası gösterilmez
@@ -59,7 +73,10 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
     };
   }, []);
 
-  const [sekme, setSekme] = useState<Sekme>(baslangicSekme ?? 'gunluk');
+  const [sekme, setSekme] = useState<Sekme>(baslangicSekme ?? 'genel');
+  const [genelDonem, setGenelDonem] = useState<GenelDonem>('gunluk');
+  /** Oyuncunun bugünkü genel dağılımı — çifte tur çağrısı için. */
+  const [bugunDagilim, setBugunDagilim] = useState<{ sayiPuan: number; kelimePuan: number } | null>(null);
   const [seviye, setSeviye] = useState<string>('normal');
   const [satirlar, setSatirlar] = useState<LigSatiri[]>([]);
   /**
@@ -76,13 +93,16 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
       donemKalanSn(
         sekme === 'antrenman'
           ? 'haftalik'
-          : // Düello ve arenanın dönemi yok (derece ve madalya birikerek
-            // gider); sayaç gösterilmiyor, buradaki değer kullanılmıyor.
-            sekme === 'duello' || sekme === 'arena'
-            ? 'gunluk'
-            : sekme,
+          : // Genelin dönemi kendi seçicisinden geliyor.
+            sekme === 'genel'
+            ? genelDonem
+            : // Düello ve arenanın dönemi yok (derece ve madalya birikerek
+              // gider); sayaç gösterilmiyor, buradaki değer kullanılmıyor.
+              sekme === 'duello' || sekme === 'arena'
+              ? 'gunluk'
+              : sekme,
       ),
-    [sekme],
+    [sekme, genelDonem],
   );
   const kalanMetin = kalanSureMetin(kalanSn);
   /** Son 24 saat: aciliyet hissi bugün oynamayı tetikler. */
@@ -109,7 +129,18 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
       const tarih = bugun();
       let result;
 
-      if (sekme === 'gunluk') {
+      if (sekme === 'genel') {
+        // Hesap veritabanında: seviye ağırlığı ve çifte tur bonusu
+        // tabloya yazılmış halde geliyor (kural 2).
+        result =
+          genelDonem === 'gunluk'
+            ? await genelGunlukLig(tarih, oyuncuId)
+            : await genelDonemLig(
+                genelDonem === 'haftalik' ? 'hafta' : 'ay',
+                genelDonem === 'haftalik' ? haftalikAnahtar() : aylikAnahtar(),
+                oyuncuId,
+              );
+      } else if (sekme === 'gunluk') {
         result = await gunlukLig(oyun, seviye, tarih, oyuncuId);
       } else if (sekme === 'haftalik') {
         result = await donemLig('hafta', haftalikAnahtar(), oyun, seviye, oyuncuId);
@@ -136,7 +167,28 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
 
   useEffect(() => {
     sorguYap();
-  }, [sekme, seviye, oyun, oyuncuId]);
+  }, [sekme, seviye, oyun, oyuncuId, genelDonem]);
+
+  /*
+   * ÇİFTE TUR ÇAĞRISI İÇİN BUGÜNKÜ DAĞILIM
+   *
+   * Tablodaki kendi satırına bakmak yetmiyor: oyuncu ilk 100'e
+   * girmemiş olabilir, hiç oynamamış da olabilir. Çağrının her iki
+   * durumda da çıkması gerekiyor, bu yüzden dağılım ayrı okunuyor.
+   */
+  useEffect(() => {
+    if (!oyuncuId || sekme !== 'genel') {
+      setBugunDagilim(null);
+      return;
+    }
+    let iptal = false;
+    genelBugunDagilim(oyuncuId, bugun()).then((d) => {
+      if (!iptal) setBugunDagilim({ sayiPuan: d.sayiPuan, kelimePuan: d.kelimePuan });
+    });
+    return () => {
+      iptal = true;
+    };
+  }, [oyuncuId, sekme, genelDonem]);
 
   return (
     <main className="zt-ekran min-h-dvh zt-kagit zt-metin px-5 py-8">
@@ -158,6 +210,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
           {/* Açıklama seçili sekmeye göre değişir. Antrenman'ın
               "çalışkanlık tablosu" notu yalnızca o sekmede geçerli. */}
           <p className="text-xs zt-metin-soluk" data-alan="sekme-aciklama">
+            {sekme === 'genel' &&
+              'İki oyunun toplamı. Seviye ağırlıklı, çifte turda %25 bonus.'}
             {sekme === 'gunluk' && 'Bugünün turunda alınan en iyi puanlar.'}
             {sekme === 'haftalik' && 'Bu haftanın günlük en iyilerinin toplamı.'}
             {sekme === 'aylik' && 'Bu ayın günlük en iyilerinin toplamı.'}
@@ -176,11 +230,13 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
             Başlığın hemen altında tek satırlık bir künye var artık.
           */}
           <p className="zt-etiket zt-vurgu-metin mt-2 text-[11px]" data-alan="tablo-kunyesi">
-            {sekme === 'duello' || sekme === 'arena'
-              ? 'Sayı ve Kelime birlikte'
-              : `${oyun === 'kelime' ? 'Kelime Turu' : 'Sayı Turu'} · ${
-                  seviyeler.find((s) => s.anahtar === seviye)?.etiket ?? seviye
-                }`}
+            {sekme === 'genel'
+              ? 'Sayı + Kelime · tüm seviyeler'
+              : sekme === 'duello' || sekme === 'arena'
+                ? 'Sayı ve Kelime birlikte'
+                : `${oyun === 'kelime' ? 'Kelime Turu' : 'Sayı Turu'} · ${
+                    seviyeler.find((s) => s.anahtar === seviye)?.etiket ?? seviye
+                  }`}
           </p>
         </header>
 
@@ -195,10 +251,15 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         <div className="mb-6 grid grid-cols-3 gap-2" role="tablist" aria-label="Sıralama türü">
           {(
             [
+              // GENEL BAŞTA: platformun ana sıralaması bu.
+              { k: 'genel', ad: 'Genel', simge: 'kupa' },
               { k: 'gunluk', ad: 'Günlük' },
               { k: 'haftalik', ad: 'Haftalık' },
               { k: 'aylik', ad: 'Aylık' },
               { k: 'duello', ad: 'Düello', simge: 'duello' },
+              // Arena istenen sekme sırasında yazmıyordu; silmek yerine
+              // yerinde bırakıldı — çalışan bir tabloyu sessizce
+              // kaldırmak istenmiş olamaz.
               { k: 'arena', ad: 'Arena', simge: 'arena' },
               { k: 'antrenman', ad: 'Antrenman' },
             ] as const
@@ -236,6 +297,49 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
           Önceden burada hiçbir şey yazmıyordu ve oyuncu hangi oyunun
           tablosuna baktığını bilmiyordu.
         */}
+        {/* GENEL — kendi dönem seçicisi.
+            Sekme çubuğunda Günlük/Haftalık/Aylık zaten var ama onlar
+            oyun başına tablolar; genelin dönemi burada seçiliyor. */}
+        {sekme === 'genel' && (
+          <div className="mb-6" data-alan="genel-donem-secici">
+            <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
+              Dönem
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  { k: 'gunluk', ad: 'Bugün' },
+                  { k: 'haftalik', ad: 'Bu hafta' },
+                  { k: 'aylik', ad: 'Bu ay' },
+                ] as const
+              ).map((d) => (
+                <button
+                  key={d.k}
+                  data-genel-donem={d.k}
+                  onClick={() => setGenelDonem(d.k)}
+                  aria-pressed={genelDonem === d.k}
+                  className={`min-h-[44px] rounded-lg border px-2 text-sm font-bold transition ${
+                    genelDonem === d.k
+                      ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
+                      : 'zt-cizgi zt-yuzey zt-metin'
+                  }`}
+                >
+                  {d.ad}
+                </button>
+              ))}
+            </div>
+            <p
+              className="zt-yuzey zt-cizgi zt-metin-soluk mt-3 rounded-xl border px-4 py-3 text-xs"
+              data-alan="genel-tablo-notu"
+            >
+              Bu tablo <strong className="zt-metin">iki oyunun toplamını</strong> sayar. Seviye
+              ağırlıklı: Isınma ×0,6 · Normal ×1 · Zor ×1,4 · Usta ×1,8. Aynı gün iki turu da
+              bitirene toplamın <strong className="zt-metin">%25'i bonus</strong>. Antrenman bu
+              tabloya işlemez.
+            </p>
+          </div>
+        )}
+
         {(sekme === 'duello' || sekme === 'arena') && (
           <p
             className="zt-yuzey zt-cizgi zt-metin-soluk mb-6 rounded-xl border px-4 py-3 text-xs"
@@ -246,7 +350,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
           </p>
         )}
 
-        {sekme !== 'duello' && sekme !== 'arena' && (
+        {sekme !== 'duello' && sekme !== 'arena' && sekme !== 'genel' && (
           <div className="mb-6" data-alan="oyun-secici">
             <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">
               Oyun
@@ -278,7 +382,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         )}
 
         {/* Seviye seçimi — düelloda yok: derece seviyeden bağımsız. */}
-        {sekme !== 'duello' && sekme !== 'arena' && (
+        {sekme !== 'duello' && sekme !== 'arena' && sekme !== 'genel' && (
         <div className="mb-6" data-alan="seviye-secici">
           <div className="mb-2 text-xs font-bold uppercase tracking-widest zt-metin-soluk">Seviye</div>
           <div className="flex flex-wrap gap-2">
@@ -410,6 +514,28 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                       </span>
                     )}
                   </div>
+
+                  {/* DAĞILIM — toplam tek başına kimin dengeli olduğunu
+                      söylemiyor; bu tablonun bütün amacı o. */}
+                  {sekme === 'genel' && s.sayiPuan !== undefined && (
+                    <div className="mt-2">
+                      <GenelDagilim
+                        sayiPuan={s.sayiPuan}
+                        kelimePuan={s.kelimePuan ?? 0}
+                        bonus={s.bonus}
+                      />
+                    </div>
+                  )}
+
+                  {/* TEK OYUN OYNAYANA ÇAĞRI — yalnızca kendi satırında.
+                      Başkasının satırında çıkması anlamsız olurdu. */}
+                  {sekme === 'genel' && s.benimMi && genelDonem === 'gunluk' && (
+                    <TekOyunCagrisi
+                      sayiPuan={s.sayiPuan ?? 0}
+                      kelimePuan={s.kelimePuan ?? 0}
+                      gecis={gecis}
+                    />
+                  )}
                 </div>
 
                 <div className="shrink-0 text-right">
@@ -442,6 +568,24 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                   <div className="flex-1">
                     <div className="font-bold zt-vurgu-metin">Sen</div>
                     <div className="text-[11px] zt-metin-soluk">listenin dışındasın</div>
+                    {/* İlk 100'ün dışındaki oyuncu da dağılımını ve
+                        çağrıyı görmeli; satırı listede olmadığı için
+                        dağılım ayrı okunuyor. */}
+                    {sekme === 'genel' && bugunDagilim && genelDonem === 'gunluk' && (
+                      <>
+                        <div className="mt-2">
+                          <GenelDagilim
+                            sayiPuan={bugunDagilim.sayiPuan}
+                            kelimePuan={bugunDagilim.kelimePuan}
+                          />
+                        </div>
+                        <TekOyunCagrisi
+                          sayiPuan={bugunDagilim.sayiPuan}
+                          kelimePuan={bugunDagilim.kelimePuan}
+                          gecis={gecis}
+                        />
+                      </>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="font-bold zt-vurgu-metin">{kendi.puan}</div>
@@ -481,6 +625,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               {sekme === 'duello' && 'Henüz düello oynanmamış.'}
               {sekme === 'arena' && 'Henüz arena oynanmamış.'}
               {sekme === 'antrenman' && 'Bu hafta bu seviyede kimse antrenman yapmadı.'}
+              {sekme === 'genel' && 'Genel sıralama bu dönemde boş.'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Bu seviyede ilk sen ol.'}
             </p>
@@ -488,6 +633,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               {sekme === 'duello' && 'İlk maçı sen yap.'}
               {sekme === 'arena' && 'İlk podyum senin olsun.'}
               {sekme === 'antrenman' && 'İlk turu sen oyna, tablo seninle açılsın.'}
+              {sekme === 'genel' && 'İki turu da oyna; toplamın bonusla birlikte buraya yazılsın.'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 'Bugünün turunu oyna, adın buraya yazılsın.'}
             </p>
@@ -499,6 +645,8 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 // Boş tablodaki davet, SEÇİLİ OYUNA götürmeli. Kelime
                 // sekmesindeyken sayı turuna atması, oyuncuyu adını
                 // yazdıramayacağı yere göndermek olurdu.
+                // Genel tabloda oyun seçici yok; Günün Turu'na gider.
+                else if (sekme === 'genel') gecis('/?mod=gunun');
                 else if (oyun === 'kelime') gecis(`/kelime?seviye=${seviye}`);
                 else if (sekme === 'antrenman') gecis('/?mod=antrenman');
                 else gecis('/?mod=gunun');
@@ -508,6 +656,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
               {sekme === 'duello' && 'Düello başlat'}
               {sekme === 'arena' && 'Arena başlat'}
               {sekme === 'antrenman' && (oyun === 'kelime' ? 'Kelime antrenmanı yap' : 'Antrenman yap')}
+              {sekme === 'genel' && 'Günün Turunu oyna'}
               {(sekme === 'gunluk' || sekme === 'haftalik' || sekme === 'aylik') &&
                 (oyun === 'kelime' ? 'Kelime turunu oyna' : 'Günün Turunu oyna')}
             </button>
@@ -546,3 +695,47 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
 // ("Isınma", "Normal"…), oyuna özgü alt bilgi değil. Bu yüzden tek
 // liste yetiyor.
 const seviyeler = sayiTuru.seviyeler;
+
+/**
+ * TekOyunCagrisi — genel tabloda bir oyunu hiç oynamayana çağrı.
+ *
+ * NEDEN RAKAMLA
+ * "Kelime turunu da oyna" demek bir şey anlatmıyor. Kaç puan
+ * kazanacağını söylemek anlatıyor: eşit güçte ikinci bir tur toplamı
+ * 2,5 katına çıkarıyor (kendi puanı + aynısı + %25 bonus). Hesap
+ * `cekirdek/lig.ts` içinde, tablonun kendisiyle aynı kuraldan
+ * besleniyor.
+ *
+ * Her iki yön de geçerli: kelime oynayıp sayı oynamayana da çıkıyor.
+ */
+function TekOyunCagrisi({
+  sayiPuan,
+  kelimePuan,
+  gecis,
+}: {
+  sayiPuan: number;
+  kelimePuan: number;
+  gecis: (yol: string) => void;
+}) {
+  const eksik: 'sayi' | 'kelime' | null =
+    sayiPuan > 0 && kelimePuan === 0 ? 'kelime' : kelimePuan > 0 && sayiPuan === 0 ? 'sayi' : null;
+  if (!eksik) return null;
+
+  const mevcut = eksik === 'kelime' ? sayiPuan : kelimePuan;
+  const kazanc = ikinciTurKazanci(mevcut);
+
+  return (
+    <button
+      onClick={() => gecis(eksik === 'kelime' ? '/kelime?mod=gunun' : '/?mod=gunun')}
+      data-alan="tek-oyun-cagrisi"
+      data-eksik={eksik}
+      className="zt-odul-yuzey mt-2 flex min-h-[44px] w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[11px] zt-odul-yazi"
+    >
+      <Ikon ad={eksik === 'kelime' ? 'kelime' : 'sayi'} boyut={15} className="shrink-0" />
+      <span>
+        <strong>{eksik === 'kelime' ? 'Kelime' : 'Sayı'} turunu da oyna</strong> — bugünkü genel
+        puanın <strong>+{kazanc}</strong> artabilir.
+      </span>
+    </button>
+  );
+}

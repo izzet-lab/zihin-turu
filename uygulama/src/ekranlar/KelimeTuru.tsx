@@ -29,6 +29,7 @@ import SeviyeIzgara from '../bilesenler/SeviyeIzgara';
 import SeriVeXp from '../bilesenler/SeriVeXp';
 import {
   KELIME_SEVIYE_LISTESI,
+  kelimeNihaiPuan,
   kelimeTuruKur,
   tamSozlukKur,
   turkceBuyult,
@@ -197,18 +198,22 @@ export default function KelimeTuru({
     }
 
     const toplamSure = seviyeAyar.sure;
-    const p = saglayici.puanla(seviye, d, kalan, toplamSure, false);
+    const temelPuan = saglayici.puanla(seviye, d, kalan, toplamSure, false);
+    // Günün Turu puanı ×10 ölçeğinde (bkz. kelimeNihaiPuan). Sunucu da
+    // aynı fonksiyonu çağırıyor; ikisi ayrışırsa oyuncu ekranda başka
+    // bir puan görüp ligde başkasını bulur.
+    const puan = kelimeNihaiPuan(temelPuan, mod === 'gunun' ? 'gunun' : 'antrenman');
     const cozum = saglayici.cozumBul(tur);
 
     setSonuc({
       kelime,
       ozet: d.ozet ?? '',
       uzaklik: d.uzaklik ?? 0,
-      puan: p.toplam,
+      puan,
       enUzun: cozum.satirlar[0] ?? '',
       cikanlar: cozum.satirlar,
     });
-    setOturum((o) => ({ turSayisi: o.turSayisi + 1, puan: o.puan + p.toplam }));
+    setOturum((o) => ({ turSayisi: o.turSayisi + 1, puan: o.puan + puan }));
     // En uzun kelime bulunduysa tam isabet: çift titreşim.
     titret((d.uzaklik ?? 0) === 0 ? 'basari' : 'orta');
     setAsama('sonuc');

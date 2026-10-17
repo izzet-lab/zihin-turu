@@ -48,6 +48,7 @@ export const ROZETLER: readonly RozetTanim[] = [
   { kod: 'seri_3', ad: 'Üç Gün', simge: 'seri', nasil: '3 gün üst üste oyna', oyunGrubu: 'seri' , oyun: 'ikisi'},
   { kod: 'seri_7', ad: 'Haftalık', simge: 'seri', kademe: 'bronz', nasil: '7 gün üst üste oyna', oyunGrubu: 'seri' , oyun: 'ikisi'},
   { kod: 'seri_30', ad: 'Aylık', simge: 'seri', kademe: 'gumus', nasil: '30 gün üst üste oyna', oyunGrubu: 'seri' , oyun: 'ikisi'},
+  { kod: 'cift_yonlu', ad: 'Çift Yönlü', simge: 'kupa', kademe: 'gumus', nasil: '7 gün üst üste iki turu da tamamla', oyunGrubu: 'seri' , oyun: 'ikisi'},
   { kod: 'seri_100', ad: 'Yüz Gün', simge: 'seri', kademe: 'altin', nasil: '100 gün üst üste oyna', oyunGrubu: 'seri' , oyun: 'ikisi'},
 
   // --- Beceri ---

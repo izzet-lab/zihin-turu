@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { girisYap, testHesabiVarMi, TEST_EPOSTALAR } from './duello-kimlik';
+import { ROZETLER } from '../uygulama/src/rozetler';
 
 /*
   SIRALAMALAR EKRANI
@@ -16,9 +17,10 @@ import { girisYap, testHesabiVarMi, TEST_EPOSTALAR } from './duello-kimlik';
      kullanıcıyı yanıltıyordu.
 */
 
-const SEKMELER = ['gunluk', 'haftalik', 'aylik', 'duello', 'arena', 'antrenman'] as const;
+// GENEL BAŞTA: platformun ana sıralaması o (17 Ekim 2026).
+const SEKMELER = ['genel', 'gunluk', 'haftalik', 'aylik', 'duello', 'arena', 'antrenman'] as const;
 
-test('altı sekme var; düello ve arena antrenmandan önce geliyor', async ({ page }) => {
+test('yedi sekme var; genel başta, düello ve arena antrenmandan önce', async ({ page }) => {
   await page.goto('/lig');
 
   for (const s of SEKMELER) {
@@ -197,8 +199,10 @@ test('giriş yapmış oyuncu kendi sayılarını ve rozetlerini görür', async 
 
   const rozetler = page.locator('[data-alan="rozet-seridi"]');
   await expect(rozetler).toBeVisible({ timeout: 20_000 });
-  // Kilitliler de görünür: bir sonraki hedefi göstermek için.
-  await expect(page.locator('[data-rozet]')).toHaveCount(14);
+  // Kilitliler de görünür: bir sonraki hedefi göstermek için. Sayı
+  // katalogdan okunuyor; elle yazılınca yeni bir rozet eklendiğinde
+  // (17 Ekim 2026'da "Çift Yönlü") test sebepsiz kırılıyordu.
+  await expect(page.locator('[data-rozet]')).toHaveCount(ROZETLER.length);
   // Test hesabı düello oynadı; en az bir rozet kazanılmış olmalı.
   await expect(page.locator('[data-rozet][data-kazanildi="1"]').first()).toBeVisible();
 

@@ -29,6 +29,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import {
   kelimeTuruKur,
+  kelimeNihaiPuan,
   tamSozlukKur,
   kelimeGonderimDogrula,
 } from '@tamisabet/oyun-kelime';
@@ -104,7 +105,12 @@ Deno.serve(async (req: Request) => {
     if (!dogr.gecerli) return hata(dogr.hata ?? 'Kelime kabul edilmedi.', 400);
 
     // --- Puanı sunucu hesaplar ---
-    const p = kelimeTuru.puanla(seviye, dogr, kalan_sn, sure_sn, false);
+    //
+    // Çarpan oyun paketinde (kural 1). Günün Turu puanı ×10 ölçeğinde:
+    // sayı turuyla aynı ölçek, yoksa genel sıralamada kelime turu
+    // hiçbir şey katmaz (17 Ekim 2026).
+    const temel = kelimeTuru.puanla(seviye, dogr, kalan_sn, sure_sn, false);
+    const puan = kelimeNihaiPuan(temel, mod === 'antrenman' ? 'antrenman' : 'gunun');
 
     const { error: yazmaHata } = await supabase.from('tur_sonuc').insert({
       oyuncu_id: oyuncuId,
@@ -114,7 +120,7 @@ Deno.serve(async (req: Request) => {
       tarih,
       tohum,
       uzaklik: dogr.uzaklik ?? 0,
-      puan: p.toplam,
+      puan,
       sure_sn,
       kalan_sn,
       // Kelime turunda adım ve joker yok; sütunlar sayı turundan
@@ -133,7 +139,7 @@ Deno.serve(async (req: Request) => {
       return hata(`Kayıt sırasında hata oluştu. (${yazmaHata.code ?? '?'})`, 500);
     }
 
-    return ok({ puan: p.toplam, uzaklik: dogr.uzaklik ?? 0 });
+    return ok({ puan, uzaklik: dogr.uzaklik ?? 0 });
   } catch (e) {
     console.error('Beklenmedik hata:', e);
     return hata('Sunucu hatası.', 500);

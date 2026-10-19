@@ -27,6 +27,32 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="com.tamisabet.app" />
             </intent-filter>
+
+            <!--
+                ANDROID APP LINKS — tamisabet.tr bağlantıları uygulamayı açsın
+
+                Bu olmadan paylaşılan bir profil ya da sonuç bağlantısı
+                tarayıcıda kalıyordu; uygulama kurulu olsa bile.
+
+                `autoVerify` Android'e şunu söylüyor: kurulumda
+                https://tamisabet.tr/.well-known/assetlinks.json dosyasını
+                indir, içindeki parmak izi bu paketin imzasıyla eşleşiyorsa
+                bu bağlantıları bana ver. Dosya YÖNLENDİRMESİZ ve
+                application/json tipiyle servis edilmek zorunda — nginx
+                yapılandırmasında bu yüzden ayrı bir blok var.
+
+                DİKKAT: Google Play App Signing kullanılırsa uygulamayı
+                imzalayan anahtar bizimki değil Play'inki olur ve
+                assetlinks.json'a Play'in parmak izi de eklenmelidir.
+                İki parmak izi aynı anda durabilir.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="tamisabet.tr" />
+                <data android:scheme="https" android:host="www.tamisabet.tr" />
+            </intent-filter>
         </activity>
 
         <!-- AdMob uygulama kimliği (gerçek kimlik, AdMob konsolundan).

@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import Ikon from '../bilesenler/Ikon';
 import { kullaniciAdiAyarla, kullaniciAdiDogrula, misafirGecmisiniTasi } from '../kimlik';
+import { profilAdresi } from '../platform';
 
 interface Props {
   oyuncuId: string;
@@ -106,10 +107,15 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
           Lig puanların bugünden itibaren birikmeye başlar.
         </div>
 
-        {/* Profil linki */}
+        {/* Profil linki.
+            Alan adı sabit yazılmıyor: uygulama hangi adresten
+            açıldıysa o gösteriliyor. Site taşındığında güncellenecek
+            bir yer daha az olsun diye (19 Ekim 2026). */}
         <p className="mt-6 text-center text-xs zt-metin-soluk">
           Seçtiğin adla profil sayfan açılacak:{' '}
-          <span className="zt-vurgu-metin">tamisabet.tr/o/{ad.trim().toLowerCase() || 'kullanici-adi'}</span>
+          <span className="zt-vurgu-metin">
+            {profilAdresi(ad.trim().toLowerCase() || 'kullanici-adi')}
+          </span>
         </p>
       </div>
     </main>

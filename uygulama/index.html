@@ -23,6 +23,27 @@
 <meta property="og:locale" content="tr_TR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://tamisabet.tr/og-gorsel.png">
+<!--
+  CANONICAL BAĞLANTI — ÇALIŞMA ANINDA YAZILIYOR
+
+  Sabit bir canonical yazmak tek sayfalık siteler için işe yarar; burada
+  yaramaz: /lig, /o/kullanici, /yasal/kvkk hepsi ayrı adres ve hepsinin
+  canonical'ı kendisi olmalı. Sabit "/" yazsaydık arama motoruna "bütün
+  sayfalarım aslında ana sayfa" demiş olurduk.
+
+  Adres sabit yazılmıyor, bulunulan adresten okunuyor: site hangi alan
+  adından servis edilirse canonical de o oluyor. Böylece taşınma anında
+  güncellenecek bir yer daha kalmıyor.
+-->
+<link rel="canonical" href="/">
+<script>
+  try {
+    var kanonik = document.querySelector('link[rel="canonical"]');
+    if (kanonik) kanonik.href = location.origin + location.pathname;
+  } catch (e) {
+    /* Canonical yazılamazsa sayfa yine açılır; SEO kaybı ölümcül değil. */
+  }
+</script>
   <script>
     /*
      * TEMA İLK BOYAMADAN ÖNCE UYGULANIR.

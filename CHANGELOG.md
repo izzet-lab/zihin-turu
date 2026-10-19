@@ -3,6 +3,35 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-19 — Site Cloudflare Pages'ten Coolify'a taşındı
+
+Site artık kendi sunucumuzda, Coolify üzerinde çalışıyor. Supabase
+bulutta kaldı; ona dokunulmadı. Ayrıntılar `sunucu/DAGITIM.md`'de.
+
+**Alan adı kalıntıları temizlendi.** Canonical bağlantı eklendi ve
+sabit değil, bulunulan adresten okunuyor. Sabit bir "/" yazmak bütün
+alt sayfaları "aslında ana sayfa" diye işaretlerdi. Kullanıcı adı
+ekranındaki sabit alan adı da artık adresten geliyor. Yasal
+metinlerdeki "önceki adres zihin.artei.net idi" cümlelerine
+dokunulmadı: onlar tarihsel kayıt, KVKK metninin bilerek yazılmış
+parçası.
+
+**SPA yönlendirmesi ve önbellek kuralları nginx'e taşındı.** Pages'te
+bunları `_redirects` ve `_headers` yapıyordu; ikisi de Pages'e özgü
+dosyalar ve başka sunucuda hükümleri yok. Olmasalardı iki arıza
+çıkardı: alt adreslere doğrudan girince 404, ve servis çalışanı
+önbellekte kalıp oyuncuyu günlerce eski sürümde bırakma.
+
+**Android App Links kuruldu.** `/.well-known/assetlinks.json` eklendi
+ve Android manifestine `autoVerify` intent-filter kondu — dosya tek
+başına yetmiyordu, o kısım eksikti. Parmak izi imzalı APK'dan alındı.
+iOS dosyası bilerek yapılmadı: iOS projesi henüz yok ve yanlış
+içerikli bir dosya Apple'ın CDN'inde uzun süre önbelleğe alınıyor.
+
+**Yoldan çıkan bir hata:** manifestteki `background_color` hâlâ eski
+neon rengiydi; PWA açılış ekranı yanlış renkte çakıyordu. Kâğıt
+rengine çevrildi.
+
 ## 2026-10-19 — Geçmiş kelime puanları ×10 ölçeğine taşındı
 
 Ölçek düzeltmesi 17 Ekim'de canlıya alınmıştı ama yalnızca o günden

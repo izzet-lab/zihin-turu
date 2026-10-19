@@ -43,3 +43,20 @@ export function guvenliAlaniIsaretle(): void {
   if (typeof document === 'undefined') return;
   if (nativeMi()) document.documentElement.setAttribute('data-native', '1');
 }
+
+/**
+ * Oyuncuya gösterilecek profil adresi.
+ *
+ * NEDEN BURADA
+ * Paket içinde `window.location.origin` değeri `capacitor://localhost`
+ * oluyor; bunu oyuncuya göstermek anlamsız. Native ortamda sitenin
+ * kendi alan adı yazılıyor, webde ise bulunulan adres — yani site
+ * taşındığında burası kendiliğinden doğru kalıyor.
+ */
+export const SITE_ALAN_ADI = 'tamisabet.tr';
+
+export function profilAdresi(kullaniciAdi: string): string {
+  const taban =
+    nativeMi() || typeof window === 'undefined' ? SITE_ALAN_ADI : window.location.host;
+  return `${taban}/o/${kullaniciAdi}`;
+}

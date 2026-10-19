@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tamisabet.app",
+      "sha256_cert_fingerprints": [
+        "02:C3:1B:5A:6B:9B:92:AA:2C:A5:C3:D6:5C:70:31:9E:07:BF:71:0D:4A:D0:5A:F0:20:C1:52:49:00:08:E2:16"
+      ]
+    }
+  }
+]

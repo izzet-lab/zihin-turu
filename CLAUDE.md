@@ -143,7 +143,17 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 |---|---|---|
 | 1 | **Veritabanı** (tablolar, tetikleyiciler) | Supabase SQL editörü / migration |
 | 2 | **Edge Functions** (puan doğrulama) | aşağıdaki komut — **`--import-map` şart** |
-| 3 | **Web + Android** (arayüz) | `git push` → Cloudflare otomatik |
+| 3 | **Web + Android** (arayüz) | `git push` → Coolify otomatik |
+
+> **Site 19 Ekim 2026'da Cloudflare Pages'ten kendi sunucumuzdaki
+> Coolify'a taşındı.** Alan adı aynı (tamisabet.tr), Supabase bulutta
+> kaldı. Sunucu, Coolify kaynağı, SPA yönlendirmesi ve App Links
+> dosyaları `sunucu/DAGITIM.md`'de anlatılıyor.
+>
+> `uygulama/public/_redirects` ve `_headers` Cloudflare Pages'e
+> özgüdür; Coolify'da hükümleri yoktur. Karşılıkları
+> `uygulama/nginx.conf` içinde — SPA yedeği ve önbellek kuralları
+> oradan geliyor.
 
 **Edge Function dağıtım komutu:**
 
@@ -313,7 +323,7 @@ Firebase (Analytics/Crashlytics/Remote Config), AdMob banner, yaş 13 +
 UMP onay akışı, rozetler ve ödül töreni.
 
 **Yığın:** TypeScript · React + Vite · Tailwind · Supabase (Frankfurt) ·
-Cloudflare Pages · Capacitor · Vitest + Playwright
+Coolify (kendi sunucumuz) · Capacitor · Vitest + Playwright
 
 ---
 

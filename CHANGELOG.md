@@ -3,6 +3,24 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-19 — Geçmiş kelime puanları ×10 ölçeğine taşındı
+
+Ölçek düzeltmesi 17 Ekim'de canlıya alınmıştı ama yalnızca o günden
+sonraki turlar için geçerliydi. Daha önce yazılmış kelime Günün Turu
+satırları ham ölçekte kalmıştı: aynı tabloda 15 puanlık bir kelime
+turu ile 150 puanlık bir kelime turu yan yana duruyordu ve genel
+sıralamada ekim ayının kelime payı on kat küçük görünüyordu.
+
+Altı tur kaydı ve altı günlük lig satırı ×10 ile ölçeklendi; dönem
+toplamları günlük en iyilerden sıfırdan kuruldu, genel tablolar da
+yeniden hesaplandı. Antrenman puanlarına dokunulmadı — ölçek yalnızca
+Günün Turu'na uygulanıyor, dolayısıyla XP ve seri ödülleri etkilenmedi.
+
+**Göç iki kez çalıştırılamaz.** Çarpma işlemi kendiliğinden
+tekrarlanabilir değil: ikinci çalışma puanları yüz katına çıkarırdı.
+Göç, uygulanıp uygulanmadığını kendi işaret tablosundan denetliyor ve
+uygulanmışsa hiçbir şey yapmıyor.
+
 ## 2026-10-17 — Genel sıralama: iki oyunun toplamı
 
 Sıralamalar oyun ve seviye başına ayrıydı. İyi bir sayı oyuncusu ile

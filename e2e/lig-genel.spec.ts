@@ -117,7 +117,22 @@ test('genel tablo boşken davet Günün Turuna götürüyor', async ({ page }) =
   const dugme = page.locator('[data-alan="bos-durum-eylem"]');
   await expect(dugme).toContainText('Günün Turunu oyna', { timeout: 15_000 });
   await dugme.click();
-  await expect(page).toHaveURL(/mod=gunun/);
+
+  /*
+   * ADRESE DEĞİL SONUCA BAKILIYOR
+   *
+   * Uygulama `?mod=gunun` parametresini okuduktan sonra adres
+   * satırından SİLİYOR; adrese bakan bir iddia o temizlikle yarışıyor
+   * ve tek başına koşarken geçip takımla koşarken kırılıyordu.
+   * Asıl soru zaten "doğru ekrana gitti mi?".
+   */
+  await expect(page).not.toHaveURL(/\/lig/);
+  // Mod önceden seçili gelince mod düğmeleri yerine O MODUN kendi
+  // kurulum ekranı açılıyor; başlık ona göre denetleniyor.
+  await expect(page.getByRole('heading', { name: 'Günün Turu' })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.locator('[data-alan="basla"]')).toBeVisible();
 });
 
 test('dönem seçimi haftalık ve aylık tabloya geçiyor', async ({ page }) => {

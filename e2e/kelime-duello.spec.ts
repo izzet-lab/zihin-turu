@@ -79,7 +79,16 @@ test('sayı düellosu hâlâ sayı tahtasını açar', async ({ browser }) => {
 */
 test('kelime düellosunda rövanş yine kelime turu açar', async ({ browser }) => {
   test.skip(!testHesabiVarMi(), '.env.test yok — test hesapları tanımlı değil');
-  test.setTimeout(420_000);
+  /*
+   * YAVAŞ AMA GEREKLİ
+   *
+   * Maç bota karşı sonuna kadar oynanıyor ve her turda botun taban
+   * gecikmesi (tur süresinin yarısı) gerçek zamanda bekleniyor. Beş tur
+   * en az iki buçuk dakika; makine yüklüyse daha da uzuyor. Süre payı
+   * dar tutulunca test ara sıra kırılıyordu (19 Ekim 2026) — oyunda
+   * bir sorun olduğu için değil, sadece yetişemediği için.
+   */
+  test.setTimeout(600_000);
 
   const baglam = await browser.newContext();
   await girisYap(baglam, TEST_EPOSTALAR[0]);

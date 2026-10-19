@@ -94,11 +94,26 @@ test('günün turu: tam isabet, sonuç ekranı, paylaşım kartı sızıntısız
   // "=" işareti ve işlem işaretleri (× ÷ −) hiç geçmemeli.
   expect(metin).not.toContain('=');
   expect(metin).not.toMatch(/[×÷−]/);
-  // Ara sonuçlar (hedef DIŞINDAKİ adım sonuçları) metinde geçmemeli.
-  const araSonuclar = zincir.map((a) => a.sonuc).filter((s) => s !== hedef);
+  /*
+   * Ara sonuçlar (hedef DIŞINDAKİ adım sonuçları) metinde geçmemeli.
+   *
+   * KARTTA MEŞRU OLARAK DURAN SAYILAR AYRI TUTULUYOR
+   * Kart hedefi ve PUANI yazıyor ("150 puan"). Bir ara sonuç tesadüfen
+   * bu sayılardan birine eşit olduğunda test sızıntı sanıp kırılıyordu
+   * — 19 Ekim 2026'da tam bu oldu: o günün bulmacasında bir ara sonuç
+   * 150 çıktı ve tam isabetin Günün Turu puanı da 150.
+   *
+   * Hedef ve puan zaten yukarıda ayrıca denetleniyor; burada yalnızca
+   * "kartta hiç bulunmaması gereken" sayılar aranıyor.
+   */
+  const puanEslesme = metin.match(/(\d+)\s*puan/);
+  const mesruSayilar = new Set<number>([hedef]);
+  if (puanEslesme) mesruSayilar.add(Number(puanEslesme[1]));
+
+  const araSonuclar = zincir.map((a) => a.sonuc).filter((s) => !mesruSayilar.has(s));
   for (const s of araSonuclar) {
     // Kısa/yaygın sayılar (ör. tek haneli) yanlış pozitif verebileceği için
-    // yalnızca üç haneli ve üstü, hedeften farklı ara sonuçları denetliyoruz.
+    // yalnızca üç haneli ve üstü ara sonuçları denetliyoruz.
     if (String(s).length >= 3) {
       expect(metin, `ara sonuç ${s} kartta görünmemeli`).not.toContain(String(s));
     }

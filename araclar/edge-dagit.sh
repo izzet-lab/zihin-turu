@@ -35,7 +35,17 @@ echo "Hedef: $HEDEF"
 echo
 
 cd "$DEPO"
-git pull --ff-only -q || true
+# Depoyu çekmek BAŞARISIZ OLURSA DURUYORUZ.
+#
+# Burada eskiden `|| true` vardı: çekme düşse bile betik devam ediyordu.
+# 20 Ekim 2026'da sunucudaki kopya, depoya gönderilmemiş yerel bir commit
+# yüzünden ayrışmıştı; `--ff-only` düşüyor, hata yutuluyor ve fonksiyonlar
+# sessizce ESKİ koddan dağıtılıyordu. Dağıtımın en kötü hali budur:
+# "bitti" der, oysa hiçbir şey değişmemiştir.
+#
+# Ayrışma varsa sunucudaki kopya atılır (depo tek doğru kaynak):
+#   git -C "$DEPO" fetch origin && git -C "$DEPO" reset --hard origin/main
+git pull --ff-only
 echo "Sürüm: $(git log --oneline -1)"
 echo
 

@@ -1,7 +1,12 @@
 # Dağıtım — Coolify (tamisabet.tr)
 
 Site 19 Ekim 2026'da Cloudflare Pages'ten kendi sunucumuzdaki
-Coolify'a taşındı. Supabase bulutta kaldı; ona dokunulmadı.
+Coolify'a taşındı. Ertesi gün (20 Ekim 2026) Supabase de buluttan
+aynı sunucuya geçti; arka uç artık `api.tamisabet.tr`. Taşımanın kaydı
+`SUPABASE-TASIMA.md`'de.
+
+Site dağıtımı `git push` ile kendiliğinden oluyor: GitHub deposundaki
+webhook Coolify'daki **tamisabet-web** uygulamasını tetikliyor.
 
 ## Sunucu
 

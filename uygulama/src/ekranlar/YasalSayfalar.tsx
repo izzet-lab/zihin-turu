@@ -80,7 +80,7 @@ export function KVKKSayfasi({ onGeri }: { onGeri?: () => void }) {
               </tr>
             </thead>
             <tbody className="zt-ayrim">
-              <tr><td className="px-3 py-2">E-posta adresi</td><td className="px-3 py-2">Hesap oluşturma ve giriş (sihirli bağlantı / Google OAuth)</td><td className="px-3 py-2">Evet</td></tr>
+              <tr><td className="px-3 py-2">E-posta adresi</td><td className="px-3 py-2">Hesap oluşturma ve giriş (e-posta + parola / Google OAuth)</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Doğum yılı</td><td className="px-3 py-2">Yaş doğrulaması (asgari yaş kontrolü ve reklam kişiselleştirme kararı)</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Kullanıcı adı</td><td className="px-3 py-2">Sıralama tablosunda ve profilde gösterim</td><td className="px-3 py-2">Evet</td></tr>
               <tr><td className="px-3 py-2">Oyun sonuçları</td><td className="px-3 py-2">Puan, süre, seviye, adım sayısı — ilerleme takibi ve lig sıralaması</td><td className="px-3 py-2">Otomatik</td></tr>
@@ -261,7 +261,7 @@ export function GizlilikSayfasi({ onGeri }: { onGeri?: () => void }) {
             <li><strong>Veritabanı:</strong> Supabase (PostgreSQL) — AWS eu-central-1, Frankfurt, Almanya</li>
             <li><strong>Uygulama:</strong> Cloudflare Pages üzerinde barındırılmaktadır</li>
             <li><strong>Şifreleme:</strong> Tüm bağlantılar HTTPS/TLS ile korunur</li>
-            <li><strong>Kimlik doğrulama:</strong> Supabase Auth — şifre saklanmaz, sihirli bağlantı (OTP) veya Google OAuth kullanılır</li>
+            <li><strong>Kimlik doğrulama:</strong> Supabase Auth (kendi sunucumuzda) — e-posta + parola ya da Google OAuth. Parola açık metin olarak saklanmaz, yalnızca geri döndürülemez özeti tutulur</li>
           </ul>
 
           <h2 className={h2}>3. Üçüncü Taraf Hizmetleri</h2>

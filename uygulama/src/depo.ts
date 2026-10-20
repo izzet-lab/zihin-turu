@@ -560,8 +560,8 @@ export function resinDegilMi(): boolean {
 /*
  * NEDEN KALICI SAKLANIYOR
  * Bu tur önceden yalnızca React state'inde duruyordu. Ama girişin iki
- * gerçek yolu da sayfayı baştan yüklüyor: e-postadaki sihirli bağlantı
- * ve Google ile giriş. Sayfa yeniden yüklenince state siliniyordu ve
+ * gerçek yolu da sayfayı baştan yükleyebiliyor: parolayla giriş ve
+ * Google ile giriş. Sayfa yeniden yüklenince state siliniyordu ve
  * "Giriş yap ve kaydet" sözü sessizce boşa çıkıyordu — oyuncu giriş
  * yapıyor, turu yine lige işlemiyordu.
  *

@@ -152,8 +152,8 @@ export default function Uygulama() {
    * Misafirken oynanan Günün Turu, giriş yapılınca sunucuya gönderilir.
    *
    * Bu veri React state'inde DEĞİL, kalıcı depoda tutulur. Girişin iki
-   * gerçek yolu da (e-postadaki sihirli bağlantı, Google ile giriş)
-   * sayfayı baştan yüklüyor; state o anda siliniyordu ve "Giriş yap ve
+   * gerçek yolu da (parolayla giriş, Google ile giriş) sayfayı baştan
+   * yükleyebiliyor; state o anda siliniyordu ve "Giriş yap ve
    * kaydet" sözü sessizce boşa çıkıyordu.
    */
 

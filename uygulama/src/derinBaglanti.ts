@@ -1,7 +1,7 @@
 /**
  * derinBaglanti.ts — Android'de giriş bağlantısını yakalama
  *
- * E-postadaki sihirli bağlantıya (veya Google girişine) tıklandığında
+ * Google girişi tamamlandığında
  * Android, uygulamayı `com.tamisabet.app://giris#access_token=…`
  * biçiminde bir adresle açar. Tarayıcıdaki gibi otomatik oturum
  * kurulmaz — token'ı adresten çıkarıp Supabase'e elle vermemiz gerekir.

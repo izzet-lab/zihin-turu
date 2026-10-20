@@ -2,10 +2,20 @@
 
 Deponun kökünde durur, her oturumda okunur.
 
-> **Sürüm notu:** Son güncelleme 9 Ekim 2026, uygulama sürümü 2.7.0
-> (versionCode 30). O tarihte Faz 0–6 tamamlanmış, kelime turu düelloya
-> ve arenaya girmiş, "oyun hissi" tasarım çalışmasının yedi maddesi de
-> bitmişti.
+> **Sürüm notu:** Son güncelleme 20 Ekim 2026, uygulama sürümü 2.12.0
+> (versionCode 38). Faz 0–6 bitti; kelime turu düelloda ve arenada;
+> "oyun hissi" çalışmasının yedi maddesi tamam.
+>
+> **19–20 Ekim 2026: altyapı tamamen kendi sunucumuza taşındı.** Site
+> Cloudflare Pages'ten Coolify'a, veritabanı/kimlik/Realtime/Edge
+> Functions bulut Supabase'den kendi sunucumuza geçti. Bulut Supabase
+> hesabıyla iş kalmadı. 2.12.0, yeni adrese bağlanan ilk pakettir;
+> 2.11.0 ve öncesi hâlâ buluta yazar.
+>
+> **Veritabanı 20 Ekim 2026'da bilerek sıfırlandı.** Bütün oyun verisi
+> ve gerçek hesaplar silindi (hepsi denemeydi). Yalnızca iki düello test
+> hesabı, `ayar` tablosu ve göç kayıtları bırakıldı. Lig tablolarının
+> boş olması hata değil.
 >
 > Ağustos 2026'da "reklam yok" kuralı değişti; projede artık AdMob var
 > (kural 5). Bu dosya ile projenin gerçek durumu arasında çelişki
@@ -28,9 +38,10 @@ Platform oyunu bilmez. Oyunlar `TurSaglayici` arayüzüyle takılır.
 > Marka 8 Ekim 2026'da **Zihin Turu**'ndan **Tam İsabet**'e değişti;
 > alan adı zihin.artei.net yerine tamisabet.tr oldu. Depo adı eski
 > kaldı (GitHub adresini değiştirmek açık PR'ları ve yerel kopyaları
-> kırar). Üç şey bilerek eski adıyla duruyor: imza anahtarının takma
-> adı (anahtarın içinde yazılı, değiştirilemez), Supabase proje
-> referansı ve Instagram hesabı.
+> kırar). İki şey bilerek eski adıyla duruyor: imza anahtarının takma
+> adı (anahtarın içinde yazılı, değiştirilemez) ve Instagram hesabı.
+> Üçüncüsü olan bulut Supabase proje referansı artık geçersiz — o proje
+> kapandı.
 
 ## Kiminle konuşuyorsun
 
@@ -141,14 +152,21 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 
 | # | Katman | Nasıl güncellenir |
 |---|---|---|
-| 1 | **Veritabanı** (tablolar, tetikleyiciler) | Supabase SQL editörü / migration |
-| 2 | **Edge Functions** (puan doğrulama) | aşağıdaki komut — **`--import-map` şart** |
+| 1 | **Veritabanı** (tablolar, tetikleyiciler) | kendi sunucumuzdaki Postgres — Studio ya da göç dosyası |
+| 2 | **Edge Functions** (puan doğrulama) | sunucuda `araclar/edge-dagit.sh` |
 | 3 | **Web + Android** (arayüz) | `git push` → Coolify otomatik |
 
-> **Site 19 Ekim 2026'da Cloudflare Pages'ten kendi sunucumuzdaki
-> Coolify'a taşındı.** Alan adı aynı (tamisabet.tr), Supabase bulutta
-> kaldı. Sunucu, Coolify kaynağı, SPA yönlendirmesi ve App Links
-> dosyaları `sunucu/DAGITIM.md`'de anlatılıyor.
+> **Üç katman da 19–20 Ekim 2026'da kendi sunucumuza taşındı.** Site
+> Cloudflare Pages'ten Coolify'a, Supabase yığını buluttan aynı
+> sunucuya. Alan adları: site `tamisabet.tr`, arka uç
+> `api.tamisabet.tr`. Sunucu, Coolify kaynağı, SPA yönlendirmesi ve
+> App Links dosyaları `sunucu/DAGITIM.md`'de; taşımanın kaydı
+> `sunucu/SUPABASE-TASIMA.md`'de.
+>
+> **Yedek artık bizim işimiz.** Bulut Supabase kendisi yedekliyordu;
+> artık sunucuda her gece 03:30'da `araclar/veritabani-yedek.sh`
+> çalışıyor (14 gün saklama, `public` + `auth`). Sunucu tamamen
+> giderse o yedekler de gider — dışarıya kopyalamak elle yapılıyor.
 >
 > `uygulama/public/_redirects` ve `_headers` Cloudflare Pages'e
 > özgüdür; Coolify'da hükümleri yoktur. Karşılıkları
@@ -172,8 +190,10 @@ hapsediliyor (dizin dışındaki dosyayı okuyamıyor). Bu yüzden paylaşılan
 oyun paketleri her fonksiyonun içine kopyalanıyor ve `@tamisabet/*`
 adları göreceli yollara çevriliyor. Ayrıntı betiğin başındaki notta.
 
-`supabase/functions/` altındaki tek satırlık köprü dosyaları **bulut
-Supabase CLI'si içindi; artık kullanılmıyor.**
+Bulut CLI'si için var olan `supabase/functions/` köprü klasörü ve
+`supabase` komut satırı aracı **depodan kaldırıldı** (20 Ekim 2026).
+Eski bir belgede `npx supabase functions deploy` görürsen o yol artık
+yok.
 
 Yeni arayüz kodu olmayan sütunları arayacağı için **önce veritabanı,
 sonra fonksiyon, en son push.**
@@ -326,8 +346,9 @@ Faz 6 (kelime turu — düello ve arena dahil), Capacitor Android paketi,
 Firebase (Analytics/Crashlytics/Remote Config), AdMob banner, yaş 13 +
 UMP onay akışı, rozetler ve ödül töreni.
 
-**Yığın:** TypeScript · React + Vite · Tailwind · Supabase (Frankfurt) ·
-Coolify (kendi sunucumuz) · Capacitor · Vitest + Playwright
+**Yığın:** TypeScript · React + Vite · Tailwind · kendi sunucumuzda
+Supabase yığını (Postgres, Auth, Realtime, Edge Functions) · Coolify ·
+Capacitor · Vitest + Playwright
 
 ---
 
@@ -376,17 +397,32 @@ Ayrıntılar `CHANGELOG.md`'de.
 
 ### Sıradakiler
 
-1. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
+0. **E-posta ile kayıt şu an kırık — giden posta ayarı yok.** Kendi
+   sunucumuzda e-posta onayı zorunlu (`ENABLE_EMAIL_AUTOCONFIRM=false`)
+   ama SMTP tanımlı değil; onay postası hiç gönderilmiyor. Kayıt olan
+   hesap "onaylanmamış" kalıyor, giriş tamamlanamıyor, kullanıcı adı
+   seçilemiyor, dolayısıyla oynanan tur **hiçbir yere yazılmıyor** (20
+   Ekim 2026'da tam bu yaşandı; hata mesajı çıkmadığı için fark etmek
+   zor). İki çıkış yolu var: SMTP tanımlamak, ya da Google girişini
+   açıp birincil yol yapmak. Geçici hesap kurtarma: veritabanında
+   `auth.users.email_confirmed_at` elle doldurulur.
+1. **Google girişi kendi sunucumuzda henüz kapalı.** Uygulamada düğme
+   var ve akış saf web OAuth (Android'e özel yapılandırma gerekmiyor),
+   ama Coolify'daki Supabase tanımına `GOTRUE_EXTERNAL_GOOGLE_*`
+   satırları eklenmedi. Google Console'da izinli yönlendirme adresi
+   `https://api.tamisabet.tr/auth/v1/callback` olmalı. Değişiklikten
+   sonra **Redeploy** şart; Restart yeni değişkeni okumuyor.
+2. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
    kurulu (yerel bildirim); sunucudan gönderim yok.
-2. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
+3. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15
    test kullanıcısı, 14 günlük kapalı test. Proje sahibinin işi.
-3. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
-4. ~~**Crashlytics eşleme dosyası** yüklenmiyor~~ — çözüldü
+4. **Yasal metinler avukat onayı** — reklam kimliği ifadeleri değişti.
+5. ~~**Crashlytics eşleme dosyası** yüklenmiyor~~ — çözüldü
    (9 Ekim 2026). Sebebi Avast'ın TLS tarama kökünü yenilemesiydi;
    Java'nın güven deposu eski kökü tutuyordu. `bash
    araclar/java-guven-deposu.sh` depoyu Windows'taki güncel kökten
    yeniden kuruyor. Avast kökü yine değişirse aynı betik çalıştırılır.
-5. ~~**Edge Function tip denetimi tam değil**~~ — çözüldü
+6. ~~**Edge Function tip denetimi tam değil**~~ — çözüldü
    (9 Ekim 2026). `npm run sunucu-denetle` artık TAM denetim yapıyor;
    her hata kırmızı. Yalnızca veritabanı şeması denetim dışında
    (şemanın TypeScript karşılığı üretilmiyor, sütun adları

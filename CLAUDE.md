@@ -437,12 +437,24 @@ Ayrıntılar `CHANGELOG.md`'de.
    `--force-recreate` ile yeniden yaratılmalı. Aynı tuzağa Realtime'da
    da düşüldü. Değişkeni değiştirdikten sonra **kapsayıcının içindeki
    değeri doğrula**, Coolify'ın "başarılı" demesine güvenme.
-1. **Google girişi kendi sunucumuzda henüz kapalı.** Uygulamada düğme
-   var ve akış saf web OAuth (Android'e özel yapılandırma gerekmiyor),
-   ama Coolify'daki Supabase tanımına `GOTRUE_EXTERNAL_GOOGLE_*`
-   satırları eklenmedi. Google Console'da izinli yönlendirme adresi
-   `https://api.tamisabet.tr/auth/v1/callback` olmalı. Değişiklikten
-   sonra **Redeploy** şart; Restart yeni değişkeni okumuyor.
+1. **Google girişi — sunucu tarafı hazır, kimlik bilgileri bekleniyor.**
+   Coolify'daki Supabase tanımına `GOTRUE_EXTERNAL_GOOGLE_*` satırları
+   eklendi (20 Ekim 2026). Yönlendirme adresi elle yazılmıyor,
+   `API_EXTERNAL_URL`'den türüyor. Sağlayıcı **bilerek kapalı**
+   (`ENABLE_GOOGLE_SIGNUP=false`): kimlik bilgileri boşken açık
+   bırakmak kimlik servisini başlatmada düşürebilir, o da e-posta
+   girişi dahil herkesin girişini keser.
+
+   Kalan iş: Google Cloud Console'da **Web application** tipi OAuth
+   istemcisi açmak, izinli yönlendirme adresine
+   `https://api.tamisabet.tr/auth/v1/callback` yazmak, çıkan iki değeri
+   Coolify'da `GOOGLE_CLIENT_ID` ve `GOOGLE_SECRET` değişkenlerine
+   girmek, sonra `ENABLE_GOOGLE_SIGNUP=true` yapmak.
+
+   **Dikkat:** onay ekranı "Testing" kipindeyse yalnızca test
+   kullanıcısı listesindekiler giriş yapabilir; herkese açmak için
+   yayımlanması gerekir. Ve değişiklikten sonra kapsayıcı yeniden
+   yaratılmalı — Redeploy tek başına yetmiyor (bkz. madde 0).
 2. **FCM bildirimleri.** Günlük hatırlatma şu an yalnızca cihazda
    kurulu (yerel bildirim); sunucudan gönderim yok.
 3. **Play Store.** Hesap, mağaza listesi, Data safety formu, 12–15

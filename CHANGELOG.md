@@ -9,9 +9,13 @@ Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 kipte açılıyor. *Sistem 1* eski ekran: e-posta + parola + Google.
 *Sistem 2* (varsayılan): oyuncu yalnızca ismini yazıp başlıyor;
 kullanıcı adı isimden üretiliyor ("Nazım" → "nazim", alınmışsa
-"nazim2"). Hesap Supabase'in anonim oturumuyla açılıyor; puanlar
+"nazim2"). Hesabı `isimle-giris` Edge Function'ı açıyor; puanlar
 sunucuda doğrulanıp lige işliyor, yani misafirden farklı olarak gerçek
-bir hesap. Sistem 2'de "Hesabın var mı?" bağlantısı e-posta ekranını
+bir hesap. Supabase'in anonim oturumu bilerek kullanılmadı: o giriş
+servisinin ortam değişkenine bağlı, panelden açılıp kapanamıyor.
+Fonksiyon paneldeki seçime bakıyor ve sistem 1'de isimle hesap açmayı
+sunucuda da reddediyor; aynı adresten saatte en çok on hesap açılıyor
+(göç 020). Sistem 2'de "Hesabın var mı?" bağlantısı e-posta ekranını
 açıyor, var olan hesaplar kilitli kalmıyor.
 
 **Yaş kapısı sistem 2'de de duruyor** (kural 6). Hesap açılıyor ve lig

@@ -309,11 +309,14 @@ Seri ödülleri: her gün +10, 3 gün +25, 7 gün +75, 30 gün +300,
 **Giriş sistemi ve yönetim paneli** (göç 019, 20 Ekim 2026). Giriş
 ekranının kipi `ayar.giris_sistemi`nden okunuyor ve `/yonetim`
 panelinden değiştiriliyor. *Sistem 1* e-posta + parola + Google;
-*sistem 2* (varsayılan) yalnızca isim: hesap anonim oturumla açılıyor,
-kullanıcı adı isimden üretiliyor (`isim-karar.ts`: "Nazım" → "nazim",
-alınmışsa "nazim2"). Sistem 2 giriş servisinde **anonim hesapların
-açık olmasını** ister (`ENABLE_ANONYMOUS_USERS=true`); kapalıysa ekran
-"isimle giriş şu an kapalı" der. İsimle açılmış hesap cihaza bağlı;
+*sistem 2* (varsayılan) yalnızca isim: hesabı `isimle-giris` Edge
+Function'ı açıyor (göç 020), kullanıcı adı isimden üretiliyor
+(`isim-karar.ts`: "Nazım" → "nazim", alınmışsa "nazim2"). **Anahtar
+yalnızca panel** — Supabase'in anonim oturumu bilerek kullanılmıyor,
+çünkü o giriş servisinin ortam değişkenine bağlı; fonksiyon sistem 1
+seçiliyse isimle hesap açmayı reddediyor. İsimle açılmış hesabın
+işareti iç adres alanı (`@isim.tamisabet.tr`, oraya posta gitmez).
+İsimle açılmış hesap cihaza bağlı;
 oyuncu profilindeki "Profilini doğrula"dan e-posta + parola ekleyince
 kalıcı oluyor. **Yaş kapısı sistem 2'de de var** (kural 6) — kural
 `yas-karar.ts`'te, iki ekran onu kullanıyor. Panel yetkisi sunucuda:

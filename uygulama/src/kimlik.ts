@@ -70,7 +70,7 @@ export async function kullaniciAdiAyarla(oyuncuId: string, ad: string): Promise<
 // ---------------------------------------------------------------------------
 // Giriş sistemi — yönetim panelinden seçilir (göç 019)
 //   sistem1: e-posta + parola + Google
-//   sistem2: yalnızca isim (anonim oturum), sonradan profilden doğrulanır
+//   sistem2: yalnızca isim (`isimle-giris` fonksiyonu), sonradan profilden doğrulanır
 // ---------------------------------------------------------------------------
 
 export type GirisSistemi = 'sistem1' | 'sistem2';
@@ -93,13 +93,23 @@ export async function girisSistemiOku(): Promise<GirisSistemi> {
 }
 
 /**
- * İsimle başla (sistem 2). Anonim bir oturum açar ve ismi oturumun
- * üst verisine yazar; profil satırını `isimleProfilAc` açar.
+ * İsimle açılmış hesabın iç adres alanı. Oraya posta gitmez; yalnızca
+ * "bu hesap henüz doğrulanmadı" işareti. Sunucudaki `isimle-giris`
+ * fonksiyonu ve göç 020 ile aynı.
+ */
+export const ISIM_ALANI = 'isim.tamisabet.tr';
+
+/**
+ * İsimle başla (sistem 2). Hesabı `isimle-giris` fonksiyonu açar ve
+ * oturumu döner; profil satırını `isimleProfilAc` açar.
  *
- * Neden iki adım: oturum açılır açılmaz uygulamanın oturum dinleyicisi
- * çalışıp profil arıyor. İsim üst veride durursa dinleyici profili
- * kendisi açabiliyor; oyuncu araya giren "kullanıcı adın ne olsun?"
- * ekranını hiç görmüyor.
+ * Neden Supabase'in anonim oturumu değil: o, giriş servisinin ortam
+ * değişkeniyle açılıp kapanıyor. Fonksiyon ise yönetim panelindeki
+ * seçime bakıyor; sistem 1 seçiliyse sunucu da reddediyor.
+ *
+ * İsim hesabın üst verisine yazılıyor: oturum açılır açılmaz uygulamanın
+ * oturum dinleyicisi profili oradan açıyor, oyuncu araya giren
+ * "kullanıcı adın ne olsun?" ekranını hiç görmüyor.
  */
 export async function isimleBasla(isim: string): Promise<string | null> {
   const temiz = gorunenAdTemizle(isim);
@@ -107,15 +117,21 @@ export async function isimleBasla(isim: string): Promise<string | null> {
   if (hata) return hata;
   if (isimUygunsuzMu(temiz, KUFUR_LISTESI)) return 'Bu isim kullanılamaz.';
 
-  const { error } = await supabase.auth.signInAnonymously({ options: { data: { isim: temiz } } });
+  const { data, error } = await supabase.functions.invoke('isimle-giris', { body: { isim: temiz } });
   if (error) {
-    if (/anonymous sign-ins are disabled/i.test(error.message)) {
-      return 'İsimle giriş şu an kapalı. E-postayla giriş yapabilirsin.';
-    }
-    if (/rate limit/i.test(error.message)) return 'Çok fazla deneme oldu, biraz sonra tekrar dene.';
-    return 'Başlatılamadı, bağlantını kontrol edip tekrar dene.';
+    // Sunucunun kendi Türkçe mesajı varsa onu göster (kapalı, sınır aşıldı…).
+    const yanit = (error as { context?: Response }).context;
+    const govde = yanit ? await yanit.json().catch(() => null) as { hata?: string } | null : null;
+    return govde?.hata ?? 'Başlatılamadı, bağlantını kontrol edip tekrar dene.';
   }
-  return null;
+
+  const oturum = data as { access_token?: string; refresh_token?: string } | null;
+  if (!oturum?.access_token || !oturum.refresh_token) return 'Başlatılamadı, tekrar dene.';
+  const { error: oturumHatasi } = await supabase.auth.setSession({
+    access_token: oturum.access_token,
+    refresh_token: oturum.refresh_token,
+  });
+  return oturumHatasi ? 'Oturum açılamadı, tekrar dene.' : null;
 }
 
 /**
@@ -156,9 +172,9 @@ export function cikisOnayi(kullanici: User | null): boolean {
   );
 }
 
-/** Oturumdaki hesap isimle mi açıldı (henüz e-posta bağlanmamış)? */
+/** Oturumdaki hesap isimle mi açıldı (henüz gerçek e-posta bağlanmamış)? */
 export function isimleAcilmisMi(kullanici: User | null): boolean {
-  return Boolean(kullanici?.is_anonymous);
+  return Boolean(kullanici?.email?.endsWith('@' + ISIM_ALANI));
 }
 
 /**
@@ -166,32 +182,27 @@ export function isimleAcilmisMi(kullanici: User | null): boolean {
  * Hesap, puanlar ve kullanıcı adı aynen kalır; yalnızca artık başka bir
  * cihazdan da e-posta + parolayla girilebilir.
  *
- * Önce e-posta, sonra parola: Supabase anonim hesaba parolayı ancak
- * e-postası olduktan sonra veriyor. Sunucuda e-posta onayı kendiliğinden
- * yapılıyor (posta servisi yok), yani ikinci adım hemen geçer.
+ * İş sunucudaki `hesap-dogrula` fonksiyonunda. İstemciden
+ * `updateUser({ email })` denendi: giriş servisi e-posta değişikliğini
+ * onay postasına bağlıyor, posta servisimiz olmadığı için değişiklik
+ * "onay bekliyor"da kalıyordu.
  */
 export async function hesabiDogrula(eposta: string, parola: string): Promise<string | null> {
   const temiz = eposta.trim().toLowerCase();
-  if (!temiz.includes('@')) return 'Geçerli bir e-posta adresi gir.';
+  if (!temiz.includes('@') || temiz.endsWith('@' + ISIM_ALANI)) return 'Geçerli bir e-posta adresi gir.';
   if (parola.length < 8) return 'Parola en az 8 karakter olmalı.';
 
-  const e = await supabase.auth.updateUser({ email: temiz });
-  if (e.error) {
-    if (/already.*(registered|exists)|email_exists/i.test(e.error.message + (e.error.code ?? ''))) {
-      return 'Bu e-posta başka bir hesapta kayıtlı.';
-    }
-    return 'E-posta kaydedilemedi: ' + e.error.message;
+  const { error } = await supabase.functions.invoke('hesap-dogrula', { body: { eposta: temiz, parola } });
+  if (error) {
+    const yanit = (error as { context?: Response }).context;
+    const govde = yanit ? await yanit.json().catch(() => null) as { hata?: string } | null : null;
+    return govde?.hata ?? 'Kaydedilemedi, bağlantını kontrol edip tekrar dene.';
   }
 
-  const p = await supabase.auth.updateUser({ password: parola });
-  if (p.error) {
-    if (/password should be at least/i.test(p.error.message)) return 'Parola en az 8 karakter olmalı.';
-    return 'Parola kaydedilemedi: ' + p.error.message;
-  }
-
-  // Oturumdaki kullanıcı bilgisini tazele: `is_anonymous` artık false.
-  await supabase.auth.refreshSession();
-  return null;
+  // Parola değişince sunucu eski oturumu kapatıyor; yeni bilgilerle
+  // hemen yeniden giriliyor, oyuncu çıkış yapmış gibi görünmüyor.
+  const { error: girisHatasi } = await supabase.auth.signInWithPassword({ email: temiz, password: parola });
+  return girisHatasi ? 'Hesabın kalıcı oldu; yeni e-posta ve parolanla giriş yap.' : null;
 }
 
 /**

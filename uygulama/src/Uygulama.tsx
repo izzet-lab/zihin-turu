@@ -12,7 +12,7 @@ import KullaniciAdi from './ekranlar/KullaniciAdi';
 import { sesKilidiKur } from './ses';
 import { bannerGoster, bannerGizle, bannerKaldir } from './reklam';
 import { supabase } from './supabase';
-import { cikisOnayi, isimleProfilAc, profilOku, turGonder, type OyuncuProfil } from './kimlik';
+import { cikisOnayi, isimleAcilmisMi, isimleProfilAc, profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import { kutlamayiDenetle } from './kutlama';
 import {
   bugun,
@@ -266,7 +266,7 @@ export default function Uygulama() {
         profilOku(u.id).then(async (bulunan) => {
           // İsimle giriş (sistem 2): isim oturumun üst verisinde; profil
           // burada açılır, oyuncuya ayrıca kullanıcı adı sorulmaz.
-          const isim = u.is_anonymous ? (u.user_metadata?.isim as string | undefined) : undefined;
+          const isim = isimleAcilmisMi(u) ? (u.user_metadata?.isim as string | undefined) : undefined;
           const p = bulunan ?? (isim ? await isimleProfilAc(u.id, isim) : null);
           setProfil(p);
           if (!p) {

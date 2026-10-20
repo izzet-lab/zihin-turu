@@ -1,8 +1,8 @@
 /**
  * İsimle giriş (sistem 2) — oyuncu ismini yazar ve başlar.
  *
- * E-posta, parola, posta onayı yok. Hesap Supabase'in anonim oturumuyla
- * açılır; kullanıcı adı isimden üretilir ("Nazım" → "nazim", bkz.
+ * E-posta, parola, posta onayı yok. Hesabı sunucudaki `isimle-giris`
+ * fonksiyonu açar; kullanıcı adı isimden üretilir ("Nazım" → "nazim", bkz.
  * isim-karar.ts). Puanlar sunucuda doğrulanıp lige işler — misafirden
  * farkı bu.
  *

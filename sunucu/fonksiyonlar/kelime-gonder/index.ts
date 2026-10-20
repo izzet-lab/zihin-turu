@@ -19,10 +19,8 @@
  * İstemci ile sunucu farklı sözlük kullanırsa, istemcide kabul edilen
  * kelime sunucuda reddedilir. Tek kaynak: `veri/kelimeler.ts`.
  *
- * Deploy:
- *   npx supabase functions deploy kelime-gonder \
- *     --project-ref ruoyofzujzmhwvumquzu \
- *     --import-map sunucu/fonksiyonlar/import_map.json
+ * Deploy (sunucuda):
+ *   bash /root/projeler/tamisabet/araclar/edge-dagit.sh
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';

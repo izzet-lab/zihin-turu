@@ -1,8 +1,16 @@
 # Supabase'i kendi sunucumuza taşıma
 
-**Durum: yarım.** Yığın kuruldu ama henüz çalıştırılmadı. Bulut
-projesi (`ruoyofzujzmhwvumquzu`) hâlâ canlıda ve dokunulmadı — geri
-dönüş yolu açık.
+**Durum: bitti (20 Ekim 2026).** Veritabanı, kimlik, Realtime ve on
+Edge Function kendi sunucumuzda çalışıyor; site oraya bağlı. Bulut
+Supabase hesabıyla iş kalmadı, proje kapatılıyor.
+
+Android paketi yeni adresle yeniden derlenmeli: APK derlenirken sunucu
+adresi içine gömülüyor, eski paket buluta yazmaya devam eder.
+Buluttaki hesaplar denemeydi, taşınan veri de birebir doğrulandı
+(145 tur, 5 oyuncu, 1833 XP, 18 rozet).
+
+Bu belge nasıl taşındığının kaydı olarak duruyor. Günlük işler için
+`DAGITIM.md` ve `araclar/edge-dagit.sh` geçerli.
 
 ## Neden taşınıyor
 

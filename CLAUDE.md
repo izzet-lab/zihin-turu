@@ -155,21 +155,25 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 > `uygulama/nginx.conf` içinde — SPA yedeği ve önbellek kuralları
 > oradan geliyor.
 
-**Edge Function dağıtım komutu:**
+**Edge Function dağıtım komutu** (sunucuda çalışır):
 
 ```bash
-npx supabase functions deploy tur-gonder --project-ref ruoyofzujzmhwvumquzu --import-map sunucu/fonksiyonlar/import_map.json
+bash /root/projeler/tamisabet/araclar/edge-dagit.sh
 ```
 
-Her fonksiyonun `supabase/functions/<ad>/index.ts` altında tek satırlık
-bir köprü dosyası olmak zorunda; CLI yalnızca oraya bakıyor, gerçek kod
-`sunucu/fonksiyonlar/` içinde. Köprü yoksa dağıtım "Entrypoint path
-does not exist" der.
+Betik önce depoyu çeker, sonra her fonksiyonu kendi dizininde eksiksiz
+hale getirip edge çalışma zamanını yeniden başlatır. **Sunucuda elle
+dosya düzenlenmez** — depo tek doğru kaynak, betik yalnızca depodan
+türetir.
 
-`--import-map` olmadan dağıtım **başarısız olur**: fonksiyon oyun
-paketini `@tamisabet/oyun-sayi` diye çağırıyor, harita verilmezse Deno
-bunu çözemez ve paketleme 400 döner. Harita ayrıca paket kaynaklarının
-da yüklenmesini sağlar — onsuz yalnızca fonksiyon dosyası gider.
+Kendi sunucumuzdaki edge çalışma zamanında iki fark var, betik ikisini de
+çözüyor: import haritası uygulanmıyor, ve her fonksiyon kendi dizinine
+hapsediliyor (dizin dışındaki dosyayı okuyamıyor). Bu yüzden paylaşılan
+oyun paketleri her fonksiyonun içine kopyalanıyor ve `@tamisabet/*`
+adları göreceli yollara çevriliyor. Ayrıntı betiğin başındaki notta.
+
+`supabase/functions/` altındaki tek satırlık köprü dosyaları **bulut
+Supabase CLI'si içindi; artık kullanılmıyor.**
 
 Yeni arayüz kodu olmayan sütunları arayacağı için **önce veritabanı,
 sonra fonksiyon, en son push.**

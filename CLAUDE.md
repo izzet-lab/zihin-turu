@@ -462,4 +462,12 @@ Ayrıntılar `CHANGELOG.md`'de.
 - Aynı kartı iki ekranda ayrı ayrı yazmak — seri/XP kartı tam bunu yaşadı
 - `deno check`'i depo kökünde çalıştırmak — `node_modules/.deno` açıp npm ağacını bozuyor
 - e2e koşarken başka bir önizleme sunucusu açık bırakmak — Playwright artık port doluysa hata veriyor, eskiden eski koda karşı sessizce yeşil veriyordu
+- Doğum yılını giriş ekranına da koymak — hesap açılırken bir kez
+  doğrulanıyor, her girişte sormak gereksiz sürtünme (20 Ekim 2026'da
+  kaldırıldı, bilinçli)
+- Doğum yılı alanını tamamen kaldırmak — kural 6 çöker: 13 yaş sınırı
+  uygulanamaz, veli onayı sorulamaz, ve yaş bilinmeyince oyuncu
+  yetişkin sayılıp 18 altına kişiselleştirilmiş reklam gider; bu Play
+  Store Data safety beyanıyla çelişir. Kaldırmak istenirse önce
+  `resinDegilMi()` varsayılanı "bilinmiyorsa 18 altı" yapılmalı
 - Kod parçası göstererek açıklama yapmak — proje sahibi kod okumuyor

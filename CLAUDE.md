@@ -154,7 +154,7 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 |---|---|---|
 | 1 | **Veritabanı** (tablolar, tetikleyiciler) | kendi sunucumuzdaki Postgres — Studio ya da göç dosyası |
 | 2 | **Edge Functions** (puan doğrulama) | sunucuda `araclar/edge-dagit.sh` |
-| 3 | **Web + Android** (arayüz) | `git push` → Coolify otomatik |
+| 3 | **Web** (site) | `git push`, sonra Coolify'da **elle Deploy** |
 
 > **Üç katman da 19–20 Ekim 2026'da kendi sunucumuza taşındı.** Site
 > Cloudflare Pages'ten Coolify'a, Supabase yığını buluttan aynı
@@ -172,6 +172,30 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 > özgüdür; Coolify'da hükümleri yoktur. Karşılıkları
 > `uygulama/nginx.conf` içinde — SPA yedeği ve önbellek kuralları
 > oradan geliyor.
+
+**Siteyi yayına alma — `git push` TEK BAŞINA YETMEZ.**
+
+Coolify'da webhook tanımlı değil, yani GitHub'a gönderilen kod
+kendiliğinden yayına çıkmıyor. 20 Ekim 2026'da sekiz commit depoda
+duruyordu ama site hâlâ eski kodu çalıştırıyordu; telefon uygulaması
+siteden ileride kalmıştı. İki adım gerekiyor:
+
+1. `git push origin main`
+2. Coolify → **tamisabet-web** → **Deploy** (ya da yönetim API'sinden
+   aynı uygulamaya dağıtım isteği)
+
+Dağıtımın bittiğini "başarılı" yazısından değil, **sitenin servis
+ettiği paket dosyasının adı değişti mi** diye bakarak anla. Ad aynıysa
+eski kod duruyordur.
+
+Site derlenirken `VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY`
+paketin içine gömülüyor; ikisi de Coolify'da **tamisabet-web**
+uygulamasının ortam değişkenlerinde. Boş olurlarsa site beyaz ekran
+verir (19 Ekim 2026'da yaşandı).
+
+**Android ayrı bir iş.** Site dağıtımı telefonu güncellemez; APK
+`uygulama/android/paket-uret.sh --apk` ile ayrıca derlenip kurulur.
+Adres ve anahtar APK'nın da içine gömülür.
 
 **Edge Function dağıtım komutu** (sunucuda çalışır):
 

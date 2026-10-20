@@ -40,16 +40,10 @@ CREATE INDEX IF NOT EXISTS arena_mac_bekleyen
 
 ALTER TABLE arena_mac ENABLE ROW LEVEL SECURITY;
 
--- Maçı yalnızca koltuğu olanlar görür. Herkese açık olsaydı tohumdan
--- tur üretilip çözüm önceden hazırlanabilirdi.
-DROP POLICY IF EXISTS arena_mac_katilanlar ON arena_mac;
-CREATE POLICY arena_mac_katilanlar ON arena_mac
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM arena_koltuk k
-      WHERE k.mac_id = arena_mac.id AND k.oyuncu_id = auth.uid()
-    )
-  );
+-- NOT: `arena_mac` okuma ilkesi burada DEĞİL, `arena_koltuk` tablosu
+-- yaratıldıktan sonra tanımlanıyor. İlke o tabloya bakıyor; burada
+-- tanımlanırsa göç sıfırdan oynatıldığında "arena_koltuk yok" diye
+-- düşüyor. (20 Ekim 2026'da fark edildi.)
 
 REVOKE INSERT, UPDATE, DELETE ON arena_mac FROM anon, authenticated;
 
@@ -96,6 +90,20 @@ CREATE POLICY arena_koltuk_katilanlar ON arena_koltuk
   );
 
 REVOKE INSERT, UPDATE, DELETE ON arena_koltuk FROM anon, authenticated;
+
+-- Maçı yalnızca koltuğu olanlar görür. Herkese açık olsaydı tohumdan
+-- tur üretilip çözüm önceden hazırlanabilirdi.
+--
+-- Bu ilke `arena_mac` tablosuna ait ama buraya yazılıyor: `arena_koltuk`
+-- tablosuna baktığı için ancak o tablo var olduktan sonra tanımlanabilir.
+DROP POLICY IF EXISTS arena_mac_katilanlar ON arena_mac;
+CREATE POLICY arena_mac_katilanlar ON arena_mac
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM arena_koltuk k
+      WHERE k.mac_id = arena_mac.id AND k.oyuncu_id = auth.uid()
+    )
+  );
 
 -- ---------------------------------------------------------------------------
 -- 3. Turlar

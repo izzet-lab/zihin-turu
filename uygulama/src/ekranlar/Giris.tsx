@@ -26,7 +26,7 @@
  */
 
 import { useState } from 'react';
-import Ikon from '../bilesenler/Ikon';
+import YasEngeli from '../bilesenler/YasEngeli';
 import Logo from '../bilesenler/Logo';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
@@ -37,6 +37,11 @@ import { dogumYiliYaz, veliOnayiYaz } from '../depo';
 interface Props {
   /** Kullanıcı "Şimdi değil" seçtiğinde çağrılır. */
   onAtla: () => void;
+  /**
+   * Sistem 2'de bu ekran yalnızca "hesabın var mı?" bağlantısıyla açılır;
+   * verilirse isimle girişe dönüş bağlantısı gösterilir.
+   */
+  onIsimleGiris?: () => void;
 }
 
 /** Ekranın iki kipi: var olan hesaba giriş, ya da yeni hesap. */
@@ -69,7 +74,7 @@ function hataMetni(mesaj: string): string {
   return mesaj;
 }
 
-export default function Giris({ onAtla }: Props) {
+export default function Giris({ onAtla, onIsimleGiris }: Props) {
   const [kip, setKip] = useState<Kip>('giris');
   const [eposta, setEposta] = useState('');
   const [parola, setParola] = useState('');
@@ -223,30 +228,10 @@ export default function Giris({ onAtla }: Props) {
   // 13 yaş altı engeli
   if (yasEngeli) {
     return (
-      <main className="min-h-dvh zt-kagit zt-metin flex items-center justify-center px-5">
-        <div className="w-full max-w-sm text-center">
-          <Ikon ad="pasta" boyut={52} className="mb-4 zt-metin-soluk" />
-          <h1 className="text-xl font-black zt-metin mb-3">Yaşın henüz yetmiyor</h1>
-          <p className="zt-metin-soluk text-sm mb-2">
-            Üye olmak için en az 13 yaşında olman gerekiyor.
-          </p>
-          <p className="zt-metin-soluk text-sm mb-8">
-            Ama oyunu misafir olarak oynamaya devam edebilirsin — bütün turlar açık.
-          </p>
-          <button
-            onClick={onAtla}
-            className="min-h-[52px] w-full rounded-xl zt-dugme text-base font-black zt-metin"
-          >
-            Misafir olarak oyna
-          </button>
-          <button
-            onClick={() => { setYasEngeli(false); setDogumYili(''); }}
-            className="mt-4 w-full text-center text-sm zt-metin-soluk"
-          >
-            Doğum yılını düzelt
-          </button>
-        </div>
-      </main>
+      <YasEngeli
+        onMisafir={onAtla}
+        onDuzelt={() => { setYasEngeli(false); setDogumYili(''); }}
+      />
     );
   }
 
@@ -407,6 +392,15 @@ export default function Giris({ onAtla }: Props) {
           </svg>
           Google ile {yeniHesap ? 'hesap aç' : 'giriş yap'}
         </button>
+
+        {onIsimleGiris && (
+          <button
+            onClick={onIsimleGiris}
+            className="mt-6 min-h-[44px] w-full text-center text-sm font-bold zt-vurgu-metin"
+          >
+            Hesabın yok mu? İsminle başla
+          </button>
+        )}
 
         {/* Atla */}
         <button

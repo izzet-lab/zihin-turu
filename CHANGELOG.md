@@ -3,6 +3,34 @@
 Bu dosya, oyun dengesini veya veri yapısını etkileyen değişiklikleri kaydeder.
 Küçük hata düzeltmeleri ve görsel rötuşlar buraya yazılmaz.
 
+## 2026-10-20 — Yönetim paneli ve isimle giriş (göç 019)
+
+**İki giriş sistemi.** Giriş ekranı artık yönetim panelinden seçilen
+kipte açılıyor. *Sistem 1* eski ekran: e-posta + parola + Google.
+*Sistem 2* (varsayılan): oyuncu yalnızca ismini yazıp başlıyor;
+kullanıcı adı isimden üretiliyor ("Nazım" → "nazim", alınmışsa
+"nazim2"). Hesap Supabase'in anonim oturumuyla açılıyor; puanlar
+sunucuda doğrulanıp lige işliyor, yani misafirden farklı olarak gerçek
+bir hesap. Sistem 2'de "Hesabın var mı?" bağlantısı e-posta ekranını
+açıyor, var olan hesaplar kilitli kalmıyor.
+
+**Yaş kapısı sistem 2'de de duruyor** (kural 6). Hesap açılıyor ve lig
+tablosunda görünüyor; 13 altı yasağı ve 13–17 veli onayı e-postadan
+bağımsız. İsmin yanında tek bir doğum yılı alanı ve koşullar onayı var.
+Yaş kuralı iki ekranın ortak kullandığı `yas-karar.ts`'e taşındı.
+
+**Profilini doğrula.** İsimle açılmış hesap bu cihaza bağlı. Kendi
+profilinin hesap ayarlarında e-posta + parola eklenince hesap kalıcı
+oluyor; kullanıcı adı, puanlar ve rozetler aynen kalıyor.
+
+**Küfür süzgeci isimde kelime bazında.** Kullanıcı adı süzgeci kelimenin
+içinde arıyordu; isimde bu "Oğuz Koç" gibi gerçek isimleri reddederdi.
+
+**Yönetim paneli `/yonetim`.** Giriş sistemi seçimi, kısa özet (oyuncu,
+isimle/doğrulanmış, bugünkü tur ve düello) ve son oyuncular. Yetki
+sunucuda: `yonetici` tablosu ve her işi önce yetkiyi denetleyen
+fonksiyonlar. Panel e-posta adresi göstermiyor.
+
 ## 2026-10-19 — Site Cloudflare Pages'ten Coolify'a taşındı
 
 Site artık kendi sunucumuzda, Coolify üzerinde çalışıyor. Supabase

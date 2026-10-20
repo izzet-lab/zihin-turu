@@ -7,12 +7,12 @@ import Kurulum, { type BaslaAyar, type Mod } from './ekranlar/Kurulum';
 import Oyun, { type OyunSonuc } from './ekranlar/Oyun';
 import Sonuc from './ekranlar/Sonuc';
 import Yardim from './ekranlar/Yardim';
-import Giris from './ekranlar/Giris';
+import GirisKapisi from './ekranlar/GirisKapisi';
 import KullaniciAdi from './ekranlar/KullaniciAdi';
 import { sesKilidiKur } from './ses';
 import { bannerGoster, bannerGizle, bannerKaldir } from './reklam';
 import { supabase } from './supabase';
-import { profilOku, turGonder, type OyuncuProfil } from './kimlik';
+import { cikisOnayi, isimleProfilAc, profilOku, turGonder, type OyuncuProfil } from './kimlik';
 import { kutlamayiDenetle } from './kutlama';
 import {
   bugun,
@@ -263,7 +263,11 @@ export default function Uygulama() {
       setKullanici(u);
 
       if (u) {
-        profilOku(u.id).then((p) => {
+        profilOku(u.id).then(async (bulunan) => {
+          // İsimle giriş (sistem 2): isim oturumun üst verisinde; profil
+          // burada açılır, oyuncuya ayrıca kullanıcı adı sorulmaz.
+          const isim = u.is_anonymous ? (u.user_metadata?.isim as string | undefined) : undefined;
+          const p = bulunan ?? (isim ? await isimleProfilAc(u.id, isim) : null);
           setProfil(p);
           if (!p) {
             setEkran('kullanici-adi');
@@ -537,7 +541,7 @@ export default function Uygulama() {
   let ekranBileseni;
 
   if (ekran === 'giris') {
-    ekranBileseni = <Giris onAtla={girisAtla} />;
+    ekranBileseni = <GirisKapisi onAtla={girisAtla} />;
   } else if (ekran === 'kullanici-adi' && kullanici) {
     ekranBileseni = (
       <KullaniciAdi
@@ -613,6 +617,7 @@ export default function Uygulama() {
         onKelime={(m) => gecis(m ? `/kelime?mod=${m}` : '/kelime')}
         onSiralamalar={(sekme) => gecis(`/lig?sekme=${sekme}`)}
         onCikisYap={async () => {
+          if (!cikisOnayi(kullanici)) return;
           await supabase.auth.signOut();
           setKullanici(null);
           setProfil(null);

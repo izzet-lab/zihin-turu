@@ -209,7 +209,8 @@ function Panel({ onCikis }: { onCikis: () => void }) {
   return (
     <main className="min-h-dvh zt-kagit zt-metin zt-ust-bosluk px-5 pb-10">
       <div className="mx-auto w-full max-w-2xl" data-alan="yonetim-panel">
-        <header className="mb-6 flex items-center justify-between gap-3 pt-4">
+        {/* Sağda menü düğmesine yer: o her sayfada sağ üstte sabit duruyor. */}
+        <header className="mb-6 flex items-center justify-between gap-3 pt-4 pr-16">
           <h1 className="text-2xl font-black zt-metin">Yönetim</h1>
           <button
             onClick={onCikis}
@@ -283,9 +284,12 @@ function Panel({ onCikis }: { onCikis: () => void }) {
           {oyuncular.length === 0 ? (
             <p className="text-sm zt-metin-soluk">Henüz oyuncu yok.</p>
           ) : (
-            <ul className="divide-y zt-cizgi rounded-xl border zt-cizgi zt-yuzey">
-              {oyuncular.map((o) => (
-                <li key={o.kullanici_adi} className="flex items-center justify-between gap-3 px-4 py-3">
+            <ul className="overflow-hidden rounded-xl border zt-cizgi zt-yuzey">
+              {oyuncular.map((o, i) => (
+                <li
+                  key={o.kullanici_adi}
+                  className={'flex items-center justify-between gap-3 px-4 py-3' + (i > 0 ? ' border-t zt-cizgi' : '')}
+                >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-bold zt-metin">
                       {o.gorunen_ad ?? o.kullanici_adi}

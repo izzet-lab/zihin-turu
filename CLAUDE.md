@@ -154,7 +154,7 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 |---|---|---|
 | 1 | **Veritabanı** (tablolar, tetikleyiciler) | kendi sunucumuzdaki Postgres — Studio ya da göç dosyası |
 | 2 | **Edge Functions** (puan doğrulama) | sunucuda `araclar/edge-dagit.sh` |
-| 3 | **Web** (site) | `git push`, sonra Coolify'da **elle Deploy** |
+| 3 | **Web** (site) | `git push` → Coolify webhook ile otomatik |
 
 > **Üç katman da 19–20 Ekim 2026'da kendi sunucumuza taşındı.** Site
 > Cloudflare Pages'ten Coolify'a, Supabase yığını buluttan aynı
@@ -173,25 +173,25 @@ Proje üç ayrı yerde yaşıyor ve bunlar bağımsız güncelleniyor.
 > `uygulama/nginx.conf` içinde — SPA yedeği ve önbellek kuralları
 > oradan geliyor.
 
-**Siteyi yayına alma — `git push` TEK BAŞINA YETMEZ.**
+**Siteyi yayına alma.** `git push origin main` yeterli: GitHub deposunda
+bir webhook var, Coolify'daki **tamisabet-web** uygulamasını kendisi
+dağıtıyor (20 Ekim 2026'da kuruldu).
 
-Coolify'da webhook tanımlı değil, yani GitHub'a gönderilen kod
-kendiliğinden yayına çıkmıyor. 20 Ekim 2026'da sekiz commit depoda
-duruyordu ama site hâlâ eski kodu çalıştırıyordu; telefon uygulaması
-siteden ileride kalmıştı. İki adım gerekiyor:
+Webhook `https://coolify.guessclash.com/webhooks/source/github/events/manual`
+adresine push olayı gönderiyor; parolası Coolify'ın uygulama için
+ürettiği değer. Teslimat geçmişi GitHub'da depo ayarlarından görülür.
 
-1. `git push origin main`
-2. Coolify → **tamisabet-web** → **Deploy** (ya da yönetim API'sinden
-   aynı uygulamaya dağıtım isteği)
+**Dağıtımın bittiğini "başarılı" yazısından değil, sitenin servis ettiği
+paket dosyasının adı değişti mi diye bakarak anla.** Ad aynıysa eski kod
+duruyordur. Webhook çalışmazsa Coolify'dan elle **Deploy** her zaman
+yedek yol. *(Webhook kurulmadan önce push tek başına hiçbir şey yapmıyordu;
+20 Ekim 2026'da sekiz commit depoda beklerken site eski kodu çalıştırdı ve
+telefon uygulaması siteden ileride kaldı.)*
 
-Dağıtımın bittiğini "başarılı" yazısından değil, **sitenin servis
-ettiği paket dosyasının adı değişti mi** diye bakarak anla. Ad aynıysa
-eski kod duruyordur.
-
-Site derlenirken `VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY`
-paketin içine gömülüyor; ikisi de Coolify'da **tamisabet-web**
-uygulamasının ortam değişkenlerinde. Boş olurlarsa site beyaz ekran
-verir (19 Ekim 2026'da yaşandı).
+Site derlenirken `VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY` paketin
+içine gömülüyor; ikisi de Coolify'da **tamisabet-web** uygulamasının ortam
+değişkenlerinde. Boş olurlarsa site beyaz ekran verir (19 Ekim 2026'da
+yaşandı).
 
 **Android ayrı bir iş.** Site dağıtımı telefonu güncellemez; APK
 `uygulama/android/paket-uret.sh --apk` ile ayrıca derlenip kurulur.

@@ -397,15 +397,22 @@ Ayrıntılar `CHANGELOG.md`'de.
 
 ### Sıradakiler
 
-0. **E-posta ile kayıt şu an kırık — giden posta ayarı yok.** Kendi
-   sunucumuzda e-posta onayı zorunlu (`ENABLE_EMAIL_AUTOCONFIRM=false`)
-   ama SMTP tanımlı değil; onay postası hiç gönderilmiyor. Kayıt olan
-   hesap "onaylanmamış" kalıyor, giriş tamamlanamıyor, kullanıcı adı
-   seçilemiyor, dolayısıyla oynanan tur **hiçbir yere yazılmıyor** (20
-   Ekim 2026'da tam bu yaşandı; hata mesajı çıkmadığı için fark etmek
-   zor). İki çıkış yolu var: SMTP tanımlamak, ya da Google girişini
-   açıp birincil yol yapmak. Geçici hesap kurtarma: veritabanında
-   `auth.users.email_confirmed_at` elle doldurulur.
+0. ~~**E-posta ile kayıt kırıktı**~~ — çözüldü (20 Ekim 2026).
+   E-posta onayı zorunluydu ama SMTP tanımlı olmadığı için onay postası
+   hiç gitmiyordu: kayıt olan hesap onaysız kalıyor, giriş
+   tamamlanamıyor, kullanıcı adı seçilemiyor ve oynanan tur **hiçbir
+   yere yazılmıyordu.** Hata mesajı çıkmadığı için fark etmesi zordu.
+   Çözüm: `ENABLE_EMAIL_AUTOCONFIRM=true`. **Bedeli bilinçli:** e-posta
+   adresleri doğrulanmadan kabul ediliyor. Yayına çıkarken ya Google
+   girişi açılacak ya posta servisi tanımlanacak (bkz. madde 1).
+
+   **Buradan çıkan kalıcı ders:** Coolify'da ortam değişkenini
+   değiştirmek yetmiyor. Yeniden dağıtım `.env` dosyasını güncelliyor
+   ama kapsayıcıyı yeniden YARATMIYOR; eski kapsayıcı eski değeri
+   taşımaya devam ediyor. Değişikliğin geçmesi için ilgili kapsayıcı
+   `--force-recreate` ile yeniden yaratılmalı. Aynı tuzağa Realtime'da
+   da düşüldü. Değişkeni değiştirdikten sonra **kapsayıcının içindeki
+   değeri doğrula**, Coolify'ın "başarılı" demesine güvenme.
 1. **Google girişi kendi sunucumuzda henüz kapalı.** Uygulamada düğme
    var ve akış saf web OAuth (Android'e özel yapılandırma gerekmiyor),
    ama Coolify'daki Supabase tanımına `GOTRUE_EXTERNAL_GOOGLE_*`

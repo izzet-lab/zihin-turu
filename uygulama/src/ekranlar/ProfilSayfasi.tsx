@@ -9,7 +9,8 @@ import OyunAyarlari from '../bilesenler/OyunAyarlari';
 import { useParams, useNavigate } from 'react-router-dom';
 import { seviyeEtiketi } from '@tamisabet/oyun-sayi';
 import { profilIstatistikOku, type ProfilIstatistik } from '../lig-sorgu';
-import { profilOku } from '../kimlik';
+import { isimleAcilmisMi, profilOku } from '../kimlik';
+import ProfilDogrula from '../bilesenler/ProfilDogrula';
 import { supabase } from '../supabase';
 import { bannerGoster, bannerKaldir } from '../reklam';
 import GenelDagilim from '../bilesenler/GenelDagilim';
@@ -31,6 +32,9 @@ export default function ProfilSayfasi() {
   const [hata, setHata] = useState<string | null>(null);
   // Kendi profilini mi görüntülüyor?
   const [kendiProfili, setKendiProfili] = useState(false);
+  // İsimle açılmış (e-postası olmayan) hesap mı? "Profilini doğrula" buna bakıyor.
+  const [dogrulanmamis, setDogrulanmamis] = useState(false);
+  const [yeniDogrulandi, setYeniDogrulandi] = useState(false);
 
   useEffect(() => {
     async function yukle() {
@@ -48,6 +52,7 @@ export default function ProfilSayfasi() {
           const kendi = await profilOku(oturum.session.user.id);
           if (kendi && kendi.kullaniciAdi === kullaniciAdi) {
             setKendiProfili(true);
+            setDogrulanmamis(isimleAcilmisMi(oturum.session.user));
           }
         }
       } catch (e) {
@@ -183,6 +188,14 @@ export default function ProfilSayfasi() {
             Başkasının profilinde ses anahtarı göstermek anlamsız. */}
         {kendiProfili && (
           <div className="mt-10 space-y-2">
+            {dogrulanmamis && (
+              <ProfilDogrula onDogrulandi={() => { setDogrulanmamis(false); setYeniDogrulandi(true); }} />
+            )}
+            {yeniDogrulandi && (
+              <p className="rounded-xl border zt-cizgi zt-yuzey p-3 text-sm font-bold zt-metin" data-alan="dogrulandi">
+                Hesabın artık kalıcı. Başka bir cihazdan e-posta ve parolanla girebilirsin.
+              </p>
+            )}
             <div className="my-2 h-px zt-ayirac" />
             <OyunAyarlari />
             <div className="my-3 h-px zt-ayirac" />

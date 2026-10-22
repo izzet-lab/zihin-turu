@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
-import { profilOku, type OyuncuProfil } from '../kimlik';
+import { cikisOnayi, profilOku, type OyuncuProfil } from '../kimlik';
 import { nativeMi } from '../platform';
 import { Browser } from '@capacitor/browser';
 import Ikon from './Ikon';
@@ -96,6 +96,7 @@ export default function Menu() {
   }
 
   async function cikisYap() {
+    if (!cikisOnayi(kullanici)) return;
     setMenuAcik(false);
     await supabase.auth.signOut();
     gecis('/');

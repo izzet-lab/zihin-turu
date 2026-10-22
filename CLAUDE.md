@@ -306,6 +306,22 @@ Lv.4 Rakam Ustası (5.000), Lv.5 Tam İsabet Ustası (12.000).
 Seri ödülleri: her gün +10, 3 gün +25, 7 gün +75, 30 gün +300,
 100 gün +1.000. **Puan oynamadan verilmez.** Ayda bir seri koruma hakkı.
 
+**Giriş sistemi ve yönetim paneli** (göç 019, 20 Ekim 2026). Giriş
+ekranının kipi `ayar.giris_sistemi`nden okunuyor ve `/yonetim`
+panelinden değiştiriliyor. *Sistem 1* e-posta + parola + Google;
+*sistem 2* (varsayılan) yalnızca isim: hesabı `isimle-giris` Edge
+Function'ı açıyor (göç 020), kullanıcı adı isimden üretiliyor
+(`isim-karar.ts`: "Nazım" → "nazim", alınmışsa "nazim2"). **Anahtar
+yalnızca panel** — Supabase'in anonim oturumu bilerek kullanılmıyor,
+çünkü o giriş servisinin ortam değişkenine bağlı; fonksiyon sistem 1
+seçiliyse isimle hesap açmayı reddediyor. İsimle açılmış hesabın
+işareti iç adres alanı (`@isim.tamisabet.tr`, oraya posta gitmez).
+İsimle açılmış hesap cihaza bağlı;
+oyuncu profilindeki "Profilini doğrula"dan e-posta + parola ekleyince
+kalıcı oluyor. **Yaş kapısı sistem 2'de de var** (kural 6) — kural
+`yas-karar.ts`'te, iki ekran onu kullanıyor. Panel yetkisi sunucuda:
+`yonetici` tablosu, yönetici eklemek yalnızca veritabanından.
+
 **Kelime turu:** Dört seviye (Isınma 7 harf, Normal 8, Zor 9, Usta 10).
 Sözlük Zemberek kök listesinden üretiliyor (Apache 2.0, ~50 bin kelime:
 kökler + düzenli çoğullar). Liste `araclar/kelime-listesi-uret.mjs` ile

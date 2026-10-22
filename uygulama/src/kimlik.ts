@@ -10,6 +10,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { oku, yaz } from './depo';
 import { sonrakiSeviyeAnahtari } from '@tamisabet/oyun-sayi';
+import { gorunenAdTemizle, isimDogrula, isimUygunsuzMu, kullaniciAdiAdaylari } from './isim-karar';
 
 /** Oyuncunun uygulama içi profili (oyuncu tablosundan). */
 export interface OyuncuProfil {
@@ -86,6 +87,144 @@ export async function kullaniciAdiAyarla(oyuncuId: string, ad: string): Promise<
     return 'Bir hata oluştu, tekrar dene.';
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Giriş sistemi — yönetim panelinden seçilir (göç 019)
+//   sistem1: e-posta + parola + Google
+//   sistem2: yalnızca isim (`isimle-giris` fonksiyonu), sonradan profilden doğrulanır
+// ---------------------------------------------------------------------------
+
+export type GirisSistemi = 'sistem1' | 'sistem2';
+
+/** Ayar okunamazsa (çevrimdışı, eski veritabanı) geçerli olan kip. */
+export const VARSAYILAN_GIRIS_SISTEMI: GirisSistemi = 'sistem2';
+
+/** Giriş ekranının hangi kipte açılacağını `ayar` tablosundan okur. */
+export async function girisSistemiOku(): Promise<GirisSistemi> {
+  try {
+    const { data } = await supabase
+      .from('ayar')
+      .select('deger')
+      .eq('anahtar', 'giris_sistemi')
+      .maybeSingle();
+    return data?.deger === 'sistem1' ? 'sistem1' : VARSAYILAN_GIRIS_SISTEMI;
+  } catch {
+    return VARSAYILAN_GIRIS_SISTEMI;
+  }
+}
+
+/**
+ * İsimle açılmış hesabın iç adres alanı. Oraya posta gitmez; yalnızca
+ * "bu hesap henüz doğrulanmadı" işareti. Sunucudaki `isimle-giris`
+ * fonksiyonu ve göç 020 ile aynı.
+ */
+export const ISIM_ALANI = 'isim.tamisabet.tr';
+
+/**
+ * İsimle başla (sistem 2). Hesabı `isimle-giris` fonksiyonu açar ve
+ * oturumu döner; profil satırını `isimleProfilAc` açar.
+ *
+ * Neden Supabase'in anonim oturumu değil: o, giriş servisinin ortam
+ * değişkeniyle açılıp kapanıyor. Fonksiyon ise yönetim panelindeki
+ * seçime bakıyor; sistem 1 seçiliyse sunucu da reddediyor.
+ *
+ * İsim hesabın üst verisine yazılıyor: oturum açılır açılmaz uygulamanın
+ * oturum dinleyicisi profili oradan açıyor, oyuncu araya giren
+ * "kullanıcı adın ne olsun?" ekranını hiç görmüyor.
+ */
+export async function isimleBasla(isim: string): Promise<string | null> {
+  const temiz = gorunenAdTemizle(isim);
+  const hata = isimDogrula(temiz);
+  if (hata) return hata;
+  if (isimUygunsuzMu(temiz, KUFUR_LISTESI)) return 'Bu isim kullanılamaz.';
+
+  const { data, error } = await supabase.functions.invoke('isimle-giris', { body: { isim: temiz } });
+  if (error) {
+    // Sunucunun kendi Türkçe mesajı varsa onu göster (kapalı, sınır aşıldı…).
+    const yanit = (error as { context?: Response }).context;
+    const govde = yanit ? await yanit.json().catch(() => null) as { hata?: string } | null : null;
+    return govde?.hata ?? 'Başlatılamadı, bağlantını kontrol edip tekrar dene.';
+  }
+
+  const oturum = data as { access_token?: string; refresh_token?: string } | null;
+  if (!oturum?.access_token || !oturum.refresh_token) return 'Başlatılamadı, tekrar dene.';
+  const { error: oturumHatasi } = await supabase.auth.setSession({
+    access_token: oturum.access_token,
+    refresh_token: oturum.refresh_token,
+  });
+  return oturumHatasi ? 'Oturum açılamadı, tekrar dene.' : null;
+}
+
+/**
+ * İsimle girmiş oyuncunun profil satırını açar. Kullanıcı adı isimden
+ * üretilir; alınmışsa sıradaki aday denenir ("nazim" → "nazim2").
+ * Açılan profili döner; açılamazsa null (oyuncu kullanıcı adı ekranına düşer).
+ */
+export async function isimleProfilAc(oyuncuId: string, isim: string): Promise<OyuncuProfil | null> {
+  const gorunenAd = gorunenAdTemizle(isim);
+  for (const aday of kullaniciAdiAdaylari(gorunenAd)) {
+    const { error } = await supabase.from('oyuncu').insert({
+      id: oyuncuId,
+      kullanici_adi: aday,
+      gorunen_ad: gorunenAd,
+    });
+    if (!error) {
+      await misafirGecmisiniTasi(oyuncuId);
+      return { id: oyuncuId, kullaniciAdi: aday, gorunenAd };
+    }
+    // 23505: ad alınmış (ya da satır zaten var — o zaman onu oku).
+    if (error.code !== '23505') return null;
+    const mevcut = await profilOku(oyuncuId);
+    if (mevcut) return mevcut;
+  }
+  return null;
+}
+
+/**
+ * Çıkış onayı. İsimle açılmış hesabın e-postası ve parolası yok: çıkış
+ * yapılırsa o hesaba bir daha GİRİLEMEZ. Oyuncu bunu bilerek seçsin diye
+ * önce sorulur; e-postalı hesapta sormaya gerek yok.
+ */
+export function cikisOnayi(kullanici: User | null): boolean {
+  if (!isimleAcilmisMi(kullanici)) return true;
+  return window.confirm(
+    'Hesabın henüz doğrulanmadı. Çıkış yaparsan bu hesaba bir daha giremezsin; ' +
+      'puanların kaybolur. Önce profilinden e-posta ve parola ekleyebilirsin.\n\nYine de çıkılsın mı?',
+  );
+}
+
+/** Oturumdaki hesap isimle mi açıldı (henüz gerçek e-posta bağlanmamış)? */
+export function isimleAcilmisMi(kullanici: User | null): boolean {
+  return Boolean(kullanici?.email?.endsWith('@' + ISIM_ALANI));
+}
+
+/**
+ * İsimle açılmış hesabı kalıcı yapar: e-posta ve parola bağlanır.
+ * Hesap, puanlar ve kullanıcı adı aynen kalır; yalnızca artık başka bir
+ * cihazdan da e-posta + parolayla girilebilir.
+ *
+ * İş sunucudaki `hesap-dogrula` fonksiyonunda. İstemciden
+ * `updateUser({ email })` denendi: giriş servisi e-posta değişikliğini
+ * onay postasına bağlıyor, posta servisimiz olmadığı için değişiklik
+ * "onay bekliyor"da kalıyordu.
+ */
+export async function hesabiDogrula(eposta: string, parola: string): Promise<string | null> {
+  const temiz = eposta.trim().toLowerCase();
+  if (!temiz.includes('@') || temiz.endsWith('@' + ISIM_ALANI)) return 'Geçerli bir e-posta adresi gir.';
+  if (parola.length < 8) return 'Parola en az 8 karakter olmalı.';
+
+  const { error } = await supabase.functions.invoke('hesap-dogrula', { body: { eposta: temiz, parola } });
+  if (error) {
+    const yanit = (error as { context?: Response }).context;
+    const govde = yanit ? await yanit.json().catch(() => null) as { hata?: string } | null : null;
+    return govde?.hata ?? 'Kaydedilemedi, bağlantını kontrol edip tekrar dene.';
+  }
+
+  // Parola değişince sunucu eski oturumu kapatıyor; yeni bilgilerle
+  // hemen yeniden giriliyor, oyuncu çıkış yapmış gibi görünmüyor.
+  const { error: girisHatasi } = await supabase.auth.signInWithPassword({ email: temiz, password: parola });
+  return girisHatasi ? 'Hesabın kalıcı oldu; yeni e-posta ve parolanla giriş yap.' : null;
 }
 
 /**

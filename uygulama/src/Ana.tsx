@@ -18,6 +18,7 @@ import Duello from './ekranlar/Duello';
 import Arena from './ekranlar/Arena';
 import KelimeTuru from './ekranlar/KelimeTuru';
 import ProfilSayfasi from './ekranlar/ProfilSayfasi';
+import Yonetim from './ekranlar/Yonetim';
 import Menu from './bilesenler/Menu';
 import KutlamaKatmani from './bilesenler/Kutlama';
 import HedefHalkasi from './bilesenler/HedefHalkasi';
@@ -105,6 +106,8 @@ export default function Ana() {
         <Route path="/yasal/cerez" element={<CerezSayfasi onGeri={() => window.history.back()} />} />
         <Route path="/yasal/kullanim-kosullari" element={<KullanimKosullariSayfasi onGeri={() => window.history.back()} />} />
         <Route path="/yasal/hesap-sil" element={<HesapSilSayfasi onGeri={() => window.history.back()} />} />
+        {/* Yönetim paneli — yetki sunucuda denetleniyor (göç 019). */}
+        <Route path="/yonetim" element={<Yonetim />} />
         <Route path="/gizlilik-ayarlari" element={<GizlilikAyarlari onGeri={() => window.history.back()} />} />
 
         {/* 404 */}

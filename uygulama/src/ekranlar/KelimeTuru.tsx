@@ -17,6 +17,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Tur, TurSaglayici } from '@tamisabet/cekirdek';
+import type { Sozluk } from '@tamisabet/oyun-kelime';
 import { gunlukTohum } from '@tamisabet/cekirdek';
 import { kelimeGonder } from '../kimlik';
 import { kutlamayiDenetle } from '../kutlama';
@@ -33,9 +34,36 @@ import {
   kelimeTuruKur,
   tamSozlukKur,
   turkceBuyult,
+  enUzunKelimeler,
+  kelimeJokerVer,
+  kelimeJokerDurumu,
+  KELIME_TEK_KULLANIMLIK_JOKERLER,
+  type KelimeJokerTip,
 } from '@tamisabet/oyun-kelime';
+import {
+  JOKER_HAK_SAYISI,
+  ODULLU_EK_JOKER,
+  jokerKullanilabilirMi,
+  jokerPuanCarpani,
+} from '@tamisabet/cekirdek';
+import { odulluReklamGoster } from '../reklam';
+import type { IkonAdi } from '../bilesenler/Ikon';
 
 type Asama = 'yukleniyor' | 'seviye' | 'oyun' | 'sonuc';
+
+/**
+ * Jokerlerin ekrandaki künyesi.
+ *
+ * İkonlar sayı turuyla BİLEREK aynı: "ampul" ipucu, "silgi" eleme,
+ * "kronometre" süre. İki oyunda aynı işi yapan joker aynı simgeyle
+ * görünmeli, yoksa oyuncu her oyunda baştan öğreniyor.
+ */
+const KELIME_JOKER_META: { tip: KelimeJokerTip; ad: string; simge: IkonAdi }[] = [
+  { tip: 'uzunluk', ad: 'Uzunluğu göster', simge: 'etiket' },
+  { tip: 'ilkHarf', ad: 'İlk harfi aç', simge: 'ampul' },
+  { tip: 'fazlaHarf', ad: 'Fazla harfi sil', simge: 'silgi' },
+  { tip: 'sure', ad: 'Süre ekle', simge: 'kronometre' },
+];
 
 /**
  * Gunun Turu lige isler, Antrenman islemez.
@@ -70,6 +98,9 @@ export default function KelimeTuru({
 }: Props) {
   const [asama, setAsama] = useState<Asama>('yukleniyor');
   const [saglayici, setSaglayici] = useState<TurSaglayici | null>(null);
+  // HEDEF sözlüğü ayrıca tutuluyor: jokerler "en uzun kelime" için
+  // buna bakıyor. Sağlayıcı sözlüğü dışarı vermiyor.
+  const [hedefSozluk, setHedefSozluk] = useState<Sozluk | null>(null);
   const [yuklemeHatasi, setYuklemeHatasi] = useState(false);
   /** Artırılınca sözlük yükleme etkisi baştan çalışır (Tekrar dene). */
   const [yuklemeDeneme, setYuklemeDeneme] = useState(0);
@@ -97,6 +128,16 @@ export default function KelimeTuru({
   /** Sunucunun verdigi puan. null ise misafir ya da aga ulasilamadi. */
   const [sunucuPuan, setSunucuPuan] = useState<number | null>(null);
   const [gonderiliyor, setGonderiliyor] = useState(false);
+
+  /* ---------------- Jokerler ---------------- */
+  const [kullanilanJokerler, setKullanilanJokerler] = useState<KelimeJokerTip[]>([]);
+  const [jokerHakki, setJokerHakki] = useState<number>(JOKER_HAK_SAYISI);
+  const [silinenIndeksler, setSilinenIndeksler] = useState<number[]>([]);
+  const [uzunlukIpucu, setUzunlukIpucu] = useState<number | null>(null);
+  const [ilkHarfIpucu, setIlkHarfIpucu] = useState<{ harf: string; indeks: number } | null>(null);
+  const [ekSure, setEkSure] = useState(0);
+  const [reklamYukleniyor, setReklamYukleniyor] = useState(false);
+  const [reklamKullanildi, setReklamKullanildi] = useState(false);
 
   const seviyeAyar = useMemo(
     () => KELIME_SEVIYE_LISTESI.find((s) => s.anahtar === seviye) ?? KELIME_SEVIYE_LISTESI[1]!,
@@ -132,9 +173,9 @@ export default function KelimeTuru({
           if (iptal) return;
           // İki liste: geniş olan cevabı KABUL eder, yaygın olan HEDEFİ
           // belirler (bkz. oyun-kelime/kelimeTuruKur).
-          setSaglayici(
-            kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), tamSozlukKur(YAYGIN_METNI)),
-          );
+          const yaygin = tamSozlukKur(YAYGIN_METNI);
+          setSaglayici(kelimeTuruKur(tamSozlukKur(KELIME_METNI, GOVDE_METNI), yaygin));
+          setHedefSozluk(yaygin);
           setYuklemeHatasi(false);
           setAsama('seviye');
           return;
@@ -178,11 +219,95 @@ export default function KelimeTuru({
       const sure = KELIME_SEVIYE_LISTESI.find((s) => s.anahtar === sv)?.sure ?? 60;
       setKalan(sure);
       setSunucuPuan(null);
+      // Jokerler TUR BAŞINA; yeni turda hak ve ipuçları sıfırlanır.
+      setKullanilanJokerler([]);
+      setJokerHakki(JOKER_HAK_SAYISI);
+      setSilinenIndeksler([]);
+      setUzunlukIpucu(null);
+      setIlkHarfIpucu(null);
+      setEkSure(0);
+      setReklamKullanildi(false);
       setMod(m);
       setAsama('oyun');
     },
     [saglayici],
   );
+
+  /**
+   * Bu turun EN UZUN kelimeleri.
+   *
+   * Jokerler "hepsine uyan ipucu" verebilmek için tamamını bilmek
+   * zorunda. Hesap pahalı olduğu için tur başına bir kez yapılıyor ve
+   * süre sınırı var: telefonda tur açılırken donma olmamalı.
+   */
+  const uzunKelimeler = useMemo(() => {
+    if (!hedefSozluk || !tur) return [];
+    const harfler = (tur.veri as { harfler: string[] }).harfler;
+    return enUzunKelimeler(harfler, hedefSozluk, 24, 120);
+  }, [hedefSozluk, tur]);
+
+  const jokerKullan = useCallback(
+    (tip: KelimeJokerTip) => {
+      if (!tur) return;
+      // KAZANILMIŞ hak bitmişse dur.
+      //
+      // Ortak kural üst SINIRI söylüyor; Antrenman'da bu sınır ödüllü
+      // reklamla kazanılabilecek dördüncü hakkı da kapsıyor. Oyuncunun
+      // o an elinde kaç hak olduğu ayrı bir şey: yalnızca ortak kurala
+      // bakılırsa reklam izlemeden dördüncü joker kullanılabiliyordu ve
+      // sayaç "−1 hak kaldı" yazıyordu.
+      if (jokerHakki <= 0) return;
+      const harfler = (tur.veri as { harfler: string[] }).harfler;
+      // İki kapı daha: ortak kural (Günün Turu kısıtı) ve bu turda
+      // jokerin verecek bir şeyi var mı.
+      const ortak = jokerKullanilabilirMi(
+        tip,
+        kullanilanJokerler,
+        KELIME_TEK_KULLANIMLIK_JOKERLER,
+        mod === 'gunun' ? 'gunun' : 'antrenman',
+      );
+      if (!ortak.acik) return;
+      const sonuc = kelimeJokerVer(tip, uzunKelimeler, harfler, silinenIndeksler, kalan > 0);
+      if (!sonuc) return;
+
+      if (sonuc.tip === 'uzunluk') setUzunlukIpucu(sonuc.uzunluk);
+      else if (sonuc.tip === 'ilkHarf') {
+        setIlkHarfIpucu({ harf: sonuc.harf, indeks: sonuc.havuzIndeksi });
+      } else if (sonuc.tip === 'fazlaHarf') {
+        setSilinenIndeksler((d) => [...d, sonuc.indeks]);
+        // Silinen harf seçilmişse seçimden de düşsün, yoksa yazılan
+        // kelimede olmayan bir harf kalırdı.
+        setSecilenler((d) => d.filter((id) => id !== sonuc.indeks));
+      } else {
+        setKalan((k) => k + sonuc.ekSaniye);
+        setEkSure((e) => e + sonuc.ekSaniye);
+      }
+
+      setKullanilanJokerler((d) => [...d, tip]);
+      setJokerHakki((h) => h - 1);
+      titret('hafif');
+    },
+    [tur, uzunKelimeler, silinenIndeksler, kullanilanJokerler, mod, kalan, jokerHakki],
+  );
+
+  /**
+   * Ödüllü reklamla EK joker hakkı — yalnızca Antrenman.
+   * Günün Turu'nda yok: reklam izleyebilen oyuncu lig tablosunda
+   * daha çok hak alamaz (kural 5).
+   */
+  async function reklamIzleJokerKazan() {
+    if (reklamYukleniyor || reklamKullanildi) return;
+    setReklamYukleniyor(true);
+    try {
+      const kazandi = await odulluReklamGoster();
+      if (kazandi) {
+        setJokerHakki((h) => h + ODULLU_EK_JOKER);
+        setReklamKullanildi(true);
+      }
+    } finally {
+      setReklamYukleniyor(false);
+    }
+  }
 
   const bitir = useCallback(() => {
     if (!saglayici || !tur) return;
@@ -202,7 +327,11 @@ export default function KelimeTuru({
     // Günün Turu puanı ×10 ölçeğinde (bkz. kelimeNihaiPuan). Sunucu da
     // aynı fonksiyonu çağırıyor; ikisi ayrışırsa oyuncu ekranda başka
     // bir puan görüp ligde başkasını bulur.
-    const puan = kelimeNihaiPuan(temelPuan, mod === 'gunun' ? 'gunun' : 'antrenman');
+    const puan = kelimeNihaiPuan(
+      temelPuan,
+      mod === 'gunun' ? 'gunun' : 'antrenman',
+      kullanilanJokerler.length,
+    );
     const cozum = saglayici.cozumBul(tur);
 
     setSonuc({
@@ -236,13 +365,14 @@ export default function KelimeTuru({
       kelime,
       sure_sn: toplamSure,
       kalan_sn: kalan,
+      jokerler: kullanilanJokerler,
     })
       .then((y) => {
         setSunucuPuan(y ? y.puan : null);
         void kutlamayiDenetle(kullanici?.id);
       })
       .finally(() => setGonderiliyor(false));
-  }, [saglayici, tur, secilenler, taslar, seviye, seviyeAyar.sure, kalan, mod]);
+  }, [saglayici, tur, secilenler, taslar, seviye, seviyeAyar.sure, kalan, mod, kullanilanJokerler]);
 
   // Süre sayacı. `bitirRef` sayesinde sayaç her tuşta yeniden kurulmuyor.
   const bitirRef = useRef(bitir);
@@ -500,6 +630,23 @@ export default function KelimeTuru({
           </div>
           )}
 
+          {/*
+            JOKER DÖKÜMÜ.
+
+            Kaç joker kullanıldığı ve puanın ne kadarının gittiği
+            yazılmazsa oyuncu düşük puanı oyunun hatası sanıyor.
+            Sayı turunun sonuç ekranında da aynı döküm var.
+          */}
+          {kullanilanJokerler.length > 0 && (
+            <div className="mt-3 text-xs zt-odul-yazi" data-alan="kelime-joker-dokumu">
+              {/* Yüzdeye Türkçe ek getirilmiyor: ek sayıya göre
+                  değişiyor (%20'si, %36'sı, %49'u) ve tek bir kalıpla
+                  doğru yazılamıyor. Ek istemeyen kuruluş seçildi. */}
+              {kullanilanJokerler.length} joker · puan %
+              {Math.round((1 - jokerPuanCarpani(kullanilanJokerler.length)) * 100)} düştü
+            </div>
+          )}
+
           {/* LIGE ISLEDI MI — puani sunucu veriyor (kural 2). */}
           <div className="mt-4 text-xs" data-alan="kelime-lig-durumu">
             {mod === 'antrenman' ? (
@@ -589,6 +736,8 @@ export default function KelimeTuru({
       {/* Harf rafı */}
       <div className="mt-6 grid grid-cols-4 gap-2.5" data-alan="kelime-raf">
         {taslar.map((t, sira) => {
+          // "Fazla harfi sil" jokeriyle kalkan harf raftan çıkar.
+          if (silinenIndeksler.includes(t.id)) return null;
           // Kelimeye giren harf tükenmiştir: soluklaşıp geri çekilir.
           const secili = secilenler.includes(t.id);
           return (
@@ -602,13 +751,114 @@ export default function KelimeTuru({
               // Taşın yüzeyi ve harf rengi `[data-harf]` kuralında
               // sabit; buraya tema sınıfı yazılmaz (bkz. Oyun.tsx).
               className={`zt-dusen min-h-[64px] rounded-xl border text-2xl font-black uppercase leading-none ${
-                secili ? 'zt-vurgu-cizgi' : 'border-transparent'
+                secili
+                  ? 'zt-vurgu-cizgi'
+                  : ilkHarfIpucu?.indeks === t.id
+                    // "İlk harfi aç" jokerinin vurguladığı taş.
+                    ? 'zt-odul-cizgi'
+                    : 'border-transparent'
               }`}
             >
               {turkceBuyult(t.harf)}
             </button>
           );
         })}
+      </div>
+
+      {/*
+        JOKER PANELİ.
+
+        Sayı turunda takılan oyuncu joker kullanıp kurtulabiliyordu;
+        kelime turunda takılan boş elle çıkıyordu. Jokerler cevabı
+        vermez, yolu daraltır (kural 8): en uzun kelimenin tamamı tur
+        bitmeden asla gösterilmez.
+      */}
+      <div className="mt-5" data-alan="kelime-joker-paneli">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-widest zt-metin-soluk">
+            Joker
+          </span>
+          <span className="text-xs zt-metin-soluk" data-alan="kelime-joker-hak">
+            {jokerHakki} hak kaldı
+          </span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {KELIME_JOKER_META.map((j) => {
+            const ortak = jokerKullanilabilirMi(
+              j.tip,
+              kullanilanJokerler,
+              KELIME_TEK_KULLANIMLIK_JOKERLER,
+              mod === 'gunun' ? 'gunun' : 'antrenman',
+            );
+            const turDurumu = kelimeJokerDurumu(
+              j.tip,
+              uzunKelimeler,
+              (tur?.veri as { harfler: string[] } | undefined)?.harfler ?? [],
+              silinenIndeksler,
+              kalan > 0,
+            );
+            const devreDisi = jokerHakki <= 0 || !ortak.acik || !turDurumu.acik;
+            // Hak bitmesi genel sebep; onu üstteki sayaç zaten
+            // söylüyor. Düğmenin altına yalnızca TÜRE ÖZEL sebep
+            // yazılıyor, yoksa dört düğmede aynı metin tekrar eder.
+            const sebep = !ortak.acik
+              ? (ortak.sebep.includes('hak') ? null : ortak.sebep)
+              : !turDurumu.acik
+                ? turDurumu.sebep
+                : null;
+
+            return (
+              <button
+                key={j.tip}
+                data-joker={j.tip}
+                onClick={() => jokerKullan(j.tip)}
+                disabled={devreDisi}
+                title={sebep ?? undefined}
+                className="min-h-[52px] w-full rounded-lg border zt-cizgi zt-yuzey px-1 py-1.5 text-[11px] font-bold zt-metin transition active:scale-95 disabled:opacity-45"
+              >
+                <Ikon ad={j.simge} boyut={18} className="zt-vurgu-metin" />
+                <div className="mt-1 leading-tight">{j.ad}</div>
+                {sebep ? (
+                  <div
+                    className="zt-metin-soluk mt-0.5 text-[9px] leading-tight"
+                    data-alan="kelime-joker-not"
+                  >
+                    {sebep}
+                  </div>
+                ) : (
+                  <div className="zt-metin-soluk">puanın %20&apos;si</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* İpuçları. Hiçbiri kelimenin kendisini yazmıyor. */}
+        {(uzunlukIpucu != null || ilkHarfIpucu || ekSure > 0) && (
+          <ul className="mt-2 space-y-1 text-sm zt-odul-yazi" data-alan="kelime-joker-ipucu">
+            {uzunlukIpucu != null && (
+              <li>Bu harflerden {uzunlukIpucu} harfli kelime var.</li>
+            )}
+            {ilkHarfIpucu && (
+              <li>En uzun kelime “{turkceBuyult(ilkHarfIpucu.harf)}” ile başlıyor.</li>
+            )}
+            {ekSure > 0 && <li>+{ekSure} saniye eklendi.</li>}
+          </ul>
+        )}
+
+        {/* Ödüllü reklam: yalnızca Antrenman, tur başına bir kez. */}
+        {mod !== 'gunun' && jokerHakki <= 0 && !reklamKullanildi && (
+          <button
+            onClick={reklamIzleJokerKazan}
+            disabled={reklamYukleniyor}
+            className="mt-2 w-full rounded-lg border zt-odul-yuzey px-3 py-2 text-xs font-bold zt-odul-yazi transition disabled:opacity-50"
+            data-alan="kelime-reklam-joker"
+          >
+            <Ikon ad="video" boyut={14} className="mr-1.5 -mt-0.5" />
+            {reklamYukleniyor ? 'Yükleniyor…' : 'Video izle, bir joker daha kazan'}
+          </button>
+        )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">

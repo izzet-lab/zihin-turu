@@ -336,6 +336,8 @@ export async function kelimeGonder(params: {
   kelime: string;
   sure_sn: number;
   kalan_sn: number;
+  /** Kullanilan jokerler; sunucu puani buna gore dusuruyor. */
+  jokerler?: string[];
 }): Promise<{ puan: number; uzaklik: number } | null> {
   const { data: oturum } = await supabase.auth.getSession();
   if (!oturum.session) return null; // misafir: lige işlemez

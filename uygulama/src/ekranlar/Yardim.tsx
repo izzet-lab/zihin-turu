@@ -249,15 +249,48 @@ export default function Yardim({ acik, kapat }: Props) {
         <Bolum baslik="Jokerler" simge="ampul">
           <div className="space-y-2 text-sm zt-metin">
             <p className="text-xs zt-metin-soluk">
-              Tur başına en fazla 3 joker kullanabilirsin. Bedel, çarpanlar
-              uygulanmadan <b>önce</b> düşülür — yani üçünü de kullanırsan
-              puanının yaklaşık yarısını verirsin.
+              Tur başına en fazla <b>3 joker</b> kullanabilirsin. Her joker o turun
+              puanını <b>%20</b> düşürür ve kesintiler birikir: üçünü birden
+              kullanırsan puanının yaklaşık yarısını verirsin.
             </p>
+            <p className="text-xs zt-metin-soluk">
+              Joker <b>cevabı vermez</b>, yolu daraltır. Ne kadar joker kullanırsan
+              kullan, tam isabet her zaman jokersiz bir yaklaşık sonuçtan çok puan
+              getirir.
+            </p>
+            <p className="text-sm font-bold zt-metin">Sayı Turu</p>
             <div className="space-y-2">
-              <JokerSatir simge="ampul" ad="Adım ipucu" bedel={3} aciklama="Çözümün bir adımını gösterir." />
-              <JokerSatir simge="silgi" ad="Yanlışı sil" bedel={2} aciklama="Çözümde kullanılmayan bir taşı siler." />
-              <JokerSatir simge="kronometre" ad="Süre ekle" bedel={2} aciklama="+15 saniye ek süre verir." />
+              <JokerSatir simge="ampul" ad="Bir adım aç" aciklama="Çözümün bir adımını gösterir." />
+              <JokerSatir simge="silgi" ad="Yanlışı sil" aciklama="Çözümde kullanılmayan bir taşı siler." />
+              <JokerSatir simge="kronometre" ad="Süre ekle" aciklama="+15 saniye ek süre verir." />
             </div>
+
+            <p className="mt-3 text-sm font-bold zt-metin">Kelime Turu</p>
+            <div className="space-y-2">
+              <JokerSatir
+                simge="etiket"
+                ad="Uzunluğu göster"
+                aciklama="Bu harflerden kaç harfli kelime çıktığını söyler. Kelimeyi söylemez."
+              />
+              <JokerSatir
+                simge="ampul"
+                ad="İlk harfi aç"
+                aciklama="En uzun kelimenin ilk harfini raftaki taşta vurgular. En uzun kelimeler farklı harfle başlıyorsa kapalı kalır."
+              />
+              <JokerSatir
+                simge="silgi"
+                ad="Fazla harfi sil"
+                aciklama="En uzun kelimede gerekmeyen bir harfi raftan kaldırır. Bütün harfler gerekiyorsa kapalı kalır."
+              />
+              <JokerSatir simge="kronometre" ad="Süre ekle" aciklama="+15 saniye ek süre verir." />
+            </div>
+
+            <p className="text-xs zt-metin-soluk">
+              Günün Turu'nda cevabı açmaya en çok yaklaşan joker (sayıda
+              <b> Bir adım aç</b>, kelimede <b> İlk harfi aç</b>) yalnızca
+              <b> bir kez</b> kullanılabilir — o tur lig tablosuna işliyor.
+              Antrenman'da sınır yoktur.
+            </p>
           </div>
         </Bolum>
 
@@ -443,12 +476,10 @@ function Bolum({
 function JokerSatir({
   simge,
   ad,
-  bedel,
   aciklama,
 }: {
   simge: IkonAdi;
   ad: string;
-  bedel: number;
   aciklama: string;
 }) {
   return (
@@ -457,13 +488,11 @@ function JokerSatir({
       <div>
         <span className="font-bold zt-metin">{ad}</span>
         {/*
-          Bedel TEMEL puandan düşülür. Günün Turu puanları ×10
-          gösterildiği için orada bu sayı on katı görünür — bunu
-          söylememek "3 puan mı kaybettim?" diye düşündürüyordu.
+          Bedel artık türe göre DEĞİŞMİYOR: her joker puanın %20'si.
+          Eskiden her türün kendi puan bedeli vardı (3/2/2); hangi
+          jokerin kaça mal olduğunu kimse ezberlemiyordu.
         */}
-        <span className="ml-1.5 text-xs zt-odul-yazi">
-          −{bedel} <span className="zt-odul-yazi">(Günün Turu'nda −{bedel * 10})</span>
-        </span>
+        <span className="ml-1.5 text-xs zt-odul-yazi">−%20</span>
         <p className="text-xs zt-metin-soluk">{aciklama}</p>
       </div>
     </div>

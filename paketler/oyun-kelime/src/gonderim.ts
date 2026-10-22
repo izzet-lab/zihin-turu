@@ -14,6 +14,13 @@
  * sunucuyu meşgul eder.
  */
 
+import { jokerUstSiniri, jokerTipDenetimi } from '@tamisabet/cekirdek';
+import {
+  KELIME_JOKER_TURLERI,
+  KELIME_TEK_KULLANIMLIK_JOKERLER,
+  KELIME_SURE_JOKERI_SANIYE,
+  type KelimeJokerTip,
+} from './joker.ts';
 import { KELIME_SEVIYELERI } from './mantik.ts';
 
 export type KelimeGonderimHata = string | null;
@@ -50,6 +57,8 @@ export interface KelimeGonderimGirdi {
   kelime: unknown;
   sureSn: unknown;
   kalanSn: unknown;
+  /** Kullanılan jokerler — istemcinin bildirdiği liste. */
+  jokerler?: unknown;
   /** Sunucunun o anki zamanı (ms). Test edilebilirlik için dışarıdan. */
   simdiMs: number;
 }
@@ -85,11 +94,35 @@ export function kelimeGonderimDogrula(g: KelimeGonderimGirdi): KelimeGonderimHat
   if (sure <= 0 || sure > 600) return 'Geçersiz süre.';
 
   // --- Kalan süre ---
+  // --- Jokerler ---
+  // İstemcinin "joker kullanmadım" demesine güvenilmiyor (kural 2):
+  // liste sunucuya geliyor, puanı sunucu bu listeye göre düşürüyor.
+  const jokerler = g.jokerler === undefined ? [] : g.jokerler;
+  if (!Array.isArray(jokerler)) return 'Geçersiz joker listesi.';
+  if (jokerler.length > jokerUstSiniri(g.mod === 'gunun' ? 'gunun' : 'antrenman')) {
+    return 'Joker hakkı aşıldı.';
+  }
+  for (const j of jokerler) {
+    if (typeof j !== 'string' || !KELIME_JOKER_TURLERI.includes(j as KelimeJokerTip)) {
+      return 'Bilinmeyen joker.';
+    }
+  }
+  const tipHatasi = jokerTipDenetimi(
+    jokerler as string[],
+    KELIME_TEK_KULLANIMLIK_JOKERLER,
+    g.mod === 'gunun' ? 'gunun' : 'antrenman',
+  );
+  if (tipHatasi) return tipHatasi;
+
   const kalan = g.kalanSn;
   if (typeof kalan !== 'number' || !Number.isFinite(kalan) || kalan < 0) {
     return 'Geçersiz kalan süre.';
   }
-  if (kalan > sure) return 'Kalan süre toplam süreyi aşamaz.';
+  // Süre jokeri süreyi uzatıyor; tavan buna göre.
+  const sureJokeri = jokerler.filter((j) => j === 'sure').length;
+  if (kalan > sure + sureJokeri * KELIME_SURE_JOKERI_SANIYE) {
+    return 'Kalan süre toplam süreyi aşamaz.';
+  }
 
   return null;
 }

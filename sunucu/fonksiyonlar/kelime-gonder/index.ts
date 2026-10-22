@@ -71,9 +71,10 @@ Deno.serve(async (req: Request) => {
       kelime: string;
       sure_sn: number;
       kalan_sn: number;
+      jokerler?: string[];
     };
 
-    const { oyun, mod, seviye, tarih, tohum, kelime, sure_sn, kalan_sn } = body;
+    const { oyun, mod, seviye, tarih, tohum, kelime, sure_sn, kalan_sn, jokerler } = body;
 
     // Girdi denetimi oyun paketinde ve test ediliyor (kural 1).
     const denetim = kelimeGonderimDogrula({
@@ -85,6 +86,7 @@ Deno.serve(async (req: Request) => {
       kelime,
       sureSn: sure_sn,
       kalanSn: kalan_sn,
+      jokerler,
       simdiMs: Date.now(),
     });
     if (denetim) return hata(denetim, 400);
@@ -107,8 +109,11 @@ Deno.serve(async (req: Request) => {
     // Çarpan oyun paketinde (kural 1). Günün Turu puanı ×10 ölçeğinde:
     // sayı turuyla aynı ölçek, yoksa genel sıralamada kelime turu
     // hiçbir şey katmaz (17 Ekim 2026).
+    const jokerSayisi = Array.isArray(jokerler) ? jokerler.length : 0;
     const temel = kelimeTuru.puanla(seviye, dogr, kalan_sn, sure_sn, false);
-    const puan = kelimeNihaiPuan(temel, mod === 'antrenman' ? 'antrenman' : 'gunun');
+    // Joker bedelini de sunucu uyguluyor: istemcinin bildirdiği puan
+    // değil, sunucunun kendi hesabı geçerli (kural 2).
+    const puan = kelimeNihaiPuan(temel, mod === 'antrenman' ? 'antrenman' : 'gunun', jokerSayisi);
 
     const { error: yazmaHata } = await supabase.from('tur_sonuc').insert({
       oyuncu_id: oyuncuId,
@@ -121,10 +126,9 @@ Deno.serve(async (req: Request) => {
       puan,
       sure_sn,
       kalan_sn,
-      // Kelime turunda adım ve joker yok; sütunlar sayı turundan
-      // kalma, sıfır yazılıyor.
+      // Adım sütunu sayı turuna özgü; kelimede karşılığı yok.
       adim_sayisi: 0,
-      joker_sayisi: 0,
+      joker_sayisi: jokerSayisi,
     });
 
     if (yazmaHata) {

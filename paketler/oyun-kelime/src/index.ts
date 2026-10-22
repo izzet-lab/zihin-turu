@@ -42,6 +42,9 @@ export * from './gonderim.ts';
 export * from './cekim.ts';
 export * from './bot.ts';
 
+/** Kelime jokerleri: uzunluk, ilk harf, fazla harf, süre. */
+export * from './joker.ts';
+
 export const KELIME_SEVIYE_LISTESI: readonly Seviye[] = [
   { anahtar: 'cocuk', etiket: 'Isınma', altEtiket: '7 harf', sure: 60, antrenmanSuresiz: true },
   { anahtar: 'normal', etiket: 'Normal', altEtiket: '8 harf', sure: 60, antrenmanSuresiz: false },

@@ -1147,6 +1147,9 @@ main {
 
 .zt-cizgi { border-color: var(--hat); }
 .zt-vurgu-cizgi { border-color: var(--vurgu); }
+/* Joker ipucunun vurguladigi tas: odul rengi, marka renginden ayri
+   olsun ki "secili" ile "ipucu" karismasin. */
+.zt-odul-cizgi { border-color: var(--odul); }
 
 /* Seçili / vurgulu yüzey — vurgu renginin çok soluk hâli. */
 .zt-vurgu-yuzey {

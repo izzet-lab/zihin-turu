@@ -7,6 +7,7 @@
  * Platform bu dosyayı tanımaz; yalnızca `TurSaglayici` üzerinden konuşur.
  */
 
+import { jokerPuanCarpani } from '@tamisabet/cekirdek';
 import { rastgele, type Puan } from '@tamisabet/cekirdek';
 import { turkceKucult, type Sozluk } from './sozluk.ts';
 import { sozluktePayVar } from './cekim.ts';
@@ -429,6 +430,11 @@ export const KELIME_GUNUN_TURU_CARPANI = 10;
 export function kelimeNihaiPuan(
   temel: Puan,
   mod: 'gunun' | 'antrenman' | 'duello' | 'arena',
+  jokerSayisi = 0,
 ): number {
-  return mod === 'gunun' ? temel.toplam * KELIME_GUNUN_TURU_CARPANI : temel.toplam;
+  const carpan = mod === 'gunun' ? KELIME_GUNUN_TURU_CARPANI : 1;
+  // Joker bedeli sayı turuyla AYNI kuraldan geliyor (çekirdek): her
+  // joker puanın %20'si, çarpımsal. İki oyunun puanları genel
+  // sıralamada toplandığı için bedelin de aynı olması şart.
+  return Math.round(temel.toplam * carpan * jokerPuanCarpani(jokerSayisi));
 }

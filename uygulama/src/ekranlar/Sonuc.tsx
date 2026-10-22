@@ -33,6 +33,32 @@ function sayiGoster(c: number): string {
  * değişir, o yüzden eşikler seviyenin kendi toleransından okunur
  * (kural 1: eşik burada yeniden tanımlanmaz).
  */
+/**
+ * Puan dökümünü tek satırlık okunur bir metne çevirir.
+ *
+ * Örnek: "Taban 100 · Hız +40 · Joker ×0,51 → 72"
+ *
+ * Günün Turu puanları ×10 ölçeğinde gösterildiği için döküm de o
+ * ölçekte yazılıyor: oyuncunun ekranda gördüğü sayıyla aynı dilde
+ * olmalı, yoksa döküm açıklamak yerine kafa karıştırır.
+ */
+function puanDokumu(p: ReturnType<typeof nihaiPuanHesap>): string | null {
+  if (p.nihai <= 0) return null;
+  const ol = (x: number) => Math.round(x * p.carpan);
+  const parcalar: string[] = [`Taban ${ol(p.temel.taban)}`];
+  if (p.temel.hiz > 0) parcalar.push(`Hız +${ol(p.temel.hiz)}`);
+  if (p.temel.ilk > 0) parcalar.push(`İlk bulan +${ol(p.temel.ilk)}`);
+  if (p.jokerSayisi > 0) {
+    const yuzde = Math.round((1 - p.jokerCarpani) * 100);
+    parcalar.push(
+      p.altSinirUygulandi
+        ? `Joker −%${yuzde} (alt sınıra takıldı)`
+        : `Joker −%${yuzde}`,
+    );
+  }
+  return parcalar.join(' · ') + ' → ' + p.nihai;
+}
+
 function hukumMetni(seviye: string, fark: number): string {
   if (fark === 0) return 'Tam isabet';
   const tolerans = SEVIYELER[seviye]?.tolerans;
@@ -319,6 +345,21 @@ export default function Sonuc({
         })
       : null;
 
+  // Puan dökümü: aynı hesabı oyun paketine yeniden yaptırıyoruz.
+  // Puanı burada YENİDEN hesaplamıyoruz — sunucunun verdiği puan
+  // geçerli olan; bu yalnızca o puanın parçalarını göstermek için.
+  const dokum = puanDokumu(
+    nihaiPuanHesap({
+      seviye,
+      fark: sonuc.fark,
+      kalanSaniye: sonuc.kalan,
+      toplamSaniye: sonuc.toplamSure,
+      mod: mod === 'antrenman' ? 'antrenman' : 'gunun',
+      secilenSure: sure,
+      kullanilanJokerler: sonuc.jokerler,
+    }),
+  );
+
   // Çözüm ancak tur bittikten SONRA açılır (CLAUDE.md 6).
   const cozum = useMemo(() => sayiTuru.cozumBul(tur), [tur]);
 
@@ -405,6 +446,20 @@ export default function Sonuc({
           {sonuc.jokerler.length > 0 && (
             <div className="mt-2 text-xs zt-odul-yazi" data-alan="kullanilan-jokerler">
               Joker: {jokerOzeti(sonuc.jokerler)}
+            </div>
+          )}
+
+          {/*
+           * PUAN DÖKÜMÜ.
+           *
+           * Tek bir sayı gösterildiğinde "neden bu kadar az?" sorusunun
+           * cevabı yoktu; joker bedeli özellikle görünmezdi. Oyuncu
+           * puanının nereden geldiğini görmeli, yoksa puanlamayı
+           * keyfî sanıyor.
+           */}
+          {dokum && (
+            <div className="mt-3 text-xs zt-metin-soluk" data-alan="puan-dokumu">
+              {dokum}
             </div>
           )}
 

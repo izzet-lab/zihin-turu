@@ -7,7 +7,7 @@ import {
   kullanilmayanTasIndeksleri,
   JOKER_HAK_SAYISI,
   ODULLU_EK_JOKER,
-  JOKER_MALIYET,
+  TEK_KULLANIMLIK_JOKERLER,
   type Islem,
   type SayiVeri,
   type JokerTip,
@@ -607,12 +607,21 @@ export default function Oyun({
               const adimBitti = j.tip === 'adim' && acikAdimlar.length >= uretim.cozum.adimlar.length;
               const yanlisYok = j.tip === 'yanlis' &&
                 kullanilmayanTasIndeksleri(uretim).every((i) => durum.silinenler.includes(i));
-              const devreDisi = hakYok || suresizMod || adimBitti || yanlisYok;
+              // Günün Turu\'nda "Bir adım aç" bir kez kullanılabilir: Isınma\'da
+              // çözüm üç adım, üçünü de açmak cevabın tamamı demek ve bu tur
+              // lige işliyor. Aynı kuralı sunucu da uyguluyor.
+              const tekKullanimAsildi =
+                mod === 'gunun' &&
+                TEK_KULLANIMLIK_JOKERLER.includes(j.tip) &&
+                kullanilanJokerler.filter((k) => k === j.tip).length >= 1;
+              const devreDisi =
+                hakYok || suresizMod || adimBitti || yanlisYok || tekKullanimAsildi;
 
               // Devre dışı sebebini gösterecek kısa not
               let devreDisiNot: string | null = null;
               if (devreDisi && !hakYok) {
-                if (yanlisYok) devreDisiNot = 'Tüm taşlar çözümde kullanılıyor';
+                if (tekKullanimAsildi) devreDisiNot = 'Günün Turu\'nda bir kez';
+                else if (yanlisYok) devreDisiNot = 'Tüm taşlar çözümde kullanılıyor';
                 else if (adimBitti) devreDisiNot = 'Tüm adımlar açıldı';
                 else if (suresizMod) devreDisiNot = 'Süresiz modda geçersiz';
               }
@@ -641,7 +650,7 @@ export default function Oyun({
                       {devreDisiNot}
                     </div>
                   ) : (
-                    <div className="zt-metin-soluk">−{JOKER_MALIYET[j.tip]} puan</div>
+                    <div className="zt-metin-soluk">puanın %20&apos;si</div>
                   )}
                 </button>
               );

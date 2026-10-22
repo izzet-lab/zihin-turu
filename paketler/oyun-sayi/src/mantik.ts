@@ -9,6 +9,12 @@
  */
 
 import { rastgele, karistir } from '@tamisabet/cekirdek';
+import {
+  JOKER_HAK_SAYISI,
+  ODULLU_EK_JOKER,
+  jokerUstSiniri,
+  jokerPuanCarpani,
+} from '@tamisabet/cekirdek';
 import type { Dogrulama, Puan } from '@tamisabet/cekirdek';
 
 /* ------------------------------------------------------------------ */
@@ -570,37 +576,28 @@ export type JokerSonuc =
   | { tip: 'sure'; ekSaniye: number }
   | null;
 
-/** Her joker türünün puan maliyeti. */
-export const JOKER_MALIYET: Record<JokerTip, number> = {
-  adim: 3,
-  yanlis: 2,
-  sure: 2,
-};
-
-/** Tur başına toplam joker hakkı (tür fark etmeksizin). */
-export const JOKER_HAK_SAYISI = 3;
-
-/**
- * Ödüllü reklam izleyerek kazanılabilen EK joker hakkı — tur başına
- * en fazla bir kez.
+/*
+ * Joker bedeli artık SABİT PUAN DEĞİL, çarpımsal yüzde.
  *
- * Yalnızca Antrenman'da geçerlidir. Günün Turu'nda joker reklamı yoktur
- * (lig adaleti: reklam izleyebilen oyuncu daha çok hak alamaz).
- */
-export const ODULLU_EK_JOKER = 1;
-
-/**
- * Bir turda kullanılabilecek EN FAZLA joker sayısı.
+ * Eskiden her türün kendi puan bedeli vardı (adım 3, yanlış 2,
+ * süre 2) ve temel puandan çıkarılıyordu. Temel puan 0–15 olduğu
+ * için üç joker tam isabetin neredeyse tamamını siliyor, jokerle
+ * bulmak jokersiz ıskalamaktan az puan getiriyordu. Gerekçenin
+ * tamamı `@tamisabet/cekirdek` içindeki `joker.ts` başında.
  *
- * Bu, istemci ve sunucu arasındaki tek kaynaktır. Sunucu doğrulaması
- * bir süre yalnızca JOKER_HAK_SAYISI'na (3) bakıyordu; oysa istemci
- * ödüllü reklamla dördüncü hakkı verebiliyordu. Sonuç: reklamı izleyip
- * dört joker kullanan MEŞRU oyuncunun gönderimi "Joker hakkı aşıldı"
- * diye reddediliyordu — yani reklamı izleyen oyuncu turunu kaybediyordu.
+ * Bedel artık türe göre değişmiyor: her joker aynı oranda (%20)
+ * düşürüyor. Türe göre farklı fiyat, oyuncunun hangi jokerin kaç
+ * para ettiğini ezberlemesini gerektiriyordu; kimse ezberlemedi.
  */
-export function jokerUstSiniri(mod: 'gunun' | 'antrenman'): number {
-  return mod === 'antrenman' ? JOKER_HAK_SAYISI + ODULLU_EK_JOKER : JOKER_HAK_SAYISI;
-}
+
+// Joker kuralları çekirdekte; buradan da dışa aktarılıyor ki oyun
+// paketini kullananlar tek yerden alsın.
+export { JOKER_HAK_SAYISI, ODULLU_EK_JOKER, jokerUstSiniri, jokerPuanCarpani };
+
+/** Günün Turu'nda en fazla bir kez kullanılabilen jokerler. */
+export const TEK_KULLANIMLIK_JOKERLER: readonly JokerTip[] = ['adim'];
+
+
 
 /**
  * Çözümün hiçbir adımında kullanılmayan orijinal taşların indeksleri
@@ -664,12 +661,11 @@ export function jokerVer(
 }
 
 /**
- * Kullanılan jokerlerin toplam maliyetini temel puandan düşer.
- * Puan hiçbir zaman 0'ın altına düşmez.
+ * Kullanılan joker sayısına göre puanı düşürür: her joker %20,
+ * çarpımsal. Bedel oranlı olduğu için puan sıfıra inmez, erir.
  */
 export function jokerliPuan(temelToplam: number, kullanilanJokerler: readonly JokerTip[]): number {
-  const maliyet = kullanilanJokerler.reduce((t, j) => t + JOKER_MALIYET[j], 0);
-  return Math.max(0, temelToplam - maliyet);
+  return temelToplam * jokerPuanCarpani(kullanilanJokerler.length);
 }
 
 /** Bir adımı okunur metne çevirir: "6 × 7 = 42". */
@@ -698,12 +694,29 @@ export interface NihaiPuanGirdi {
   ilkBulanMi?: boolean;
 }
 
-/** Nihai puanın dökümü. */
+/**
+ * Nihai puanın dökümü — sonuç ekranı bunu satır satır gösterir.
+ *
+ * Oyuncu puanının nereden geldiğini görmeli. Tek bir sayı
+ * gösterildiğinde "neden bu kadar az?" sorusunun cevabı yoktu;
+ * joker bedeli özellikle görünmezdi.
+ */
 export interface NihaiPuan {
   temel: Puan;
   /** Joker bedeli düşülmüş TEMEL puan (çarpandan önce). */
   temelJokerli: number;
   carpan: number;
+  /** Kullanılan joker sayısından gelen katsayı (1 = joker yok). */
+  jokerCarpani: number;
+  /** Kullanılan joker adedi. */
+  jokerSayisi: number;
+  /** Joker olmasaydı çıkacak puan — kaybın büyüklüğünü gösterir. */
+  jokersizNihai: number;
+  /**
+   * Joker kesintisi alt sınıra takıldı mı? Takıldıysa oyuncu
+   * hesapladığından az kaybetmiştir; sonuç ekranı bunu söyleyebilir.
+   */
+  altSinirUygulandi: boolean;
   nihai: number;
 }
 
@@ -726,6 +739,37 @@ export interface NihaiPuan {
  * Önceden sıralama iki yerde ayrı ayrı yazılıydı; biri düzeltilip
  * diğeri unutulabilirdi.
  */
+/**
+ * Bir kademenin ALTINDAKİ kademenin taban puanı.
+ * Tabanlar: tam isabet 10, yakın 7, uzak 5.
+ */
+function altKademeTabani(taban: number): number {
+  if (taban >= 10) return 7;
+  if (taban >= 7) return 5;
+  return 0;
+}
+
+/**
+ * JOKER KESİNTİSİNİN ALT SINIRI.
+ *
+ * Yalnızca yüzde kesinti yetmiyor. Tam isabetin tabanı 10, yakının 7;
+ * üç joker ×0.512 uygulanınca hız bonusu düşük bir tam isabet
+ * jokersiz bir "yakın"ın altına düşebiliyor:
+ *
+ *   hız 0 → 10 × 0.512 × 10 = 51 puan   (jokersiz yakın: 70)
+ *   hız 3 → 13 × 0.512 × 10 = 67 puan   (jokersiz yakın: 70)
+ *   hız 5 → 15 × 0.512 × 10 = 77 puan   ✓
+ *
+ * Yani hızlı bulan korunuyor, yavaş bulan hâlâ cezalandırılıyordu —
+ * oysa joker zaten süre harcatan bir şey. Kural şu: **joker puanı
+ * düşürür ama seni bir alt kademeye düşürmez.** Alt sınır, bir
+ * alttaki kademenin tabanının bir fazlası. Böylece tam isabet, kaç
+ * joker kullanılırsa kullanılsın jokersiz bir "yakın"dan iyidir.
+ */
+function jokerAltSiniri(taban: number): number {
+  return taban > 0 ? altKademeTabani(taban) + 1 : 0;
+}
+
 export function nihaiPuanHesap(g: NihaiPuanGirdi): NihaiPuan {
   const temel = puanlaHesap(g.seviye, g.fark, g.kalanSaniye, g.toplamSaniye, g.ilkBulanMi ?? false);
   const temelJokerli = jokerliPuan(temel.toplam, g.kullanilanJokerler);
@@ -733,8 +777,24 @@ export function nihaiPuanHesap(g: NihaiPuanGirdi): NihaiPuan {
   const carpan =
     g.mod === 'antrenman' ? antrenmanToplamCarpani(g.seviye, g.secilenSure) : GUNUN_TURU_CARPANI;
 
-  const nihai =
-    g.mod === 'antrenman' ? Math.round(temelJokerli * carpan) : temelJokerli * carpan;
+  const jokerSayisi = g.kullanilanJokerler.length;
+  const jokerCarpani = jokerPuanCarpani(jokerSayisi);
 
-  return { temel, temelJokerli, carpan, nihai };
+  // Yuvarlama EN SONDA, bir kez. Ara adımlarda yuvarlamak joker
+  // kesintisini olduğundan büyük ya da küçük gösteriyordu.
+  const altSinir = jokerAltSiniri(temel.taban);
+  const altSinirUygulandi = jokerSayisi > 0 && temelJokerli < altSinir;
+  const nihai = Math.round(Math.max(temelJokerli, altSinir) * carpan);
+  const jokersizNihai = Math.round(temel.toplam * carpan);
+
+  return {
+    temel,
+    temelJokerli,
+    carpan,
+    jokerCarpani,
+    jokerSayisi,
+    jokersizNihai,
+    altSinirUygulandi,
+    nihai,
+  };
 }

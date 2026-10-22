@@ -241,3 +241,6 @@ export * from './arena.ts';
 
 /** Genel sıralama kuralları — iki oyunun toplamı, seviye ağırlıkları. */
 export * from './lig.ts';
+
+/** Joker kuralları: hak sayısı, puan bedeli, Günün Turu kısıtı. */
+export * from './joker.ts';

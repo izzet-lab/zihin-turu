@@ -13,7 +13,14 @@
  * doldurur, eksik bildirilen joker bedeli kaçırır.
  */
 
-import { SEVIYELER, ANTRENMAN_SURE_CARPANI, jokerUstSiniri, type JokerTip } from './mantik.ts';
+import {
+  SEVIYELER,
+  ANTRENMAN_SURE_CARPANI,
+  jokerUstSiniri,
+  TEK_KULLANIMLIK_JOKERLER,
+  type JokerTip,
+} from './mantik.ts';
+import { jokerTipDenetimi } from '@tamisabet/cekirdek';
 
 /** Denetim sonucu: geçerliyse hata yok. */
 export type GonderimHata = string | null;
@@ -118,6 +125,15 @@ export function gonderimDogrula(g: GonderimGirdi): GonderimHata {
   for (const j of g.jokerler) {
     if (typeof j !== 'string' || !JOKER_TURLERI.includes(j)) return 'Bilinmeyen joker.';
   }
+  // Günün Turu'nda "Bir adım aç" bir kez kullanılabilir: Isınma'da
+  // çözüm üç adım, üç kez açmak cevabın tamamı demek ve bu tur lige
+  // işliyor. Antrenman'da sınır yok — orası lige işlemiyor.
+  const tipHatasi = jokerTipDenetimi(
+    g.jokerler as string[],
+    TEK_KULLANIMLIK_JOKERLER,
+    g.mod === 'gunun' ? 'gunun' : 'antrenman',
+  );
+  if (tipHatasi) return tipHatasi;
   const sureJokeri = (g.jokerler as JokerTip[]).filter((j) => j === 'sure').length;
 
   // --- Kalan süre ---

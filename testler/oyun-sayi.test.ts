@@ -10,7 +10,7 @@ import {
   jokerVer,
   jokerliPuan,
   kullanilmayanTasIndeksleri,
-  JOKER_MALIYET,
+  jokerPuanCarpani,
   antrenmanCarpani,
   seviyeCarpani,
   antrenmanToplamCarpani,
@@ -212,19 +212,21 @@ describe('çözüm ve joker', () => {
 });
 
 describe('joker maliyeti ve nihai puan', () => {
-  it('her joker türünün bir maliyeti var', () => {
-    expect(JOKER_MALIYET.adim).toBe(3);
-    expect(JOKER_MALIYET.yanlis).toBe(2);
-    expect(JOKER_MALIYET.sure).toBe(2);
+  it('bedel türe göre değil, SAYIYA göre', () => {
+    // Türe göre farklı fiyat gizli bir kuraldı; kimse ezberlemedi.
+    expect(jokerPuanCarpani(1)).toBeCloseTo(0.8, 10);
+    expect(jokerPuanCarpani(2)).toBeCloseTo(0.64, 10);
+    expect(jokerPuanCarpani(3)).toBeCloseTo(0.512, 10);
   });
 
-  it('joker maliyeti temel puandan düşülür', () => {
-    expect(jokerliPuan(10, ['adim'])).toBe(7);
-    expect(jokerliPuan(10, ['adim', 'yanlis'])).toBe(5);
+  it('joker bedeli puanı oransal düşürür', () => {
+    expect(jokerliPuan(10, ['adim'])).toBeCloseTo(8, 10);
+    expect(jokerliPuan(10, ['adim', 'yanlis'])).toBeCloseTo(6.4, 10);
   });
 
-  it('puan hiçbir zaman 0ın altına düşmez', () => {
-    expect(jokerliPuan(2, ['adim', 'yanlis', 'sure'])).toBe(0);
+  it('puan hiçbir zaman eksiye ya da sıfıra inmez', () => {
+    // Çarpımsal bedelin asıl kazancı: oyuncu her zaman bir şey alır.
+    expect(jokerliPuan(2, ['adim', 'yanlis', 'sure'])).toBeGreaterThan(0);
     expect(jokerliPuan(0, ['adim'])).toBe(0);
   });
 

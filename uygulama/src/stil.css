@@ -1298,3 +1298,16 @@ main {
 .zt-onay { accent-color: var(--vurgu); }
 /* Geri alınamaz işlemin onay kutusu — kayıp renginde. */
 .zt-onay-tehlike { accent-color: var(--sure); }
+
+/*
+ * Yatay kayan sekme şeridi. Kaydırma çubuğu gizli: şerit zaten
+ * kesilen sekmeyle kaydırılabilir olduğunu belli ediyor, çubuk
+ * mobilde 6px yer yiyip düğmeleri 44px altına itiyordu (kural 10).
+ */
+.zt-sekme-serit {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.zt-sekme-serit::-webkit-scrollbar {
+  display: none;
+}

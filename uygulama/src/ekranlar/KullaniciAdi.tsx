@@ -8,7 +8,12 @@
 
 import { useState } from 'react';
 import Ikon from '../bilesenler/Ikon';
-import { kullaniciAdiAyarla, kullaniciAdiDogrula, misafirGecmisiniTasi } from '../kimlik';
+import {
+  kullaniciAdiAyarla,
+  kullaniciAdiDogrula,
+  misafirGecmisiniTasi,
+  turkceKucult,
+} from '../kimlik';
 import { profilAdresi } from '../platform';
 
 interface Props {
@@ -23,11 +28,11 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
   const [yukleniyor, setYukleniyor] = useState(false);
 
   // Anlık format kontrolü (veritabanına gitmeden)
-  const anlikHata = ad.length > 0 ? kullaniciAdiDogrula(ad.trim().toLowerCase()) : null;
+  const anlikHata = ad.length > 0 ? kullaniciAdiDogrula(turkceKucult(ad.trim())) : null;
 
   async function kaydet() {
     const temiz = ad.trim();
-    const formatHata = kullaniciAdiDogrula(temiz.toLowerCase());
+    const formatHata = kullaniciAdiDogrula(turkceKucult(temiz));
     if (formatHata) {
       setHata(formatHata);
       return;
@@ -114,7 +119,7 @@ export default function KullaniciAdi({ oyuncuId, onTamamlandi }: Props) {
         <p className="mt-6 text-center text-xs zt-metin-soluk">
           Seçtiğin adla profil sayfan açılacak:{' '}
           <span className="zt-vurgu-metin">
-            {profilAdresi(ad.trim().toLowerCase() || 'kullanici-adi')}
+            {profilAdresi(turkceKucult(ad.trim()) || 'kullanici-adi')}
           </span>
         </p>
       </div>

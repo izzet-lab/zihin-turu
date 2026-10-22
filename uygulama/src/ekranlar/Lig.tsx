@@ -74,6 +74,17 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
   }, []);
 
   const [sekme, setSekme] = useState<Sekme>(baslangicSekme ?? 'genel');
+
+  // Sekmeler tek satırda yatay kayıyor; seçili olan ekran dışındaysa
+  // görünür alana getiriliyor. Yoksa sağdaki sekmeyi seçtikten sonra
+  // hangisinin seçili olduğu görünmüyordu.
+  const sekmeSeridi = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const kap = sekmeSeridi.current;
+    if (!kap) return;
+    const secili = kap.querySelector<HTMLElement>(`[data-sekme="${sekme}"]`);
+    secili?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [sekme]);
   const [genelDonem, setGenelDonem] = useState<GenelDonem>('gunluk');
   /** Oyuncunun bugünkü genel dağılımı — çifte tur çağrısı için. */
   const [bugunDagilim, setBugunDagilim] = useState<{ sayiPuan: number; kelimePuan: number } | null>(null);
@@ -245,10 +256,25 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
         <IstatistikKarti oyuncuId={oyuncuId} />
         <RozetSeridi oyuncuId={oyuncuId} />
 
-        {/* Sekme seçimi — 5 sekme.
-            Üçlü ızgara: 360px'te beş sekme yan yana sığmıyor, "Haftalık"
-            kesiliyordu. İki satıra bölünüyor (kural 10). */}
-        <div className="mb-6 grid grid-cols-3 gap-2" role="tablist" aria-label="Sıralama türü">
+        {/*
+          SEKMELER TEK SATIR, YATAY KAYAR.
+
+          Önce üçlü ızgaraydı. Sekme sayısı yediye çıkınca 3+3+1
+          diziliyor ve "Antrenman" tek başına bir satırda kalıyordu —
+          hem çirkin hem de son sekme kazara bir başlık gibi duruyordu.
+          Izgarayı büyütmek 360px'te sekmeleri kesiyor (kural 10).
+
+          Tek satır + yatay kaydırma ikisini de çözüyor: sekme sayısı
+          ileride değişse bile düzen bozulmuyor. Seçili sekme
+          `scrollIntoView` ile görünür alana kaydırılıyor, yoksa
+          sağdaki sekmeler seçiliyken ekran dışında kalıyordu.
+        */}
+        <div
+          ref={sekmeSeridi}
+          className="zt-sekme-serit mb-6 flex gap-2 overflow-x-auto pb-1"
+          role="tablist"
+          aria-label="Sıralama türü"
+        >
           {(
             [
               // GENEL BAŞTA: platformun ana sıralaması bu.
@@ -275,7 +301,7 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 if (s.k === 'duello' || s.k === 'arena') setOyun('sayi');
               }}
               aria-pressed={sekme === s.k}
-              className={`min-h-[48px] rounded-lg border px-2 py-2 text-sm font-bold transition ${
+              className={`min-h-[48px] shrink-0 whitespace-nowrap rounded-lg border px-3 py-2 text-sm font-bold transition ${
                 sekme === s.k
                   ? 'zt-vurgu-cizgi zt-vurgu-yuzey zt-vurgu-metin'
                   : 'zt-cizgi zt-yuzey zt-metin'
@@ -414,13 +440,20 @@ export default function Lig({ oyuncuId, baslangicSekme }: Props) {
                 : 'zt-metin-soluk'
             }`}
           >
-            {sekme === 'gunluk' && 'Sıralama saat başında güncellenir'}
+            {/*
+              ESKİDEN "saat başında güncellenir" yazıyordu — DOĞRU DEĞİLDİ.
+              Tetikleyici tabloyu tur yazıldığı anda güncelliyor; saatlik
+              bir önbellek hiç olmadı. Yanlış bilgi, puanını hemen
+              göremeyen oyuncuya "bekle" dedirtiyordu; oysa görmüyorsa
+              gerçekten bir sorun vardı.
+            */}
+            {sekme === 'gunluk' && 'Günün en iyi turun sayılır — puanın anında işlenir'}
             {sekme === 'haftalik' &&
-              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Hafta pazartesi başlar — ${kalanMetin} kaldı`)}
+              (sonGun ? `Son gün — ${kalanMetin} kaldı` : `Hafta pazartesi başlar — ${kalanMetin} kaldı`)}
             {sekme === 'aylik' &&
-              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Ay sonuna — ${kalanMetin} kaldı`)}
+              (sonGun ? `Son gün — ${kalanMetin} kaldı` : `Ay sonuna — ${kalanMetin} kaldı`)}
             {sekme === 'antrenman' &&
-              (sonGun ? `⏳ Son gün — ${kalanMetin} kaldı` : `Haftalık sıfırlanır — ${kalanMetin} kaldı`)}
+              (sonGun ? `Son gün — ${kalanMetin} kaldı` : `Haftalık sıfırlanır — ${kalanMetin} kaldı`)}
           </div>
         )}
 

@@ -43,12 +43,34 @@ export async function profilOku(oyuncuId: string): Promise<OyuncuProfil | null> 
 }
 
 /**
+ * Metni TÜRKÇE kurallarına göre küçültür.
+ *
+ * NEDEN AYRI BİR FONKSİYON
+ * `toLowerCase()` İngilizce kuralı uygular ve Türkçe'de iki harfi
+ * bozar:
+ *
+ *   "İZZET" → "i̇zzet"  (i'nin üstünde AYRI bir nokta karakteri kalır)
+ *   "IŞIK"  → "işik"    (ı yerine i)
+ *
+ * Birincisi görünmez bir hata: ad ekranda doğru görünür ama içinde
+ * fazladan bir karakter vardır; benzersizlik kontrolü, profil adresi
+ * ve arama bu yüzden tutmaz. Kullanıcı adı veritabanına bu haliyle
+ * yazılıyordu.
+ *
+ * E-posta ve oda kodu için KULLANILMAZ: onlar ASCII ve orada
+ * İngilizce kuralı doğrudur ("I" → "i" olmalı, "ı" değil).
+ */
+export function turkceKucult(metin: string): string {
+  return metin.toLocaleLowerCase('tr-TR');
+}
+
+/**
  * Kullanıcı adı seçimi — yeni üye için bir kerelik.
  * 3–16 karakter, sadece harf/rakam/alt çizgi/tire, benzersiz.
  * Başarısızsa hata mesajı döner.
  */
 export async function kullaniciAdiAyarla(oyuncuId: string, ad: string): Promise<string | null> {
-  const temiz = ad.trim().toLowerCase();
+  const temiz = turkceKucult(ad.trim());
   const hata = kullaniciAdiDogrula(temiz);
   if (hata) return hata;
 
